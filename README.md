@@ -128,7 +128,7 @@ Inside a Claude Code session:
 /plugin install vse-systems-engineering@Roarge-vse-systems-engineering
 ```
 
-After adding the marketplace, restart Claude Code so it discovers the new
+After adding the marketplace, you might need to restart Claude Code so it discovers the new
 source. Then install the plugin.
 
 ### Git hooks (optional)
