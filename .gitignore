@@ -1,0 +1,13 @@
+# Reference sources (development only, not distributed)
+sources/
+dev_docs/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+*.swp
+*.swo
+*~
+.envrc

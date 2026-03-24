@@ -1,0 +1,13 @@
+{
+  "name": "vse-systems-engineering",
+  "version": "0.1.0",
+  "description": "Systems engineering for Very Small Entities (VSEs). ISO/IEC 29110 compliant, model-based, SysML 2.0 native. Grounded in the PHAS-EAI framework for attention-sustaining environmental design.",
+  "author": {
+    "name": "Roar Georgsen"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Roarge/vse-systems-engineering",
+  "skills": "./skills/",
+  "hooks": "./hooks/",
+  "knowledge": "./knowledge/"
+}

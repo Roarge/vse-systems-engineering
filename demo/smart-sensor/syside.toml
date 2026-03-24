@@ -1,0 +1,5 @@
+[project]
+name = "SmartTemperatureSensor"
+
+[build]
+source = ["models"]

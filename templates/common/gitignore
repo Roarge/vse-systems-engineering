@@ -1,0 +1,22 @@
+# Generated outputs (not diffable, rebuild from markdown sources)
+build/
+*.docx
+*.pptx
+*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node (if using sysand or other tooling)
+node_modules/
+
+# Sensmetry SySiDE build cache
+.syside/

@@ -1,0 +1,50 @@
+name: Document Export
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  export:
+    name: Generate Work Product Documents
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Create build directory
+        run: mkdir -p build
+
+      - name: Export PM documents
+        run: |
+          for f in docs/pm/*.md; do
+            filename=$(basename "$f" .md)
+            echo "Exporting ${filename}..."
+            pandoc "$f" -o "build/${filename}.docx" --from markdown --to docx
+          done
+
+      - name: Export SR documents
+        run: |
+          for f in docs/sr/*.md; do
+            filename=$(basename "$f" .md)
+            echo "Exporting ${filename}..."
+            pandoc "$f" -o "build/${filename}.docx" --from markdown --to docx
+          done
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-products-${{ github.event.release.tag_name }}
+          path: build/*.docx
+
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.docx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

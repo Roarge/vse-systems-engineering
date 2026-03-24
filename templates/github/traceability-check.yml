@@ -1,0 +1,28 @@
+name: Traceability Check
+
+on:
+  pull_request:
+    paths:
+      - 'models/**/*.sysml'
+
+jobs:
+  traceability:
+    name: Check SysML 2.0 Trace Links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run traceability check
+        run: |
+          echo "Checking SysML 2.0 traceability links..."
+          chmod +x hooks/pre-commit-traceability.sh
+          ./hooks/pre-commit-traceability.sh
+        env:
+          CI: true
+
+      - name: Report results
+        if: failure()
+        run: |
+          echo "::error::Traceability gaps detected. All requirements must have satisfy and verify links."
+          echo "Run the @traceability-guard skill locally to identify and fix gaps."

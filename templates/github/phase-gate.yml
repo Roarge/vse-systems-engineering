@@ -1,0 +1,41 @@
+name: Phase Gate Validation
+
+on:
+  pull_request:
+    paths:
+      - '.vse-phase'
+
+jobs:
+  phase-gate:
+    name: Validate Phase Transition
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect phase transition
+        id: phase
+        run: |
+          if git diff origin/main -- .vse-phase > /dev/null 2>&1; then
+            OLD_PHASE=$(git show origin/main:.vse-phase 2>/dev/null || echo "none")
+            NEW_PHASE=$(cat .vse-phase)
+            echo "old_phase=${OLD_PHASE}" >> "$GITHUB_OUTPUT"
+            echo "new_phase=${NEW_PHASE}" >> "$GITHUB_OUTPUT"
+            echo "Phase transition: ${OLD_PHASE} -> ${NEW_PHASE}"
+          else
+            echo "No phase change detected"
+          fi
+
+      - name: Run phase gate check
+        run: |
+          echo "Validating phase gate criteria..."
+          chmod +x hooks/phase-gate-check.sh
+          ./hooks/phase-gate-check.sh
+        env:
+          CI: true
+
+      - name: Report results
+        if: failure()
+        run: |
+          echo "::error::Phase gate criteria not met. Review the checklist in the PR description."
+          echo "Run the @lifecycle-orchestrator skill locally to check gate criteria."

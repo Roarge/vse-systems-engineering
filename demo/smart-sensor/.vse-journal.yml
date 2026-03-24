@@ -1,0 +1,8 @@
+# .vse-journal.yml
+# VSE Systems Engineering Session Journal
+# Rolling window of the last 15 session entries.
+# Older entries are archived to docs/pm/session-archive.yml.
+
+window_size: 15
+
+sessions: []
