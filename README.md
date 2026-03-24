@@ -103,20 +103,52 @@ The recommended modelling toolchain is Sensmetry SySiDE:
 - (Recommended) [Sensmetry SySiDE](https://sensmetry.com) VS Code extension for
   `.sysml` file editing, validation, and navigation
 
-### Installation
+### Installation from a local clone
 
-Clone the repository and add it as a local plugin:
+Clone the repository, then register it as a local marketplace inside Claude
+Code:
 
 ```bash
 git clone https://github.com/Roarge/vse-systems-engineering.git
-claude plugin add /path/to/vse-systems-engineering
 ```
 
-Once the plugin is published to the marketplace, you can install directly:
+Inside a Claude Code session, run the slash commands:
+
+```text
+/plugin marketplace add /path/to/vse-systems-engineering
+/plugin install vse-systems-engineering@vse-systems-engineering
+```
+
+### Installation from GitHub
+
+Inside a Claude Code session:
+
+```text
+/plugin marketplace add Roarge/vse-systems-engineering
+/plugin install vse-systems-engineering@Roarge-vse-systems-engineering
+```
+
+After adding the marketplace, restart Claude Code so it discovers the new
+source. Then install the plugin.
+
+### Git hooks (optional)
+
+The `hooks/` directory contains two git hook scripts for automated enforcement:
+
+- **pre-commit-traceability.sh** blocks commits when staged `.sysml` files have
+  requirements without `satisfy` or `verify` trace links.
+- **phase-gate-check.sh** verifies that required work products exist before a
+  phase transition.
+
+To install them in a project:
 
 ```bash
-claude plugin add vse-systems-engineering
+cp hooks/pre-commit-traceability.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
+
+These are standard git hooks, not Claude Code plugin hooks. They complement the
+plugin by catching trace gaps at commit time.
 
 ### Starting a new project
 
