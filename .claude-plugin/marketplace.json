@@ -2,7 +2,7 @@
   "name": "vse-systems-engineering",
   "metadata": {
     "description": "Systems engineering for Very Small Entities (VSEs). ISO/IEC 29110 compliant, model-based, SysML 2.0 native.",
-    "version": "0.3.0"
+    "version": "0.3.1"
   },
   "owner": {
     "name": "Roar Georgsen"
