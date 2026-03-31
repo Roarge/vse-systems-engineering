@@ -482,6 +482,14 @@ WARN the engineer if:
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-quick-ref.md`
 
+## Reference: SysML 2.0 Semantics and Type System
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-semantics-ref.md`
+
+## Reference: SysML 2.0 Model Libraries
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-libraries-ref.md`
+
 ## Reference: SySiDE Automator API
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`
