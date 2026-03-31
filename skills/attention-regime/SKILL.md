@@ -1,6 +1,6 @@
 ---
 name: attention-regime
-description: Configure environmental hooks, guards, and reminders that sustain attention through niche construction (R4).
+description: Configure environmental hooks, guards, and reminders for sustained attention. Use when setting up the SE environment, running health checks, or adjusting process rigour.
 user-invocable: true
 ---
 
@@ -23,17 +23,29 @@ resistance.
 
 ### Step 1: Set Up Hooks
 
-Configure the two project hooks:
+This plugin provides two layers of hooks:
+
+**Claude Code hooks** (`hooks.json` at the plugin root):
+- **SessionStart**: automatically reads `.vse-phase` and `.vse-journal.yml` at
+  the start of every session, presenting the lifecycle position and session
+  continuity context without manual invocation.
+- **PostToolUse (Write/Edit)**: when a `.sysml` file is modified, reminds the
+  engineer to maintain trace links and check traceability.
+
+These hooks fire automatically when the plugin is installed. No manual setup
+is required.
+
+**Git hooks** (installed per project during `@project-setup`):
 
 **Pre-commit traceability hook** (`hooks/pre-commit-traceability.sh`):
 - Fires before every commit that includes .sysml files
 - Checks that all requirements have satisfy and verify links
 - Blocks the commit if trace gaps are found
-- Install: symlink or copy to `.git/hooks/pre-commit`
+- Install: copy from the plugin to the project's `.git/hooks/pre-commit`
 
 ```bash
-# Install the hook
-cp hooks/pre-commit-traceability.sh .git/hooks/pre-commit
+# Install the git hook (run from the project directory)
+cp ${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
@@ -68,19 +80,29 @@ TASKS.md          (ISO 29110 task checklist)
 
 If the project was created with `@project-setup`, this structure already
 exists. If not, create missing directories and copy templates from
-`templates/pm/` and `templates/sr/`.
+`${CLAUDE_PLUGIN_ROOT}/templates/pm/` and `${CLAUDE_PLUGIN_ROOT}/templates/sr/`.
 
 ### Step 4: Configure SySiDE Tooling
 
-If the user has Sensmetry SySiDE installed, create `syside.toml`:
+If the user has Sensmetry SySiDE installed:
 
-```toml
-[project]
-name = "ProjectName"
+1. Copy the annotated `syside.toml` template from
+   `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` to the project root.
+   Populate the project name.
 
-[build]
-source = ["models"]
-```
+2. Verify the CLI is available:
+   ```bash
+   syside --version
+   ```
+   If not found, the user needs Java 21 and the Syside CLI installed. See
+   `@sysml2-modelling` for installation details.
+
+3. Verify the licence:
+   ```bash
+   export SYSIDE_LICENSE_KEY="your-licence-key"
+   syside check --stats
+   ```
+   For CI/CD, use a Deployment Licence Key (prefix `CI-`) stored in secrets.
 
 ## Patterned Practice Prompts
 
@@ -134,18 +156,61 @@ run this diagnostic:
 - [ ] `docs/sr/` contains all 15 SR work product templates
 - [ ] `TASKS.md` exists with ISO 29110 task checklist
 - [ ] `build/` directory exists and is gitignored
+- [ ] `scripts/` directory exists (if using Automator)
+- [ ] `.venv/` is gitignored (if using Automator)
+
+### Tooling Check
+
+**SySiDE CLI** (if `syside --version` succeeds):
+
+```bash
+# Semantic validation of all models
+syside check --warnings-as-errors --stats
+
+# Format compliance
+syside format --check
+```
+
+If `syside check` fails, the model has semantic errors that go beyond trace
+gaps. Fix these before proceeding with any phase gate.
+
+If `syside format --check` fails, run `syside format` to fix formatting, then
+commit the formatted files.
+
+**Syside Automator** (if `python -c "import syside"` succeeds):
+
+```bash
+# Check Automator availability and version
+python -c "import syside; print(syside.__version__)"
+```
+
+If Automator is available, report version and suggest using Automator-enhanced
+workflows:
+- Semantic trace checking via `@traceability-guard` (Automator section)
+- Requirements Excel export via `@needs-and-requirements` (Import/Export section)
+- Value rollup and variant analysis via `@architecture-design` (Model Analysis section)
+- Model-based report generation via `@document-export` (Report Generation section)
+
+If Automator is not installed but a licence key is set, suggest:
+
+```bash
+python -m venv .venv && source .venv/bin/activate && pip install syside
+```
 
 ### Process Check
 - [ ] Current phase work products exist per ISO 29110
 - [ ] Traceability Matrix is up to date (invoke `@traceability-guard`)
 - [ ] No baselined artefacts modified without Change Request
 - [ ] Phase gate checklist for previous transition was completed
+- [ ] `syside check` passes without errors (if CLI available)
+- [ ] `syside format --check` passes (if CLI available)
 
 ### Model Check
 - [ ] All .sysml files have valid package declarations
 - [ ] All requirements have unique IDs
 - [ ] All requirements have satisfy and verify links
 - [ ] No orphan verification cases
+- [ ] `syside check --warnings-as-errors` passes (if CLI available)
 
 ### Report Format
 

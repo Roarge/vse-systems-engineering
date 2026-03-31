@@ -1,6 +1,6 @@
 ---
 name: verification-validation
-description: Plan and execute verification and validation with full trace links to requirements. Implements R3 traceability for V&V.
+description: Plan and execute verification and validation with trace links. Use when creating test cases, running V&V, or working in SR.5.
 user-invocable: true
 ---
 
@@ -41,7 +41,7 @@ verification timeframes operate throughout the project:
 - **Macrocycle** (project length): full system V&V, formal acceptance. This is
   the traditional SR.5 activity described below.
 
-See `knowledge/ambse-agile-process.md` Section 3 and `knowledge/vv-guide.md`
+See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md` Section 3 and `${CLAUDE_PLUGIN_ROOT}/knowledge/vv-guide.md`
 (Continuous Verification Timeframes section) for details.
 
 ## Process Flow
@@ -165,7 +165,7 @@ Execute validation cases with stakeholder participation:
 1. Invite the Acquirer and relevant stakeholders
 2. Demonstrate the system in its intended operational context
 3. Walk through each validation case
-4. **Use case driven validation** (from `knowledge/ambse-architecture.md`
+4. **Use case driven validation** (from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md`
    Section 7.2): for each stakeholder use case, trace the data and control flow
    through the architecture. Verify that every scenario step is supported by a
    subsystem service. Identify gaps as missing requirements or design defects.
@@ -232,6 +232,103 @@ When deriving test cases from requirements:
 3. **Error guessing**: test conditions likely to cause failures
 4. **Requirements-based**: one or more test cases per requirement
 
+## Automated V&V Support (Automator)
+
+When the Syside Automator Python library is available, use it for programmatic
+verification coverage analysis, constraint checking, and state machine
+simulation.
+
+### Verification Coverage Analysis
+
+Programmatically check which requirements have verification cases and which
+do not:
+
+```python
+import syside
+
+model, diagnostics = syside.load_model(
+    paths=syside.collect_files_recursively("models/")
+)
+assert not diagnostics.contains_errors(warnings_as_errors=True)
+
+# Collect all verification case definitions
+ver_cases = {
+    ver.declared_name: ver
+    for ver in model.nodes(syside.VerificationCaseDefinition)
+    if ver.document.document_tier is syside.DocumentTier.Project
+}
+
+# Check each requirement for verification coverage
+uncovered = []
+for req in model.nodes(syside.RequirementDefinition):
+    if req.document.document_tier is not syside.DocumentTier.Project:
+        continue
+    has_verify = False
+    for child in req.owned_elements.collect():
+        if child.try_cast(syside.VerificationCaseUsage) is not None:
+            has_verify = True
+    if not has_verify:
+        uncovered.append(req.declared_name or req.name)
+
+print(f"Requirements: {len(list(model.nodes(syside.RequirementDefinition)))}")
+print(f"Verification cases: {len(ver_cases)}")
+print(f"Uncovered requirements: {len(uncovered)}")
+for name in uncovered:
+    print(f"  {name}: no verification case")
+```
+
+### Expression-Based Constraint Checking
+
+Evaluate requirement constraints (mass limits, performance bounds) against
+model values using the Compiler:
+
+```python
+STDLIB = syside.Environment.get_default().lib
+compiler = syside.Compiler()
+
+# Find constraint attributes and evaluate them
+for attr in model.nodes(syside.AttributeUsage):
+    if attr.name in ("MassActual", "MassLimit", "PowerBudget"):
+        value, report = compiler.evaluate_feature(
+            feature=attr,
+            scope=attr.owner,
+            stdlib=STDLIB,
+            experimental_quantities=True,
+        )
+        if not report.fatal:
+            print(f"{attr.name} = {value}")
+        else:
+            print(f"{attr.name}: evaluation failed")
+```
+
+This enables automated checks like "total mass does not exceed the mass
+budget" or "power consumption is within the allocated envelope" without
+manual calculation.
+
+### State Machine Simulation
+
+The Automator can simulate state machines defined in SysML models using
+the `python-statemachine` library:
+
+```bash
+pip install python-statemachine
+```
+
+The workflow:
+
+1. Load the SysML model containing state definitions
+2. Extract the state machine definition by qualified name
+3. Convert SysML states and transitions to Python `python-statemachine` format
+4. Use `syside.Compiler()` to evaluate transition guard expressions
+5. Simulate state transitions against a sequence of input values
+6. Verify that the state machine behaves as specified
+
+This is particularly useful for verifying behavioural requirements that define
+state-dependent system responses (e.g., alarm systems, mode controllers,
+protocol handlers).
+
+Reference: https://docs.sensmetry.com/examples/state_machine_simulation.html
+
 ## Red Flags
 
 WARN the engineer if:
@@ -241,3 +338,11 @@ WARN the engineer if:
 - Stakeholders are not involved in validation
 - Defects are being deferred without documented rationale
 - The Verification or Validation Report is incomplete
+
+## Reference: V&V Guide
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/vv-guide.md`
+
+## Reference: AMBSE Agile Process (Verification Timeframes)
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`

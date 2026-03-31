@@ -42,7 +42,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 ## Knowledge base
 
-Eleven reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
+Twelve reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
 context and organised by source.
 
 **ISO/IEC 29110** (process backbone)
@@ -71,6 +71,10 @@ context and organised by source.
 
 - `sysml2-quick-ref.md` -- textual notation cheat sheet verified against the OMG spec
 
+**SySiDE Automator** (tooling)
+
+- `syside-automator-ref.md` -- Python API reference, tool selection guide, workflow patterns
+
 ## Sources
 
 Knowledge is extracted from six source categories, consulted in this priority:
@@ -86,14 +90,42 @@ Source PDFs are private (gitignored) and not distributed with the plugin.
 
 ## Tooling
 
-The recommended modelling toolchain is Sensmetry SySiDE:
+The recommended modelling toolchain is [Sensmetry SySiDE](https://sensmetry.com).
+Choose tools based on your workflow:
 
-- **Syside Editor** (free VS Code extension) for syntax highlighting, validation,
-  completion, and navigation of .sysml and .kerml files
-- **Syside Modeler** (paid) for diagram visualisation (disable the Editor extension
-  when using Modeler)
+| Workflow | Tool | Licence |
+| --- | --- | --- |
+| Learning, lightweight editing | **Syside Editor** (VS Code extension) | Free |
+| Model writing, diagrams, exploration | **Syside Modeler** (VS Code extension) | Licensed |
+| CI/CD validation, headless diagrams | **Syside CLI** (`syside check`, `format`, `viz`) | Licensed |
+| Programmatic analysis, scripting, reports | **Syside Automator** (Python library) | Licensed |
+
+Additionally:
+
 - **Sysand** (open-source) for SysML v2 package management
 - Configuration via `syside.toml` in the project root
+
+If you have Modeler, you already have everything Editor offers. Disable the
+Editor extension when Modeler is active to avoid conflicts. Modeler and
+Automator share the same licence key.
+
+### Automator capabilities
+
+The Syside Automator (`pip install syside`, Python 3.12+) enables programmatic
+workflows that the CLI alone cannot provide:
+
+- **Requirements import/export**: round-trip between SysML models and Excel
+  spreadsheets for acquirer review
+- **Semantic trace checking**: programmatic satisfy/verify link analysis with
+  broken link detection
+- **Value rollup**: mass, power, and cost budgets with automatic unit conversion
+- **Variant analysis**: extract and compare product line configurations
+- **Report generation**: Jinja2-based pipeline producing PDF, HTML, and DOCX
+  with traceability matrices and dependency graphs
+- **State machine simulation**: simulate SysML state machines in Python
+- **Interactive exploration**: REPL mode for ad hoc model queries
+
+See `knowledge/syside-automator-ref.md` for the full API reference.
 
 ## Getting started
 
@@ -102,6 +134,8 @@ The recommended modelling toolchain is Sensmetry SySiDE:
 - [Claude Code](https://claude.com/claude-code) CLI installed
 - (Recommended) [Sensmetry SySiDE](https://sensmetry.com) VS Code extension for
   `.sysml` file editing, validation, and navigation
+- (Optional) Syside Automator for programmatic model analysis:
+  `pip install syside` (requires Python 3.12+, same licence key as Modeler)
 
 ### Installation from a local clone
 

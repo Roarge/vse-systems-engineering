@@ -1,6 +1,6 @@
 ---
 name: project-setup
-description: Bootstrap a new VSE systems engineering project with ISO 29110 structure, SysML 2.0 models, work product templates, and optional GitHub integration.
+description: Bootstrap a new VSE systems engineering project. Use when starting a new project, scaffolding, or initialising ISO 29110 structure.
 user-invocable: true
 ---
 
@@ -43,8 +43,8 @@ cd <project-name>
 git init
 ```
 
-Copy the `.gitignore` from `templates/common/gitignore`. This ensures generated
-files (docx, pptx, pdf) are excluded from version control.
+Copy the `.gitignore` from `${CLAUDE_PLUGIN_ROOT}/templates/common/gitignore`. This
+ensures generated files (docx, pptx, pdf) are excluded from version control.
 
 ## Step 3: Create Directory Structure
 
@@ -89,14 +89,16 @@ files (docx, pptx, pdf) are excluded from version control.
 │       ├── system-operation-guide.md
 │       ├── maintenance-guide.md
 │       └── training-specifications.md
+├── scripts/                (Automator Python scripts, if using Automator)
 ├── build/                  (generated outputs, gitignored)
 └── TASKS.md                (generated ISO 29110 task checklist)
 ```
 
 ## Step 4: Populate Templates
 
-Copy all templates from `templates/pm/` to `docs/pm/` and from `templates/sr/`
-to `docs/sr/`. Copy `templates/common/CLAUDE.md` to the project root.
+Copy all templates from `${CLAUDE_PLUGIN_ROOT}/templates/pm/` to `docs/pm/` and
+from `${CLAUDE_PLUGIN_ROOT}/templates/sr/` to `docs/sr/`. Copy
+`${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md` to the project root.
 Replace the following placeholders in every copied file:
 
 | Placeholder | Replacement |
@@ -106,8 +108,9 @@ Replace the following placeholders in every copied file:
 | `{{ACQUIRER}}` | Acquirer name |
 | `{{AUTHOR}}` | Author name |
 
-Copy `templates/common/vse-journal.yml` to `.vse-journal.yml` in the project
-root. This file does not contain placeholders and requires no substitution.
+Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-journal.yml` to `.vse-journal.yml`
+in the project root. This file does not contain placeholders and requires no
+substitution.
 
 Configure `syside.toml` with the project name.
 
@@ -190,7 +193,7 @@ package Validation {
 ## Step 6: Generate TASKS.md
 
 Generate a project-specific task checklist from
-`knowledge/iso29110-task-lists.md`. The generated TASKS.md should contain:
+`${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`. The generated TASKS.md should contain:
 
 1. A header with the project name and date
 2. The complete PM.1 through SR.6 task checklists
@@ -203,7 +206,7 @@ the entire project lifecycle.
 
 Route to `@attention-regime` for hook installation:
 
-1. Copy `hooks/pre-commit-traceability.sh` to `.git/hooks/pre-commit`
+1. Copy `${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh` to `.git/hooks/pre-commit`
 2. Make it executable
 3. Create the `.vse-phase` file (already done in Step 3)
 
@@ -211,7 +214,78 @@ Inform the user that the hooks will:
 - Block commits with broken SysML 2.0 trace links
 - Report the current lifecycle phase on each interaction
 
-## Step 8: Detect Available Integrations
+## Step 8: Detect and Configure SySiDE
+
+Check whether the SySiDE CLI is available:
+
+```bash
+syside --version
+```
+
+**If available:**
+
+1. Copy the annotated `syside.toml` from
+   `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` (already done in Step 3,
+   but verify the configuration is complete)
+2. Run an initial validation to confirm the toolchain works:
+   ```bash
+   syside check --stats
+   ```
+3. If the licence is not set, inform the user:
+   ```bash
+   export SYSIDE_LICENSE_KEY="your-licence-key"
+   # Or create a .env file (add .env to .gitignore):
+   echo "SYSIDE_LICENSE_KEY=your-licence-key" > .env
+   ```
+4. Run initial formatting to establish a baseline:
+   ```bash
+   syside format
+   ```
+
+**Check Automator availability:**
+
+```bash
+python -c "import syside; print(syside.__version__)"
+```
+
+If the Automator Python library is available:
+
+1. Confirm it is installed in a virtual environment (`.venv/`)
+2. Verify `.venv/` is in `.gitignore`
+3. Add `scripts/` to the project directory structure for Automator scripts
+4. Inform the user of available Automator workflows:
+   - Requirements export to Excel (`@needs-and-requirements`)
+   - Semantic trace checking (`@traceability-guard`)
+   - Value rollup and variant analysis (`@architecture-design`)
+   - Model-based report generation (`@document-export`)
+
+If the Automator is not installed but a Modeler licence exists, suggest:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install syside
+echo ".venv/" >> .gitignore
+mkdir -p scripts
+```
+
+**If neither CLI nor Automator is available:**
+
+Inform the user that the SySiDE tools are optional but recommended:
+
+- **CLI** requires Java 21 runtime and a Modeler licence. `syside check`
+  provides deeper semantic validation than the grep-based traceability hook,
+  and `syside format` ensures consistent model formatting.
+- **Automator** requires Python 3.12+ and a licence (same key as Modeler).
+  It enables programmatic model analysis, requirements import/export, and
+  report generation.
+- **Editor** (free VS Code extension) provides syntax highlighting and
+  basic validation without any licence.
+
+See `${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md` for the full
+tool selection guide.
+
+## Step 9: Detect Other Integrations
 
 ### GitHub MCP
 
@@ -221,10 +295,11 @@ functions). If available:
 1. Offer to create a GitHub repository
 2. Suggest setting up branch protection on main
 3. Offer to create GitHub Actions workflows from `templates/github/`:
-   - `traceability-check.yml`: checks trace links on PRs
+   - `traceability-check.yml`: checks trace links on PRs (from `${CLAUDE_PLUGIN_ROOT}/templates/github/`)
    - `phase-gate.yml`: validates phase transitions
    - `document-export.yml`: generates documents on release tags
-4. Copy the PR template from `templates/github/pull-request-template.md`
+   All workflow templates are in `${CLAUDE_PLUGIN_ROOT}/templates/github/`.
+4. Copy the PR template from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`
 
 If GitHub MCP is not available, skip this step and inform the user they can
 set up GitHub integration later.
@@ -241,7 +316,7 @@ integration points:
 | engineering | Use `@architecture` for ADRs during SR.3, `@review` for SR.4 |
 | document-skills | Use `@docx` and `@pptx` for work product export via `@document-export` |
 
-## Step 9: Initial Commit
+## Step 10: Initial Commit
 
 Create the initial commit with all scaffolded files:
 
@@ -260,7 +335,7 @@ Scaffolded by @project-setup:
 - Phase tracking (.vse-phase = SR.1)"
 ```
 
-## Step 10: Present Summary
+## Step 11: Present Summary
 
 Present the project summary to the user:
 
@@ -306,5 +381,13 @@ Route to `@lifecycle-orchestrator` for ongoing phase navigation.
 - `@sysml2-modelling`: SysML 2.0 model conventions and validation
 - `@traceability-guard`: verifies trace completeness in models
 - `@document-export`: generates docx/pptx from the populated templates
-- `knowledge/iso29110-task-lists.md`: source for TASKS.md generation
-- `knowledge/iso29110-profile.md`: ISO 29110 process reference
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`: source for TASKS.md generation
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`: ISO 29110 process reference
+
+## Reference: ISO 29110 Task Lists
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`
+
+## Reference: ISO 29110 Profile
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`

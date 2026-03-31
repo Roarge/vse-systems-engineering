@@ -1,6 +1,6 @@
 ---
 name: needs-and-requirements
-description: Elicit stakeholder needs and derive traceable SysML 2.0 requirements. Filters information to the requirements phase (R1).
+description: Elicit stakeholder needs and derive traceable SysML 2.0 system requirements. Use when capturing needs, writing requirements, or working in SR.2.
 user-invocable: true
 ---
 
@@ -39,7 +39,7 @@ Create a lightweight stakeholder register. In a VSE, this can be a simple table:
 
 ### Step 2: Needs Elicitation
 
-Use VSE-appropriate techniques (from `knowledge/needs-and-reqs-guide.md`):
+Use VSE-appropriate techniques (from `${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-reqs-guide.md`):
 
 **Priority techniques for VSEs:**
 1. **Brainstorming** with stakeholders (low cost, high yield)
@@ -47,7 +47,7 @@ Use VSE-appropriate techniques (from `knowledge/needs-and-reqs-guide.md`):
 3. **Document analysis** (existing specs, competitor products, standards)
 4. **Interface analysis** (what other systems must this connect to?)
 5. **Use case driven elicitation** (model actor-system interactions as use cases,
-   derive needs from scenario steps). See `knowledge/ambse-requirements.md`
+   derive needs from scenario steps). See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
    Sections 3-6 for the complete use case driven workflow, including three
    approaches: flow-based, scenario-based, and state-based analysis.
 
@@ -85,7 +85,7 @@ package StakeholderNeeds {
 Transform stakeholder needs into system requirements:
 
 1. For each stakeholder need, ask: "What must the system do to satisfy this?"
-2. Follow the model-based derivation workflow from `knowledge/ambse-requirements.md`
+2. Follow the model-based derivation workflow from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
    Section 4: identify functions, derive functional requirements, derive performance
    requirements, derive interface requirements, derive constraint requirements, and
    assign a verification method to each requirement as it is written.
@@ -217,7 +217,7 @@ detailed V&V planning).
 **Nanocycle verification**: When using the agile MBSE approach, begin nanocycle
 verification (20-60 minute loops) during requirements development, not just at
 SR.5. Run SySiDE validation, check traceability with `@traceability-guard`, and
-review each use case model as it is created. See `knowledge/ambse-agile-process.md`
+review each use case model as it is created. See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`
 Section 3 for the full verification timeframe model.
 
 The IVV Plan defines WHAT will be verified and validated. IVV Procedures define
@@ -232,6 +232,104 @@ For each system requirement, define:
 IVV Procedures may be documented inline in `docs/sr/ivv-plan.md` (Section 5)
 or in the SysML 2.0 model (`models/verification.sysml`). For VSE projects,
 the inline approach in the IVV Plan is sufficient.
+
+## Requirements Import/Export (Automator)
+
+When the Syside Automator Python library is available, support round-tripping
+requirements between SysML models and Excel spreadsheets. This addresses the
+common VSE workflow where the acquirer reviews requirements in a spreadsheet
+while the SysML model remains the source of truth.
+
+### Check Automator Availability
+
+```bash
+python -c "import syside; print(syside.__version__)"
+pip install pandas openpyxl   # Required for Excel support
+```
+
+If Automator is not available, manage requirements directly in the SysML model.
+
+### Export Requirements to Excel
+
+Use this script to extract all requirements from the model into a spreadsheet
+for acquirer review:
+
+```python
+import pathlib
+import pandas as pd
+import syside
+
+MODEL_DIR = pathlib.Path("models/")
+OUTPUT = pathlib.Path("build/requirements.xlsx")
+
+def main() -> None:
+    model, diagnostics = syside.load_model(
+        paths=syside.collect_files_recursively(str(MODEL_DIR))
+    )
+    assert not diagnostics.contains_errors(warnings_as_errors=True)
+
+    data = []
+    for req in model.nodes(syside.RequirementDefinition):
+        if req.document.document_tier is not syside.DocumentTier.Project:
+            continue
+        for doc in req.documentation.collect():
+            data.append({
+                "ID": req.declared_name,
+                "Requirement": doc.body,
+            })
+    df = pd.DataFrame(data)
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    df.to_excel(OUTPUT, index=False)
+    print(f"Exported {len(data)} requirements to {OUTPUT}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Import Requirements from Excel
+
+Use this script to create SysML requirement definitions from spreadsheet data:
+
+```python
+import pathlib
+import pandas as pd
+import syside
+
+INPUT = pathlib.Path("requirements.xlsx")
+OUTPUT = pathlib.Path("models/imported-requirements.sysml")
+
+def main() -> None:
+    df = pd.read_excel(INPUT)
+    doc = syside.Document.create_st(url="memory://imported.sysml")
+    with doc.lock() as locked:
+        mem, pkg = locked.root_node.children.append(
+            syside.OwningMembership, syside.Package
+        )
+        for _, row in df.iterrows():
+            mem, req = pkg.children.append(
+                syside.OwningMembership, syside.RequirementDefinition
+            )
+            # Configure requirement name and documentation
+    text = syside.pprint(locked.root_node)
+    OUTPUT.write_text(text)
+    print(f"Imported {len(df)} requirements to {OUTPUT}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Round-Trip Workflow
+
+1. **Export**: extract requirements from the SysML model to Excel
+2. **Review**: acquirer reviews and comments on requirements in the spreadsheet
+3. **Reconcile**: engineer reviews feedback, updates the SysML model
+4. **Re-export**: generate updated spreadsheet to confirm changes
+
+This keeps the SysML model as the single source of truth while supporting
+acquirer workflows that rely on spreadsheets.
+
+Reference: https://docs.sensmetry.com/examples/reqs_to_excel.html and
+https://docs.sensmetry.com/examples/reqs_from_excel.html
 
 ## Red Flags
 
@@ -254,3 +352,11 @@ Every requirement MUST carry these attributes:
 | verificationMethod | test, analysis, inspection, or demonstration |
 | source | Which stakeholder need this derives from |
 | status | draft, reviewed, approved, baselined |
+
+## Reference: Needs and Requirements Guide
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-reqs-guide.md`
+
+## Reference: AMBSE Requirements
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`

@@ -1,4 +1,4 @@
-name: Traceability Check
+name: SysML Validation
 
 on:
   pull_request:
@@ -6,14 +6,42 @@ on:
       - 'models/**/*.sysml'
 
 jobs:
-  traceability:
-    name: Check SysML 2.0 Trace Links
+  validate:
+    name: Validate SysML 2.0 Models
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run traceability check
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Install SySiDE CLI
+        run: |
+          # Download and extract syside CLI
+          # Adjust the URL and version for your installation
+          mkdir -p ~/.local/bin
+          # tar -xf syside-*.tar.xz -C ~/.local
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Validate models (SySiDE)
+        if: hashFiles('syside.toml') != ''
+        env:
+          SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
+        run: syside check --warnings-as-errors --stats
+        continue-on-error: true
+
+      - name: Check formatting (SySiDE)
+        if: hashFiles('syside.toml') != ''
+        env:
+          SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
+        run: syside format --check
+        continue-on-error: true
+
+      - name: Check traceability links (fallback)
         run: |
           echo "Checking SysML 2.0 traceability links..."
           chmod +x hooks/pre-commit-traceability.sh
@@ -24,5 +52,5 @@ jobs:
       - name: Report results
         if: failure()
         run: |
-          echo "::error::Traceability gaps detected. All requirements must have satisfy and verify links."
-          echo "Run the @traceability-guard skill locally to identify and fix gaps."
+          echo "::error::Model validation or traceability check failed."
+          echo "Run 'syside check' and '@traceability-guard' locally to identify and fix issues."

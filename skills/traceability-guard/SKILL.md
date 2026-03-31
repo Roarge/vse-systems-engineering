@@ -1,6 +1,6 @@
 ---
 name: traceability-guard
-description: Check and enforce machine-readable traceability across all work products. Implements R3 as an environmental guard.
+description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, or before phase transitions.
 user-invocable: true
 ---
 
@@ -149,6 +149,123 @@ For each gap, suggest the specific fix:
 | Need without requirement | "Derive a system requirement from this stakeholder need" |
 | Need without validation | "Create a validation case for this stakeholder need" |
 | Orphan verification case | "Add a `verify` link or remove this unused case" |
+
+## Automator-Enhanced Checking
+
+When the Syside Automator Python library is available (`pip install syside`),
+use it for **semantic trace checking** instead of grep-based text matching.
+This provides accurate relationship traversal, broken link detection, and
+documentation extraction.
+
+### Check Automator Availability
+
+```bash
+python -c "import syside; print(syside.__version__)"
+```
+
+If Automator is not available, fall back to the grep-based procedure above.
+
+### Semantic Trace Check Script
+
+Use this script template to perform programmatic trace analysis:
+
+```python
+import syside
+import sys
+
+def check_traceability(model_dir: str = "models/") -> list[str]:
+    """Check trace completeness across all SysML models."""
+    paths = syside.collect_files_recursively(model_dir)
+    model, diagnostics = syside.try_load_model(paths=paths)
+
+    if diagnostics.contains_errors():
+        print("Model has syntax errors. Fix these before trace checking.")
+        print(syside.format_diagnostics(diagnostics))
+        return []
+
+    gaps = []
+    req_count = 0
+    ver_count = 0
+    val_count = 0
+    satisfy_count = 0
+    verify_count = 0
+
+    # Check all requirement definitions
+    for req in model.nodes(syside.RequirementDefinition):
+        if req.document.document_tier is not syside.DocumentTier.Project:
+            continue
+        req_count += 1
+        has_satisfy = False
+        has_verify = False
+
+        for child in req.owned_elements.collect():
+            # Check for satisfy relationships
+            if child.try_cast(syside.RequirementUsage) is not None:
+                has_satisfy = True
+                satisfy_count += 1
+            # Check for verification case references
+            if child.try_cast(syside.VerificationCaseUsage) is not None:
+                has_verify = True
+                verify_count += 1
+
+        name = req.declared_name or req.name or "(unnamed)"
+        if not has_satisfy:
+            gaps.append(f"Rule 1: {name} has no satisfy link (upward trace)")
+        if not has_verify:
+            gaps.append(f"Rule 2: {name} has no verify link (downward trace)")
+
+    # Check all verification case definitions
+    for ver in model.nodes(syside.VerificationCaseDefinition):
+        if ver.document.document_tier is not syside.DocumentTier.Project:
+            continue
+        ver_count += 1
+        has_verify_link = False
+        for child in ver.owned_elements.collect():
+            if child.try_cast(syside.RequirementUsage) is not None:
+                has_verify_link = True
+        name = ver.declared_name or ver.name or "(unnamed)"
+        if not has_verify_link:
+            gaps.append(f"Rule 4: {name} is an orphan verification case")
+
+    # Report
+    print(f"Requirements checked: {req_count}")
+    print(f"  With satisfy links: {satisfy_count}")
+    print(f"Verification cases checked: {ver_count}")
+    print(f"GAPS FOUND: {len(gaps)}")
+    for gap in gaps:
+        print(f"  {gap}")
+
+    return gaps
+
+if __name__ == "__main__":
+    model_dir = sys.argv[1] if len(sys.argv) > 1 else "models/"
+    gaps = check_traceability(model_dir)
+    sys.exit(1 if gaps else 0)
+```
+
+### Advantages Over Grep-Based Checking
+
+| Aspect | Grep-based | Automator-based |
+| --- | --- | --- |
+| Accuracy | Text pattern matching, false positives possible | Semantic model traversal, exact relationship analysis |
+| Broken link detection | Cannot detect references to non-existent elements | Diagnostics report invalid references |
+| Documentation extraction | Limited to raw text | Structured access to doc bodies for enriched reports |
+| Cross-package resolution | Requires manual import tracking | Automatic resolution across packages |
+| Requirement attributes | Must parse attribute strings | Direct access to typed attribute values |
+
+### Enriched Gap Report
+
+When Automator is available, the gap report can include requirement
+documentation for context:
+
+```python
+for req in model.nodes(syside.RequirementDefinition):
+    if req.document.document_tier is not syside.DocumentTier.Project:
+        continue
+    for doc in req.documentation.collect():
+        # Include requirement text in gap report for context
+        print(f"  {req.declared_name}: {doc.body[:80]}...")
+```
 
 ## Integration with Other Skills
 

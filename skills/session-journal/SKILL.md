@@ -1,6 +1,6 @@
 ---
 name: session-journal
-description: Manage the session journal for cross-session continuity. Reads the journal at session start, writes checkpoint entries during or at the end of a session.
+description: Manage cross-session continuity journal. Use when saving progress, checking what was done last session, or creating a checkpoint.
 user-invocable: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: architecture-design
-description: Develop functional and physical architecture with trade-off analysis. Acts as designed cognitive reserve (R2) for architecture decisions.
+description: Develop functional and physical architecture with trade-off analysis. Use when designing architecture, decomposing functions, or working in SR.3.
 user-invocable: true
 ---
 
@@ -38,7 +38,7 @@ From the baselined SyRS, identify:
 4. **Constraints** (budget, schedule, regulations, technology)
 5. **Quality attributes** (reliability, maintainability, safety)
 
-**Architecture views** (from `knowledge/ambse-architecture.md` Section 2.2):
+**Architecture views** (from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 2.2):
 structure the analysis using five views: subsystem (decomposition), deployment
 (function-to-physical allocation), dependability (safety/reliability overlay),
 distribution (geographic/network), and concurrency (parallel execution). Not all
@@ -87,7 +87,7 @@ package FunctionalArchitecture {
 
 For the functional architecture, generate at least two alternative
 decompositions. For each alternative, evaluate using the AMBSE trade study
-methodology (see `knowledge/ambse-architecture.md` Section 3):
+methodology (see `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 3):
 
 1. **Define assessment criteria** (MOEs) derived from system requirements
 2. **Assign weights** to criteria reflecting stakeholder priorities (sum to 1.0)
@@ -192,7 +192,7 @@ After the technical verification passes, obtain formal approval:
 ### Step 7: Handoff to Downstream Engineering
 
 When using the hybrid lifecycle, the handoff occurs at iteration boundaries. The
-handoff is a workflow, not an event. See `knowledge/ambse-architecture.md` Section 6
+handoff is a workflow, not an event. See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 6
 for the complete handoff procedure. A complete handoff package includes:
 
 - Subsystem requirements (allocated and derived)
@@ -217,11 +217,11 @@ test procedures. For each integration step, define:
 - Expected results and pass/fail criteria
 - Regression scope (which previously verified interfaces to recheck)
 
-### Step 8: System User Manual (SR.3.7, optional)
+### Step 9: System User Manual (SR.3.7, optional)
 
 Create a preliminary System User Manual if required by the Project Plan.
 
-### Step 9: Verify System User Manual (SR.3.8, optional)
+### Step 10: Verify System User Manual (SR.3.8, optional)
 
 If a System User Manual was created in Step 8:
 
@@ -245,6 +245,129 @@ Where I1, I2, I3 are interface specifications. Minimise the number of
 interfaces to reduce integration risk. The "devil is in the interfaces"
 (Galinier et al.): interface errors detected late consume up to 50% of rework.
 
+## Model Analysis with Automator
+
+When the Syside Automator Python library is available, use it for programmatic
+architecture analysis: part decomposition, value rollups, variant comparison,
+and metadata-based filtering.
+
+### Part Decomposition Extraction
+
+Walk the ownership tree to display the physical architecture hierarchy:
+
+```python
+import syside
+
+model, _ = syside.load_model(
+    paths=syside.collect_files_recursively("models/")
+)
+
+def walk_parts(element: syside.Element, level: int = 0) -> None:
+    if element.try_cast(syside.PartUsage):
+        print("  " * level, element.name)
+        level += 1
+    for child in element.owned_elements.collect():
+        if child.document.document_tier is syside.DocumentTier.Project:
+            walk_parts(child, level)
+
+for doc_res in model.user_docs:
+    with doc_res.lock() as doc:
+        walk_parts(doc.root_node)
+```
+
+### Type-Based Queries
+
+Find all parts that conform to a specific type definition:
+
+```python
+def find_parts_of_type(model: syside.Model, type_name: str) -> None:
+    for part in model.nodes(syside.PartUsage):
+        for element in part.heritage.elements:
+            if element.try_cast(syside.PartDefinition):
+                if element.declared_name == type_name:
+                    print(f"  {part.name} (owner: {part.owner.name})")
+
+print("Electrical components:")
+find_parts_of_type(model, "Electrical")
+```
+
+### Value Rollup with Unit Conversion
+
+Use the Compiler to evaluate mass budgets, power budgets, and cost rollups
+across nested components with automatic unit conversion:
+
+```python
+STDLIB = syside.Environment.get_default().lib
+compiler = syside.Compiler()
+
+for attr in model.nodes(syside.AttributeUsage):
+    if attr.name in ("TotalMass", "TotalPower", "TotalCost"):
+        value, report = compiler.evaluate_feature(
+            feature=attr,
+            scope=attr.owner,
+            stdlib=STDLIB,
+            experimental_quantities=True,
+        )
+        if not report.fatal:
+            print(f"{attr.name}: {value}")
+        else:
+            print(f"{attr.name}: evaluation failed")
+            print(report.diagnostics)
+```
+
+This handles automatic conversion between compatible units (e.g., kg and
+tonnes, W and kW). Enable with `experimental_quantities=True`.
+
+### Variant Analysis
+
+Extract and compare variant configurations for trade studies:
+
+```python
+for element in model.elements(syside.Element, include_subtypes=True):
+    if element.try_cast(syside.PartDefinition):
+        part_def = element.cast(syside.PartDefinition.STD)
+        variants = list(part_def.variants.collect())
+        if variants:
+            print(f"\nVariation: {part_def.name}")
+            for variant in variants:
+                if variant.try_cast(syside.PartUsage):
+                    print(f"  Variant: {variant.name}")
+                    # Evaluate attributes for comparison
+```
+
+### Filter Evaluation (Metadata-Based Views)
+
+Use metadata filters to generate domain-specific architecture views:
+
+```python
+# In your SysML model, tag elements with metadata:
+#   @Electrical   or   @Safety { level = SIL::SIL3; }
+#
+# Then filter programmatically:
+
+compiler = syside.Compiler()
+STDLIB = syside.Environment.get_default().lib
+
+for part in model.nodes(syside.PartUsage):
+    if part.document.document_tier is not syside.DocumentTier.Project:
+        continue
+    # Evaluate filter expression against each element
+    result, report = compiler.evaluate_filter(
+        target=part,
+        filter=filter_expression,
+        stdlib=STDLIB,
+    )
+    if result:
+        print(f"  {part.name} matches filter")
+```
+
+This enables generating views such as "all safety-critical components",
+"all COTS items", or "all electrical subsystems" without manually maintaining
+separate lists.
+
+Reference: https://docs.sensmetry.com/examples/extract_parts.html and
+https://docs.sensmetry.com/examples/extract_variants.html
+
 ## Red Flags
 
 WARN the engineer if:
@@ -255,3 +378,7 @@ WARN the engineer if:
 - The Traceability Matrix is not updated after architecture decisions
 - The engineer is making premature technology commitments without trade-off
   analysis
+
+## Reference: AMBSE Architecture
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md`

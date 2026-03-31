@@ -1,6 +1,6 @@
 ---
 name: document-export
-description: Generate non-diffable output files (docx, pptx, pdf) from markdown work product sources. All outputs go to build/ (gitignored).
+description: Export markdown work products to docx, pptx, or pdf. Use when generating deliverable documents or building formatted output.
 user-invocable: true
 ---
 
@@ -114,9 +114,9 @@ pandoc docs/pm/project-plan.md \
   --metadata title="Project Plan"
 ```
 
-If a reference template exists at `templates/reference.docx`, add:
+If a reference template exists at `${CLAUDE_PLUGIN_ROOT}/templates/reference.docx`, add:
 ```bash
-  --reference-doc=templates/reference.docx
+  --reference-doc=${CLAUDE_PLUGIN_ROOT}/templates/reference.docx
 ```
 
 **PPTX:**
@@ -171,6 +171,153 @@ When the user asks to "export all work products" or "build all documents":
 3. Place all outputs in `build/`
 4. Report results
 
+## Model-Based Report Generation (Automator)
+
+When the Syside Automator Python library is available, offer **Jinja2-based
+report generation** directly from SysML models. This produces professional
+documents with auto-generated requirement tables, traceability matrices,
+and dependency graphs.
+
+### Check Automator Availability
+
+```bash
+python -c "import syside; print(syside.__version__)"
+```
+
+If Automator is not available, use the pandoc-based workflow above.
+
+### Additional Dependencies
+
+```bash
+pip install pandas openpyxl    # Requirements Excel export
+pip install weasyprint          # PDF generation
+sudo apt install graphviz       # Dependency graph rendering
+sudo apt install pandoc         # DOCX conversion
+```
+
+### Report Generation Pipeline
+
+The pipeline works in four steps:
+
+1. **Model loading**: all `.sysml` files loaded into memory via Automator
+2. **Template processing**: Jinja2 renders markdown templates with model data
+3. **Document assembly**: markdown converted to HTML with TOC and styling
+4. **Output conversion**: HTML converted to PDF, HTML, and DOCX
+
+### Project Structure for Reports
+
+```
+project/
+  models/
+    *.sysml                     # SysML model files
+    requirements-spec.md        # Jinja2 template (co-located with models)
+  scripts/
+    generate_docs.py            # Generation script
+  assets/
+    styles.css                  # PDF/HTML styling
+    template.docx               # DOCX reference template
+    logo.png                    # Company logo
+  metadata/
+    versions.json               # Revision history
+  build/                        # Generated outputs (gitignored)
+```
+
+### Template Structure
+
+Templates use YAML frontmatter for document metadata and Jinja2 expressions
+for dynamic content extracted from the SysML model:
+
+```yaml
+project_title: "{{PROJECT_NAME}}"
+document_title: "System Requirements Specification"
+author: "{{AUTHOR}}"
+project_reference: "PROJECT-2026-001"
+document_version: "1.0"
+```
+
+**Dynamic content example** (extracting requirements):
+
+```jinja2
+{{ repeat_for_each_item(
+    data_source=get_children_with_attributes(
+        root_package="SystemRequirements",
+        metatype="RequirementUsage",
+        ignore_abstract_metatypes=True,
+        attributes={
+            "Name": "ElementName",
+            "Description": "Documentation",
+            "Parents": "Req_Parents",
+            "Verified": "Req_Verified",
+            "Package": "OwningNamespace",
+            "Status": "AttributeUsage"
+        },
+    ),
+    sections=[
+        {"type": "h3", "value": "unique_headers_from_qualified_name(row[4])"},
+        {"type": "h4", "value": "row[0]"},
+        {"type": "table", "value": "generic_table(...)"},
+    ],
+    page_break_between_rows=True
+) }}
+```
+
+### Template Functions
+
+| Function | Purpose |
+| --- | --- |
+| `get_children_with_attributes(root_package, metatype, attributes)` | Extract elements with specified attributes from a package |
+| `generic_table(columns, rows, flipRowsAndCols, widths)` | Format data as HTML table |
+| `traceability_matrix(row_package, col_package)` | Build allocation matrix with X marks |
+| `repeat_for_each_item(data_source, sections)` | Iterate over data, render sections per item |
+| `title()` | Generate title page from frontmatter |
+| `toc()` | Create table of contents from headings |
+| `page_break()` | Insert page break |
+| `revision_history()` | Version history table from versions.json |
+| `changelog()` | Diff against latest git tag |
+
+**Attribute extraction types:**
+
+- `"ElementName"`: element name
+- `"Documentation"`: doc blocks (use `""` for unnamed, named like `"Description"`)
+- `"AttributeUsage"`: named attribute values
+- `"OwningNamespace"`: parent namespace qualified name
+- `"Req_Parents"`: parent requirements via derivation
+- `"Req_Derivations"`: child requirements via derivation
+- `"Req_Implemented"`: allocated components
+- `"Req_Verified"`: verification elements
+- `"Req_DependencyGraph"`: SVG derivation tree
+
+### Running the Generator
+
+```bash
+# Generate all outputs (PDF, HTML, DOCX)
+python scripts/generate_docs.py --output ./build
+
+# With version tracking (compares against latest git tag)
+python scripts/generate_docs.py --output ./build --update-version
+
+# Specify model directory
+python scripts/generate_docs.py --output ./build --project_path models/
+```
+
+### Generated Document Features
+
+- Title pages with project metadata and revision history
+- Requirement tables with all attributes (status, description, justification)
+- Parent/child traceability between requirements
+- Auto-generated SVG dependency graphs
+- Traceability matrices linking requirements to system components
+- Changelogs comparing current version against tagged releases
+
+### Branding Customisation
+
+- Update frontmatter fields for company information
+- Replace `assets/logo.png` with company logo
+- Modify `assets/styles.css` for fonts, colours, spacing
+- Edit `assets/template.docx` for Word document styles
+
+Reference: https://docs.sensmetry.com/examples/report_generation.html
+
 ## Error Handling
 
 - If pandoc is not installed and no plugin is available, inform the user and
@@ -187,5 +334,6 @@ When the user asks to "export all work products" or "build all documents":
 - `@lifecycle-orchestrator`: may trigger export at SR.6 delivery
 - `document-skills:docx`, `document-skills:pptx`, `document-skills:pdf`:
   preferred export tools when available
-- `templates/pm/`, `templates/sr/`: original templates (source files are
-  in `docs/pm/` and `docs/sr/` after project setup)
+- `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:
+  original templates (source files are in `docs/pm/` and `docs/sr/` after
+  project setup)

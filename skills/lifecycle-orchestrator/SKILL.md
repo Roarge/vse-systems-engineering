@@ -1,6 +1,6 @@
 ---
 name: lifecycle-orchestrator
-description: Navigate ISO/IEC 29110 lifecycle phases and enforce phase gates. Acts as the central Regime of Attention for VSE systems engineering.
+description: Navigate ISO/IEC 29110 lifecycle phases and enforce phase gates. Use when asking "where am I?", "what phase?", "what do I do next?", or to check a phase gate.
 user-invocable: true
 ---
 
@@ -68,8 +68,7 @@ and temporal continuity (what was done last, what comes next).
 ## Step 4: Phase Gate Enforcement
 
 When the user requests a phase transition, you MUST verify the phase gate
-checklist before allowing it. Use the checklists from
-`knowledge/iso29110-profile.md` (Phase Gates section).
+checklist before allowing it. Use the checklists from the ISO 29110 profile reference (Phase Gates section).
 
 ### Phase Gate Procedure
 
@@ -141,10 +140,10 @@ Guide the engineer through these activities:
      Best for software-intensive systems.
    - **Hybrid (agile MBSE)**: three overlapping cycles (specification, downstream,
      verification) with iterative delivery. Recommended for mixed systems with
-     model-based specification. See `knowledge/ambse-agile-process.md` Section 2.
+     model-based specification. See the AMBSE agile process reference Section 2.
    When the hybrid lifecycle is selected, set up iteration planning alongside
    milestone planning: create a project backlog, define the product roadmap, and
-   plan iterations. See `knowledge/ambse-agile-process.md` Sections 4-6.
+   plan iterations. See the AMBSE agile process reference Sections 4-6.
 5. **Task Identification** (PM.1.5): Identify tasks including V&V and reviews
 6. **Duration Estimation** (PM.1.6): Estimate duration for each task
 7. **Resource Identification** (PM.1.7): Document human, material, equipment,
@@ -227,3 +226,11 @@ checkpoint before we finish?" If they decline, do not write a journal entry.
 
 This step ensures that progress, decisions, and next actions are captured for
 the next session.
+
+## Reference: ISO 29110 Profile
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`
+
+## Reference: AMBSE Agile Process
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`

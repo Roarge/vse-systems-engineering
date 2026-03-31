@@ -1,0 +1,14 @@
+{
+  "sysml": {
+    "command": "syside",
+    "args": ["lsp"],
+    "extensionToLanguage": {
+      ".sysml": "sysml",
+      ".kerml": "kerml"
+    },
+    "transport": "stdio",
+    "initializationOptions": {},
+    "restartOnCrash": true,
+    "maxRestarts": 3
+  }
+}

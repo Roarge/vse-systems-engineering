@@ -53,27 +53,12 @@ drift under workload pressure.
 
 ### Attention Anchoring
 
-At the start of every SE-related interaction, state:
-- **Current phase**: which ISO 29110 activity is active (read from `.vse-phase`)
-- **Phase inputs**: what work products should already exist
-- **Next action**: what the engineer should work on next
-- **Session continuity**: what was done in the previous session and what
-  comes next (read from `.vse-journal.yml`)
+The plugin's `hooks.json` automatically presents the lifecycle position at
+session start. The SessionStart hook reads `.vse-phase` and `.vse-journal.yml`
+and injects context without manual invocation.
 
-### Patterned Practice Prompts
-
-Before creating work products, prompt the engineer with phase-appropriate
-questions:
-
-| Phase | Prompt |
-|-------|--------|
-| SR.1 | "Have you reviewed the Project Plan with the Work Team?" |
-| SR.2 | "Have you captured stakeholder needs before writing system requirements?" |
-| SR.3 | "Have you completed the Traceability Matrix before starting architecture?" |
-| SR.4 | "Have you baselined the System Design before starting construction?" |
-| SR.5 | "Have you verified IVV procedures against requirements and design?" |
-| Iteration boundary | "Have you completed the iteration retrospective and updated the backlog before starting the next iteration?" |
-| SR.6 | "Have you obtained Product Acceptance before preparing delivery?" |
+For details on configuring hooks, guards, and patterned practice prompts, see
+`@attention-regime`.
 
 ### Drift Indicators
 
@@ -95,11 +80,11 @@ that matter now.
 
 | Current Phase | Show | Suppress |
 |---------------|------|----------|
-| SR.1 Initiation | SEMP structure, data model, environment setup, `ambse-agile-process.md` (lifecycle selection, iteration planning) | Requirements methods, architecture patterns |
-| SR.2 Requirements | Stakeholder analysis, SMART criteria, requirement types, elicitation techniques, `ambse-requirements.md` (use case driven elicitation, model-based requirements) | Architecture trade-offs, V&V methods, construction details |
-| SR.3 Architecture | Functional/physical decomposition, interface analysis, trade-off methods, `ambse-architecture.md` (five views, trade studies, handoff) | Requirements elicitation, test case design |
+| SR.1 Initiation | SEMP structure, data model, environment setup | Requirements methods, architecture patterns |
+| SR.2 Requirements | Stakeholder analysis, SMART criteria, elicitation techniques | Architecture trade-offs, V&V methods, construction details |
+| SR.3 Architecture | Functional/physical decomposition, interface analysis, trade-off methods | Requirements elicitation, test case design |
 | SR.4 Construction | Build/buy/reuse guidance, component specs | Requirements debates, architecture alternatives |
-| SR.5 IVV | Verification methods, test case derivation, trace checking, `ambse-architecture.md` (use case driven validation, continuous verification) | Requirements changes, architecture redesign |
+| SR.5 IVV | Verification methods, test case derivation, trace checking | Requirements changes, architecture redesign |
 | SR.6 Delivery | Acceptance criteria, documentation, training, maintenance | All upstream activities |
 
 ### Exception
@@ -119,14 +104,14 @@ use SysML 2.0 textual notation (.sysml files).
 
 ```
 Stakeholder Needs (StRS)
-    ↓ satisfy
+    -> satisfy
 System Requirements (SyRS)
-    ↓ satisfy
+    -> satisfy
 System Element Requirements
-    ↓ verify
+    -> verify
 Verification Cases
-    ↓ verify
-Validation Cases → Stakeholder Needs
+    -> verify
+Validation Cases -> Stakeholder Needs
 ```
 
 ### Rules
@@ -181,71 +166,18 @@ When a trace gap is detected:
 | `@sysml2-modelling` | All phases | Author and validate SysML 2.0 models |
 | `@attention-regime` | All phases | Configure hooks, guards, and reminders |
 | `@session-journal` | All phases | Manage cross-session continuity journal |
+| `@document-export` | SR.6, any | Generate docx/pptx/pdf from markdown sources |
+| `@project-setup` | PM.1/SR.1 | Bootstrap new projects with ISO 29110 structure |
 
 ### Phase Gate Checklists
 
-Phase gates are defined in `knowledge/iso29110-profile.md` under the "Phase
-Gates" section. Before any phase transition, the `@lifecycle-orchestrator`
-skill MUST verify that all items in the relevant checklist are satisfied.
+Phase gates are defined in the ISO 29110 profile knowledge file. Before any
+phase transition, the `@lifecycle-orchestrator` skill MUST verify that all
+items in the relevant checklist are satisfied.
 
 ---
 
-## Section 6: SysML 2.0 Conventions
-
-All system models use SysML 2.0 textual notation. Reference:
-`knowledge/sysml2-quick-ref.md`.
-
-### File Organisation
-
-```
-models/
-├── package.sysml          (root package, imports)
-├── stakeholder-needs.sysml (stakeholder requirements)
-├── system-requirements.sysml (system requirements with satisfy links)
-├── architecture.sysml      (part definitions, ports, connections)
-├── verification.sysml      (verification cases with verify links)
-└── validation.sysml        (validation cases)
-```
-
-### Naming Conventions
-
-- Package names: `PascalCase` (e.g., `SmartSensor`)
-- Definition names: `PascalCase` with `Def` suffix implied (e.g., `part def TemperatureSensor`)
-- Usage names: `camelCase` (e.g., `part tempSensor : TemperatureSensor`)
-- Requirement IDs: `REQ-` prefix with sequential number (e.g., `REQ-001`)
-- Stakeholder need IDs: `STK-` prefix (e.g., `STK-001`)
-- Verification case IDs: `VER-` prefix (e.g., `VER-001`)
-- Validation case IDs: `VAL-` prefix (e.g., `VAL-001`)
-
-### Traceability Link Syntax
-
-```sysml
-// Upward trace: system requirement satisfies stakeholder need
-requirement def MeasureTemperature :> SystemRequirement {
-    doc /* The system shall measure temperature within +/- 0.5 C. */
-    satisfy requirement StakeholderNeeds::MonitorTemperature;
-}
-
-// Downward trace: verification case verifies system requirement
-verification def VerifyTempAccuracy {
-    doc /* Verify temperature measurement accuracy. */
-    verify requirement SystemRequirements::MeasureTemperature;
-}
-```
-
-### Tooling
-
-The recommended toolchain is Sensmetry SySiDE:
-- **Syside Editor** (free VS Code extension): syntax highlighting, validation,
-  completion, and navigation for .sysml and .kerml files
-- **Syside Modeler** (paid): adds diagram visualisation. Disable the Editor
-  extension when using Modeler to avoid conflicts.
-- **Sysand**: open-source SysML v2 package manager
-- Configuration via `syside.toml` in the project root
-
----
-
-## Section 7: Plugin Interoperability
+## Section 6: Plugin Interoperability
 
 This plugin is designed to work alongside other Claude Code plugins. When
 detected, integrate as follows:
@@ -276,30 +208,3 @@ detected, integrate as follows:
 - Use `@docx` and `@pptx` for generating work product exports
 - Use `@pdf` for PDF generation from markdown sources
 - The `@document-export` skill orchestrates these automatically
-
----
-
-## Section 8: GitHub Workflow
-
-When GitHub MCP tools are available, follow this workflow:
-
-### Repository Setup (during @project-setup)
-
-- Create a GitHub repository for the project
-- Push the initial scaffolded commit
-- Set up branch protection on main (require PR reviews)
-
-### Development Workflow
-
-- Create feature branches for each ISO 29110 phase or activity
-- Use pull requests for phase gate transitions (PR description includes the
-  gate checklist)
-- Require traceability check to pass before merging (via GitHub Actions)
-
-### Suggested GitHub Actions
-
-- **traceability-check.yml**: Runs the pre-commit traceability hook on PRs
-  modifying .sysml files
-- **phase-gate.yml**: Runs the phase-gate-check hook on PRs that modify
-  .vse-phase
-- **document-export.yml**: Generates docx/pptx from markdown on release tags

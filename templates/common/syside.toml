@@ -1,5 +1,56 @@
-[project]
-name = "{{PROJECT_NAME}}"
+# SySiDE configuration for {{PROJECT_NAME}}
+# Reference: https://docs.sensmetry.com/modeler/cli/configuration.html
 
-[build]
-source = ["models"]
+# Standard library path (omit to use bundled version)
+# std = "/path/to/standard/library"
+
+# Additional files or directories to include (glob patterns supported)
+# include = ["external/**/*.sysml"]
+
+# Files or directories to exclude
+exclude = [
+  "build/**",
+  "*.draft.sysml",
+]
+
+[format]
+# Visual column limit for line wrapping (default: 100)
+line-width = 100
+
+# Spaces per indentation level (default: 4)
+tab-width = 4
+
+# Use tabs instead of spaces (default: false)
+tabs = false
+
+# Treat comments as Markdown (default: true)
+markdown = true
+
+# Remove unnecessary identifier quotes (default: true)
+strip-unnecessary-quotes = true
+
+# Style for empty children blocks: "braces" ({}) or "semicolon" (;)
+empty-brackets = "braces"
+
+[format.breaks]
+# Force children elements onto new lines (default: false)
+force-bodies = false
+
+# Operator placement on line break: "after" or "before"
+operator = "after"
+
+[lint]
+# Standard library package diagnostic severity
+# Options: "error", "warning", "information", "hint", "off"
+standard-library-package = "warning"
+
+[lsp]
+# Maximum number of autocomplete suggestions (default: 256)
+completion-limit = 256
+
+# Editable file tiers: "project", "external", or "all" (default: "project")
+edit = "project"
+
+[telemetry]
+# Crash reporting: "ignore" (default) or "upload"
+crash-reports = "ignore"
