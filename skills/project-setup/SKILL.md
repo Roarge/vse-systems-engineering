@@ -175,6 +175,70 @@ Store the gathered information for template population:
 - `{{ACQUIRER}}`: acquirer name
 - `{{AUTHOR}}`: author name
 
+## Step 2: Draft Setup Plan and Enter Plan Mode
+
+By this point Steps 0 and 1 have completed. The skill knows:
+
+- Whether the run is greenfield or brownfield
+- The project name, acquirer, author, date, and stakeholder roles
+- (Brownfield only) the harvested README content, the existing
+  CLAUDE.md content, the detected language stack, and the source tree
+  summary
+- The intended file system layout (root or `engineering/` subfolder)
+
+No files have been created or modified yet. Now draft a concrete setup
+plan and present it for user approval through Claude Code's Plan Mode.
+
+### Drafting the plan
+
+Compose a markdown plan with the following sections, in order:
+
+1. **Mode and project summary**: one sentence stating greenfield or
+   brownfield and the project name.
+2. **Decisions taken from harvested context** (brownfield only): the
+   project name source (README H1, user override), the detected
+   language stack, the author from git config, and any
+   already-populated CLAUDE.md fields.
+3. **Files and directories to be created**: a tree showing every path
+   that will land on disk, with the source template for each (for
+   example, `engineering/docs/pm/project-plan.md` from
+   `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md`). Group templates
+   by directory rather than listing each file on its own line, so the
+   plan stays scannable.
+4. **Files to be modified in place**: the existing files the skill will
+   touch. Greenfield has none beyond the new ones. Brownfield has the
+   `.gitignore` append and the `CLAUDE.md` marker-block merge.
+5. **Hooks and integrations**: the pre-commit hook installation, the
+   SySiDE detection plan, and any GitHub Actions workflows offered
+   conditional on GitHub MCP availability.
+6. **Git operations**: greenfield states the `git init` and the
+   initial commit message. Brownfield states "no git plumbing, the user
+   will stage and commit on a `vse/iter-00-architecture-zero` branch".
+7. **What happens after approval**: the skill executes Steps 3 through
+   12 in order and ends with the Step 12 summary. The user can reject
+   the plan at the review prompt to abort without any disk changes.
+
+### Entering Plan Mode
+
+Call the `EnterPlanMode` tool. Inside plan mode, finalise the drafted
+markdown above, then call the `ExitPlanMode` tool. The Claude Code
+harness presents the plan file content to the user for approval through
+the standard review UI.
+
+- **If the user approves the plan**: continue with Step 3 below.
+- **If the user rejects the plan**: stop. Do not call any tool that
+  modifies the file system. Ask the user what they would like to
+  change, refresh the relevant Step 1 fields based on the answer, and
+  re-enter Plan Mode with a revised plan.
+
+### Important: never bypass the gate
+
+Do not call `Write`, `Edit`, `Bash` (for any filesystem-modifying
+command), or any other tool that modifies disk state until
+`ExitPlanMode` has returned with user approval. The whole point of this
+step is to give the user a single binary go or no-go before any
+irreversible action.
+
 ## Step 2: Prepare the Workspace
 
 ### Greenfield mode
