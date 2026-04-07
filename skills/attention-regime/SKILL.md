@@ -19,6 +19,19 @@ resistance.
 - The user asks for a project health check
 - The `@lifecycle-orchestrator` routes here for environment configuration
 
+## Why These Hooks
+
+The hooks, guards, and reminders configured below are not arbitrary
+conveniences. They are environmental interventions in the PHAS-EAI sense
+(Predictive Homeostatic Allostatic Stress, Environmental Adaptation
+Index), the framework that motivates this plugin's R4 attention regime.
+The hooks reshape the engineering environment so that traceability,
+phase discipline, and verification become the path of least resistance
+rather than acts of remembered virtue. See the embedded PHAS-EAI
+framework reference at the bottom of this skill for the full rationale,
+the lever taxonomy, and the calibration guidance that informs the
+adjustments offered later in this skill.
+
 ## Environment Configuration
 
 ### Step 1: Set Up Hooks
@@ -253,3 +266,10 @@ WARN the engineer if:
 - The project has no .sysml files in the models/ directory
 - Multiple drift indicators are active simultaneously
 - The health check shows "AT RISK" status
+
+## Reference: PHAS-EAI Framework
+
+Source: Georgsen (2026), Resilient Smart City Design, the design rationale
+for this plugin's environmental interventions and lever calibration.
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/phas-eai-framework.md`
