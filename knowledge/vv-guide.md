@@ -322,15 +322,18 @@ System-level V&V at the end of the project:
 
 Maps to VCRM methods: test, demonstration, analysis.
 
-The three timeframes complement the traditional Vee model approach already described
-in this guide. They do not replace phase gates but add continuous quality assurance
-between gates. See `knowledge/ambse-agile-process.md` Section 3 for the full
-description.
+The three timeframes are the primary quality assurance mechanism in this plugin.
+Iteration-boundary closure checks and the macrocycle closure check verify that
+the continuous V&V evidence has accumulated at the points where accumulated
+closure matters. Reading the closure checks as the primary mechanism and the
+continuous V&V as a supplement produces waterfall behaviour and is the misreading
+this guide explicitly rejects. See `knowledge/ambse-agile-process.md` Section 3
+for the full description.
 
 ---
 
 ### Configuration management
-Configuration management must be enforced before formal verification and validation begins. For a VSE, this can be as simple as version-controlled files and a change log. Any design changes after verification starts must be assessed for impact on requirements already verified or validated.
+Configuration management is in force from the first commit on the first iteration branch. There is no point "before V&V begins" because V&V runs continuously from the nanocycle onward. For a VSE, configuration management can be as simple as version-controlled files and a change log. Any change to a baselined artefact, at any iteration, must be assessed via a Change Request for impact on requirements already verified or validated.
 
 ### What to keep
 Store and maintain:
