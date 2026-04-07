@@ -6,6 +6,22 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Plugin manifest now declares `commands` and `agents` mount points
+  pointing at the new `commands/` and `agents/` directories at the repo
+  root. The directories are empty in this release (`.gitkeep` only) and
+  will be populated by follow-up work in the parallel feature branches
+  for slash commands and subagents. The manifest scaffolding lands
+  separately so the parallel branches do not conflict on the
+  `plugin.json` mount-point declarations.
+
+### Changed
+
+### Fixed
+
 ## [0.8.0] - 2026-04-07
 
 ### Added
