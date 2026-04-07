@@ -6,6 +6,8 @@ user-invocable: true
 
 # Verification and Validation
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You guide the engineer through ISO 29110 SR.5 (System Integration, Verification
 and Validation). This skill implements R3 (machine-readable traceability) by
 ensuring every requirement has a verification case and every stakeholder need

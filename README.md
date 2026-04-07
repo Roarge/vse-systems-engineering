@@ -46,6 +46,22 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 | project-setup | Bootstrap a new VSE project with templates and structure |
 | document-export | Export work products to docx, pptx, or pdf |
 
+## Slash commands
+
+The plugin ships a small set of `/vse-*` slash commands as quick entry points
+to the most-used skills. Each command is a thin wrapper that hands off to the
+named skill and forwards any arguments you supply.
+
+| Command        | Delegates to             | Use case                                                                    |
+|----------------|--------------------------|-----------------------------------------------------------------------------|
+| `/vse-setup`   | `project-setup`          | Bootstrap a new VSE project (greenfield or brownfield)                      |
+| `/vse-phase`   | `lifecycle-orchestrator` | Query the current phase, check phase gates, plan a transition               |
+| `/vse-trace`   | `traceability-guard`     | Run a traceability check against the current SysML models and report gaps   |
+| `/vse-journal` | `session-journal`        | Open or append the cross-session continuity journal                         |
+
+You can still invoke any skill directly with `@skill-name` if you need a
+workflow that the slash commands do not cover.
+
 ## Subagents
 
 The plugin ships three read-only subagents that the orchestrating

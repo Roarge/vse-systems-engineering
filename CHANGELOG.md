@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `needs-and-requirements`, `knowledge/incose-vse-practices.md` into
   `lifecycle-orchestrator`, and `knowledge/phas-eai-framework.md` into
   `attention-regime`.
+- `/vse-setup` slash command. Thin wrapper that hands off to the
+  `project-setup` skill to bootstrap a VSE systems engineering project,
+  greenfield or brownfield, and forwards any user-supplied arguments.
+- `/vse-phase` slash command. Thin wrapper that hands off to the
+  `lifecycle-orchestrator` skill to query the current ISO 29110 phase,
+  check phase gates, or plan a phase transition.
+- `/vse-trace` slash command. Thin wrapper that hands off to the
+  `traceability-guard` skill to run a satisfy and verify trace check
+  across the current SysML model directory and report gaps.
+- `/vse-journal` slash command. Thin wrapper that hands off to the
+  `session-journal` skill to open or append the cross-session
+  continuity journal at `.vse-journal.yml`.
 - Three read-only subagents under `agents/`:
   `vse-trade-study-runner` for AMBSE weighted trade studies with
   sensitivity analysis, `vse-traceability-matrix-builder` for full
@@ -42,6 +54,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and how to present the suggestion-shaped result back to the engineer.
 
 ### Changed
+
+- `vse-companion-overview` frontmatter description rewritten as
+  imperative and trigger-rich. The previous wording ("Use when starting
+  a VSE project session") was passive and did not instruct the harness
+  to load the lens before any other VSE skill. The new wording opens
+  with "Load this skill first" and enumerates concrete user-message
+  triggers (what the plugin does, where to start, how ISO/IEC 29110
+  phases work) so the skill picker activates the lens reliably.
+- The other ten VSE skills (`architecture-design`, `attention-regime`,
+  `document-export`, `lifecycle-orchestrator`, `needs-and-requirements`,
+  `project-setup`, `session-journal`, `sysml2-modelling`,
+  `traceability-guard`, `verification-validation`) now carry a
+  one-line lens-loaded check at the very top of the body. If the lens
+  has not been set in the current session, the preamble routes back to
+  `vse-companion-overview` before any downstream work proceeds. This
+  is light-touch enforcement at the skill body level so the lens
+  remains the entry point even when the session-start hook is bypassed.
+- "What This Skill Does Not Do" delegation list in
+  `vse-companion-overview` extended with `session-journal` (cross-
+  session continuity) and `document-export` (markdown to docx, pptx,
+  pdf conversion). The list now mirrors the full ten-skill set the
+  lens routes to.
+- "Plugin Interoperability" section in `vse-companion-overview`
+  corrected. The reference to the `engineering` plugin's `review`
+  skill was stale, since the upstream plugin ships the skill as
+  `code-review`. Other plugin and skill references were verified
+  against currently installed cache copies and left in place.
+- `hooks/session-start.sh` carries a load-bearing comment block above
+  the MANDATORY FIRST ACTION echo lines, explaining that the block is
+  the activation cue for `vse-companion-overview` and must not be
+  removed by future maintainers as cosmetic banner output.
 
 ### Fixed
 

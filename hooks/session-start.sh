@@ -44,6 +44,23 @@ case "$PHASE" in
     *)    PHASE_NAME="Unknown" ;;
 esac
 
+# =============================================================================
+# Why this matters (do not strip the block below as cosmetic):
+#
+# The MANDATORY FIRST ACTION block that follows is load-bearing. It is the
+# only mechanism in the plugin that guarantees `vse-companion-overview` is
+# loaded into the model context before any other VSE skill runs. The lens
+# skill carries the identity, source-processing order, phase-based filtering,
+# traceability rules, and routing table that every VSE response depends on.
+# Without this hook output, activation of the lens degrades to probabilistic
+# skill matching on the user's first message, which is fragile and routinely
+# misfires when the user opens with a narrow technical question.
+#
+# Future maintainers must not remove or "clean up" the echo lines below.
+# They look like banner noise but they are the activation cue. If the
+# wording needs revision, preserve the imperative framing and the explicit
+# instruction to invoke the lens via the Skill tool before responding.
+# =============================================================================
 echo "VSE SYSTEMS ENGINEERING PROJECT DETECTED"
 echo "========================================="
 echo ""

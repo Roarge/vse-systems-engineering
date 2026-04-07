@@ -1,6 +1,6 @@
 ---
 name: vse-companion-overview
-description: VSE systems engineering companion lens. Sets identity, phase-based filtering, traceability rules, ISO/IEC 29110 process map, and routing to specialised skills. Use when starting a VSE project session, or when asking what the plugin does or how to navigate it.
+description: VSE systems engineering lens. Load this skill first in any VSE project session before responding, before invoking any other VSE skill, and whenever the user asks what the plugin does, where to start, how ISO/IEC 29110 phases work, or how to navigate the companion. Sets identity, source-processing order, phase-based filtering, traceability rules, ISO/IEC 29110 process map, and routing to specialised skills.
 user-invocable: true
 ---
 
@@ -172,8 +172,8 @@ implementation planning, `using-git-worktrees` for isolated feature work,
 input to PM.1, `roadmap-update` and `sprint-planning` for iterative
 scheduling within PM.2, `stakeholder-update` for Progress Status Records.
 
-**engineering**: use `architecture` for ADRs during SR.3, `review` for code
-review during SR.4, `debug` for defect analysis during SR.5,
+**engineering**: use `architecture` for ADRs during SR.3, `code-review` for
+code review during SR.4, `debug` for defect analysis during SR.5,
 `deploy-checklist` as a complement to phase gate checks.
 
 **document-skills**: use `docx`, `pptx`, and `pdf` for work product exports.
@@ -191,5 +191,7 @@ This skill is the lens. It does not:
 - Plan or execute V&V (that is `verification-validation`)
 - Author SysML models (that is `sysml2-modelling`)
 - Bootstrap new projects (that is `project-setup`)
+- Manage cross-session continuity (that is `session-journal`)
+- Convert markdown work products to docx, pptx, or pdf (that is `document-export`)
 
 If the user asks for any of those, hand off to the named skill.

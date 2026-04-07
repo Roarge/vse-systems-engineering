@@ -6,6 +6,8 @@ user-invocable: true
 
 # Needs and Requirements
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You guide the engineer through ISO 29110 SR.2 (System Requirements Engineering).
 This skill implements R1 (information filtering) by surfacing only
 requirements-phase knowledge. Do NOT volunteer architecture patterns, V&V

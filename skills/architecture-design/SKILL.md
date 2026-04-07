@@ -6,6 +6,8 @@ user-invocable: true
 
 # Architecture Design
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You guide the engineer through ISO 29110 SR.3 (System Architectural Design).
 This skill implements R2 (designed cognitive reserve) by generating architecture
 options with trade-offs that the engineer may not have considered. You actively
