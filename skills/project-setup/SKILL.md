@@ -1,6 +1,6 @@
 ---
 name: project-setup
-description: Bootstrap a VSE systems engineering project. Use when starting a new project, scaffolding, initialising ISO 29110 structure, or adding VSE to an existing repository.
+description: Bootstrap a VSE systems engineering project. Use when starting a new project, scaffolding, initialising ISO 29110 structure, or adding VSE to an existing repository. Enters Plan Mode for review before making any file system changes. Best run on Claude Opus with extended thinking.
 user-invocable: true
 ---
 
@@ -24,6 +24,35 @@ This skill has two modes:
 
 The mode is detected automatically in Step 0.
 
+## Operating Mode and Prerequisites
+
+This skill makes irreversible changes to the file system. It scaffolds
+directories, writes templated files, installs git hooks, and (in
+greenfield mode) runs `git init` and creates an initial commit. To make
+those changes safe to inspect before they happen, the skill operates in
+two phases:
+
+1. **Read-only context gathering** (Steps 0 and 1). The skill detects
+   the mode, harvests context from the existing repository if any, and
+   asks the user only for fields it could not infer. No files are
+   created or modified during this phase.
+2. **Plan Mode review and execution** (Steps 2 through 12). The skill
+   enters Claude Code's Plan Mode, drafts a concrete setup plan based on
+   the gathered context, and surfaces it for explicit user approval via
+   `ExitPlanMode`. Execution begins only after approval.
+
+### Recommended model
+
+Both the brownfield context harvest and the CLAUDE.md marker-block merge
+involve judgement calls that benefit from a more capable model. For best
+results, run this skill on **Claude Opus with extended thinking enabled**.
+
+At the start of Step 0, report the model the harness is currently
+running and ask the user whether they want to switch to Opus before
+proceeding. If the active model is Sonnet or Haiku, recommend the switch
+but proceed if the user declines. The recommendation is a soft
+prerequisite, not an enforced requirement.
+
 ## When This Skill Triggers
 
 - The user asks to start a new project, create a project, or set up a project
@@ -32,10 +61,24 @@ The mode is detected automatically in Step 0.
 - The `@lifecycle-orchestrator` routes here for new project initialisation
 - The user says "bootstrap", "scaffold", or "initialise a project"
 
-## Step 0: Detect Mode
+## Step 0: Report Model and Detect Mode
 
-Run the following to determine whether the current working directory is
-inside an existing git repository:
+Begin by reporting which Claude model the harness is currently running
+and surfacing the Opus recommendation from the prerequisites section
+above. Phrase it as a single short message, for example:
+
+> "I am currently running on Claude Sonnet 4.6. The `project-setup`
+> skill makes judgement calls during the brownfield harvest and the
+> CLAUDE.md merge that benefit from Claude Opus with extended thinking.
+> Would you like to switch to Opus before continuing, or proceed on the
+> current model?"
+
+If the user is already on Opus, acknowledge it and continue. If the user
+declines the switch, continue on the active model. If the user wants to
+switch, pause until they confirm the switch is done, then continue.
+
+After the model handshake, run the following to determine whether the
+current working directory is inside an existing git repository:
 
 ```bash
 git rev-parse --is-inside-work-tree 2>/dev/null
