@@ -17,6 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for slash commands and subagents. The manifest scaffolding lands
   separately so the parallel branches do not conflict on the
   `plugin.json` mount-point declarations.
+- `/vse-setup` slash command. Thin wrapper that hands off to the
+  `project-setup` skill to bootstrap a VSE systems engineering project,
+  greenfield or brownfield, and forwards any user-supplied arguments.
+- `/vse-phase` slash command. Thin wrapper that hands off to the
+  `lifecycle-orchestrator` skill to query the current ISO 29110 phase,
+  check phase gates, or plan a phase transition.
+- `/vse-trace` slash command. Thin wrapper that hands off to the
+  `traceability-guard` skill to run a satisfy and verify trace check
+  across the current SysML model directory and report gaps.
+- `/vse-journal` slash command. Thin wrapper that hands off to the
+  `session-journal` skill to open or append the cross-session
+  continuity journal at `.vse-journal.yml`.
 
 ### Changed
 
