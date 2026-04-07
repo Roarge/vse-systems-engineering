@@ -19,33 +19,41 @@ Production and Support handled operationally.
 
 | Approach | VSE fit | When to choose |
 |----------|---------|----------------|
-| Vee model | High | Well-understood requirements, hardware-dominant systems |
-| Incremental | High | Reduce risk by delivering capability in planned increments |
-| Iterative | High | Requirements evolve, software-intensive systems |
+| Vee pattern (used by AMBSE at all scales) | High | The verification pattern AMBSE applies at every iteration |
+| Incremental | Medium | Subsumed by hybrid AMBSE for VSE projects |
+| Iterative | Medium | Subsumed by hybrid AMBSE for VSE projects |
 | Spiral (ICSM) | Medium | High technical risk, novel technology (TRL below 6) |
-| Agile SE | Medium | Software-intensive, stakeholders available for frequent feedback |
-| Hybrid (agile MBSE) | High | Mixed hardware/software, model-based specification with iterative delivery |
+| Hybrid AMBSE (Douglass 2021) | High (enforced) | Mixed hardware/software, model-based specification with iterative delivery. The workflow this plugin enforces |
 
-The **hybrid lifecycle** (Douglass, 2016) combines V-model rigour with agile iteration.
-Three overlapping cycles run in pipeline: system specification (SR.2-SR.3),
+This plugin enforces hybrid AMBSE (Douglass, 2016, 2021) as the only documented
+workflow. Three overlapping cycles run in pipeline: system specification (SR.2-SR.3),
 downstream engineering (SR.4), and system verification (SR.5). System engineers
 specify iteration N+1 while downstream engineers implement N and testers verify
 N-1. For a one-person VSE, the same person cycles through roles at iteration
-boundaries. This approach is recommended when the project benefits from model-based
-SE and incremental delivery. See `knowledge/ambse-agile-process.md` for details.
+boundaries. AMBSE explicitly applies the Vee verification pattern at three
+timeframes: nanocycle (30 minutes to 1 day), microcycle (1 to 4 weeks), and
+macrocycle (project length). See `knowledge/ambse-agile-process.md` for the
+methodology and `knowledge/ambse-git-workflow.md` for the branch-per-microcycle
+git mapping.
 
 ### Iteration planning as a complement to milestone planning
 
-When using the hybrid lifecycle, iteration planning complements traditional
-milestone-based gates. The project backlog (prioritised work items) is allocated to
-iterations, each with a mission statement. Backlog management, velocity tracking,
-and iteration retrospectives provide ongoing feedback that traditional gate reviews
-alone cannot. See `knowledge/ambse-agile-process.md` Sections 4-8 for the
+Iteration planning complements traditional milestone-based gates. The project
+backlog (prioritised work items) is allocated to iterations, each with a
+mission statement. Backlog management, velocity tracking, and iteration
+retrospectives provide ongoing feedback that traditional gate reviews alone
+cannot. See `knowledge/ambse-agile-process.md` Sections 5-9 for the
 complete iteration planning framework.
 
-A VSE should select its lifecycle early and record the choice in the SEMP. The
-Vee model remains the default for hardware-dominant systems because it maps
-directly to the decision gates below.
+The Vee verification pattern is the inner structure of every AMBSE iteration.
+At the nanocycle scale the left side is the model element written and the
+right side is the trace check that runs immediately. At the microcycle scale
+the left side is the iteration's accumulated specification and the right side
+is the iteration verification at pull-request time. At the macrocycle scale
+the left side is the cumulative specification across all merged iterations
+and the right side is formal system V&V before the release tag. The decision
+gates below sit at the macrocycle scale, and the same Vee shape applies at
+every inner cycle.
 
 ### Decision gates
 
