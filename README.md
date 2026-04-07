@@ -6,9 +6,15 @@ A Claude Code plugin for systems engineering in Very Small Entities (VSEs).
 
 This plugin supports ISO/IEC 29110 compliant systems engineering workflows that
 are model-based and digital first, rooted in SysML 2.0 textual syntax. It
-supports both traditional (Vee model) and agile model-based SE (hybrid lifecycle)
-approaches, with use case driven elicitation, structured trade studies, and
-continuous verification at nanocycle, microcycle, and macrocycle timeframes.
+enforces hybrid AMBSE (Agile Model-Based Systems Engineering) per Douglass
+(2021) as the single workflow for VSE projects. AMBSE applies the Vee
+verification pattern at three timeframes (nanocycle, microcycle, macrocycle),
+with verification performed at every iteration boundary. The plugin pairs use
+case driven elicitation, structured trade studies, and continuous verification
+with a branch-per-microcycle git workflow in which each iteration ends in a
+pull request review. See
+[knowledge/ambse-git-workflow.md](knowledge/ambse-git-workflow.md) for the full
+mapping.
 
 The plugin works in concert with the official Anthropic engineering plugin,
 adding VSE-specific systems engineering knowledge and attention-sustaining
@@ -66,6 +72,7 @@ context and organised by source.
 - `ambse-agile-process.md` -- hybrid lifecycle, iteration planning, verification timeframes, metrics
 - `ambse-requirements.md` -- use case driven elicitation, model-based requirements, nanocycle workflow
 - `ambse-architecture.md` -- five architecture views, trade studies, handoff, model-based V&V
+- `ambse-git-workflow.md` -- branch-per-microcycle git mapping, PR template, anti-patterns
 
 **SysML 2.0** (modelling language)
 
@@ -193,8 +200,10 @@ plugin by catching trace gaps at commit time.
 2. Launch Claude Code and invoke the `project-setup` skill.
 3. The skill scaffolds the directory structure, creates SysML 2.0 model stubs,
    populates work product templates, and sets the initial phase to SR.1.
-4. Use `lifecycle-orchestrator` to navigate through phases, enforce phase gates,
-   and select a lifecycle approach (Vee, incremental, or hybrid).
+4. Use `lifecycle-orchestrator` to navigate the AMBSE iteration cycles, enforce
+   phase gates, and plan the iteration cadence. The plugin enforces hybrid
+   AMBSE as the single VSE lifecycle. Each iteration is a `vse/iter-NN`
+   feature branch ending in a pull request.
 
 ### Picking up an existing project
 
