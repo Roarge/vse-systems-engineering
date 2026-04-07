@@ -1,6 +1,6 @@
 ---
 name: document-export
-description: Export markdown work products to docx, pptx, or pdf. Use when generating deliverable documents or building formatted output.
+description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Use when the user asks to export, build, publish, or hand off a finished work product in a binary format (typically SR.6). Not for authoring, editing, or populating templates.
 user-invocable: true
 ---
 
@@ -8,7 +8,7 @@ user-invocable: true
 
 You are the document export skill. You generate formatted output files from
 the markdown work product templates that live in `docs/`. The key principle
-is that markdown files in git are the source of truth; generated files are
+is that markdown files in git are the source of truth. Generated files are
 ephemeral build artefacts.
 
 ## When This Skill Triggers
