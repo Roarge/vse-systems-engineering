@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-04-07
+
 ### Added
 
 - Plugin manifest now declares `commands` and `agents` mount points
@@ -87,6 +89,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   removed by future maintainers as cosmetic banner output.
 
 ### Fixed
+
+### Documentation
+
+- README Skills table now lists `vse-companion-overview` as the first
+  row so the eleventh skill is visible to end users. The table had
+  only ten rows even though the Subagents and brownfield-pickup
+  sections already referenced the lens skill by name.
+- README knowledge-base paragraph updated from "Twelve reference
+  files" to "Fifteen reference files" to match the three files that
+  `feat/embed-orphan-knowledge` brought into the embedded set.
+- Private contributor guide (`CLAUDE.local.md`, gitignored) refreshed
+  to document the `commands/` and `agents/` mount points in the Repo
+  Layout table, rewrite the Distribution Rule paragraph so commands
+  and agents are no longer described as "potentially" mounted, and
+  add dedicated "Slash Command Conventions" and "Subagent
+  Conventions" sections between Hook Conventions and Knowledge File
+  Conventions.
 
 ## [0.8.0] - 2026-04-07
 
