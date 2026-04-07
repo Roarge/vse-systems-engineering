@@ -35,6 +35,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 | Skill | Purpose |
 |-------|---------|
+| vse-companion-overview | Set the VSE lens, source-processing order, and routing for any VSE session (loads first) |
 | lifecycle-orchestrator | Navigate ISO 29110 phases, enforce phase gates, select lifecycle approach |
 | needs-and-requirements | Elicit stakeholder needs and derive SysML requirements (use case driven) |
 | architecture-design | Develop architecture with trade studies, five views, and handoff workflow |
@@ -84,7 +85,7 @@ or any other baselined work product.
 
 ## Knowledge base
 
-Twelve reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
+Fifteen reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
 context and organised by source.
 
 **ISO/IEC 29110** (process backbone)
