@@ -103,7 +103,10 @@ Choose tools based on your workflow:
 Additionally:
 
 - **Sysand** (open-source) for SysML v2 package management
-- Configuration via `syside.toml` in the project root
+- Configuration via `syside.toml` in the project root (read by SySiDE itself)
+- IDE language server wiring via `.lsp.json` in the project root, copied
+  by `project-setup` so Claude Code launches `syside lsp` automatically
+  for `.sysml` and `.kerml` files
 
 If you have Modeler, you already have everything Editor offers. Disable the
 Editor extension when Modeler is active to avoid conflicts. Modeler and

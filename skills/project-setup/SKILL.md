@@ -53,6 +53,7 @@ ensures generated files (docx, pptx, pdf) are excluded from version control.
 ├── .vse-phase              (from templates/common/vse-phase, set to SR.1)
 ├── .vse-journal.yml        (from templates/common/vse-journal.yml, empty journal)
 ├── .gitignore              (from templates/common/gitignore)
+├── .lsp.json               (from templates/common/lsp.json, IDE language server config)
 ├── CLAUDE.md               (from templates/common/CLAUDE.md, populated)
 ├── syside.toml             (from templates/common/syside.toml, configured)
 ├── models/
@@ -111,6 +112,13 @@ Replace the following placeholders in every copied file:
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-journal.yml` to `.vse-journal.yml`
 in the project root. This file does not contain placeholders and requires no
 substitution.
+
+Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to `.lsp.json` in the
+project root. This file does not contain placeholders and requires no
+substitution. It is the IDE language server configuration that wires Claude
+Code to the SySiDE language server for `.sysml` and `.kerml` files. The IDE
+reads it from the project workspace, so it must live alongside the model
+files, not inside the plugin itself.
 
 Configure `syside.toml` with the project name.
 
@@ -215,6 +223,12 @@ Inform the user that the hooks will:
 - Report the current lifecycle phase on each interaction
 
 ## Step 8: Detect and Configure SySiDE
+
+The `.lsp.json` copied in Step 4 wires the Claude Code IDE to the SySiDE
+language server. It activates the next time the user opens the project in
+Claude Code, provided the `syside` command is on the PATH. The checks below
+confirm that prerequisite and set up the CLI and Automator workflows that
+sit alongside the IDE integration.
 
 Check whether the SySiDE CLI is available:
 
