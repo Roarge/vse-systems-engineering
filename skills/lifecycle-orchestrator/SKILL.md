@@ -295,3 +295,12 @@ the next session.
 ## Reference: AMBSE Git Workflow
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`
+
+## Reference: INCOSE Practices Scaled for VSEs
+
+Source: INCOSE Systems Engineering Handbook 4e and Galinier et al. SME
+practices, filtered for organisations with fewer than 25 people. Layer 4 in
+the source-processing order, paired here with the layer 1 ISO/IEC 29110
+profile above.
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/incose-vse-practices.md`
