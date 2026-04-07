@@ -61,6 +61,34 @@ Use VSE-appropriate techniques (from `${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-
 - What constraints exist (budget, schedule, regulations)?
 - What happens if the system fails?
 
+#### Dispatch to `vse-stakeholder-elicitor`
+
+When the stakeholder register from Step 1 contains two or more named
+personas and the engineer wants persona-driven elicitation, dispatch
+to the `vse-stakeholder-elicitor` subagent rather than drafting
+interviews and candidate needs inline. Each persona is analysed in its
+own isolated context, which lets several personas be processed in
+parallel and keeps this skill's context free for the engineer's
+review.
+
+**When to dispatch.** As soon as Step 1 has produced a stakeholder
+register with at least two personas, each carrying a role, key
+concerns, and a priority. Do not dispatch before personas are named.
+
+**What to pass.** A short message containing the system concept (one
+or two sentences), the persona list with role, concerns, and priority
+for each, and the paths to any prior specifications, regulatory
+references, or competitor documents the agent should consult.
+
+**How to present the result.** The subagent returns a markdown package
+with a per-persona interview script, candidate need statements
+attributed to each persona, and a cross-persona conflict summary. The
+output is suggestion-shaped, never artefact-shaped. Present it
+verbatim to the engineer and explicitly invite editing. Only the
+candidates that survive engineer review are recorded in the
+Stakeholder Requirements Specification through Step 3 below. The
+subagent never writes files.
+
 ### Step 3: Write Stakeholder Requirements (StRS)
 
 Express needs as stakeholder requirements in SysML 2.0:

@@ -62,6 +62,26 @@ named skill and forwards any arguments you supply.
 You can still invoke any skill directly with `@skill-name` if you need a
 workflow that the slash commands do not cover.
 
+## Subagents
+
+The plugin ships three read-only subagents that the orchestrating
+skills dispatch to for parallelisable, context-heavy work. Each
+subagent runs in an isolated context, returns a suggestion-shaped
+markdown report to the parent skill, and never writes files. The
+parent skill presents the proposals to the engineer for editing.
+
+| Subagent | Fired by | What it returns |
+|---|---|---|
+| vse-trade-study-runner | architecture-design at SR.3 trade-off steps | Weighted trade-off matrix with score rationale, sensitivity analysis, and any missing alternatives the engineer may not have considered |
+| vse-traceability-matrix-builder | traceability-guard and verification-validation | Complete trace matrix with gap report keyed by rule and a bidirectional consistency check across the SysML model tree |
+| vse-stakeholder-elicitor | needs-and-requirements at SR.2 persona-driven elicitation | Per-persona interview script, candidate need statements attributed to the persona of origin, and a cross-persona conflict summary |
+
+The tool surface for every subagent is restricted to `Read`, `Glob`,
+and `Grep`. None has access to `Write`, `Edit`, or any other
+file-modifying tool, so the engineer always remains in control of what
+reaches the StRS, the System Design Document, the Traceability Matrix,
+or any other baselined work product.
+
 ## Knowledge base
 
 Twelve reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE

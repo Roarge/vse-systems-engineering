@@ -132,6 +132,34 @@ GAPS FOUND: [n]
 
 ## Traceability Matrix Generation
 
+### Dispatch to `vse-traceability-matrix-builder`
+
+When asked to generate a traceability matrix across the full model
+tree, dispatch to the `vse-traceability-matrix-builder` subagent
+rather than walking the files inline. The subagent runs in an isolated
+context, so the parent skill never has to load every model file into
+its own window.
+
+**When to dispatch.** Whenever matrix generation is requested across
+more than a handful of model files, or whenever the parent skill is
+already carrying significant state from earlier in the session.
+
+**What to pass.** The model directory path (default `models/`), an
+optional scope filter listing the identifier prefixes to include
+(`STK-`, `REQ-`, `ELE-`, `VER-`, `VAL-`), and the trace rules to
+apply. Default to all five rules from the section above.
+
+**How to present the result.** The subagent returns a markdown matrix,
+a gap report keyed by rule, and a bidirectional consistency check.
+Present the matrix and gap report verbatim to the engineer. The
+suggestions are draft fixes, not commands. The engineer decides which
+gaps to act on, and the parent skill routes any agreed fixes back to
+`@needs-and-requirements`, `@architecture-design`, or
+`@verification-validation` as appropriate.
+
+When the model is small or the engineer wants a quick spot check, the
+inline table format below remains available as a fallback.
+
 When asked to generate a traceability matrix, produce a table:
 
 | Stakeholder Need | System Requirement | Element Requirement | Verification Case | Status |

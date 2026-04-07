@@ -35,6 +35,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/vse-journal` slash command. Thin wrapper that hands off to the
   `session-journal` skill to open or append the cross-session
   continuity journal at `.vse-journal.yml`.
+- Three read-only subagents under `agents/`:
+  `vse-trade-study-runner` for AMBSE weighted trade studies with
+  sensitivity analysis, `vse-traceability-matrix-builder` for full
+  matrix synthesis and gap reporting across the SysML model tree, and
+  `vse-stakeholder-elicitor` for persona-driven needs interviews and
+  candidate need statements. Every subagent's tool surface is
+  restricted to `Read`, `Glob`, and `Grep`. Output is suggestion-shaped
+  markdown returned to the parent skill, never files written to disk.
+- Skill dispatch wiring for the new subagents:
+  `architecture-design` dispatches to `vse-trade-study-runner` during
+  the SR.3.2 functional and SR.3.4 physical trade-off steps,
+  `traceability-guard` and `verification-validation` both dispatch to
+  `vse-traceability-matrix-builder` for matrix generation and
+  Step 4 trace completeness checks, and `needs-and-requirements`
+  dispatches to `vse-stakeholder-elicitor` during Step 2 persona-driven
+  elicitation. Each dispatch documents when to invoke, what to pass,
+  and how to present the suggestion-shaped result back to the engineer.
 
 ### Changed
 
