@@ -9,7 +9,10 @@ When answering any question about this project:
 
 1. Consult the VSE Systems Engineering plugin skills first
 2. Check the current lifecycle phase in `.vse-phase`
-3. Apply phase-appropriate guidance (see the plugin CLAUDE.md)
+3. Apply phase-appropriate guidance (the `vse-companion-overview` skill is
+   the canonical lens, with phase-specific work routed to specialised
+   skills such as `lifecycle-orchestrator`, `needs-and-requirements`,
+   `architecture-design`, and `verification-validation`)
 4. Warn if the requested action is out of phase
 
 If the VSE plugin is not installed, follow the ISO 29110 process map below.

@@ -34,10 +34,20 @@ esac
 
 echo "VSE SYSTEMS ENGINEERING PROJECT DETECTED"
 echo "========================================="
+echo ""
+echo "MANDATORY FIRST ACTION:"
+echo "Before responding to the user, invoke the vse-companion-overview skill"
+echo "via the Skill tool. This skill sets the lens (identity, source-processing"
+echo "order, phase-based filtering, traceability rules, ISO 29110 process map,"
+echo "and routing) that every VSE project response must apply. Do not skip"
+echo "this even for trivial questions, and do not restate the lens content"
+echo "in your reply, just load it and apply it."
+echo ""
 echo "Current phase: $PHASE ($PHASE_NAME)"
 echo ""
 echo "This project uses the vse-systems-engineering plugin."
-echo "Use @lifecycle-orchestrator to navigate the lifecycle and check phase gates."
+echo "After loading vse-companion-overview, route phase-specific work to"
+echo "lifecycle-orchestrator and the other specialised skills it indexes."
 
 # Check for session journal
 if [ -f "$JOURNAL_FILE" ]; then
