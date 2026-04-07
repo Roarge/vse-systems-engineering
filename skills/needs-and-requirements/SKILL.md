@@ -340,6 +340,17 @@ WARN the engineer if:
 - More than 20% of requirements change after specification freeze
 - The engineer is jumping to architecture before requirements are baselined
 
+## When to Consult HSI Material
+
+Consult the embedded Human-Systems Integration primer whenever the system has
+an operator in the loop, requires training to use safely, or carries workload,
+fatigue, or human-error implications. Typical triggers are operator console
+design, alarm and notification flows, training specifications under SR.6.3,
+and any requirement that mentions "user", "operator", "maintainer", or
+"workload". The primer provides the vocabulary and the candidate measures
+needed to write requirements that are testable against human performance,
+not just technical performance.
+
 ## Requirement Attributes (VSE Minimum)
 
 Every requirement MUST carry these attributes:
@@ -360,3 +371,9 @@ Every requirement MUST carry these attributes:
 ## Reference: AMBSE Requirements
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
+
+## Reference: HSI Primer
+
+Source: INCOSE Human-Systems Integration Primer, scaled for VSE practice.
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/hsi-primer.md`
