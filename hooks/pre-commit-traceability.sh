@@ -16,7 +16,19 @@ if [ -z "$STAGED_SYSML" ]; then
     exit 0
 fi
 
-echo "pre-commit-traceability: checking staged .sysml files for trace gaps..."
+# Detect VSE engineering root: prefer engineering/ if present (brownfield
+# layout, where VSE work products live under engineering/ to keep an
+# existing host project's root clean), else . (greenfield layout). The
+# trace search uses 'find .' below, which covers both layouts already.
+# This detection is reported in the diagnostic line so users can confirm
+# which layout the hook is running against.
+if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
+    ENG_ROOT="engineering"
+else
+    ENG_ROOT="."
+fi
+
+echo "pre-commit-traceability: checking staged .sysml files for trace gaps (engineering root: $ENG_ROOT)..."
 
 GAPS=0
 REQS_CHECKED=0

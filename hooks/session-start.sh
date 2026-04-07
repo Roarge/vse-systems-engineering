@@ -10,6 +10,18 @@ set -euo pipefail
 PHASE_FILE=".vse-phase"
 JOURNAL_FILE=".vse-journal.yml"
 
+# Detect VSE engineering root: prefer engineering/ if present (brownfield
+# layout, where VSE work products live under engineering/ to keep an
+# existing host project's root clean), else . (greenfield layout).
+# .vse-phase and .vse-journal.yml always live at the project root in
+# both layouts, so this detection only governs the model and document
+# paths below.
+if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
+    ENG_ROOT="engineering"
+else
+    ENG_ROOT="."
+fi
+
 # Only activate if this is a VSE project (phase file exists)
 if [ ! -f "$PHASE_FILE" ]; then
     exit 0
@@ -61,12 +73,12 @@ if [ -f "$JOURNAL_FILE" ]; then
 fi
 
 # Check for trace gaps in models
-if [ -d "models" ]; then
-    REQ_COUNT=$(grep -rl 'requirement def' models/*.sysml 2>/dev/null | wc -l || echo "0")
-    VER_COUNT=$(grep -rl 'verification def' models/*.sysml 2>/dev/null | wc -l || echo "0")
+if [ -d "$ENG_ROOT/models" ]; then
+    REQ_COUNT=$(grep -rl 'requirement def' "$ENG_ROOT"/models/*.sysml 2>/dev/null | wc -l || echo "0")
+    VER_COUNT=$(grep -rl 'verification def' "$ENG_ROOT"/models/*.sysml 2>/dev/null | wc -l || echo "0")
     if [ "$REQ_COUNT" -gt 0 ] || [ "$VER_COUNT" -gt 0 ]; then
         echo ""
-        echo "SysML models present: $REQ_COUNT file(s) with requirements, $VER_COUNT file(s) with verification cases."
+        echo "SysML models present in $ENG_ROOT/models/: $REQ_COUNT file(s) with requirements, $VER_COUNT file(s) with verification cases."
         echo "Use @traceability-guard to check trace completeness."
     fi
 fi
@@ -78,7 +90,7 @@ if command -v syside >/dev/null 2>&1; then
     echo "SySiDE CLI available: $SYSIDE_VER"
     echo "  Validate models:  syside check --warnings-as-errors --stats"
     echo "  Check formatting: syside format --check"
-    echo "  Generate diagrams: syside viz view models/ --output-dir build/diagrams"
+    echo "  Generate diagrams: syside viz view $ENG_ROOT/models/ --output-dir $ENG_ROOT/build/diagrams"
 fi
 
 exit 0

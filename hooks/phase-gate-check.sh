@@ -14,6 +14,17 @@ set -euo pipefail
 PHASE_FILE=".vse-phase"
 TARGET_PHASE="${1:-}"
 
+# Detect VSE engineering root: prefer engineering/ if present (brownfield
+# layout, where VSE work products live under engineering/ to keep an
+# existing host project's root clean), else . (greenfield layout).
+# .vse-phase always lives at the project root in both layouts, so this
+# detection only governs the work-product globs below.
+if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
+    ENG_ROOT="engineering"
+else
+    ENG_ROOT="."
+fi
+
 if [ -z "$TARGET_PHASE" ]; then
     if [ ! -f "$PHASE_FILE" ]; then
         echo "phase-gate-check: no .vse-phase file found, skipping phase gate check."
@@ -61,57 +72,57 @@ check_dir() {
 case "$TARGET_PHASE" in
     SR.1)
         echo "Gate: SR.1 to SR.2 (Initiation to Requirements)"
-        check_file "Project Plan or SEMP exists" "docs/*[Pp]lan*" "docs/sr/*[Ss][Ee][Mm][Pp]*" "docs/pm/*plan*"
-        check_dir "Models directory exists" "models"
+        check_file "Project Plan or SEMP exists" "$ENG_ROOT/docs/*[Pp]lan*" "$ENG_ROOT/docs/sr/*[Ss][Ee][Mm][Pp]*" "$ENG_ROOT/docs/pm/*plan*"
+        check_dir "Models directory exists" "$ENG_ROOT/models"
         ;;
     SR.2)
         echo "Gate: SR.2 to SR.3 (Requirements to Architecture)"
-        check_file "Stakeholder needs model" "models/*stakeholder*" "models/*needs*"
-        check_file "System requirements model" "models/*requirement*" "models/*system-req*"
-        check_file "Traceability Matrix" "docs/sr/*traceability*"
-        check_file "IVV Plan" "docs/sr/*ivv*"
+        check_file "Stakeholder needs model" "$ENG_ROOT/models/*stakeholder*" "$ENG_ROOT/models/*needs*"
+        check_file "System requirements model" "$ENG_ROOT/models/*requirement*" "$ENG_ROOT/models/*system-req*"
+        check_file "Traceability Matrix" "$ENG_ROOT/docs/sr/*traceability*"
+        check_file "IVV Plan" "$ENG_ROOT/docs/sr/*ivv*"
         ;;
     SR.3)
         echo "Gate: SR.3 to SR.4 (Architecture to Construction)"
-        check_file "Architecture model" "models/*architecture*" "models/*arch*" "models/*smart*"
-        check_file "System Design Document" "docs/sr/*system-design*" "docs/sr/*design*"
-        check_file "Traceability Matrix" "docs/sr/*traceability*"
+        check_file "Architecture model" "$ENG_ROOT/models/*architecture*" "$ENG_ROOT/models/*arch*" "$ENG_ROOT/models/*smart*"
+        check_file "System Design Document" "$ENG_ROOT/docs/sr/*system-design*" "$ENG_ROOT/docs/sr/*design*"
+        check_file "Traceability Matrix" "$ENG_ROOT/docs/sr/*traceability*"
         ;;
     SR.4)
         echo "Gate: SR.4 to SR.5 (Construction to IVV)"
-        check_file "Architecture model" "models/*architecture*" "models/*arch*" "models/*smart*"
-        check_file "System requirements model" "models/*requirement*" "models/*system-req*"
-        check_file "System Element Requirements" "docs/sr/*element*" "docs/sr/*system-element*"
+        check_file "Architecture model" "$ENG_ROOT/models/*architecture*" "$ENG_ROOT/models/*arch*" "$ENG_ROOT/models/*smart*"
+        check_file "System requirements model" "$ENG_ROOT/models/*requirement*" "$ENG_ROOT/models/*system-req*"
+        check_file "System Element Requirements" "$ENG_ROOT/docs/sr/*element*" "$ENG_ROOT/docs/sr/*system-element*"
         ;;
     SR.5)
         echo "Gate: SR.5 to SR.6 (IVV to Delivery)"
-        check_file "Verification model" "models/*verification*" "models/*verify*"
-        check_file "Validation model" "models/*validation*" "models/*valid*"
-        check_file "System requirements model" "models/*requirement*" "models/*system-req*"
+        check_file "Verification model" "$ENG_ROOT/models/*verification*" "$ENG_ROOT/models/*verify*"
+        check_file "Validation model" "$ENG_ROOT/models/*validation*" "$ENG_ROOT/models/*valid*"
+        check_file "System requirements model" "$ENG_ROOT/models/*requirement*" "$ENG_ROOT/models/*system-req*"
         ;;
     SR.6)
         echo "Gate: SR.6 (Delivery readiness)"
-        check_file "Verification model" "models/*verification*" "models/*verify*"
-        check_file "Validation model" "models/*validation*" "models/*valid*"
+        check_file "Verification model" "$ENG_ROOT/models/*verification*" "$ENG_ROOT/models/*verify*"
+        check_file "Validation model" "$ENG_ROOT/models/*validation*" "$ENG_ROOT/models/*valid*"
         ;;
     PM.1)
         echo "Gate: PM.1 (Project Planning)"
-        check_file "Project Plan" "docs/*[Pp]lan*" "docs/pm/*plan*"
+        check_file "Project Plan" "$ENG_ROOT/docs/*[Pp]lan*" "$ENG_ROOT/docs/pm/*plan*"
         ;;
     PM.2)
         echo "Gate: PM.2 (Plan Execution)"
-        check_file "Project Plan" "docs/*[Pp]lan*" "docs/pm/*plan*"
-        check_file "Progress Status Record" "docs/pm/*progress*"
+        check_file "Project Plan" "$ENG_ROOT/docs/*[Pp]lan*" "$ENG_ROOT/docs/pm/*plan*"
+        check_file "Progress Status Record" "$ENG_ROOT/docs/pm/*progress*"
         ;;
     PM.3)
         echo "Gate: PM.3 (Assessment and Control)"
-        check_file "Project Plan" "docs/*[Pp]lan*" "docs/pm/*plan*"
-        check_file "Correction Register" "docs/pm/*correction*"
+        check_file "Project Plan" "$ENG_ROOT/docs/*[Pp]lan*" "$ENG_ROOT/docs/pm/*plan*"
+        check_file "Correction Register" "$ENG_ROOT/docs/pm/*correction*"
         ;;
     PM.4)
         echo "Gate: PM.4 (Closure)"
-        check_file "Project Plan" "docs/*[Pp]lan*" "docs/pm/*plan*"
-        check_file "Product Acceptance Record" "docs/pm/*acceptance*"
+        check_file "Project Plan" "$ENG_ROOT/docs/*[Pp]lan*" "$ENG_ROOT/docs/pm/*plan*"
+        check_file "Product Acceptance Record" "$ENG_ROOT/docs/pm/*acceptance*"
         ;;
     *)
         echo "phase-gate-check: unknown phase '$TARGET_PHASE'"

@@ -214,7 +214,7 @@ plugin by catching trace gaps at commit time.
    AMBSE as the single VSE lifecycle. Each iteration is a `vse/iter-NN`
    feature branch ending in a pull request.
 
-### Picking up an existing project
+### Picking up an existing VSE project
 
 For a project that was previously scaffolded by `project-setup` (or any
 project that already carries a `.vse-phase` file at its root), pickup is
@@ -233,11 +233,50 @@ phase-specific work to `lifecycle-orchestrator` and the other specialised
 skills it indexes. The orchestrator checks prerequisites for the active
 phase and guides the remaining activities.
 
-If you have prior systems engineering work in a directory that lacks a
-`.vse-phase` file, the simplest path is to create one manually with the
-relevant phase code (for example, `SR.2`) and an empty `.vse-journal.yml`
-alongside it. Brownfield support inside `project-setup` is queued as a
-follow-up change.
+### Adding VSE to an existing repository
+
+If you have an existing software project (or any other repository) and
+want to bring it under VSE systems engineering governance, invoke
+`project-setup` from inside the repository. The skill detects that it is
+running inside an existing git working tree and switches to brownfield
+mode:
+
+1. **Context harvest.** It reads `README.md`, any existing `CLAUDE.md`,
+   `git config user.name`, the language-ecosystem manifest (for example
+   `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`), and a
+   `git ls-files | head -200` summary of your source tree, then asks you
+   only for the fields it could not infer (typically the acquirer name
+   and primary stakeholder roles).
+2. **Engineering subfolder layout.** All VSE work products land under a
+   new `engineering/` subfolder so your existing project root stays
+   clean. The `models/`, `docs/pm/`, `docs/sr/`, `TASKS.md`, `syside.toml`,
+   and `.lsp.json` files all live under `engineering/`. Only
+   `.vse-phase`, `.vse-journal.yml`, and the merged `CLAUDE.md` sit at
+   the project root, so the SessionStart hook keeps working without
+   configuration.
+3. **Idempotent CLAUDE.md merge.** If your project already has a
+   `CLAUDE.md`, the skill appends a marker block delimited by
+   `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and
+   `<!-- END VSE COMPANION -->`. Your existing content stays intact at
+   the top of the file. Re-running `project-setup` later replaces the
+   bytes between the markers in place, so you always pick up the
+   current plugin version without duplicating content or drifting from
+   the surrounding text you authored.
+4. **Host-project git history is preserved.** Brownfield mode does not
+   run `git init`, `git add`, or `git commit`. The skill leaves the
+   staging step to you, and the Step 11 summary tells you to stage the
+   new files on a `vse/iter-00-architecture-zero` branch so the AMBSE
+   branch-per-microcycle workflow applies from your first commit.
+5. **Hooks autodetect the layout.** The session-start, phase-gate, and
+   pre-commit traceability scripts all check for `engineering/models`
+   or `engineering/syside.toml` and point their model and work-product
+   paths at `engineering/` automatically. The same scripts also work in
+   greenfield projects without modification.
+
+Re-running `project-setup` inside a brownfield repository is safe: the
+marker-block merge is idempotent, the existing `engineering/` files are
+left in place unless you confirm otherwise, and your host project's
+source files are never touched.
 
 ### Demo walkthrough
 
