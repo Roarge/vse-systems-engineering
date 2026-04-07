@@ -227,6 +227,22 @@ each use case:
 This cycle is repeated every 20 to 60 minutes. The model is the primary work
 product. Textual requirements are linked to (not separate from) the model elements.
 
+**The nanocycle is the Vee in miniature.** Steps 1 to 5 are the left-side
+specification work (define the context, write scenarios, derive flows, declare
+interfaces, capture state-based behaviour). Step 6 is the right-side
+verification (validate the model, check traces). Step 7 connects the two sides
+by adding the trace links that make the verification meaningful. Step 8 closes
+the loop and returns to specification for the next requirement. Each commit on
+the iteration's `vse/iter-NN` branch typically captures one pass through this
+loop. See `knowledge/ambse-git-workflow.md` Section 3 for the git mapping.
+
+**Iteration boundary**: when the use case is fully specified, verified, and
+trace-complete, the iteration's branch is opened as a pull request against
+`main`. The PR review is the formal handoff event (per Douglass, Cookbook,
+p. 61). For VSE projects with one or two engineers, self-review is
+acceptable. The PR mechanism remains load-bearing because it triggers the CI
+gates and records the iteration boundary in git history.
+
 ---
 
 ## 6. Three Approaches to Use Case Analysis

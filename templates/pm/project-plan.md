@@ -67,14 +67,44 @@ System
 
 ### 4.1 Lifecycle Model
 
-> Specify the chosen lifecycle (waterfall, iterative, incremental, agile, or
-> hybrid) and justify the selection.
+**Lifecycle**: hybrid AMBSE (Agile Model-Based Systems Engineering) per
+Douglass (2021). The Vee verification pattern is applied at three timeframes
+(nanocycle, microcycle, macrocycle). The VSE Systems Engineering plugin
+sets AMBSE as the single VSE lifecycle for every project.
 
-### 4.2 Milestones
+**Iteration cadence**: _two-week microcycles_ (default). Record the actual
+chosen cadence here, with rationale if it differs from the default.
+
+**Git workflow**: branch per microcycle. Iteration branches are named
+`vse/iter-NN[-short-desc]` and are merged into `main` via pull request at
+the end of each iteration. Each merged PR is one microcycle handoff. A
+release tag on `main` (semantic version) is one macrocycle delivery.
+
+**Why AMBSE for this project**: _summarise in one paragraph why AMBSE is
+the right fit for this specific project: typically a combination of
+mixed hardware/software content, the value of model-based specification,
+the need for incremental verification, and the availability of
+stakeholders for frequent feedback._
+
+### 4.2 Macrocycle Milestones
+
+> Macrocycle milestones sit above the iteration cadence and define the points
+> at which `main` will be tagged with a semantic version. Each milestone has
+> a gate criterion drawn from the ISO 29110 phase gates.
 
 | Milestone | Description | Target Date | Gate Criteria |
 |-----------|-------------|-------------|---------------|
 | | | | |
+
+### 4.3 Iteration Plan
+
+> List the planned iterations for the current release. Each row corresponds
+> to one `vse/iter-NN` branch and one pull request.
+
+| Iteration | Mission | Target start | Target end | Status |
+|-----------|---------|--------------|------------|--------|
+| iter-00 | Architecture Zero (environment setup, skeleton architecture) | | | |
+| iter-01 | | | | |
 
 ## 5. Tasks and Schedule
 

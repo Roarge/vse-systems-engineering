@@ -1,9 +1,19 @@
-name: SysML Validation
+# AMBSE microcycle handoff gate.
+#
+# In hybrid AMBSE, every pull request is the merge of one microcycle iteration
+# branch (vse/iter-NN) and is the formal handoff event Douglass describes
+# (Cookbook, p. 61). This workflow runs the trace check on every PR so that
+# no microcycle ends with broken satisfy/verify links. See the plugin's
+# knowledge/ambse-git-workflow.md for the full mapping.
+#
+# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: invoke the
+# same hooks/pre-commit-traceability.sh script from your host's PR pipeline.
+# The script is host-agnostic plain bash.
+
+name: SysML Validation (microcycle trace gate)
 
 on:
   pull_request:
-    paths:
-      - 'models/**/*.sysml'
 
 jobs:
   validate:

@@ -281,16 +281,28 @@ A complete handoff package for each subsystem includes:
 
 ### 6.3 Handoff as iteration boundary
 
-In the hybrid lifecycle, the handoff occurs at iteration boundaries:
+In hybrid AMBSE the handoff occurs at iteration boundaries:
+
 - System engineers hand off iteration N to downstream engineers
 - System engineers proceed to specify iteration N+1
 - This creates pipeline parallelism even in small teams (the same person
   switches roles at the iteration boundary)
 
-VSE guidance: the handoff can be as simple as a Git tag with a summary of what
-changed, combined with a brief walkthrough of the new subsystem requirements.
-Do not over-formalise the handoff for small teams. The key is that downstream
-engineering has an unambiguous, baselined specification to work from.
+**Canonical handoff form**: a pull request against `main`. The iteration's
+work lives on a `vse/iter-NN` feature branch, and the merge of that branch
+via pull request *is* the handoff event Douglass describes (Cookbook, p. 61).
+The PR diff is the converted engineering data, the PR body summarises the
+iteration mission and the trace status, and the PR review is the formal
+handoff acceptance. CI gates run the trace check and the phase-gate check
+before the PR can merge. See `knowledge/ambse-git-workflow.md` for the full
+mapping, branch naming, and PR body template.
+
+VSE guidance: do not over-formalise the handoff for small teams. The pull
+request mechanism is intentionally lightweight, and the same mechanism works
+for a single-developer self-review and a five-person peer review. The key is
+that downstream engineering has an unambiguous, baselined specification to
+work from, and that the iteration boundary is recorded in git history rather
+than in chat.
 
 ---
 

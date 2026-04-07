@@ -6,9 +6,15 @@ A Claude Code plugin for systems engineering in Very Small Entities (VSEs).
 
 This plugin supports ISO/IEC 29110 compliant systems engineering workflows that
 are model-based and digital first, rooted in SysML 2.0 textual syntax. It
-supports both traditional (Vee model) and agile model-based SE (hybrid lifecycle)
-approaches, with use case driven elicitation, structured trade studies, and
-continuous verification at nanocycle, microcycle, and macrocycle timeframes.
+enforces hybrid AMBSE (Agile Model-Based Systems Engineering) per Douglass
+(2021) as the single workflow for VSE projects. AMBSE applies the Vee
+verification pattern at three timeframes (nanocycle, microcycle, macrocycle),
+with verification performed at every iteration boundary. The plugin pairs use
+case driven elicitation, structured trade studies, and continuous verification
+with a branch-per-microcycle git workflow in which each iteration ends in a
+pull request review. See
+[knowledge/ambse-git-workflow.md](knowledge/ambse-git-workflow.md) for the full
+mapping.
 
 The plugin works in concert with the official Anthropic engineering plugin,
 adding VSE-specific systems engineering knowledge and attention-sustaining
@@ -66,10 +72,20 @@ context and organised by source.
 - `ambse-agile-process.md` -- hybrid lifecycle, iteration planning, verification timeframes, metrics
 - `ambse-requirements.md` -- use case driven elicitation, model-based requirements, nanocycle workflow
 - `ambse-architecture.md` -- five architecture views, trade studies, handoff, model-based V&V
+- `ambse-git-workflow.md` -- branch-per-microcycle git mapping, PR template, anti-patterns
 
-**SysML 2.0** (modelling language)
+**SysML 2.0** (modelling language, all three verified against OMG formal/2025-01-01)
 
-- `sysml2-quick-ref.md` -- textual notation cheat sheet verified against the OMG spec
+- `sysml2-quick-ref.md` -- textual notation cheat sheet for the constructs a
+  VSE engineer touches every day (packages, parts, ports, requirements,
+  trace links, verification cases)
+- `sysml2-semantics-ref.md` -- language architecture, the KerML/SysML
+  two-layer model, the definition/usage pattern, type hierarchy, and the
+  semantic rules from Chapters 6 and 8 of the spec
+- `sysml2-libraries-ref.md` -- the Systems Model Library (implicit base
+  types) and the Domain Libraries (metadata, quantities, trade studies,
+  geometry) from Chapter 9, with VSE guidance on which imports are worth
+  the cost
 
 **SySiDE Automator** (tooling)
 
@@ -193,15 +209,35 @@ plugin by catching trace gaps at commit time.
 2. Launch Claude Code and invoke the `project-setup` skill.
 3. The skill scaffolds the directory structure, creates SysML 2.0 model stubs,
    populates work product templates, and sets the initial phase to SR.1.
-4. Use `lifecycle-orchestrator` to navigate through phases, enforce phase gates,
-   and select a lifecycle approach (Vee, incremental, or hybrid).
+4. Use `lifecycle-orchestrator` to navigate the AMBSE iteration cycles, enforce
+   phase gates, and plan the iteration cadence. The plugin enforces hybrid
+   AMBSE as the single VSE lifecycle. Each iteration is a `vse/iter-NN`
+   feature branch ending in a pull request.
 
 ### Picking up an existing project
 
-1. Create a `.vse-phase` file in your project root containing the current phase
-   (for example, `SR.2`).
-2. Invoke `lifecycle-orchestrator` to pick up from that phase. The orchestrator
-   will check prerequisites and guide you through the remaining activities.
+For a project that was previously scaffolded by `project-setup` (or any
+project that already carries a `.vse-phase` file at its root), pickup is
+automatic. Open the project directory in Claude Code and the
+`SessionStart` hook will:
+
+1. Detect the `.vse-phase` file and read the current ISO 29110 activity.
+2. Print the current phase, the mandatory first action (load
+   `vse-companion-overview`), and the SysML model summary.
+3. Surface the session journal via `session-journal` if `.vse-journal.yml`
+   exists, so the previous session's pending work and open issues are
+   visible.
+
+From there, invoke `vse-companion-overview` to set the lens, then route
+phase-specific work to `lifecycle-orchestrator` and the other specialised
+skills it indexes. The orchestrator checks prerequisites for the active
+phase and guides the remaining activities.
+
+If you have prior systems engineering work in a directory that lacks a
+`.vse-phase` file, the simplest path is to create one manually with the
+relevant phase code (for example, `SR.2`) and an empty `.vse-journal.yml`
+alongside it. Brownfield support inside `project-setup` is queued as a
+follow-up change.
 
 ### Demo walkthrough
 

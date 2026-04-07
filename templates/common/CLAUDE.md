@@ -17,6 +17,51 @@ When answering any question about this project:
 
 If the VSE plugin is not installed, follow the ISO 29110 process map below.
 
+## AMBSE Workflow
+
+This project uses hybrid AMBSE (Agile Model-Based Systems Engineering) per
+Douglass (2021). AMBSE is the fixed VSE lifecycle for every project that uses
+this plugin. AMBSE applies the Vee verification pattern at three timeframes:
+
+- **Nanocycle** (30 minutes to 1 day): one model edit, one trace fix, one
+  constraint added. The unit of git work is a commit on a feature branch.
+  The pre-commit traceability hook runs at this scale.
+- **Microcycle** (1 to 4 weeks): one iteration with a stated mission. The unit
+  of git work is a feature branch named `vse/iter-NN[-short-desc]`, merged via
+  pull request (or merge request, on non-GitHub hosts). The PR review is the
+  formal handoff event Douglass describes (Cookbook, p. 61). CI workflows in
+  `.github/workflows/` run the trace check and the phase-gate check before
+  the PR can merge.
+- **Macrocycle** (project length): one major release. The unit of git work
+  is a semantic version tag on `main`, created after formal system V&V is
+  complete.
+
+The Vee verification pattern is the inner shape of every cycle. Douglass
+(Cookbook, p. 64) frames it directly: "a traditional V process is simply this
+process cycle done once". AMBSE applies the Vee many times, at three scales,
+with verification at every iteration boundary.
+
+### Branch and PR conventions for this project
+
+- All non-trivial work goes on a `vse/iter-NN[-short-desc]` branch.
+- Each commit on the branch is one nanocycle and references the affected work
+  product or use case in the commit message.
+- Merging the branch via pull request is the microcycle handoff. The PR body
+  states the iteration mission and trace status. See the PR template in
+  `.github/PULL_REQUEST_TEMPLATE.md` if it exists, or
+  `templates/github/pull-request-template.md` in the plugin.
+- Trace gates: the `pre-commit-traceability` hook blocks local commits with
+  broken traces. The `traceability-check` GitHub Actions workflow blocks PR
+  merge with broken traces.
+- Phase gates: the `phase-gate-check` script blocks local advancement. The
+  `phase-gate` GitHub Actions workflow blocks PR merge when the gate is
+  unsatisfied.
+
+For the full mapping (anti-patterns, solo-developer guidance, host-agnostic
+notes, the worked microcycle history example), see
+`${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md` in the plugin or the
+`@lifecycle-orchestrator` skill, which loads it at activation time.
+
 ## Current Phase
 
 Read the `.vse-phase` file in the project root to determine the active phase.

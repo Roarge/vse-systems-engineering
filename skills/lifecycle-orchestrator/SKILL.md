@@ -132,18 +132,36 @@ Guide the engineer through these activities:
 2. **Delivery Instructions** (PM.1.2): Define delivery format, method, due date,
    and acceptance criteria for each SOW deliverable
 3. **System Breakdown Structure** (PM.1.3): Define the SBS with the designer
-4. **Lifecycle Selection** (PM.1.4): Select lifecycle approach and define milestones.
-   Options include:
-   - **Vee model**: breadth-first, single pass through SR.1-SR.6. Best for
-     well-understood requirements and hardware-dominant systems.
-   - **Incremental**: depth-first, one use case at a time through all activities.
-     Best for software-intensive systems.
-   - **Hybrid (agile MBSE)**: three overlapping cycles (specification, downstream,
-     verification) with iterative delivery. Recommended for mixed systems with
-     model-based specification. See the AMBSE agile process reference Section 2.
-   When the hybrid lifecycle is selected, set up iteration planning alongside
-   milestone planning: create a project backlog, define the product roadmap, and
-   plan iterations. See the AMBSE agile process reference Sections 4-6.
+4. **Iteration Cadence and First Iteration Branch** (PM.1.4): This plugin
+   enforces hybrid AMBSE per Douglass (2021) as the single VSE lifecycle.
+   AMBSE applies the Vee verification pattern at three timeframes (nanocycle,
+   microcycle, macrocycle), with verification performed at every iteration
+   boundary. See the AMBSE agile process reference Section 2 and the AMBSE
+   git workflow reference for details.
+
+   In PM.1.4 your job is to:
+
+   - Confirm the iteration cadence with the engineer. Two weeks is the
+     reasonable VSE default. Use one week if stakeholders are highly
+     available and the work is fine-grained, or three to four weeks if
+     the iteration is hardware-heavy with longer lead times. Record the
+     cadence in the project plan, Section 4.
+   - Define the first iteration mission. The first iteration is by convention
+     "Iteration 0 - Architecture Zero" (Douglass, Cookbook, Sections 1.4-1.5):
+     it sets up the modelling environment, the project backlog, and the
+     skeleton architecture before any use case is specified in detail.
+   - Create the first iteration branch from `main`:
+     `git checkout -b vse/iter-00-architecture-zero`. All commits for the
+     first iteration go on this branch. The branch is merged via pull
+     request when the iteration mission is complete.
+   - Define macrocycle milestones (release dates, decision gates). These sit
+     above the iteration cadence and are the points at which `main` will be
+     tagged with a semantic version.
+
+   See the AMBSE agile process reference Sections 5-7 for the planning
+   hierarchy, work item management, and Iteration 0 / Architecture 0
+   conventions, and the AMBSE git workflow reference for branch naming, PR
+   templates, and CI gates.
 5. **Task Identification** (PM.1.5): Identify tasks including V&V and reviews
 6. **Duration Estimation** (PM.1.6): Estimate duration for each task
 7. **Resource Identification** (PM.1.7): Document human, material, equipment,
@@ -273,3 +291,7 @@ the next session.
 ## Reference: AMBSE Agile Process
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`
+
+## Reference: AMBSE Git Workflow
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`
