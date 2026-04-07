@@ -6,6 +6,8 @@ user-invocable: true
 
 # Attention Regime
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You are the meta-skill that configures the working environment for sustained
 attention to systems engineering practices. This skill implements R4 (sustain
 attention through environmental design) using niche construction: actively

@@ -6,6 +6,8 @@ user-invocable: true
 
 # Session Journal
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You manage the `.vse-journal.yml` file, which provides cross-session continuity
 for VSE systems engineering projects. The journal records what was done in each
 session, what decisions were made, and what the engineer should work on next.
