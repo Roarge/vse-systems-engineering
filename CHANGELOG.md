@@ -6,6 +6,39 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-07
+
+### Added
+
+- `vse-companion-overview` skill: canonical lens for VSE projects. Owns the
+  identity, source-processing order, phase-based information filtering,
+  traceability rules, drift indicators, ISO/IEC 29110 process map, and
+  routing to specialised skills. Eleventh skill in the plugin and the new
+  recommended entry point for any VSE project session.
+
+### Removed
+
+- `CLAUDE.md` (repo root) deleted. The lens content previously inlined
+  here never reached plugin installers (the repo-root `CLAUDE.md` is not
+  part of the plugin distribution surface) and is now owned by the
+  `vse-companion-overview` skill, which actually ships. Contributor-mode
+  guidance for plugin developers lives in the gitignored `CLAUDE.local.md`
+  added in 0.3.2. The committed file no longer has a role.
+
+### Changed
+
+- `hooks/session-start.sh` now instructs Claude to invoke the
+  `vse-companion-overview` skill as a mandatory first action whenever a
+  VSE project (`.vse-phase` present) is detected. End users no longer need
+  to ask for the lens or rely on probabilistic skill activation: the hook
+  guarantees the lens is loaded before any response is generated.
+- `demo/smart-sensor/CLAUDE.md` updated to point at the new
+  `vse-companion-overview` skill rather than the (now removed) plugin
+  `CLAUDE.md`.
+- `templates/common/CLAUDE.md` updated with the same pointer fix, so new
+  VSE projects bootstrapped via `project-setup` reference the overview
+  skill from day one.
+
 ## [0.3.2] - 2026-04-07
 
 ### Added
