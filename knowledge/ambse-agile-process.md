@@ -69,58 +69,75 @@ when necessary. See `knowledge/sysml2-quick-ref.md` for the recommended subset.
 
 ---
 
-## 2. Three Lifecycle Models
+## 2. AMBSE: The Vee Applied at Three Timeframes
 
-SE projects can follow one of three lifecycle approaches, each applicable depending on
-the nature of the system and the degree of requirements stability.
+This plugin enforces hybrid AMBSE (Agile Model-Based Systems Engineering) as the
+single workflow for VSE projects. AMBSE is fixed by the plugin and shaped to
+ISO 29110 for every project that the plugin scaffolds.
 
-### 2.1 V-Model (breadth-first)
+**The Vee is the verification pattern AMBSE applies at every iteration**, at
+three different scales. Reading the Vee this way dissolves the apparent choice
+between "rigour" and "agility": AMBSE supplies both, by running the same Vee
+shape at multiple cadences.
 
-The traditional approach where each activity produces a complete work product before
-the next activity begins. Each specification on the left side of the V has a corresponding
-verification activity on the right side.
+### 2.1 The Vee verification pattern
 
-**VSE fit**: High for well-understood requirements and hardware-dominant systems.
-Maps directly to ISO 29110 SR.1 through SR.6 as a single pass.
+The Vee model describes a single execution of the systems engineering cycle.
+Specification flows down the left side (stakeholder needs, system requirements,
+architecture, element specifications). Verification flows up the right side
+(element verification, integration verification, system verification, validation).
+Each level on the left has a matching level on the right.
 
-**Limitation**: Assumes infinite depth, breadth, and stability of knowledge when
-plans are created. Defects are discovered late and are expensive to correct.
+The Vee is a *pattern*. Douglass frames it this way directly (Cookbook, p. 64,
+discussing Figure 2.6):
 
-### 2.2 Incremental (depth-first, agile)
+> A difference between this process and a traditional V process is the path
+> labeled "[more reqs]"; if there are more requirements, this loop of activities
+> is done again. In fact, a traditional V process is simply this process cycle
+> done once.
 
-A narrow slice of functionality passes through all activities (requirements, architecture,
-construction, verification) before the next slice begins. This is a "depth-first" approach
-that takes coherent sets of requirements (use cases or user stories) one at a time.
+Reading this in the other direction: AMBSE is the Vee executed many times, at
+several scales, with verification at every iteration boundary. A "traditional Vee
+project" is AMBSE collapsed to a single pass. The pattern is shared. The
+discipline is shared. The difference is the cadence.
 
-**VSE fit**: High for software-intensive systems with available stakeholders.
+### 2.2 Pure incremental (historical note)
 
-**Assumptions**: (1) use cases implemented in one iteration are independent of those in
-other iterations, (2) refactoring effort to accommodate new functionality is much less
-than implementing it. The second assumption holds well for software but less so for
-hardware with long lead times.
+Pure incremental development takes one slice of functionality through all
+activities before the next slice begins. It assumes iterations are independent
+and refactoring is cheap. Hardware with lead times breaks the second assumption,
+which is why this plugin enforces hybrid AMBSE for VSE work. Where the term
+"pure incremental" appears in older VSE literature, treat it as a degenerate
+AMBSE that omits the system V&V cycle.
 
-### 2.3 Hybrid (recommended for most VSE projects)
+### 2.3 Hybrid AMBSE (the enforced workflow)
 
-Three interconnected cycles with handoffs between them:
+Hybrid AMBSE is the workflow this plugin scaffolds and enforces. It runs three
+interconnected cycles with handoffs between them:
 
 1. **System specification cycle**: Stakeholder requirements, system requirements,
    functional analysis, architectural design (SR.2, SR.3)
 2. **Downstream engineering cycle**: Software, electronics, and mechanical
    development (SR.4)
-3. **System verification cycle**: Integration, system verification, validation (SR.5)
+3. **System verification cycle**: Integration, system verification, validation
+   (SR.5)
 
-The key innovation: these cycles **overlap in time**. System engineers work on iteration
-N+1 while downstream engineers implement iteration N, and test engineers verify
-iteration N-1. This maintains pipeline parallelism even for small teams.
+Each of these cycles applies the Vee pattern at its own scale. The cycles overlap
+in time: system engineers work on iteration N+1 while downstream engineers
+implement iteration N and test engineers verify iteration N-1. This maintains
+pipeline parallelism even for small teams.
 
 **VSE adaptation**: In a one- or two-person team, the same person cycles through
-specification, construction, and verification for each iteration. The hybrid model
-still applies because the *work products* are organised by iteration, allowing
-incremental baselining even when parallelism is not possible.
+specification, construction, and verification for each iteration. The hybrid
+model still applies because the *work products* are organised by iteration,
+allowing incremental baselining even when parallelism is not possible.
 
-**Mapping to ISO 29110**: The hybrid lifecycle maps to ISO 29110 as multiple
-sub-passes within SR.2 through SR.5, with each iteration producing a verified
-increment. SR.1 (Initiation) and SR.6 (Delivery) remain single-pass.
+**Mapping to ISO 29110**: Hybrid AMBSE maps to ISO 29110 as multiple sub-passes
+within SR.2 through SR.5, with each iteration producing a verified increment.
+SR.1 (Initiation) and SR.6 (Delivery) remain single-pass.
+
+**Mapping to git**: Each iteration runs on a feature branch and ends in a pull
+request. See Section 4 and `knowledge/ambse-git-workflow.md`.
 
 ---
 
@@ -141,7 +158,13 @@ Model-level checks performed as engineering data is created:
 - **Unit model verification**: verify that a single model element (one requirement,
   one action, one part) is internally consistent
 
-VSE plugin mapping: SySiDE validation on save, traceability-guard pre-commit hook.
+**Vee mapping**: the model element written or edited is the left-side specification,
+the SySiDE syntax check and the trace-completeness check are the right-side
+verification. Both happen within the same nanocycle, immediately.
+
+**VSE plugin mapping**: SySiDE validation on save, traceability-guard pre-commit
+hook. **Git mapping**: one nanocycle is one commit on a `vse/iter-NN` feature
+branch.
 
 ### 3.2 Microcycle (1 to 4 weeks, one iteration)
 
@@ -154,7 +177,15 @@ Iteration-level verification performed at the end of each iteration:
 - **Stakeholder review**: walkthrough of the iteration deliverables with stakeholders
 - **Iteration retrospective**: assess metrics, update velocity, adjust the plan
 
-VSE plugin mapping: phase gate checks, iteration retrospective prompt.
+**Vee mapping**: the iteration's accumulated specification work is the left side
+(new requirements, new architecture, new interfaces). The iteration verification
+that runs at PR review time (CI gates plus reviewer walkthrough) is the right side.
+The handoff event Douglass describes (Cookbook, p. 61) lives here.
+
+**VSE plugin mapping**: phase gate checks, iteration retrospective prompt.
+**Git mapping**: one microcycle is one feature branch merged via pull request.
+The pull request body states the iteration mission and trace status. The PR
+review is the formal handoff event.
 
 ### 3.3 Macrocycle (project length)
 
@@ -165,13 +196,30 @@ System-level verification and validation performed at the end of the project:
   intended operational environment
 - **Acceptance testing**: formal acceptance by the acquirer
 
-VSE plugin mapping: SR.5 activities, PM.4 closure.
+**Vee mapping**: the cumulative specification work across all merged iterations is
+the left side. Formal system V&V is the right side, executed before the release tag
+is created on `main`.
+
+**VSE plugin mapping**: SR.5 activities, PM.4 closure. **Git mapping**: one
+macrocycle ends in a release tag on `main` (semantic version). The tag is the
+delivery event and feeds the document-export pipeline.
 
 ---
 
-## 4. Iteration Planning for VSEs
+## 4. Mapping AMBSE to a Git Workflow
 
-### 4.1 Planning hierarchy
+The three timeframes above each map onto one unit of git collaboration: the
+commit (nanocycle), the feature branch with a pull request (microcycle), and
+the release tag on `main` (macrocycle). This mapping is the operational form
+the plugin enforces. Branch naming, PR templates, anti-patterns, and CI gates
+are documented in detail in `knowledge/ambse-git-workflow.md`, which is loaded
+alongside this file by the `@lifecycle-orchestrator` skill.
+
+---
+
+## 5. Iteration Planning for VSEs
+
+### 5.1 Planning hierarchy
 
 Agile planning uses a hierarchy of planning artefacts at different granularity levels:
 
@@ -194,7 +242,7 @@ goal. A user story is implemented in a few days.
 
 **Scenario**: A single path through a use case, equivalent in scope to a user story.
 
-### 4.2 Work item management
+### 5.2 Work item management
 
 A **work item** is a unit of work to be done. Work items are the building blocks of
 backlogs and are managed through two workflows.
@@ -219,7 +267,7 @@ allocate to an iteration backlog.
 Perform work, review against acceptance criteria. If accepted: remove from
 iteration backlog, review and reorganise remaining backlog. If rejected: rework.
 
-### 4.3 Iteration 0 (project initiation)
+### 5.3 Iteration 0 (project initiation)
 
 Iteration 0 maps to ISO 29110 PM.1 (Project Planning) and SR.1 (Initiation). It
 establishes the project infrastructure before the first specification iteration:
@@ -230,7 +278,7 @@ establishes the project infrastructure before the first specification iteration:
 - Establish the SEMP (Systems Engineering Management Plan)
 - Identify initial risks and create spike work items
 
-### 4.4 Architecture 0
+### 5.4 Architecture 0
 
 The first iteration typically focuses on establishing the initial system architecture
 (a "skeleton" design) before detailed specification work begins. This is done to:
@@ -244,9 +292,9 @@ Architecture 0 maps to early SR.3 activities in ISO 29110.
 
 ---
 
-## 5. Effort Estimation for SE
+## 6. Effort Estimation for SE
 
-### 5.1 Story points for specification work
+### 6.1 Story points for specification work
 
 In agile SE, effort is estimated in **story points**, which are relative measures of
 complexity, not absolute time units. Use planning poker or similar techniques.
@@ -260,7 +308,7 @@ Typical complexity factors for SE specification work:
 | Novelty | Well-understood domain | Some new technology | Novel, unproven approach |
 | Dependability | Non-critical | Moderate safety concern | Safety/reliability critical |
 
-### 5.2 VSE estimation guidance
+### 6.2 VSE estimation guidance
 
 - Estimate in **half-days** for small teams where absolute planning is needed
 - Review and recalibrate estimates after each iteration using measured velocity
@@ -270,12 +318,12 @@ Typical complexity factors for SE specification work:
 
 ---
 
-## 6. Risk Management in Agile SE
+## 7. Risk Management in Agile SE
 
 Risk is the product of an event's likelihood of occurrence and its severity. In agile SE,
 risks are managed as backlog items alongside functional work.
 
-### 6.1 Risk types
+### 7.1 Risk types
 
 | Type | Example |
 |------|---------|
@@ -284,7 +332,7 @@ risks are managed as backlog items alongside functional work.
 | Schedule | Customer schedule is optimistic |
 | Business | Market conditions may change before delivery |
 
-### 6.2 Risk management workflow
+### 7.2 Risk management workflow
 
 1. **Identify** potential sources of risk (at project start and each iteration retrospective)
 2. **Characterise** the risk: describe the negative outcome, estimate likelihood and severity
@@ -294,7 +342,7 @@ risks are managed as backlog items alongside functional work.
 6. **Perform** the spike and assess the outcome
 7. **Update** the risk list (mark as mitigated, escalate, or replan)
 
-### 6.3 VSE risk guidance
+### 7.3 VSE risk guidance
 
 - Maintain the risk list as a view of the project backlog, not a separate artefact
 - Address highest-risk items in the earliest iterations
@@ -303,7 +351,7 @@ risks are managed as backlog items alongside functional work.
 
 ---
 
-## 7. Modelling Rules (Condensed)
+## 8. Modelling Rules (Condensed)
 
 Douglass identifies 20 rules of modelling. The most important for VSEs:
 
@@ -324,12 +372,12 @@ Douglass identifies 20 rules of modelling. The most important for VSEs:
 
 ---
 
-## 8. Agile SE Metrics
+## 9. Agile SE Metrics
 
 Metrics should be used for guidance, not as goals for strict compliance. Good metrics
 are easy to measure, easy to automate, and accurately capture the property of interest.
 
-### 8.1 Recommended SE metrics
+### 9.1 Recommended SE metrics
 
 | Metric | Measures | Category |
 |--------|----------|----------|
@@ -343,7 +391,7 @@ are easy to measure, easy to automate, and accurately capture the property of in
 | Open defect age | Average time from defect discovery to resolution | Responsiveness |
 | Remaining risk | Sum of risk exposure values on the risk list | Risk |
 
-### 8.2 VSE metrics guidance
+### 9.2 VSE metrics guidance
 
 - Measure frequently (every iteration) and keep measurements low-effort
 - Use retrospectives (not post-mortems) to review metrics and adjust
@@ -352,7 +400,7 @@ are easy to measure, easy to automate, and accurately capture the property of in
 
 ---
 
-## 9. Mapping AMBSE Workflow to ISO 29110
+## 10. Mapping AMBSE Workflow to ISO 29110
 
 | AMBSE Activity | ISO 29110 Activity | Notes |
 |----------------|-------------------|-------|
