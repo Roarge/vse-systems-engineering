@@ -1,4 +1,18 @@
-name: Phase Gate Validation
+# AMBSE phase-transition gate.
+#
+# Phase transitions are coarser than microcycle handoffs: they advance the
+# project from one ISO 29110 activity (SR.1, SR.2, ...) to the next, and
+# typically coincide with a macrocycle milestone. This workflow runs the
+# host-side phase-gate-check.sh script when a PR touches `.vse-phase`,
+# enforcing that the new phase's prerequisites exist before the transition
+# is allowed to merge. See knowledge/ambse-git-workflow.md for the full
+# mapping of macrocycle deliveries to release tags on `main`.
+#
+# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: invoke the
+# same hooks/phase-gate-check.sh script from your host's PR pipeline.
+# The script is host-agnostic plain bash.
+
+name: SysML Phase Gate (macrocycle transition gate)
 
 on:
   pull_request:
