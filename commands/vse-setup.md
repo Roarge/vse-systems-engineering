@@ -14,3 +14,8 @@ The skill will detect whether the current directory is empty (greenfield) or
 already a git working tree (brownfield), gather context, and enter Plan Mode
 for review before making any file system changes. It is best run on Claude
 Opus with extended thinking.
+
+Brownfield projects may enter the lifecycle at any centre-of-gravity activity,
+not just PM.1 plus SR.1. The skill will detect existing work products and
+propose an entry point based on what is already in the repository. See
+`knowledge/iteration-centred-operation.md` for the brownfield entry rules.
