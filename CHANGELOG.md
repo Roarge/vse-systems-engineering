@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-04-07
+
+### Fixed
+
+- Removed `"agents": "./agents/"` from `.claude-plugin/plugin.json`.
+  The 0.9.1 Fixed entry misdiagnosed the root cause of the 0.9.0
+  `Validation errors: agents: Invalid input` installer failure. The
+  YAML-list `tools:` form in subagent frontmatter is actually valid
+  (the brand-voice plugin ships working agents in that exact shape).
+  The real cause is that the current Claude Code plugin schema
+  rejects a string value for the top-level `agents` field in
+  `plugin.json`. The other mount points (`skills`, `commands`,
+  `hooks`) still accept a string path, which is why their
+  declarations kept working and the error looked like an agent
+  frontmatter problem. Subagents in `./agents/` are auto-discovered
+  by convention, as in the superpowers and brand-voice plugins, so
+  the fix is to remove the `agents` line from the manifest entirely
+  and let convention-based discovery take over. 0.9.0 and 0.9.1 are
+  both effectively broken for fresh installers. Upgrade to 0.9.2.
+
 ## [0.9.1] - 2026-04-07
 
 ### Fixed
