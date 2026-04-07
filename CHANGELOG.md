@@ -6,6 +6,40 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-04-07
+
+### Added
+
+- `templates/common/lsp.json`, copied by `project-setup` Step 4 into
+  every new project as `.lsp.json`. The Claude Code IDE reads this
+  file from the workspace root to launch `syside lsp` over stdio for
+  `.sysml` and `.kerml` files. End users now get IDE language server
+  integration out of the box rather than only the `syside.toml`
+  config that SySiDE itself reads.
+- `demo/smart-sensor/.lsp.json` so the contributor dogfood project
+  exercises the IDE LSP path during local validation, as required by
+  step 3 of the Local Validation Workflow in `CLAUDE.local.md`.
+- `knowledge/syside-automator-ref.md` Project Configuration Files
+  section explaining the distinction between `syside.toml` (read by
+  SySiDE) and `.lsp.json` (read by the Claude Code IDE), so the
+  `sysml2-modelling` skill surfaces it at load time.
+
+### Fixed
+
+- The repo-root `.lsp.json` introduced in 0.5.0 (commit 68d8463) only
+  helped the contributor whose workspace was the plugin repo itself,
+  because the IDE reads `.lsp.json` from the workspace root rather
+  than from `${CLAUDE_PLUGIN_ROOT}`. End users opening their own
+  project after running `project-setup` got `syside.toml` but no IDE
+  language server integration. Shipping the file as a project
+  template closes that gap. The repo-root copy is retained as
+  contributor scaffolding for editing the plugin itself.
+
+### Documentation
+
+- README "Tooling" section now mentions `.lsp.json` alongside
+  `syside.toml` so installers know what each file does.
+
 ## [0.5.0] - 2026-04-07
 
 ### Added
