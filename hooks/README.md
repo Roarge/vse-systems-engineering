@@ -13,10 +13,10 @@ events. Claude does not invoke them. The contributor never copies them
 anywhere. They run because the harness reads `hooks.json` at plugin load
 time and wires them up.
 
-| Script | Event | Matcher | Purpose |
-|--------|-------|---------|---------|
-| `session-start.sh` | `SessionStart` | (none) | Detects a VSE project (presence of `.vse-phase`) and injects phase context, session journal status, SysML model counts, and SySiDE CLI availability into the conversation. Also enforces loading the `vse-companion-overview` skill as a mandatory first action. |
-| `sysml-change-reminder.sh` | `PostToolUse` | `Write\|Edit` | Fires after any `Write` or `Edit`. Internally filters to `.sysml` files only. Reminds about traceability and optionally runs `syside format --check` on the modified file. |
+| Script                     | Event          | Matcher       | Purpose                                                                                                                                                                               |
+|----------------------------|----------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `session-start.sh`         | `SessionStart` | (none)        | Detects a VSE project (`.vse-iteration.yml` present) and injects iteration context, journal status, SysML counts, SySiDE availability, and enforces loading `vse-companion-overview`. |
+| `sysml-change-reminder.sh` | `PostToolUse`  | `Write\|Edit` | Fires after any `Write` or `Edit`. Internally filters to `.sysml` files only. Reminds about traceability and optionally runs `syside format --check` on the modified file.            |
 
 These scripts assume they run from the user project root, which is how
 the harness invokes them. They consume `stdin` for tool use events

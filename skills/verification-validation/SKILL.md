@@ -16,7 +16,9 @@ has a validation case.
 ## When This Skill Triggers
 
 - The user asks to plan or execute V&V activities
-- The user is in phase SR.5 and asks for guidance
+- `.vse-iteration.yml` lists SR.5 as a centre of gravity, or the engineer
+  is asking about V&V evidence at iteration-boundary closure or
+  macrocycle release
 - The user wants to create verification or validation cases
 - The user asks about test planning or IVV procedures
 

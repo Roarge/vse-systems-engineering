@@ -60,7 +60,7 @@ prerequisite, not an enforced requirement.
 - The user asks to start a new project, create a project, or set up a project
 - The user asks to add VSE to an existing repository, adopt VSE on a
   codebase that already has source files, or "VSE-ify" a project
-- The `@lifecycle-orchestrator` routes here for new project initialisation
+- The `@iteration-orchestrator` routes here for new project initialisation
 - The user says "bootstrap", "scaffold", or "initialise a project"
 
 ## Step 0: Report Model and Detect Mode
@@ -93,19 +93,51 @@ git rev-parse --is-inside-work-tree 2>/dev/null
   project has already been VSE-initialised:
 
 ```bash
-test -f "$PROJECT_ROOT/.vse-phase"
+test -f "$PROJECT_ROOT/.vse-iteration.yml"
 ```
 
   - **File exists**: this project is already VSE-initialised. Tell the user,
-    route them to `@lifecycle-orchestrator` for ongoing phase navigation,
-    and exit without re-scaffolding any files.
+    route them to `@iteration-orchestrator` for ongoing iteration
+    navigation, and exit without re-scaffolding any files.
   - **File missing**: switch to brownfield mode and continue with the
     brownfield flow below.
 
 The greenfield and brownfield flows share most steps. Where they diverge,
 each step calls out which mode applies. Both flows pass through the
 Step 2 Plan Mode gate before any file creation, and both end at Step 12
-with a summary and a handoff to `@lifecycle-orchestrator`.
+with a summary and a handoff to `@iteration-orchestrator`.
+
+### Brownfield centre-of-gravity detection
+
+In brownfield mode, do not assume the incoming centre of gravity is PM.1
+plus SR.1. Before entering Plan Mode, scan for indicators that the host
+project is past the greenfield entry point, and propose a realistic
+initial `current_iteration.centre_of_gravity` based on what is already in
+the repository:
+
+- **Existing stakeholder or system requirements** (files matching
+  `docs/sr/*stakeholder*`, `docs/sr/*system-req*`, or similar, or SysML
+  files containing `requirement def`): propose SR.2 as the first
+  centre of gravity, because the inherited artefacts must be baselined
+  into the StRS and SyRS threads before further work.
+- **Existing design documentation or architecture model** (files
+  matching `docs/sr/*system-design*`, `docs/sr/*architecture*`, or SysML
+  files containing `part def`): propose SR.3 as the centre of gravity.
+- **Non-trivial source tree detected during the language ecosystem
+  scan** with no SR-level documentation: propose SR.4 as the centre of
+  gravity, with SR.2 in parallel if the existing code clearly implies
+  requirements that have never been captured.
+- **No indicators at all**: propose the greenfield default PM.1 plus
+  SR.1.
+
+Surface the proposed centre of gravity in the Plan Mode plan so the
+engineer can accept, edit, or replace it before the scaffold is written.
+The first iteration must baseline the inherited artefacts it claims as
+centre-of-gravity inputs, so the Plan Mode plan should also list a
+backlog item of the form "Baseline existing <artefact> into <thread>"
+for each indicator surfaced. See
+`${CLAUDE_PLUGIN_ROOT}/knowledge/iteration-centred-operation.md` for the
+brownfield entry rationale.
 
 ## Step 1: Gather Project Information
 
@@ -280,7 +312,7 @@ Update the existing `.gitignore`:
 
 ```text
 <project-name>/
-├── .vse-phase              (from templates/common/vse-phase, set to SR.1)
+├── .vse-iteration.yml      (from templates/common/vse-iteration.yml, iteration 0)
 ├── .vse-journal.yml        (from templates/common/vse-journal.yml, empty journal)
 ├── .gitignore              (from templates/common/gitignore)
 ├── .lsp.json               (from templates/common/lsp.json, IDE language server config)
@@ -332,7 +364,7 @@ Update the existing `.gitignore`:
 ├── README.md                 (existing, untouched)
 ├── .gitignore                (existing, two engineering/ entries appended)
 ├── CLAUDE.md                 (existing, marker block appended or replaced)
-├── .vse-phase                (NEW, set to SR.1)
+├── .vse-iteration.yml        (NEW, iteration 0 with proposed centre of gravity)
 ├── .vse-journal.yml          (NEW, empty journal)
 └── engineering/              (NEW SUBFOLDER, all VSE work below)
     ├── .lsp.json             (from templates/common/lsp.json)
@@ -350,11 +382,11 @@ Update the existing `.gitignore`:
     └── build/                (gitignored)
 ```
 
-In brownfield mode, `.vse-phase`, `.vse-journal.yml`, and `CLAUDE.md` stay
-at the project root because the SessionStart hook reads them from the
-current working directory. Everything else lives under `engineering/` to
-keep the host project's root clean. The hooks autodetect this layout via
-their `ENG_ROOT` block.
+In brownfield mode, `.vse-iteration.yml`, `.vse-journal.yml`, and
+`CLAUDE.md` stay at the project root because the SessionStart hook reads
+them from the current working directory. Everything else lives under
+`engineering/` to keep the host project's root clean. The hooks
+autodetect this layout via their `ENG_ROOT` block.
 
 ## Step 5: Populate Templates
 
@@ -365,6 +397,11 @@ and from `${CLAUDE_PLUGIN_ROOT}/templates/sr/` to `docs/sr/`.
 
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-journal.yml` to
 `.vse-journal.yml` at the project root.
+
+Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-iteration.yml` to
+`.vse-iteration.yml` at the project root. Substitute `{{DATE}}` with the
+current date. The template ships iteration 0 (Architecture Zero) with
+centre of gravity PM.1 plus SR.1, which is the greenfield default.
 
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to `.lsp.json` at
 the project root. The IDE reads this from the workspace, so it must live
@@ -380,6 +417,13 @@ Copy all templates from `${CLAUDE_PLUGIN_ROOT}/templates/pm/` to
 
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-journal.yml` to
 `.vse-journal.yml` at the project root.
+
+Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-iteration.yml` to
+`.vse-iteration.yml` at the project root. Substitute `{{DATE}}` with the
+current date, and overwrite the `centre_of_gravity` list with the
+brownfield centre of gravity proposed and approved in Step 0. Also
+overwrite `backlog` with the baseline-harvest items accepted during the
+Plan Mode review.
 
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to
 `engineering/.lsp.json`. In Step 12, tell the user to open the
@@ -429,8 +473,9 @@ Render the merged content by:
    - `TASKS.md` becomes `engineering/TASKS.md`
 
    Add a leading sentence to the "Project Structure" section explaining
-   that VSE work products live under `engineering/` while `.vse-phase`,
-   `.vse-journal.yml`, and `CLAUDE.md` stay at the project root.
+   that VSE work products live under `engineering/` while
+   `.vse-iteration.yml`, `.vse-journal.yml`, and `CLAUDE.md` stay at the
+   project root.
 
 Then place the file:
 
@@ -560,8 +605,8 @@ Route to `@attention-regime` for hook installation:
    `.git/hooks/pre-commit` at the project root in both modes (the host
    project's `.git/` directory is the same in either layout).
 2. Make the hook executable.
-3. Confirm the `.vse-phase` file exists at the project root (created in
-   earlier steps in both modes).
+3. Confirm the `.vse-iteration.yml` file exists at the project root
+   (created in earlier steps in both modes).
 
 The hook script autodetects the engineering root via its `ENG_ROOT` block,
 so the same script works under both layouts without configuration.
@@ -672,7 +717,7 @@ functions). If available:
 3. Offer to copy GitHub Actions workflows from
    `${CLAUDE_PLUGIN_ROOT}/templates/github/`:
    - `traceability-check.yml`: PR-time trace gate (microcycle handoff)
-   - `phase-gate.yml`: PR-time phase gate (macrocycle transition)
+   - `iteration-boundary.yml`: PR-time advisory iteration-boundary check
    - `document-export.yml`: generates documents on release tags
 4. Copy the PR template from
    `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`.
@@ -712,17 +757,17 @@ Scaffolded by @project-setup:
 - Pre-commit traceability hook
 - Session journal (.vse-journal.yml, empty)
 - CLAUDE.md with VSE-first guidance for Claude Code
-- Phase tracking (.vse-phase = SR.1)"
+- Iteration state (.vse-iteration.yml = iter-00 Architecture Zero, centre of gravity PM.1 plus SR.1)"
 ```
 
 ### Brownfield mode
 
 Skip the commit step entirely. The host project already has a working
 git workflow and its own commit conventions. The user will stage and
-commit the new files (`engineering/`, `.vse-phase`, `.vse-journal.yml`,
-the modified `.gitignore`, the merged `CLAUDE.md`) in their own style,
-following the AMBSE branch-per-microcycle workflow described in the
-merged CLAUDE.md.
+commit the new files (`engineering/`, `.vse-iteration.yml`,
+`.vse-journal.yml`, the modified `.gitignore`, the merged `CLAUDE.md`)
+in their own style, following the AMBSE branch-per-microcycle workflow
+described in the merged CLAUDE.md.
 
 In the Step 12 summary, remind the user that the first commit they make
 should land on a `vse/iter-00-architecture-zero` branch, not directly on
@@ -736,7 +781,7 @@ their default branch.
 PROJECT SETUP COMPLETE (greenfield)
 ====================================
 Project:    [name]
-Phase:      SR.1 (Initiation)
+Iteration:  iter-00 Architecture Zero (centre of gravity PM.1 plus SR.1)
 Repository: [path]
 
 Structure:
@@ -744,7 +789,8 @@ Structure:
   docs/sr/  15 SR work product templates
   models/    6 SysML 2.0 model files
   TASKS.md   Full ISO 29110 task checklist
-  .vse-journal.yml  Session journal (empty, ready for use)
+  .vse-iteration.yml  Iteration state (iter-00, open)
+  .vse-journal.yml    Session journal (empty, ready for use)
 
 Hooks:
   pre-commit  Traceability check on .sysml files
@@ -753,7 +799,8 @@ Next Steps:
   1. Review the Project Plan (docs/pm/project-plan.md)
   2. Generate the SEMP (docs/sr/semp.md)
   3. Define the data model in models/
-  4. Complete SR.1 tasks in TASKS.md
+  4. When ready, open the first working iteration via /vse-microcycle
+     or @iteration-orchestrator
 ```
 
 ### Brownfield mode
@@ -762,12 +809,12 @@ Next Steps:
 VSE ADDED TO EXISTING PROJECT (brownfield)
 ===========================================
 Project:        [name]
-Phase:          SR.1 (Initiation)
+Iteration:      iter-00 Architecture Zero (centre of gravity [proposed])
 Repository:     [path]
 Engineering:    engineering/
 
 New at project root:
-  .vse-phase           Phase tracker (= SR.1)
+  .vse-iteration.yml   Iteration state (iter-00, open)
   .vse-journal.yml     Session journal (empty, ready for use)
   CLAUDE.md            VSE companion block merged into existing file
 
@@ -791,22 +838,23 @@ Next Steps:
   2. Create a vse/iter-00-architecture-zero branch and stage the new files
   3. Review engineering/docs/pm/project-plan.md (the harvested context is
      reflected in the System overview of engineering/docs/sr/system-design.md)
-  4. Open the first iteration via @lifecycle-orchestrator
+  4. When ready, open the first working iteration via /vse-microcycle or
+     @iteration-orchestrator
 ```
 
-In both modes, route to `@lifecycle-orchestrator` for ongoing phase
+In both modes, route to `@iteration-orchestrator` for ongoing iteration
 navigation.
 
 ## Error Handling
 
 - **Greenfield**: if the target directory already exists and contains
   files, warn the user and ask whether to proceed (risk of overwriting).
-- **Brownfield**: if `.vse-phase` already exists at the project root, the
-  Step 0 detection will already have routed to `@lifecycle-orchestrator`.
-  If any of the new files (`engineering/`, `.vse-journal.yml`) already
-  exist for an unrelated reason, warn the user and ask whether to merge
-  or abort. Never overwrite an existing `engineering/` directory without
-  explicit confirmation.
+- **Brownfield**: if `.vse-iteration.yml` already exists at the project
+  root, the Step 0 detection will already have routed to
+  `@iteration-orchestrator`. If any of the new files (`engineering/`,
+  `.vse-journal.yml`) already exist for an unrelated reason, warn the
+  user and ask whether to merge or abort. Never overwrite an existing
+  `engineering/` directory without explicit confirmation.
 - If git is not installed in greenfield mode, create the structure
   without `git init` and inform the user.
 - If template files are missing from the plugin, report which templates
@@ -814,7 +862,7 @@ navigation.
 
 ## Cross-References
 
-- `@lifecycle-orchestrator`: routes here for new projects, receives handoff after setup
+- `@iteration-orchestrator`: routes here for new projects, receives handoff after setup
 - `@attention-regime`: hook installation and environment configuration
 - `@sysml2-modelling`: SysML 2.0 model conventions and validation
 - `@traceability-guard`: verifies trace completeness in models

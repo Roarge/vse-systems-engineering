@@ -10,8 +10,9 @@ description: >
   engineer reviews the result inside the parent skill.
 
   <example>
-  Context: traceability-guard has been invoked at an SR.5 phase gate
-  and the model directory contains many .sysml files.
+  Context: traceability-guard has been invoked at an iteration boundary
+  with SR.5 as a centre of gravity, and the model directory contains
+  many .sysml files.
   user: "Run a trace check before the iteration boundary"
   assistant: "Dispatching vse-traceability-matrix-builder to walk the
   model files and synthesise the matrix in an isolated context, then I

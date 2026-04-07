@@ -1,0 +1,23 @@
+version: 1
+current_iteration:
+  number: 5
+  mission: "Integrate, verify, and validate the smart temperature sensor"
+  branch: vse/iter-05-ivv
+  status: open
+  centre_of_gravity:
+    - SR.5
+  opened: "2026-02-28"
+  macrocycle_target: "v1.0.0"
+  backlog:
+    - item: "Execute VER-001 to VER-008 and record results"
+      status: open
+      anchor: "SR.5.2"
+    - item: "Execute VAL-001 to VAL-005 with stakeholder walkthrough"
+      status: open
+      anchor: "SR.5.3"
+    - item: "Rebuild traceability matrix from model and surface any gaps"
+      status: open
+      anchor: "SR.5.2"
+  closure_debt: []
+  notes: "Demo iteration for the smart-sensor dogfood project."
+history: []

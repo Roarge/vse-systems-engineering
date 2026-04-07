@@ -1,6 +1,6 @@
 ---
 name: vse-companion-overview
-description: VSE systems engineering lens. Load this skill first in any VSE project session before responding, before invoking any other VSE skill, and whenever the user asks what the plugin does, where to start, how ISO/IEC 29110 phases work, or how to navigate the companion. Sets identity, source-processing order, phase-based filtering, traceability rules, ISO/IEC 29110 process map, and routing to specialised skills.
+description: VSE systems engineering lens. Load this skill first in any VSE project session before responding, before invoking any other VSE skill, and whenever the user asks what the plugin does, where to start, how AMBSE cycles work, or how to navigate the companion. Sets identity, source-processing order, iteration-centred routing, traceability rules, AMBSE cycle framing, and routing to specialised skills.
 user-invocable: true
 ---
 
@@ -18,10 +18,10 @@ specialised skill.
 ## When This Skill Triggers
 
 - The user starts a new VSE systems engineering project
-- The user opens a project that contains a `.vse-phase` file
+- The user opens a project that contains a `.vse-iteration.yml` file
 - The user asks "what does this plugin do?", "how should I work?", or "where
   do I start?"
-- The user asks about ISO/IEC 29110, the VSE companion, or systems
+- The user asks about ISO/IEC 29110, AMBSE, the VSE companion, or systems
   engineering process in general
 - Any other VSE skill is about to load and the lens has not been set yet in
   this session
@@ -42,9 +42,12 @@ Apply this lens to **every** response in a VSE project context:
    engineer. Do not assume deep prior SE knowledge.
 4. **Warn, do not block.** If the engineer is about to skip a process step,
    flag it clearly, then defer to the engineer's decision.
-5. **Track the phase.** Tailor every response to the current ISO/IEC 29110
-   lifecycle phase. The phase lives in `.vse-phase`. If absent, ask and
-   create it.
+5. **Track the iteration.** Tailor every response to the current AMBSE
+   iteration. The iteration state lives in `.vse-iteration.yml`, which
+   records the current microcycle number, mission, branch, and the
+   centre-of-gravity activities that govern which specialist skills apply
+   inside the iteration. If the file is absent, route to `project-setup` to
+   initialise it. Do not fall back to a fixed ISO phase.
 
 ## Source Processing Order
 
@@ -61,25 +64,36 @@ override higher numbers if they conflict.
 6. **SysML 2.0 specification** (with SySiDE notes): the modelling language
 7. **Domain guides**: needs and requirements, V&V, HSI
 
-## Phase-Based Information Filtering
+## Iteration-Centred Information Filtering
 
-Surface only knowledge relevant to the current phase. This is the R1 regime:
-reduce functional information burden so the engineer can focus on the
-decisions that matter now.
+Surface knowledge relevant to the current iteration's centre-of-gravity
+activities. This is the R1 regime: reduce functional information burden so
+the engineer can focus on the decisions that matter inside the active
+microcycle.
 
-| Current Phase | Show | Suppress |
-|---------------|------|----------|
-| SR.1 Initiation | SEMP structure, data model, environment setup | Requirements methods, architecture patterns |
-| SR.2 Requirements | Stakeholder analysis, SMART criteria, elicitation | Architecture trade-offs, V&V methods, construction |
-| SR.3 Architecture | Functional/physical decomposition, interface analysis, trade-offs | Requirements elicitation, test case design |
-| SR.4 Construction | Build/buy/reuse guidance, component specs | Requirements debates, architecture alternatives |
-| SR.5 IVV | Verification methods, test case derivation, trace checking | Requirements changes, architecture redesign |
+Concurrent centres of gravity are normal in AMBSE (see
+`knowledge/ambse-agile-process.md` Section 2.3). When `.vse-iteration.yml`
+lists more than one centre of gravity, surface the guidance for each
+simultaneously. Do not suppress rows that apply to a concurrent centre.
+
+| Centre of gravity | Show | Deprioritise |
+|-------------------|------|--------------|
+| SR.1 Initiation | SEMP structure, data model, environment setup | Late-phase delivery concerns |
+| SR.2 Requirements | Stakeholder analysis, SMART criteria, elicitation | Detailed V&V methods, construction tactics |
+| SR.3 Architecture | Functional/physical decomposition, interface analysis, trade-offs | Detailed test case design |
+| SR.4 Construction | Build/buy/reuse guidance, component specs | Upstream requirements debates |
+| SR.5 IVV | Verification methods, test case derivation, trace checking | Re-opening baselines outside a Change Request |
 | SR.6 Delivery | Acceptance criteria, documentation, training, maintenance | All upstream activities |
+| PM.1 Planning | Project plan, SEMP skeleton, cadence | Late construction detail |
+| PM.2 Execution | Progress tracking, change management, iteration closure | N/A |
+| PM.3 Assessment and Control | Correction register, deviation analysis | N/A |
+| PM.4 Closure | Product Acceptance Record, handover | Upstream specification work |
 
 **Exception:** If the engineer explicitly asks about a topic outside the
-current phase, provide the information but flag it: "Note: this relates to
-[phase], not the current phase [current]. Consider whether a Change Request
-is needed."
+active centres of gravity, provide the information but flag it: "Note: this
+relates to [activity], which is not the current centre of gravity. Consider
+opening an iteration with this activity as its centre of gravity, or handle
+the change via a Change Request if it touches a baselined artefact."
 
 ## Traceability Rules
 
@@ -107,7 +121,10 @@ Rules:
 3. Every stakeholder need MUST have at least one validation case.
 4. The Traceability Matrix MUST be updated whenever requirements or
    verification cases change.
-5. Phase transitions MUST NOT proceed if trace gaps exist.
+5. Macrocycle closure (release tag on `main`) MUST NOT proceed if trace
+   gaps exist. Iteration-boundary closure MAY proceed with explicit
+   iteration-boundary closure debt recorded on the iteration backlog and
+   carried into the next iteration.
 
 When a trace gap is detected: report it, suggest the missing link, and do
 not proceed until the engineer addresses or explicitly defers it with
@@ -118,24 +135,37 @@ documented rationale. Detailed enforcement is the job of the
 
 Watch for these signs of attention drift and warn the engineer:
 
-- Jumping between phases (writing architecture before requirements are
-  baselined)
-- Skipping verification ("we will test later")
-- Creating work products without checking phase prerequisites
-- Modifying baselined artefacts without a Change Request
+- Iteration-boundary skipping (closing an iteration without running the
+  iteration-boundary closure check). Concurrent SR.2 and SR.3 work inside a
+  single iteration is the normal AMBSE mode and is NOT skipping.
+- Skipping verification at the nanocycle scale ("we will verify later"):
+  every commit should be accompanied by at least one verification action.
+- Producing work products with no input lineage (orphaned outputs with no
+  traceable predecessor in the iteration backlog or the baseline).
+- Modifying baselined artefacts without a Change Request.
+- Accumulating iteration-boundary closure debt across multiple iterations
+  without a plan to resolve it before the macrocycle release gate.
 
 Hook-based attention anchoring is the job of the `attention-regime` skill.
 
-## ISO 29110 Process Map and Skill Routing
+## ISO 29110 Activity Catalogue
+
+This is a **catalogue**, not a schedule. ISO/IEC 29110 enumerates the
+activities that may happen across a VSE lifecycle. AMBSE iterates through
+these activities in microcycles, concurrently where appropriate (see
+`knowledge/iteration-centred-operation.md`). The `iteration-orchestrator`
+routes the engineer into this catalogue based on the active
+centre-of-gravity activities recorded in `.vse-iteration.yml`. Do not read
+the tables below as a phase-by-phase timeline.
 
 ### Project Management (PM)
 
 | Activity | Objective | Key Outputs | Route to |
 |----------|-----------|-------------|----------|
-| PM.1 Project Planning | Establish plan, assign resources | Project Plan [accepted] | `lifecycle-orchestrator` |
-| PM.2 Plan Execution | Monitor progress, manage changes | Progress Status Record | `lifecycle-orchestrator` |
-| PM.3 Assessment and Control | Evaluate against plan, correct | Correction Register | `lifecycle-orchestrator` |
-| PM.4 Closure | Formalise completion, obtain acceptance | Product Acceptance Record | `lifecycle-orchestrator` |
+| PM.1 Project Planning | Establish plan, assign resources | Project Plan [accepted] | `iteration-orchestrator` |
+| PM.2 Plan Execution | Monitor progress, manage changes | Progress Status Record | `iteration-orchestrator` |
+| PM.3 Assessment and Control | Evaluate against plan, correct | Correction Register | `iteration-orchestrator` |
+| PM.4 Closure | Formalise completion, obtain acceptance | Product Acceptance Record | `iteration-orchestrator` |
 
 ### System Definition and Realisation (SR)
 
@@ -144,9 +174,9 @@ Hook-based attention anchoring is the job of the `attention-regime` skill.
 | SR.1 Initiation | Set up SEMP, environment, data model | SEMP, Implementation Environment | `project-setup` |
 | SR.2 Requirements | Elicit needs, derive requirements | StRS, SyRS, Traceability Matrix | `needs-and-requirements` |
 | SR.3 Architecture | Design functional and physical architecture | System Design Document | `architecture-design` |
-| SR.4 Construction | Build or acquire system elements | System Elements [verified] | `lifecycle-orchestrator` |
+| SR.4 Construction | Build or acquire system elements | System Elements [verified] | `iteration-orchestrator` |
 | SR.5 IVV | Integrate, verify, validate | Verification Report, Validation Report | `verification-validation` |
-| SR.6 Delivery | Deliver and transition | Product [delivered] | `lifecycle-orchestrator` |
+| SR.6 Delivery | Deliver and transition | Product [delivered] | `iteration-orchestrator` |
 
 ### Cross-Cutting Skills
 
@@ -172,9 +202,10 @@ implementation planning, `using-git-worktrees` for isolated feature work,
 input to PM.1, `roadmap-update` and `sprint-planning` for iterative
 scheduling within PM.2, `stakeholder-update` for Progress Status Records.
 
-**engineering**: use `architecture` for ADRs during SR.3, `code-review` for
-code review during SR.4, `debug` for defect analysis during SR.5,
-`deploy-checklist` as a complement to phase gate checks.
+**engineering**: use `architecture` for ADRs when SR.3 is the centre of
+gravity, `code-review` for code review when SR.4 is the centre of gravity,
+`debug` for defect analysis when SR.5 is the centre of gravity,
+`deploy-checklist` as a complement to iteration-boundary closure checks.
 
 **document-skills**: use `docx`, `pptx`, and `pdf` for work product exports.
 The `document-export` skill orchestrates these automatically.
@@ -183,7 +214,7 @@ The `document-export` skill orchestrates these automatically.
 
 This skill is the lens. It does not:
 
-- Track the current phase in detail (that is `lifecycle-orchestrator`)
+- Track the current iteration in detail (that is `iteration-orchestrator`)
 - Run trace checks (that is `traceability-guard`)
 - Configure hooks (that is `attention-regime`)
 - Elicit requirements (that is `needs-and-requirements`)

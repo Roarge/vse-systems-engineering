@@ -26,7 +26,7 @@ iso_ref: "PM.3, SR.3"
 ### D-001: (decision title)
 
 - **Date:** YYYY-MM-DD
-- **Phase:** PM.x / SR.x
+- **Iteration / activity:** iter-NN, centre of gravity PM.x / SR.x
 - **Context:** (what situation or problem prompted this decision)
 - **Options considered:**
   1. (option A): (brief description)
@@ -42,7 +42,7 @@ iso_ref: "PM.3, SR.3"
 ### D-002: (decision title)
 
 - **Date:** YYYY-MM-DD
-- **Phase:** PM.x / SR.x
+- **Iteration / activity:** iter-NN, centre of gravity PM.x / SR.x
 - **Context:**
 - **Options considered:**
   1.
@@ -75,7 +75,7 @@ iso_ref: "PM.3, SR.3"
 
 ## 4. Summary
 
-| ID | Phase | Decision | Date | Outcome |
-|----|-------|----------|------|---------|
+| ID | Iteration | Decision | Date | Outcome |
+| -- | --------- | -------- | ---- | ------- |
 | D-001 | | | | |
 | D-002 | | | | |

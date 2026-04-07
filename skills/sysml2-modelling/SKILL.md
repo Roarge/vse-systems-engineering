@@ -372,7 +372,7 @@ syside format models/system-requirements.sysml
 syside check --warnings-as-errors && syside format --check
 ```
 
-**Documentation generation** (at phase gates or delivery):
+**Documentation generation** (at iteration-boundary closure or at macrocycle delivery):
 
 ```bash
 mkdir -p build/diagrams

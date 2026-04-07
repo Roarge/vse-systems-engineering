@@ -14,8 +14,8 @@ session, what decisions were made, and what the engineer should work on next.
 
 ## When This Skill Triggers
 
-- The `@lifecycle-orchestrator` invokes you at session start (resume mode)
-- The `@lifecycle-orchestrator` invokes you at session end (close mode)
+- The `@iteration-orchestrator` invokes you at session start (resume mode)
+- The `@iteration-orchestrator` invokes you at session end (close mode)
 - The engineer explicitly invokes `@session-journal` (checkpoint mode)
 - The engineer says "checkpoint", "save progress", or "what did I do?"
 
@@ -27,8 +27,9 @@ window (default 15 entries, newest first). Each entry has this structure:
 ```yaml
 sessions:
   - date: "YYYY-MM-DDTHH:MM:SS"
-    phase: SR.2
-    activities: [SR.2.2, SR.2.3]
+    iteration: 3
+    centre_of_gravity: [SR.2, SR.3]
+    activities: [SR.2.2, SR.2.3, SR.3.1]
     summary: >
       Brief description of what was accomplished.
     work_products_changed:
@@ -42,7 +43,7 @@ sessions:
 
 ## Mode 1: Resume (Read)
 
-Triggered at session start by the lifecycle orchestrator. Read `.vse-journal.yml`
+Triggered at session start by the iteration-orchestrator. Read `.vse-journal.yml`
 and present the SESSION CONTINUITY block.
 
 ### Procedure
@@ -75,7 +76,9 @@ Triggered when the engineer explicitly requests a progress save.
 ### Procedure
 
 1. Review the current conversation to identify:
-   - **Phase**: read from `.vse-phase`
+   - **Iteration**: read `current_iteration.number` from `.vse-iteration.yml`
+   - **Centre of gravity**: read `current_iteration.centre_of_gravity` from
+     `.vse-iteration.yml` (one or more ISO/IEC 29110 task identifiers)
    - **Activities**: which ISO 29110 sub-activities were worked on (use codes
      like SR.2.3, PM.1.5, etc.)
    - **Summary**: 1-3 sentences describing what was accomplished
@@ -186,7 +189,7 @@ reference:
 
 ## Cross-References
 
-- `@lifecycle-orchestrator`: invokes this skill at session start and end
+- `@iteration-orchestrator`: invokes this skill at session start and end
 - `@project-setup`: creates the initial empty `.vse-journal.yml`
-- `.vse-phase`: the current phase, read for context in journal entries
+- `.vse-iteration.yml`: the current iteration state, read for context in journal entries
 - `docs/pm/session-archive.yml`: archive for rotated journal entries

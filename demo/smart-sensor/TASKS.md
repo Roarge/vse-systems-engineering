@@ -1,7 +1,7 @@
 # Smart Temperature Sensor: ISO 29110 Task Checklist
 
 Generated: 2026-02-28
-Current phase: SR.5
+Current iteration: iter-05 (centre of gravity SR.5)
 
 ## PM.1 Project Planning
 

@@ -24,8 +24,8 @@ environmental design.
 
 Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
-1. **Reduce information burden** by filtering guidance to the current lifecycle
-   phase
+1. **Reduce information burden** by filtering guidance to the current
+   iteration and its centre-of-gravity activity
 2. **Build designed cognitive reserve** by embedding SE competence in the tooling
 3. **Provide machine-readable traceability** through SysML 2.0 models
 4. **Sustain attention** through environmental design rather than compliance
@@ -36,7 +36,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 | Skill | Purpose |
 |-------|---------|
 | vse-companion-overview | Set the VSE lens, source-processing order, and routing for any VSE session (loads first) |
-| lifecycle-orchestrator | Navigate ISO 29110 phases, enforce phase gates, select lifecycle approach |
+| iteration-orchestrator | Manage AMBSE iterations, open and close microcycles, run iteration-boundary and macrocycle closure checks |
 | needs-and-requirements | Elicit stakeholder needs and derive SysML requirements (use case driven) |
 | architecture-design | Develop architecture with trade studies, five views, and handoff workflow |
 | verification-validation | Plan and execute V&V with continuous verification and trace links |
@@ -53,12 +53,14 @@ The plugin ships a small set of `/vse-*` slash commands as quick entry points
 to the most-used skills. Each command is a thin wrapper that hands off to the
 named skill and forwards any arguments you supply.
 
-| Command        | Delegates to             | Use case                                                                    |
-|----------------|--------------------------|-----------------------------------------------------------------------------|
-| `/vse-setup`   | `project-setup`          | Bootstrap a new VSE project (greenfield or brownfield)                      |
-| `/vse-phase`   | `lifecycle-orchestrator` | Query the current phase, check phase gates, plan a transition               |
-| `/vse-trace`   | `traceability-guard`     | Run a traceability check against the current SysML models and report gaps   |
-| `/vse-journal` | `session-journal`        | Open or append the cross-session continuity journal                         |
+| Command           | Delegates to             | Use case                                                                                     |
+|-------------------|--------------------------|----------------------------------------------------------------------------------------------|
+| `/vse-setup`      | `project-setup`          | Bootstrap a new VSE project (greenfield or brownfield)                                       |
+| `/vse-iteration`  | `iteration-orchestrator` | Report iteration position, run the iteration-boundary closure check, handle a Change Request |
+| `/vse-microcycle` | `iteration-orchestrator` | Open a new AMBSE microcycle: elicit mission, centre of gravity, branch, backlog              |
+| `/vse-nanocycle`  | `iteration-orchestrator` | Plan a single commit: anchor thread, intent, verification hook, commit message               |
+| `/vse-trace`      | `traceability-guard`     | Run a traceability check against the current SysML models and report gaps                    |
+| `/vse-journal`    | `session-journal`        | Open or append the cross-session continuity journal                                          |
 
 You can still invoke any skill directly with `@skill-name` if you need a
 workflow that the slash commands do not cover.
@@ -88,10 +90,11 @@ or any other baselined work product.
 Fifteen reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
 context and organised by source.
 
-**ISO/IEC 29110** (process backbone)
+**ISO/IEC 29110** (process backbone, catalogue-style)
 
-- `iso29110-profile.md` -- process structure, roles, work products, phase gates
-- `iso29110-task-lists.md` -- actionable checklists reorganised by phase
+- `iso29110-profile.md` -- process structure, roles, work products, lifecycle-neutral entry
+- `iso29110-task-lists.md` -- actionable checklists organised by activity, for use as centre-of-gravity selectors
+- `iteration-centred-operation.md` -- how ISO 29110 tasks map onto AMBSE iterations, centre of gravity, brownfield entry, closure checks
 
 **PHAS-EAI** (design rationale)
 
@@ -227,8 +230,10 @@ The `hooks/` directory contains two git hook scripts for automated enforcement:
 
 - **pre-commit-traceability.sh** blocks commits when staged `.sysml` files have
   requirements without `satisfy` or `verify` trace links.
-- **phase-gate-check.sh** verifies that required work products exist before a
-  phase transition.
+- **iteration-boundary-check.sh** reports (advisory) which work products required
+  by the iteration's centre-of-gravity activities are missing at iteration close.
+  Missing items become explicit iteration-boundary closure debt on the backlog.
+  The only hard gate in the plugin is the macrocycle closure check at release.
 
 To install them in a project:
 
@@ -245,30 +250,37 @@ plugin by catching trace gaps at commit time.
 1. Open a fresh project directory in your terminal.
 2. Launch Claude Code and invoke the `project-setup` skill.
 3. The skill scaffolds the directory structure, creates SysML 2.0 model stubs,
-   populates work product templates, and sets the initial phase to SR.1.
-4. Use `lifecycle-orchestrator` to navigate the AMBSE iteration cycles, enforce
-   phase gates, and plan the iteration cadence. The plugin enforces hybrid
-   AMBSE as the single VSE lifecycle. Each iteration is a `vse/iter-NN`
-   feature branch ending in a pull request.
+   populates work product templates, and writes an initial `.vse-iteration.yml`
+   for Iteration 0 (Architecture Zero) with centre of gravity PM.1 plus SR.1
+   for a greenfield project, or a detected centre of gravity for a brownfield
+   project.
+4. Use `iteration-orchestrator` (or the `/vse-iteration`, `/vse-microcycle`,
+   `/vse-nanocycle` slash commands) to navigate the AMBSE iteration cycles,
+   open the next microcycle, plan a nanocycle commit, or run the
+   iteration-boundary closure check. The plugin enforces hybrid AMBSE as the
+   single VSE lifecycle. Each iteration is a `vse/iter-NN` feature branch
+   ending in a pull request.
 
 ### Picking up an existing VSE project
 
 For a project that was previously scaffolded by `project-setup` (or any
-project that already carries a `.vse-phase` file at its root), pickup is
-automatic. Open the project directory in Claude Code and the
+project that already carries a `.vse-iteration.yml` file at its root),
+pickup is automatic. Open the project directory in Claude Code and the
 `SessionStart` hook will:
 
-1. Detect the `.vse-phase` file and read the current ISO 29110 activity.
-2. Print the current phase, the mandatory first action (load
+1. Detect the `.vse-iteration.yml` file and read the current iteration
+   number, mission, branch, and centre-of-gravity activities.
+2. Print the iteration position, the mandatory first action (load
    `vse-companion-overview`), and the SysML model summary.
 3. Surface the session journal via `session-journal` if `.vse-journal.yml`
    exists, so the previous session's pending work and open issues are
    visible.
 
 From there, invoke `vse-companion-overview` to set the lens, then route
-phase-specific work to `lifecycle-orchestrator` and the other specialised
-skills it indexes. The orchestrator checks prerequisites for the active
-phase and guides the remaining activities.
+iteration work to `iteration-orchestrator` and the other specialised skills
+it indexes. The orchestrator walks the engineer through opening the next
+microcycle, planning a nanocycle commit, and running the iteration-boundary
+closure check.
 
 ### Adding VSE to an existing repository
 
@@ -288,9 +300,9 @@ mode:
    new `engineering/` subfolder so your existing project root stays
    clean. The `models/`, `docs/pm/`, `docs/sr/`, `TASKS.md`, `syside.toml`,
    and `.lsp.json` files all live under `engineering/`. Only
-   `.vse-phase`, `.vse-journal.yml`, and the merged `CLAUDE.md` sit at
-   the project root, so the SessionStart hook keeps working without
-   configuration.
+   `.vse-iteration.yml`, `.vse-journal.yml`, and the merged `CLAUDE.md`
+   sit at the project root, so the SessionStart hook keeps working
+   without configuration.
 3. **Idempotent CLAUDE.md merge.** If your project already has a
    `CLAUDE.md`, the skill appends a marker block delimited by
    `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and
@@ -304,11 +316,11 @@ mode:
    staging step to you, and the Step 11 summary tells you to stage the
    new files on a `vse/iter-00-architecture-zero` branch so the AMBSE
    branch-per-microcycle workflow applies from your first commit.
-5. **Hooks autodetect the layout.** The session-start, phase-gate, and
-   pre-commit traceability scripts all check for `engineering/models`
-   or `engineering/syside.toml` and point their model and work-product
-   paths at `engineering/` automatically. The same scripts also work in
-   greenfield projects without modification.
+5. **Hooks autodetect the layout.** The session-start,
+   iteration-boundary-check, and pre-commit traceability scripts all
+   check for `engineering/models` or `engineering/syside.toml` and point
+   their model and work-product paths at `engineering/` automatically.
+   The same scripts also work in greenfield projects without modification.
 
 Re-running `project-setup` inside a brownfield repository is safe: the
 marker-block merge is idempotent, the existing `engineering/` files are

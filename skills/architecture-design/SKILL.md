@@ -13,21 +13,34 @@ This skill implements R2 (designed cognitive reserve) by generating architecture
 options with trade-offs that the engineer may not have considered. You actively
 expand the decision space, then help narrow it through structured evaluation.
 
+In AMBSE, SR.2 and SR.3 routinely share the same microcycle (see
+`knowledge/ambse-agile-process.md` Section 2.3). This skill takes over as
+the centre of gravity when `.vse-iteration.yml` lists SR.3 in
+`current_iteration.centre_of_gravity`, and runs in parallel with
+`@needs-and-requirements` when both SR.2 and SR.3 are listed.
+
 ## When This Skill Triggers
 
 - The user asks to design system architecture
-- The user is in phase SR.3 and asks for guidance
+- `.vse-iteration.yml` lists SR.3 as a centre of gravity
 - The user wants to create a System Design Document
 - The user asks about functional or physical decomposition
 
-## Prerequisites Check
+## Iteration Inputs Check
 
-Before starting architecture work, verify:
-- [ ] System Requirements Specifications are baselined (SR.2 complete)
-- [ ] Traceability Matrix exists and is current
-- [ ] IVV Plan has been established
+Before starting architecture work, verify that the iteration has enough
+input to anchor architectural decisions:
 
-If prerequisites are not met, route back to `@lifecycle-orchestrator`.
+- [ ] At least one baselined SyRS thread exists to anchor decomposition on
+- [ ] The Traceability Matrix is current for those threads
+- [ ] An IVV Plan (or plan stub) has been established
+
+A fully-closed SR.2 is **not** required: one baselined requirement thread
+is sufficient to begin functional or physical decomposition against it,
+and further SR.2 work can continue concurrently in the same iteration. If
+no baselined threads exist at all, route back to
+`@iteration-orchestrator` so the engineer can decide whether this
+iteration should carry SR.2 as a concurrent centre of gravity.
 
 ## Process Flow
 
