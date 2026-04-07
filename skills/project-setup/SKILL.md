@@ -1,6 +1,6 @@
 ---
 name: project-setup
-description: Bootstrap a VSE systems engineering project. Use when starting a new project, scaffolding, initialising ISO 29110 structure, or adding VSE to an existing repository.
+description: Bootstrap a VSE systems engineering project. Use when starting a new project, scaffolding, initialising ISO 29110 structure, or adding VSE to an existing repository. Enters Plan Mode for review before making any file system changes. Best run on Claude Opus with extended thinking.
 user-invocable: true
 ---
 
@@ -24,6 +24,35 @@ This skill has two modes:
 
 The mode is detected automatically in Step 0.
 
+## Operating Mode and Prerequisites
+
+This skill makes irreversible changes to the file system. It scaffolds
+directories, writes templated files, installs git hooks, and (in
+greenfield mode) runs `git init` and creates an initial commit. To make
+those changes safe to inspect before they happen, the skill operates in
+two phases:
+
+1. **Read-only context gathering** (Steps 0 and 1). The skill detects
+   the mode, harvests context from the existing repository if any, and
+   asks the user only for fields it could not infer. No files are
+   created or modified during this phase.
+2. **Plan Mode review and execution** (Steps 2 through 12). The skill
+   enters Claude Code's Plan Mode, drafts a concrete setup plan based on
+   the gathered context, and surfaces it for explicit user approval via
+   `ExitPlanMode`. Execution begins only after approval.
+
+### Recommended model
+
+Both the brownfield context harvest and the CLAUDE.md marker-block merge
+involve judgement calls that benefit from a more capable model. For best
+results, run this skill on **Claude Opus with extended thinking enabled**.
+
+At the start of Step 0, report the model the harness is currently
+running and ask the user whether they want to switch to Opus before
+proceeding. If the active model is Sonnet or Haiku, recommend the switch
+but proceed if the user declines. The recommendation is a soft
+prerequisite, not an enforced requirement.
+
 ## When This Skill Triggers
 
 - The user asks to start a new project, create a project, or set up a project
@@ -32,10 +61,24 @@ The mode is detected automatically in Step 0.
 - The `@lifecycle-orchestrator` routes here for new project initialisation
 - The user says "bootstrap", "scaffold", or "initialise a project"
 
-## Step 0: Detect Mode
+## Step 0: Report Model and Detect Mode
 
-Run the following to determine whether the current working directory is
-inside an existing git repository:
+Begin by reporting which Claude model the harness is currently running
+and surfacing the Opus recommendation from the prerequisites section
+above. Phrase it as a single short message, for example:
+
+> "I am currently running on Claude Sonnet 4.6. The `project-setup`
+> skill makes judgement calls during the brownfield harvest and the
+> CLAUDE.md merge that benefit from Claude Opus with extended thinking.
+> Would you like to switch to Opus before continuing, or proceed on the
+> current model?"
+
+If the user is already on Opus, acknowledge it and continue. If the user
+declines the switch, continue on the active model. If the user wants to
+switch, pause until they confirm the switch is done, then continue.
+
+After the model handshake, run the following to determine whether the
+current working directory is inside an existing git repository:
 
 ```bash
 git rev-parse --is-inside-work-tree 2>/dev/null
@@ -58,8 +101,9 @@ test -f "$PROJECT_ROOT/.vse-phase"
     brownfield flow below.
 
 The greenfield and brownfield flows share most steps. Where they diverge,
-each step calls out which mode applies. Both flows end at Step 11 with a
-summary and a handoff to `@lifecycle-orchestrator`.
+each step calls out which mode applies. Both flows pass through the
+Step 2 Plan Mode gate before any file creation, and both end at Step 12
+with a summary and a handoff to `@lifecycle-orchestrator`.
 
 ## Step 1: Gather Project Information
 
@@ -86,7 +130,7 @@ genuinely require human input (acquirer, stakeholder roles).
    - The first non-empty paragraph after the H1 as the description candidate.
 
 2. **Existing CLAUDE.md** (root, if any). Preserve the entire file content
-   as `EXISTING_CLAUDE_MD` for the merge step in Step 4. Scan for any
+   as `EXISTING_CLAUDE_MD` for the merge step in Step 5. Scan for any
    `## Project Information` block and pick up `Acquirer` and `Author`
    fields if they are present.
 
@@ -132,7 +176,71 @@ Store the gathered information for template population:
 - `{{ACQUIRER}}`: acquirer name
 - `{{AUTHOR}}`: author name
 
-## Step 2: Prepare the Workspace
+## Step 2: Draft Setup Plan and Enter Plan Mode
+
+By this point Steps 0 and 1 have completed. The skill knows:
+
+- Whether the run is greenfield or brownfield
+- The project name, acquirer, author, date, and stakeholder roles
+- (Brownfield only) the harvested README content, the existing
+  CLAUDE.md content, the detected language stack, and the source tree
+  summary
+- The intended file system layout (root or `engineering/` subfolder)
+
+No files have been created or modified yet. Now draft a concrete setup
+plan and present it for user approval through Claude Code's Plan Mode.
+
+### Drafting the plan
+
+Compose a markdown plan with the following sections, in order:
+
+1. **Mode and project summary**: one sentence stating greenfield or
+   brownfield and the project name.
+2. **Decisions taken from harvested context** (brownfield only): the
+   project name source (README H1, user override), the detected
+   language stack, the author from git config, and any
+   already-populated CLAUDE.md fields.
+3. **Files and directories to be created**: a tree showing every path
+   that will land on disk, with the source template for each (for
+   example, `engineering/docs/pm/project-plan.md` from
+   `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md`). Group templates
+   by directory rather than listing each file on its own line, so the
+   plan stays scannable.
+4. **Files to be modified in place**: the existing files the skill will
+   touch. Greenfield has none beyond the new ones. Brownfield has the
+   `.gitignore` append and the `CLAUDE.md` marker-block merge.
+5. **Hooks and integrations**: the pre-commit hook installation, the
+   SySiDE detection plan, and any GitHub Actions workflows offered
+   conditional on GitHub MCP availability.
+6. **Git operations**: greenfield states the `git init` and the
+   initial commit message. Brownfield states "no git plumbing, the user
+   will stage and commit on a `vse/iter-00-architecture-zero` branch".
+7. **What happens after approval**: the skill executes Steps 3 through
+   12 in order and ends with the Step 12 summary. The user can reject
+   the plan at the review prompt to abort without any disk changes.
+
+### Entering Plan Mode
+
+Call the `EnterPlanMode` tool. Inside plan mode, finalise the drafted
+markdown above, then call the `ExitPlanMode` tool. The Claude Code
+harness presents the plan file content to the user for approval through
+the standard review UI.
+
+- **If the user approves the plan**: continue with Step 3 below.
+- **If the user rejects the plan**: stop. Do not call any tool that
+  modifies the file system. Ask the user what they would like to
+  change, refresh the relevant Step 1 fields based on the answer, and
+  re-enter Plan Mode with a revised plan.
+
+### Important: never bypass the gate
+
+Do not call `Write`, `Edit`, `Bash` (for any filesystem-modifying
+command), or any other tool that modifies disk state until
+`ExitPlanMode` has returned with user approval. The whole point of this
+step is to give the user a single binary go or no-go before any
+irreversible action.
+
+## Step 3: Prepare the Workspace
 
 ### Greenfield mode
 
@@ -164,7 +272,7 @@ Update the existing `.gitignore`:
   `${CLAUDE_PLUGIN_ROOT}/templates/common/gitignore` as the starting point
   and add the two `engineering/` paths above it.
 
-## Step 3: Create Directory Structure
+## Step 4: Create Directory Structure
 
 ### Greenfield mode
 
@@ -246,7 +354,7 @@ current working directory. Everything else lives under `engineering/` to
 keep the host project's root clean. The hooks autodetect this layout via
 their `ENG_ROOT` block.
 
-## Step 4: Populate Templates
+## Step 5: Populate Templates
 
 ### Greenfield mode
 
@@ -272,7 +380,7 @@ Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/vse-journal.yml` to
 `.vse-journal.yml` at the project root.
 
 Copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to
-`engineering/.lsp.json`. In Step 11, tell the user to open the
+`engineering/.lsp.json`. In Step 12, tell the user to open the
 `engineering/` folder in their IDE for SySiDE LSP discovery, or to symlink
 `engineering/.lsp.json` to the project root if their IDE expects a
 root-level LSP config.
@@ -341,7 +449,7 @@ Then place the file:
     a trailing newline. The user's existing content stays at the top of
     the file.
 
-## Step 5: Create SysML 2.0 Model Files
+## Step 6: Create SysML 2.0 Model Files
 
 These files live under `models/` in greenfield mode and under
 `engineering/models/` in brownfield mode. The content is identical in
@@ -426,7 +534,7 @@ package Validation {
 }
 ```
 
-## Step 6: Generate TASKS.md
+## Step 7: Generate TASKS.md
 
 Generate a project-specific task checklist from
 `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`. The generated
@@ -442,7 +550,7 @@ In **brownfield mode**, write the file to `engineering/TASKS.md`. This
 keeps the host project's root clean. If the host project already has its
 own `TASKS.md` for unrelated work, the brownfield path leaves it alone.
 
-## Step 7: Configure Hooks
+## Step 8: Configure Hooks
 
 Route to `@attention-regime` for hook installation:
 
@@ -460,9 +568,9 @@ Inform the user that the hook will:
 - Block commits with broken SysML 2.0 trace links
 - Report the engineering root it detected on each invocation
 
-## Step 8: Detect and Configure SySiDE
+## Step 9: Detect and Configure SySiDE
 
-The `.lsp.json` copied in Step 4 wires the Claude Code IDE to the SySiDE
+The `.lsp.json` copied in Step 5 wires the Claude Code IDE to the SySiDE
 language server. In greenfield mode it sits at the project root. In
 brownfield mode it sits at `engineering/.lsp.json`. It activates the next
 time the user opens the project (or the `engineering/` folder, in
@@ -479,7 +587,7 @@ syside --version
 **If available:**
 
 1. Verify the `syside.toml` configuration is complete (already populated
-   in Step 4).
+   in Step 5).
 2. Run an initial validation to confirm the toolchain works. The path
    depends on the mode:
    ```bash
@@ -549,7 +657,7 @@ Inform the user that the SySiDE tools are optional but recommended:
 See `${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md` for the full
 tool selection guide.
 
-## Step 9: Detect Other Integrations
+## Step 10: Detect Other Integrations
 
 ### GitHub MCP
 
@@ -584,7 +692,7 @@ of integration points:
 | engineering | Use `@architecture` for ADRs during SR.3, `@review` for SR.4 |
 | document-skills | Use `@docx` and `@pptx` for work product export via `@document-export` |
 
-## Step 10: Initial Commit
+## Step 11: Initial Commit
 
 ### Greenfield mode
 
@@ -614,11 +722,11 @@ the modified `.gitignore`, the merged `CLAUDE.md`) in their own style,
 following the AMBSE branch-per-microcycle workflow described in the
 merged CLAUDE.md.
 
-In the Step 11 summary, remind the user that the first commit they make
+In the Step 12 summary, remind the user that the first commit they make
 should land on a `vse/iter-00-architecture-zero` branch, not directly on
 their default branch.
 
-## Step 11: Present Summary
+## Step 12: Present Summary
 
 ### Greenfield mode
 
