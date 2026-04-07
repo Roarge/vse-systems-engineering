@@ -8,5 +8,7 @@
   "license": "MIT",
   "repository": "https://github.com/Roarge/vse-systems-engineering",
   "skills": "./skills/",
+  "commands": "./commands/",
+  "agents": "./agents/",
   "hooks": "./hooks.json"
 }
