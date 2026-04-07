@@ -14,3 +14,7 @@ Thumbs.db
 
 # Local, uncommitted contributor instructions for plugin development
 CLAUDE.local.md
+
+# Personal Claude Code harness config (per-user, not plugin content).
+# Plugin manifests live under .claude-plugin/ and are committed normally.
+.claude/
