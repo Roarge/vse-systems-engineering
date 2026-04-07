@@ -170,6 +170,45 @@ Guide the engineer through these activities:
 Guide through: progress monitoring, change request evaluation, revision
 meetings, configuration management, repository management.
 
+**Change Request Handling** (PM.2.2): When a stakeholder or the Work Team
+requests a change to an already-baselined artefact (stakeholder needs,
+system requirements, architecture, design, schedule, or cost), do not
+edit the baseline in place. Open a Change Request work product instead.
+
+1. **Open the Change Request.** Copy
+   `${CLAUDE_PLUGIN_ROOT}/templates/pm/change-request.md` to
+   `docs/pm/change-requests/CR-NNN.md` (use the next unused CR number).
+   Fill in the Request Details (submitter, date, priority, category)
+   and the Description of Change (current state, proposed state).
+2. **Document the rationale.** State why the change is needed. Link to
+   the triggering event (stakeholder feedback, test failure, interface
+   mismatch, discovered constraint) so the decision is auditable later.
+3. **Perform impact analysis.** For each baseline the change touches,
+   fill in the Cost, Schedule, Technical, and Risk impact sections.
+   Use the Affected Baselines table to list every artefact ID (REQ-xxx,
+   STK-xxx, architecture element, test case) that would change. Invoke
+   `@traceability-guard` to find downstream traces that the change
+   would break.
+4. **Evaluate and decide.** The PJM role evaluates and recommends
+   Approve, Reject, Postpone, or Needs more information. In a VSE the
+   PJM and the submitter may be the same person: document the
+   evaluation anyway so the decision stands on the record.
+5. **Approved path.** If approved, update the affected artefacts in
+   their own commits with `refs: CR-NNN` in the commit message. Bump
+   the baseline version where applicable and update the Traceability
+   Matrix. Rerun `@verification-validation` for any verification cases
+   whose parent requirement changed. Close the CR by filling in the
+   Implementation section (assigned to, completion date, verification).
+6. **Rejected or postponed path.** Record the decision in the CR,
+   state the reason, and leave the baseline untouched. Keep the CR in
+   `docs/pm/change-requests/` as an audit trail even when rejected.
+
+Do not handle informal changes in chat. Any modification that would
+alter a signed-off baseline needs a CR, even in a VSE. The lightweight
+version of this process is still two files (the CR and the baseline
+edit), which is much cheaper than a post-hoc audit of what changed and
+why.
+
 7. **Repository Recovery** (PM.2.7): If repository corruption or loss occurs,
    execute the recovery procedure defined in the CM strategy
 
