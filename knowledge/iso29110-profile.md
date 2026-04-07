@@ -2,7 +2,7 @@
 
 ## Overview
 
-ISO/IEC TR 29110-5-6-2:2014 provides a Management and Engineering Guide for the Basic Profile of the Generic Profile Group for Systems Engineering. It targets Very Small Entities (VSEs), defined as enterprises, organisations, departments, or projects having up to 25 people. The standard applies to non-critical systems development projects and is lifecycle-neutral, meaning it can be used with waterfall, iterative, incremental, evolutionary, agile, or test-driven approaches.
+ISO/IEC TR 29110-5-6-2:2014 provides a Management and Engineering Guide for the Basic Profile of the Generic Profile Group for Systems Engineering. It targets Very Small Entities (VSEs), defined as enterprises, organisations, departments, or projects having up to 25 people. The standard applies to non-critical systems development projects and is lifecycle-neutral, meaning it can be used with waterfall, iterative, incremental, evolutionary, agile, or test-driven approaches. The ISO/IEC 29110 series of standards and technical reports can be applied at any phase of system or software development within a lifecycle. This plugin enters the lifecycle at the centre-of-gravity activity indicated in `.vse-iteration.yml` rather than at a fixed PM.1 or SR.1 starting point.
 
 The guide is structured around two interrelated processes: Project Management (PM) and System Definition and Realization (SR). PM uses the Acquirer's Statement of Work (SOW) to elaborate a Project Plan, monitor progress, handle change requests, and close the project. SR is driven by the Systems Engineering Management Plan (SEMP) and covers requirements elicitation, architectural design, construction, integration, verification, validation, and product delivery.
 

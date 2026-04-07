@@ -1,8 +1,13 @@
-## ISO 29110 Context
+## AMBSE Iteration Context
 
-- **Current phase:** <!-- e.g., SR.2 System Requirements Engineering -->
-- **Activity:** <!-- e.g., SR.2.4 Elaborate System Requirements -->
-- **Phase transition:** <!-- Yes/No. If Yes, this PR includes a gate check -->
+- **Iteration:** <!-- e.g., iter-03 Temperature Control -->
+- **Branch:** <!-- e.g., vse/iter-03-temperature-control -->
+- **Centre of gravity:** <!-- e.g., SR.2, SR.3 (concurrent centres are normal) -->
+- **Iteration closing?** <!-- Yes / No. If Yes, this PR includes the iteration-boundary closure record. -->
+
+## Iteration Mission
+
+<!-- One or two sentences stating what this iteration set out to deliver. -->
 
 ## Summary
 
@@ -31,21 +36,27 @@
 
 ## Traceability
 
-<!-- Confirm trace link integrity -->
+<!-- Confirm trace link integrity for every thread this iteration touched. -->
 
 - [ ] All modified requirements maintain their satisfy links
 - [ ] All modified requirements maintain their verify links
 - [ ] Traceability Matrix updated (if requirements changed)
 - [ ] No orphan verification or validation cases
 
-## Phase Gate Checklist
+## Iteration-Boundary Closure
 
-<!-- If this is a phase transition PR, complete the relevant gate checklist
-     from knowledge/iso29110-profile.md. Delete this section if not a
-     phase transition. -->
+<!-- If this PR closes the iteration, complete this section. Delete it if
+     the PR is mid-iteration work. The iteration-boundary check is
+     advisory: closure debt carried onto the next iteration's backlog is
+     normal AMBSE behaviour. -->
+
+- [ ] Work products required by every active centre of gravity exist
+      (or are recorded as closure debt in `.vse-iteration.yml`)
+- [ ] `closure_debt[]` is populated for any unresolved items
+- [ ] `history[]` entry added for the closing iteration
 
 ## Review
 
 - [ ] Work products reviewed by Work Team
-- [ ] Changes consistent with current phase objectives
-- [ ] No out-of-phase modifications without Change Request
+- [ ] Changes consistent with the iteration mission and centre of gravity
+- [ ] No modifications to baselined artefacts outside a Change Request

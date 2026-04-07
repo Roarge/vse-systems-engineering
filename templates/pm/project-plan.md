@@ -90,7 +90,8 @@ stakeholders for frequent feedback._
 
 > Macrocycle milestones sit above the iteration cadence and define the points
 > at which `main` will be tagged with a semantic version. Each milestone has
-> a gate criterion drawn from the ISO 29110 phase gates.
+> a gate criterion drawn from accumulated iteration closure items, applied
+> as the hard macrocycle closure gate.
 
 | Milestone | Description | Target Date | Gate Criteria |
 |-----------|-------------|-------------|---------------|

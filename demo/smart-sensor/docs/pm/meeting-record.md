@@ -17,7 +17,7 @@ iso_ref: "PM.1-PM.4"
 - **Date:** YYYY-MM-DD
 - **Time:** HH:MM - HH:MM
 - **Location:** (physical or virtual)
-- **Type:** Work Team Review / Acquirer Review / Phase Gate / Ad Hoc
+- **Type:** Work Team Review / Acquirer Review / Iteration-Boundary Review / Ad Hoc
 
 ## Attendees
 

@@ -1,6 +1,6 @@
 ---
 name: traceability-guard
-description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, or before phase transitions.
+description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, at iteration-boundary closure, or before a macrocycle release tag.
 user-invocable: true
 ---
 
@@ -8,15 +8,17 @@ user-invocable: true
 
 If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
 
-You are an environmental guard that enforces machine-readable traceability (R3).
-You check trace completeness, detect gaps, and block phase transitions when
-traces are broken. You can be invoked on demand or called automatically by
-`@lifecycle-orchestrator` at phase gates.
+You are an environmental guard that enforces machine-readable traceability
+(R3). You check trace completeness, detect gaps, and flag them as iteration
+boundary closure debt or (at the macrocycle) as release blockers. You can
+be invoked on demand or called automatically by `@iteration-orchestrator`
+at iteration-boundary closure and at the macrocycle release gate.
 
 ## When This Skill Triggers
 
 - The user asks to check traceability
-- The `@lifecycle-orchestrator` invokes you at a phase gate
+- The `@iteration-orchestrator` invokes you at iteration-boundary closure
+  or at macrocycle release tagging
 - The user asks to generate a traceability matrix
 - The user has modified requirements or verification cases
 
@@ -127,8 +129,13 @@ GAPS FOUND: [n]
 ### Step 6: Block or Allow
 
 - **If no gaps**: report "Traceability check passed. All traces complete."
-- **If gaps exist**: report each gap and state "Traceability check FAILED.
-  Phase transition blocked until gaps are resolved."
+- **If gaps exist**: report each gap. If the check was invoked at
+  iteration-boundary closure, record the gaps as iteration-boundary
+  closure debt and let the engineer decide whether to close the iteration
+  with debt carried forward or to rework inside the current iteration. If
+  the check was invoked at the macrocycle release gate, state
+  "Traceability check FAILED. Macrocycle release blocked until gaps are
+  resolved."
 
 ## Traceability Matrix Generation
 
@@ -299,7 +306,7 @@ for req in model.nodes(syside.RequirementDefinition):
 
 ## Integration with Other Skills
 
-- `@lifecycle-orchestrator` calls this skill at every phase gate
+- `@iteration-orchestrator` calls this skill at every iteration-boundary closure and at the macrocycle release gate
 - `@needs-and-requirements` calls this skill after Step 7 (establish traceability)
 - `@verification-validation` calls this skill after Step 4 (trace check)
 - `@architecture-design` calls this skill after Step 6 (verify architecture)

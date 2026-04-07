@@ -18,7 +18,7 @@ ephemeral build artefacts.
 - The user asks to export, generate, or produce a document (docx, pptx, pdf)
 - The user asks to "build" or "publish" work products
 - The user asks for a deliverable-ready version of a work product
-- The `@lifecycle-orchestrator` routes here for document generation at delivery
+- The `@iteration-orchestrator` routes here for document generation at macrocycle delivery
 
 ## Principle: Source of Truth
 
@@ -333,7 +333,7 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 ## Cross-References
 
 - `@project-setup`: creates the directory structure including `build/`
-- `@lifecycle-orchestrator`: may trigger export at SR.6 delivery
+- `@iteration-orchestrator`: may trigger export at macrocycle delivery (SR.6)
 - `document-skills:docx`, `document-skills:pptx`, `document-skills:pdf`:
   preferred export tools when available
 - `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:

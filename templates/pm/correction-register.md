@@ -30,7 +30,7 @@ corrective action, and the outcome.
 
 - **Date identified:** YYYY-MM-DD
 - **Identified by:** (name, role)
-- **Phase:** PM.x / SR.x
+- **Iteration / activity:** iter-NN, centre of gravity PM.x / SR.x
 
 **Deviation:**
 > Describe what deviated from the plan (task, schedule, cost, quality).
@@ -55,7 +55,7 @@ corrective action, and the outcome.
 
 - **Date identified:** YYYY-MM-DD
 - **Identified by:** (name, role)
-- **Phase:** PM.x / SR.x
+- **Iteration / activity:** iter-NN, centre of gravity PM.x / SR.x
 
 **Deviation:**
 >

@@ -13,7 +13,7 @@ temperature exceeds configurable bounds.
 
 ```
 smart-sensor/
-├── .vse-phase              Phase tracker (currently SR.5)
+├── .vse-iteration.yml      Iteration state (iter-05, centre of gravity SR.5)
 ├── .gitignore              Ignores build/ and generated files
 ├── syside.toml             SySiDE configuration
 ├── TASKS.md                ISO 29110 task checklist
@@ -79,7 +79,7 @@ STK-005 ReliableOperation
 
 ## How to use with the plugin
 
-1. **Navigate lifecycle**: invoke `@lifecycle-orchestrator` to see current phase and next actions
+1. **Navigate iterations**: invoke `@iteration-orchestrator` (or `/vse-iteration`, `/vse-microcycle`, `/vse-nanocycle`) to see iteration state, open the next microcycle, or plan a nanocycle commit
 2. **Capture needs**: invoke `@needs-and-requirements` to review stakeholder needs and derive system requirements
 3. **Design architecture**: invoke `@architecture-design` to develop the system design
 4. **Plan V&V**: invoke `@verification-validation` to create verification and validation cases
@@ -91,6 +91,7 @@ STK-005 ReliableOperation
 
 ## Purpose
 
-This demo walks through every ISO 29110 phase using all nine plugin skills,
-producing SysML 2.0 models with full bidirectional traceability and ISO 29110
-work product templates ready for population.
+This demo walks through every ISO 29110 activity as centre-of-gravity
+work inside AMBSE iterations, producing SysML 2.0 models with full
+bidirectional traceability and ISO 29110 work product templates ready
+for population.

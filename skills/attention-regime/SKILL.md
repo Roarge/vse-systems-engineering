@@ -19,7 +19,7 @@ resistance.
 - The user asks to set up or configure the SE environment
 - The user asks about hooks, guards, or reminders
 - The user asks for a project health check
-- The `@lifecycle-orchestrator` routes here for environment configuration
+- The `@iteration-orchestrator` routes here for environment configuration
 
 ## Why These Hooks
 
@@ -28,8 +28,8 @@ conveniences. They are environmental interventions in the PHAS-EAI sense
 (Predictive Homeostatic Allostatic Stress, Environmental Adaptation
 Index), the framework that motivates this plugin's R4 attention regime.
 The hooks reshape the engineering environment so that traceability,
-phase discipline, and verification become the path of least resistance
-rather than acts of remembered virtue. See the embedded PHAS-EAI
+iteration discipline, and verification become the path of least
+resistance rather than acts of remembered virtue. See the embedded PHAS-EAI
 framework reference at the bottom of this skill for the full rationale,
 the lever taxonomy, and the calibration guidance that informs the
 adjustments offered later in this skill.
@@ -41,9 +41,10 @@ adjustments offered later in this skill.
 This plugin provides two layers of hooks:
 
 **Claude Code hooks** (`hooks.json` at the plugin root):
-- **SessionStart**: automatically reads `.vse-phase` and `.vse-journal.yml` at
-  the start of every session, presenting the lifecycle position and session
-  continuity context without manual invocation.
+- **SessionStart**: automatically reads `.vse-iteration.yml` and
+  `.vse-journal.yml` at the start of every session, presenting the
+  iteration position (iteration number, mission, status, centre of
+  gravity) and session continuity context without manual invocation.
 - **PostToolUse (Write/Edit)**: when a `.sysml` file is modified, reminds the
   engineer to maintain trace links and check traceability.
 
@@ -64,21 +65,26 @@ cp ${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-**Phase gate check** (`hooks/phase-gate-check.sh`):
-- Checks work product completeness for the current phase
-- Called manually or by `@lifecycle-orchestrator` at transitions
-- Does not block automatically but reports missing items
+**Iteration-boundary check** (`hooks/iteration-boundary-check.sh`):
+- Checks work product completeness across every active centre-of-gravity
+  activity listed in `.vse-iteration.yml`
+- Called manually or by `@iteration-orchestrator` at iteration close
+- Advisory only: reports missing items as iteration-boundary closure debt
+  and exits 0. The hard closure gate lives at the macrocycle (release
+  tag), not here.
 
-### Step 2: Set Up Phase Tracking
+### Step 2: Set Up Iteration Tracking
 
-Create the `.vse-phase` file:
+Ensure `.vse-iteration.yml` exists at the project root. If it does not,
+route to `@project-setup`, which owns the state file template
+(`${CLAUDE_PLUGIN_ROOT}/templates/common/vse-iteration.yml`). This skill
+installs hooks and does not own the content of the iteration state file.
 
-```bash
-echo "SR.1" > .vse-phase
-```
-
-This file is read by `@lifecycle-orchestrator` to determine the current phase.
-Update it only through the phase gate procedure.
+The iteration state is read by `@iteration-orchestrator` to determine the
+current microcycle number, mission, and centre of gravity. Update it only
+through the iteration-open and iteration-close procedures owned by
+`@iteration-orchestrator` (the `/vse-microcycle` and `/vse-iteration`
+commands).
 
 ### Step 3: Set Up Project Structure
 
@@ -129,10 +135,13 @@ They should be triggered at specific lifecycle moments:
 - "Have you reviewed the Statement of Work with the Work Team?"
 - "Have you established the Project Repository and CM strategy?"
 
-### On Phase Transition
-- "Have you completed the phase gate checklist?"
-- "Have you updated the Traceability Matrix?"
-- "Have you obtained the required approvals?"
+### On Iteration Close
+- "Have you run the iteration-boundary closure check for the active
+  centre-of-gravity activities?"
+- "Have you updated the Traceability Matrix for every thread this
+  iteration touched?"
+- "Have you recorded any unresolved items as explicit iteration-boundary
+  closure debt on the next iteration's backlog?"
 
 ### On Work Product Creation
 - "Which ISO 29110 task does this work product belong to?"
@@ -149,13 +158,13 @@ Watch for these drift indicators and raise them with the engineer:
 
 | Indicator | What It Means | Response |
 |-----------|--------------|----------|
-| Phase jumping | Working on architecture during requirements phase | Flag out-of-phase activity, suggest completing current phase |
-| Skipping verification | "We will test later" | Remind that V&V planning happens during SR.2, not after construction |
+| Iteration-boundary skipping | Closing an iteration without running the closure check | Flag the skipped check, offer to run it now. Concurrent SR.2 and SR.3 activity inside one iteration is NOT skipping. |
+| Skipping nanocycle verification | "We will verify later" on a commit that touches a baselined artefact | Remind that every nanocycle should carry at least one verification action tied to the anchor thread |
 | Baseline violations | Modifying baselined artefacts without Change Request | Flag the violation, guide Change Request creation |
-| Orphan artefacts | Work products not linked to any ISO 29110 task | Ask which task this belongs to |
-| Process decay | Hooks disabled, phase file outdated, matrix not updated | Run a health check |
-| Backward drift | Reopening settled requirements during construction or IVV | Flag the change, require a Change Request before proceeding |
-| Artefact gap | Creating outputs (e.g., architecture) without required inputs (e.g., baselined requirements) | Halt and verify prerequisites exist before continuing |
+| Orphan artefacts | Work products with no input lineage (no anchor thread in the iteration backlog or an existing baseline) | Ask which backlog item, requirement, or design element this anchors on |
+| Process decay | Hooks disabled, `.vse-iteration.yml` stale, matrix not updated | Run a health check |
+| Backward drift | Reopening settled requirements without a Change Request | Flag the change, require a Change Request |
+| Macrocycle debt accrual | Iteration-boundary closure debt carried across multiple iterations without a resolution plan | Flag as orphaned output risk, request baseline linkage and a closure plan before the macrocycle release gate |
 
 ## Project Health Check
 
@@ -163,7 +172,9 @@ When the user asks for a health check, or when drift indicators accumulate,
 run this diagnostic:
 
 ### Environment Check
-- [ ] `.vse-phase` file exists and contains a valid phase
+- [ ] `.vse-iteration.yml` file exists at the project root with a valid
+      `current_iteration` block (number, mission, status, centre of
+      gravity)
 - [ ] `models/` directory exists with .sysml files
 - [ ] Git hooks are installed (`.git/hooks/pre-commit` exists)
 - [ ] `syside.toml` exists (if SySiDE is being used)
@@ -187,7 +198,7 @@ syside format --check
 ```
 
 If `syside check` fails, the model has semantic errors that go beyond trace
-gaps. Fix these before proceeding with any phase gate.
+gaps. Fix these before closing the current iteration.
 
 If `syside format --check` fails, run `syside format` to fix formatting, then
 commit the formatted files.
@@ -213,10 +224,14 @@ python -m venv .venv && source .venv/bin/activate && pip install syside
 ```
 
 ### Process Check
-- [ ] Current phase work products exist per ISO 29110
+- [ ] Work products required by the active centre-of-gravity activities
+      exist per ISO 29110 (run `hooks/iteration-boundary-check.sh` to
+      accumulate findings)
 - [ ] Traceability Matrix is up to date (invoke `@traceability-guard`)
 - [ ] No baselined artefacts modified without Change Request
-- [ ] Phase gate checklist for previous transition was completed
+- [ ] Previous iteration closure report recorded in `.vse-iteration.yml`
+      `history[]`, with any carry-forward items listed in
+      `closure_debt[]`
 - [ ] `syside check` passes without errors (if CLI available)
 - [ ] `syside format --check` passes (if CLI available)
 
@@ -252,19 +267,22 @@ adjusted through this skill:
 | Designed reserve (h) | LLM active | Enable/disable specific skill guidance |
 | Observation precision | SysML models | Increase model detail or add views |
 | Practice ritualisation | Hooks + prompts | Add or remove patterned practice prompts |
-| Niche construction | Env. configuration | Add or remove hooks, adjust gate rigour |
+| Niche construction | Env. configuration | Add or remove hooks, adjust iteration-boundary closure rigour |
 
 To adjust a lever, the engineer discusses the desired change and this skill
 modifies the environment configuration accordingly. For example:
-- "Relax phase gates for prototyping" reduces gate rigour
+- "Relax iteration-boundary closure for prototyping iterations" reduces
+  the closure rigour for scratch iterations while leaving the macrocycle
+  gate intact
 - "Add stricter traceability for safety-critical work" increases observation
-  precision and gate rigour
+  precision and tightens iteration-boundary closure
 
 ## Red Flags
 
 WARN the engineer if:
 - Hooks have been disabled or removed
-- The `.vse-phase` file is missing or contains an invalid phase
+- The `.vse-iteration.yml` file is missing, malformed, or contains no
+  valid `current_iteration` block
 - The project has no .sysml files in the models/ directory
 - Multiple drift indicators are active simultaneously
 - The health check shows "AT RISK" status

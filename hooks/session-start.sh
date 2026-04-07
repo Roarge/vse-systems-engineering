@@ -7,14 +7,14 @@
 # When no VSE project is detected, the script exits 0 with no output.
 set -euo pipefail
 
-PHASE_FILE=".vse-phase"
+ITERATION_FILE=".vse-iteration.yml"
 JOURNAL_FILE=".vse-journal.yml"
 
 # Detect VSE engineering root: prefer engineering/ if present (brownfield
 # layout, where VSE work products live under engineering/ to keep an
 # existing host project's root clean), else . (greenfield layout).
-# .vse-phase and .vse-journal.yml always live at the project root in
-# both layouts, so this detection only governs the model and document
+# .vse-iteration.yml and .vse-journal.yml always live at the project root
+# in both layouts, so this detection only governs the model and document
 # paths below.
 if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
     ENG_ROOT="engineering"
@@ -22,27 +22,35 @@ else
     ENG_ROOT="."
 fi
 
-# Only activate if this is a VSE project (phase file exists)
-if [ ! -f "$PHASE_FILE" ]; then
+# Only activate if this is a VSE project (iteration state file exists)
+if [ ! -f "$ITERATION_FILE" ]; then
     exit 0
 fi
 
-PHASE=$(tr -d '[:space:]' < "$PHASE_FILE")
+# Parse .vse-iteration.yml without requiring a YAML library. The shape is
+# stable: top-level current_iteration block with number, mission, and
+# centre_of_gravity fields. Same grep/sed technique used below for the
+# journal date.
+ITER_NUMBER=$(grep -m1 '^  number:' "$ITERATION_FILE" | sed 's/.*number:[[:space:]]*//' | tr -d '[:space:]')
+ITER_MISSION=$(grep -m1 '^  mission:' "$ITERATION_FILE" | sed 's/.*mission:[[:space:]]*//' | sed 's/^"//' | sed 's/"$//')
+ITER_STATUS=$(grep -m1 '^  status:' "$ITERATION_FILE" | sed 's/.*status:[[:space:]]*//' | tr -d '[:space:]')
+ITER_COG=$(awk '
+    /^  centre_of_gravity:/ { inside = 1; next }
+    inside && /^  [A-Za-z]/ { inside = 0 }
+    inside && /^    - / {
+        line = $0
+        sub(/^    - /, "", line)
+        gsub(/"/, "", line)
+        printf "%s%s", sep, line
+        sep = ", "
+    }
+' "$ITERATION_FILE")
 
-# Map phase codes to human-readable names
-case "$PHASE" in
-    PM.1) PHASE_NAME="Project Planning" ;;
-    PM.2) PHASE_NAME="Plan Execution" ;;
-    PM.3) PHASE_NAME="Assessment and Control" ;;
-    PM.4) PHASE_NAME="Closure" ;;
-    SR.1) PHASE_NAME="Initiation" ;;
-    SR.2) PHASE_NAME="Requirements" ;;
-    SR.3) PHASE_NAME="Architecture" ;;
-    SR.4) PHASE_NAME="Construction" ;;
-    SR.5) PHASE_NAME="Integration, Verification and Validation" ;;
-    SR.6) PHASE_NAME="Delivery" ;;
-    *)    PHASE_NAME="Unknown" ;;
-esac
+# Fallbacks for malformed or missing fields.
+[ -z "$ITER_NUMBER" ]  && ITER_NUMBER="?"
+[ -z "$ITER_MISSION" ] && ITER_MISSION="(mission not set)"
+[ -z "$ITER_STATUS" ]  && ITER_STATUS="unknown"
+[ -z "$ITER_COG" ]     && ITER_COG="(none)"
 
 # =============================================================================
 # Why this matters (do not strip the block below as cosmetic):
@@ -67,16 +75,18 @@ echo ""
 echo "MANDATORY FIRST ACTION:"
 echo "Before responding to the user, invoke the vse-companion-overview skill"
 echo "via the Skill tool. This skill sets the lens (identity, source-processing"
-echo "order, phase-based filtering, traceability rules, ISO 29110 process map,"
+echo "order, iteration-centred routing, traceability rules, AMBSE cycle framing,"
 echo "and routing) that every VSE project response must apply. Do not skip"
 echo "this even for trivial questions, and do not restate the lens content"
 echo "in your reply, just load it and apply it."
 echo ""
-echo "Current phase: $PHASE ($PHASE_NAME)"
+echo "Iteration:         iter-${ITER_NUMBER} - ${ITER_MISSION}"
+echo "Status:            ${ITER_STATUS}"
+echo "Centre of gravity: ${ITER_COG}"
 echo ""
 echo "This project uses the vse-systems-engineering plugin."
-echo "After loading vse-companion-overview, route phase-specific work to"
-echo "lifecycle-orchestrator and the other specialised skills it indexes."
+echo "After loading vse-companion-overview, route iteration work to"
+echo "iteration-orchestrator and the other specialised skills it indexes."
 
 # Check for session journal
 if [ -f "$JOURNAL_FILE" ]; then

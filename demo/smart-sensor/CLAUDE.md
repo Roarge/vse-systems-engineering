@@ -9,12 +9,15 @@ systems engineering. All work is governed by the VSE Systems Engineering plugin.
 When answering any question about this project:
 
 1. Consult the VSE Systems Engineering plugin skills first
-2. Check the current lifecycle phase in `.vse-phase`
-3. Apply phase-appropriate guidance (the `vse-companion-overview` skill is
-   the canonical lens, with phase-specific work routed to specialised
-   skills such as `lifecycle-orchestrator`, `needs-and-requirements`,
+2. Check the current iteration state in `.vse-iteration.yml`
+3. Apply iteration-appropriate guidance (the `vse-companion-overview`
+   skill is the canonical lens, with iteration work routed by
+   centre-of-gravity activity to specialised skills such as
+   `iteration-orchestrator`, `needs-and-requirements`,
    `architecture-design`, and `verification-validation`)
-4. Warn if the requested action is out of phase
+4. Warn if the requested action touches a baselined artefact without a
+   Change Request or conflicts with the iteration's declared centre of
+   gravity
 
 If the VSE plugin is not installed, follow the ISO 29110 process map below.
 
@@ -31,8 +34,8 @@ this plugin. AMBSE applies the Vee verification pattern at three timeframes:
   of git work is a feature branch named `vse/iter-NN[-short-desc]`, merged via
   pull request (or merge request, on non-GitHub hosts). The PR review is the
   formal handoff event Douglass describes (Cookbook, p. 61). CI workflows in
-  `.github/workflows/` run the trace check and the phase-gate check before
-  the PR can merge.
+  `.github/workflows/` run the trace check and the advisory
+  iteration-boundary check before the PR can merge.
 - **Macrocycle** (project length): one major release. The unit of git work
   is a semantic version tag on `main`, created after formal system V&V is
   complete.
@@ -52,47 +55,57 @@ with verification at every iteration boundary.
 - Trace gates: the `pre-commit-traceability` hook blocks local commits with
   broken traces. The `traceability-check` GitHub Actions workflow blocks PR
   merge with broken traces.
-- Phase gates: the `phase-gate-check` script blocks local advancement. The
-  `phase-gate` GitHub Actions workflow blocks PR merge when the gate is
-  unsatisfied.
+- Iteration-boundary check: the `iteration-boundary-check` script reports
+  closure debt across every active centre of gravity. The
+  `iteration-boundary` GitHub Actions workflow runs the same script on
+  PRs that touch `.vse-iteration.yml` and reports as advisory (does not
+  block). The hard closure gate lives at the macrocycle (release tag on
+  `main`), not at the iteration boundary.
 
 For the full mapping (anti-patterns, solo-developer guidance, host-agnostic
 notes, the worked microcycle history example), see the
-`@lifecycle-orchestrator` skill, which loads the AMBSE git workflow knowledge
-file at activation time.
+`@iteration-orchestrator` skill, which loads the AMBSE git workflow
+knowledge file at activation time.
 
-## Current Phase
+## Current Iteration
 
-Read the `.vse-phase` file in the project root to determine the active phase.
-At the start of every SE-related interaction, state:
+Read `.vse-iteration.yml` in the project root to determine the active
+iteration. At the start of every SE-related interaction, state:
 
-- **Current phase**: which ISO 29110 activity is active
-- **Phase inputs**: what work products should already exist
-- **Next action**: what the engineer should work on next
+- **Iteration**: the iteration number and mission
+- **Status**: open, closing, or merged
+- **Centre of gravity**: one or more ISO 29110 task identifiers governing
+  which specialist skills apply inside the active microcycle
+- **Next action**: what the engineer should work on next inside the
+  iteration
 
 Read the `.vse-journal.yml` file to understand what was done in the previous
 session and what the engineer should work on next. If the file exists and has
-entries, present a SESSION CONTINUITY block after the phase information:
+entries, present a SESSION CONTINUITY block after the iteration information:
 
 - **Last session**: when the previous session occurred
 - **Summary**: what was accomplished
 - **Pending**: next steps from the previous session
 - **Open issues**: unresolved items needing attention
 
-### Phase-Based Filtering
+### Centre-of-Gravity Filtering
 
-| Current Phase | Focus on | Defer |
-|---------------|----------|-------|
-| SR.1 Initiation | SEMP, data model, environment setup | Requirements methods, architecture |
-| SR.2 Requirements | Stakeholder needs, SMART criteria, elicitation | Architecture trade-offs, V&V methods |
-| SR.3 Architecture | Decomposition, interfaces, trade-offs | Requirements elicitation, test design |
-| SR.4 Construction | Build/buy/reuse, component specs | Requirements changes, architecture alternatives |
-| SR.5 IVV | Verification methods, test derivation, trace checking | Requirements changes, architecture redesign |
+| Centre of gravity | Focus on | Deprioritise |
+| ----------------- | -------- | ------------ |
+| SR.1 Initiation | SEMP, data model, environment setup | Late delivery detail |
+| SR.2 Requirements | Stakeholder needs, SMART criteria, elicitation | Detailed V&V tactics |
+| SR.3 Architecture | Decomposition, interfaces, trade-offs | Detailed test case design |
+| SR.4 Construction | Build/buy/reuse, component specs | Upstream requirements debates |
+| SR.5 IVV | Verification methods, test derivation, trace checking | Re-opening baselines outside a Change Request |
 | SR.6 Delivery | Acceptance, documentation, training, maintenance | All upstream activities |
 
-If the engineer asks about a topic outside the current phase, provide the
-information but flag it: "Note: this relates to [phase], not the current
-phase [current]. Consider whether a Change Request is needed."
+Concurrent centres of gravity are normal: surface the focus row for every
+centre listed in `current_iteration.centre_of_gravity`. If the engineer
+asks about a topic outside the active centres of gravity, provide the
+information but flag it: "Note: this relates to [activity], which is not
+the current centre of gravity. Consider opening an iteration with this
+activity as its centre of gravity, or handling the change via a Change
+Request if it touches a baselined artefact."
 
 ## Source Processing Order
 
@@ -133,10 +146,12 @@ Validation Cases (VAL-)
 ```
 
 Every system requirement MUST trace upward to at least one stakeholder need
-via a `satisfy` link. Every system requirement MUST trace downward to at least
-one verification case via a `verify` link. Every stakeholder need MUST have at
-least one validation case. Phase transitions MUST NOT proceed if trace gaps
-exist.
+via a `satisfy` link. Every system requirement MUST trace downward to at
+least one verification case via a `verify` link. Every stakeholder need
+MUST have at least one validation case. Macrocycle release (tagging
+`main`) MUST NOT proceed if trace gaps exist. Iteration-boundary closure
+MAY proceed with explicit iteration-boundary closure debt carried onto
+the next iteration's backlog.
 
 ## SysML 2.0 Conventions
 
@@ -205,14 +220,28 @@ person holds which role in `docs/pm/project-plan.md`.
 | SR.5 IVV | Integrate, verify against requirements, validate against needs |
 | SR.6 Delivery | Review product, prepare maintenance and training, deliver |
 
-## Phase Gate Checklist
+## Iteration-Boundary Closure Checklist
 
-Before advancing the phase in `.vse-phase`, verify:
+Before closing an iteration and merging its feature branch, verify:
 
-- All required work products for the current phase exist in `docs/`
-- All SysML trace links are complete (the pre-commit hook checks this)
-- The phase gate criteria in `TASKS.md` are satisfied
+- Work products required by the iteration's centre-of-gravity activities
+  exist in `docs/` (the `iteration-boundary-check` script reports any
+  missing items as advisory closure debt)
+- All SysML trace links are complete for threads this iteration touched
+  (the pre-commit hook checks this)
+- The iteration-boundary closure items in the iteration backlog are
+  satisfied or explicitly carried as `closure_debt` into the next
+  iteration
 - The Traceability Matrix in `docs/sr/traceability-matrix.md` is current
+
+## Macrocycle Release Checklist
+
+Before tagging a release on `main`, verify:
+
+- All stakeholder needs, system requirements, and verification cases
+  accumulated across the merged iterations trace cleanly end-to-end
+- All `closure_debt` items from prior iterations have been resolved
+- The acquirer has signed the Product Acceptance Record
 
 ## Writing Style
 

@@ -82,6 +82,13 @@ shape at multiple cadences.
 
 ### 2.1 The Vee verification pattern
 
+The Vee shape in this section is geometric, not temporal. "Specification flows
+down, verification flows up" describes the diagram, not the work order. The Vee
+repeats at three scales (nanocycle, microcycle, macrocycle) and at every scale
+specification and verification interleave continuously. Reading the Vee as a
+left-to-right schedule is the single most common misreading of AMBSE and produces
+waterfall behaviour even when the team intends to be agile.
+
 The Vee model describes a single execution of the systems engineering cycle.
 Specification flows down the left side (stakeholder needs, system requirements,
 architecture, element specifications). Verification flows up the right side

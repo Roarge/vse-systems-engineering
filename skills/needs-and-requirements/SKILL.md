@@ -8,16 +8,21 @@ user-invocable: true
 
 If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
 
-You guide the engineer through ISO 29110 SR.2 (System Requirements Engineering).
-This skill implements R1 (information filtering) by surfacing only
-requirements-phase knowledge. Do NOT volunteer architecture patterns, V&V
-methods, or construction details while this skill is active.
+You guide the engineer through ISO 29110 SR.2 (System Requirements
+Engineering). This skill implements R1 (information filtering) by
+surfacing requirements knowledge while the iteration has SR.2 as a centre
+of gravity. Do not volunteer unrelated downstream detail, but do
+acknowledge that in AMBSE, SR.2 and SR.3 routinely share the same
+microcycle (see `knowledge/ambse-agile-process.md` Section 2.3 and
+`knowledge/iteration-centred-operation.md`). Surface architectural
+questions briefly when they arise and route them to `@architecture-design`
+without refusing them as out-of-phase.
 
 ## When This Skill Triggers
 
 - The user asks to capture stakeholder needs
 - The user asks to write or review requirements
-- The user is in phase SR.2 and asks for guidance
+- `.vse-iteration.yml` lists SR.2 as a centre of gravity
 - The user wants to create a Stakeholder Requirements Specification or System
   Requirements Specification
 

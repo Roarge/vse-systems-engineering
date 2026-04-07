@@ -102,12 +102,12 @@ build/            Generated outputs (gitignored)
 
 ## 5. Technical Reviews
 
-| Review | Phase Gate | Participants | Inputs |
-|--------|-----------|--------------|--------|
-| Requirements Review | SR.2 to SR.3 | PJM, SYS, ACQ, STK | StRS, SyRS, Traceability Matrix |
-| Design Review | SR.3 to SR.4 | PJM, SYS, DES, DEV | System Design Document |
-| Test Readiness Review | SR.4 to SR.5 | PJM, SYS, IVV | IVV Plan, System Elements |
-| Product Acceptance Review | SR.5 to SR.6 | PJM, SYS, ACQ | Verification/Validation Reports |
+| Review | Iteration Trigger | Participants | Inputs |
+| ------ | ----------------- | ------------ | ------ |
+| Requirements Review | Iteration closing an SR.2 centre of gravity | PJM, SYS, ACQ, STK | StRS, SyRS, Traceability Matrix |
+| Design Review | Iteration closing an SR.3 centre of gravity | PJM, SYS, DES, DEV | System Design Document |
+| Test Readiness Review | Iteration closing an SR.4 centre of gravity | PJM, SYS, IVV | IVV Plan, System Elements |
+| Product Acceptance Review | Macrocycle closure before release tag | PJM, SYS, ACQ | Verification/Validation Reports |
 
 ## 6. Technical Performance Measures
 
