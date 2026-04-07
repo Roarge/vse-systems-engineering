@@ -45,7 +45,7 @@ workflows generated from [`../templates/github/`](../templates/github/).
 | Script | Installed as | Invoked by | Purpose |
 |--------|--------------|------------|---------|
 | `pre-commit-traceability.sh` | `.git/hooks/pre-commit` in the user project | The user's local git, on every commit | Checks staged `.sysml` files for requirements without satisfy or verify trace links. Blocks the commit if gaps are found. |
-| `phase-gate-check.sh` | Run in place from the repo root | The `@lifecycle-orchestrator` skill (manually) and the `phase-gate.yml` GitHub Actions workflow from `templates/github/` | Verifies that the ISO/IEC 29110 work products required for the current phase exist. Reads `.vse-phase` to determine the target phase. |
+| `iteration-boundary-check.sh` | Run in place from the repo root | The `@iteration-orchestrator` skill (manually) and the `iteration-boundary.yml` GitHub Actions workflow from `templates/github/` | Advisory check. Reads `.vse-iteration.yml` and accumulates closure-item findings across every active centre of gravity. Missing items are reported as iteration-boundary closure debt. Exits 0 regardless: the hard closure gate lives at the macrocycle (release tag), not here. |
 
 Both scripts are addressed by skills via `${CLAUDE_PLUGIN_ROOT}/hooks/`
 (for example, [`skills/attention-regime/SKILL.md`](../skills/attention-regime/SKILL.md)

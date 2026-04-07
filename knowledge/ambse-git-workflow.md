@@ -315,13 +315,18 @@ every PR, because every iteration handoff should be verified. The
 workflow fails the PR if any requirement is missing a `satisfy` or
 `verify` link.
 
-### `phase-gate.yml`
+### `iteration-boundary.yml`
 
-This workflow runs `hooks/phase-gate-check.sh` against the value in
-`.vse-phase`. It detects whether the PR advances the phase (compares
-the value on the PR head to the value on `main`) and runs the
-corresponding gate checklist. The workflow fails and the PR is
-blocked from merging until the gate is satisfied.
+This workflow runs `hooks/iteration-boundary-check.sh` against the
+`centre_of_gravity` list in `.vse-iteration.yml`. It detects whether
+the PR closes an iteration (compares the iteration number on the PR
+head to the value on `main`) and accumulates closure findings across
+every active centre of gravity. The workflow is advisory: missing
+items are reported as iteration-boundary closure debt in the PR log
+but the job exits 0 and does not block merging. Closing an iteration
+with debt carried forward onto the next iteration's backlog is normal
+AMBSE behaviour. The hard closure gate lives at the macrocycle
+(release tag), not at the iteration boundary.
 
 Both workflows are intentionally thin wrappers around the bash scripts
 in `hooks/`. Translating to GitLab CI is mechanical: invoke the same
@@ -457,11 +462,14 @@ breaks one of the gates that AMBSE depends on.
   requirements workflow
 - `templates/github/traceability-check.yml` for the GitHub Actions
   trace gate
-- `templates/github/phase-gate.yml` for the GitHub Actions phase gate
+- `templates/github/iteration-boundary.yml` for the GitHub Actions
+  advisory iteration-boundary check
 - `templates/github/pull-request-template.md` for the PR body template
 - `hooks/pre-commit-traceability.sh` for the local trace check that
   also runs in CI
-- `hooks/phase-gate-check.sh` for the local phase gate that also runs
-  in CI
-- `skills/lifecycle-orchestrator/SKILL.md` for the skill that uses
+- `hooks/iteration-boundary-check.sh` for the local advisory check
+  that also runs in CI
+- `skills/iteration-orchestrator/SKILL.md` for the skill that uses
   this workflow as its operational model
+- `knowledge/iteration-centred-operation.md` for the conceptual
+  foundation behind iteration-centred routing and closure
