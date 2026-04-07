@@ -6,6 +6,66 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-07
+
+### Added
+
+- Brownfield mode for `project-setup`. The skill now detects whether
+  the current working directory is inside an existing git repository
+  and chooses one of two flows. Greenfield mode (run outside any
+  repository) keeps the existing behaviour and lays out the full VSE
+  structure at the project root. Brownfield mode (run inside an
+  existing repository) harvests context from the host project
+  (`README.md`, any existing `CLAUDE.md`, `git config`,
+  language-ecosystem manifests, and a `git ls-files | head -200`
+  source-tree summary), places VSE work products under an
+  `engineering/` subfolder so they sit alongside the host project's
+  own files, leaves the host project's git history alone (no
+  `git init`, no initial commit), and seeds
+  `engineering/docs/sr/system-design.md` with the harvested source-tree
+  context as raw input to the SR.3 architectural decomposition.
+- Idempotent `CLAUDE.md` merge for the brownfield path. The
+  `templates/common/CLAUDE.md` body is wrapped in
+  `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and
+  `<!-- END VSE COMPANION -->` HTML-comment markers. Brownfield
+  invocation appends the marker block on first run and replaces the
+  bytes between the markers in place on every subsequent run, so
+  re-running `project-setup` picks up the current plugin version
+  without duplicating content or disturbing the user's surrounding
+  text. Greenfield mode writes the same wrapped block as a fresh file.
+- `ENG_ROOT` autodetection block in `hooks/session-start.sh`,
+  `hooks/phase-gate-check.sh`, and `hooks/pre-commit-traceability.sh`.
+  Each script checks for `engineering/models` or `engineering/syside.toml`
+  and points its model and work-product paths at `engineering/` when
+  found, falling back to the project root for greenfield projects.
+  `.vse-phase` and `.vse-journal.yml` continue to live at the project
+  root in both layouts so the SessionStart hook keeps working
+  unchanged. The phase-gate work-product globs are prefixed with
+  `"$ENG_ROOT/"` so the SR.1 through SR.6 and PM.1 through PM.4 gates
+  apply to the engineering subfolder in brownfield projects.
+
+### Changed
+
+- `project-setup` no longer overwrites an existing `CLAUDE.md`. The
+  brownfield merge preserves every byte of the user's original file
+  outside the marker block.
+- `project-setup` no longer runs `git init`, `git add`, or `git commit`
+  in brownfield mode. The host project already has its own git
+  workflow and commit conventions. The Step 11 summary tells the user
+  to stage and commit the new files on a
+  `vse/iter-00-architecture-zero` branch instead.
+- In brownfield projects, `models/`, `docs/pm/`, `docs/sr/`,
+  `TASKS.md`, `syside.toml`, and `.lsp.json` live under
+  `engineering/`. The merged `CLAUDE.md` rewrites every bare path
+  reference in the marker block to the `engineering/...` form so the
+  AMBSE workflow guidance, project structure description, and
+  traceability matrix pointer all match the actual file layout.
+- `templates/common/CLAUDE.md` and `demo/smart-sensor/CLAUDE.md` now
+  carry the `<!-- BEGIN VSE COMPANION ... -->` marker delimiters
+  around the body content so brownfield merge has a stable boundary
+  to work with. The content inside the markers is unchanged from
+  0.6.0.
+
 ## [0.6.0] - 2026-04-07
 
 ### Added
