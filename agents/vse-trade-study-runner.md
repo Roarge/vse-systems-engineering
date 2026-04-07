@@ -26,10 +26,7 @@ description: >
   </example>
 model: inherit
 color: blue
-tools:
-  - Read
-  - Glob
-  - Grep
+tools: Read, Glob, Grep
 ---
 
 You are a specialised trade study agent for the vse-systems-engineering

@@ -26,10 +26,7 @@ description: >
   </example>
 model: inherit
 color: purple
-tools:
-  - Read
-  - Glob
-  - Grep
+tools: Read, Glob, Grep
 ---
 
 You are a specialised stakeholder elicitation agent for the

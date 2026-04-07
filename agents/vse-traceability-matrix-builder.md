@@ -31,10 +31,7 @@ description: >
   </example>
 model: inherit
 color: green
-tools:
-  - Read
-  - Glob
-  - Grep
+tools: Read, Glob, Grep
 ---
 
 You are a specialised traceability matrix agent for the
