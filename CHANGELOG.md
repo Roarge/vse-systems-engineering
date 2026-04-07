@@ -6,6 +6,83 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-04-07
+
+### Added
+
+- `knowledge/ambse-git-workflow.md`, the canonical mapping between
+  the three AMBSE timeframes (nanocycle, microcycle, macrocycle) and
+  a feature-branch git workflow. Documents the `vse/iter-NN` branch
+  convention, the pull request body template, the worked microcycle
+  example, the anti-pattern catalogue, and the host-agnostic
+  translation notes for GitLab CI, Forgejo Actions, and Gitea
+  Actions. Loaded by `@lifecycle-orchestrator` at activation time.
+- AMBSE Workflow section in `templates/common/CLAUDE.md` (and the
+  matching demo `CLAUDE.md`) defining the branch-per-microcycle
+  convention, trace gates, and phase gates for every new VSE
+  project that the plugin scaffolds.
+- Iteration Plan table in `templates/pm/project-plan.md` Section 4.3
+  with the `iter-00 Architecture Zero` row pre-filled, so PM.1.4
+  produces a concrete first iteration record.
+
+### Changed
+
+- `lifecycle-orchestrator` PM.1.4 step renamed from "Lifecycle
+  Selection" to "Iteration Cadence and First Iteration Branch". The
+  three-option lifecycle picker is replaced with a fixed AMBSE
+  workflow whose only inputs are the iteration cadence, the first
+  iteration mission, and the macrocycle milestones. The skill now
+  instructs the engineer to create the first `vse/iter-00-architecture-zero`
+  branch from `main` and load the new git workflow knowledge file.
+- `knowledge/ambse-agile-process.md` Section 2 reframed as "AMBSE: The
+  Vee Applied at Three Timeframes". The Vee is described as the
+  verification pattern AMBSE applies at every iteration, with a direct
+  Douglass quotation from Cookbook p. 64. Section 3 (Verification
+  Timeframes) now carries explicit Vee mapping and git mapping bullets
+  for nanocycle, microcycle, and macrocycle. New Section 4 cross-
+  references the git workflow knowledge file. Sections 4-9 renumbered
+  to 5-10.
+- `knowledge/ambse-architecture.md` Section 6.3 (Handoff as iteration
+  boundary) now defines the canonical handoff form as a pull request
+  against `main`, with the PR diff carrying the converted engineering
+  data, the PR body summarising mission and trace status, and the PR
+  review acting as the formal handoff acceptance per Douglass
+  (Cookbook p. 61).
+- `knowledge/ambse-requirements.md` Section 5 (The Nanocycle
+  Requirements Workflow) now describes the nanocycle as the Vee in
+  miniature and adds an iteration-boundary paragraph mapping each
+  iteration onto a pull request.
+- `knowledge/incose-vse-practices.md` lifecycle approaches table
+  reframes the Vee row as "Vee pattern (used by AMBSE at all scales)"
+  and marks Hybrid AMBSE as the enforced workflow. The Vee section
+  later in the file is rewritten to describe the Vee as the inner
+  structure of every AMBSE iteration with explicit nanocycle/
+  microcycle/macrocycle Vee mappings.
+- `templates/pm/project-plan.md` Section 4.1 pre-fills the AMBSE
+  lifecycle, the two-week microcycle default cadence, and the
+  branch-per-microcycle git workflow. Section 4.2 renamed to
+  "Macrocycle Milestones". The matching demo project plan in
+  `demo/smart-sensor/docs/pm/project-plan.md` now carries the
+  concrete two-week cadence rationale for the Smart Temperature
+  Sensor project.
+- `templates/github/traceability-check.yml` and
+  `templates/github/phase-gate.yml` carry an AMBSE comment header
+  explaining that the PR is the microcycle handoff gate per Douglass
+  (Cookbook p. 61). The trace check workflow runs on every PR (not
+  only PRs that touch `models/**/*.sysml`), because every iteration
+  handoff should be verified.
+
+### Documentation
+
+- README "What it does" section rewritten to describe AMBSE as the
+  single VSE workflow this plugin enforces, and to point at
+  `knowledge/ambse-git-workflow.md` for the branch-per-microcycle
+  mapping.
+- README "Knowledge base" section adds `ambse-git-workflow.md` to
+  the AMBSE list.
+- README "Starting a new project" Step 4 rewritten to drop the
+  legacy "select a lifecycle approach" wording.
+
 ## [0.5.1] - 2026-04-07
 
 ### Added
