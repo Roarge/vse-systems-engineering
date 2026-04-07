@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for slash commands and subagents. The manifest scaffolding lands
   separately so the parallel branches do not conflict on the
   `plugin.json` mount-point declarations.
+- Three previously orphaned knowledge files are now embedded into the
+  skills whose scope they support, so they reach model context rather
+  than only shipping in the cloned tree: `knowledge/hsi-primer.md` into
+  `needs-and-requirements`, `knowledge/incose-vse-practices.md` into
+  `lifecycle-orchestrator`, and `knowledge/phas-eai-framework.md` into
+  `attention-regime`.
 - Three read-only subagents under `agents/`:
   `vse-trade-study-runner` for AMBSE weighted trade studies with
   sensitivity analysis, `vse-traceability-matrix-builder` for full
