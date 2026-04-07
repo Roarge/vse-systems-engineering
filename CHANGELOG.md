@@ -8,6 +8,159 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-04-07
+
+### Changed
+
+- **Plugin is now centred on AMBSE cycles, not ISO/IEC 29110 phases.**
+  The routing backbone, the per-project state file, and every user-visible
+  surface have been recentred so the temporal unit of work is the AMBSE
+  iteration (microcycle), not the ISO/IEC 29110 phase. ISO/IEC 29110
+  remains the catalogue of activities that may happen inside an iteration
+  and is still loaded as knowledge and exposed as a task checklist, but
+  it is no longer the routing backbone. This lands as a single PR on
+  `fix/ambse-cycle-centric` with six commits, each a self-contained chunk
+  so the review can proceed file-by-file.
+- `skills/lifecycle-orchestrator/` renamed to `skills/iteration-orchestrator/`
+  via `git mv` so per-file history is preserved. The skill body has been
+  rewritten to open and close iterations, run iteration-boundary and
+  macrocycle closure checks, and route within an iteration to the right
+  specialist skill by centre-of-gravity activity rather than by phase.
+  Two new guided procedures (Step 3a open microcycle, Step 3b start
+  nanocycle) walk the engineer through mission elicitation, branch
+  naming, backlog seeding, anchor-thread selection, verification-action
+  selection, and conventional-commit message drafting. The Change
+  Request workflow is preserved unchanged in substance and reframed as
+  the mechanism for reopening any baselined artefact.
+- `.vse-phase` (single-line file with the current ISO 29110 activity)
+  replaced by `.vse-iteration.yml` (a structured state file carrying
+  iteration number, mission, branch, status, centre-of-gravity activities
+  as a list, backlog items with anchors, closure debt, notes, and
+  history). The new file is required by `hooks/session-start.sh` and
+  `hooks/iteration-boundary-check.sh`.
+- `hooks/phase-gate-check.sh` renamed to `hooks/iteration-boundary-check.sh`
+  and made advisory. The old script was a hard phase-to-phase gate
+  (exit 1 on missing work products). The new script reads
+  `.vse-iteration.yml`, loops over every active centre of gravity, and
+  reports missing items as iteration-boundary closure debt while exiting
+  0. The hard closure gate now lives at the macrocycle (release tag on
+  `main`), not at the iteration boundary, matching how real AMBSE teams
+  carry explicit debt forward on a backlog.
+- `hooks/session-start.sh` rewritten to detect `.vse-iteration.yml`,
+  parse iteration number, mission, and centre-of-gravity list (using
+  the same grep-based approach the journal parse already uses, no
+  YAML library required), and inject an iteration-position block into
+  the conversation context instead of the old "Current phase:" block.
+- `knowledge/iso29110-profile.md` reframed to state explicitly that
+  ISO/IEC 29110 is lifecycle-neutral and may be applied at any phase
+  of system or software development. This is the textual hook for
+  brownfield entry at arbitrary centre of gravity.
+- `knowledge/ambse-agile-process.md` reframed to state that the Vee
+  shape is geometric, not temporal. Reading the Vee as a left-to-right
+  schedule is the single most common misreading of AMBSE and is now
+  called out directly.
+- `knowledge/vv-guide.md` reframed to stop describing continuous V&V
+  as a supplement to phase gates, and to restate that continuous V&V
+  is the primary quality assurance mechanism in this plugin with the
+  closure checks verifying accumulated evidence at the points where
+  closure matters.
+- `commands/vse-phase.md` renamed to `commands/vse-iteration.md` and
+  rewritten to report iteration position and run iteration-boundary
+  closure checks.
+- Every remaining user-visible reference to `@lifecycle-orchestrator`,
+  `.vse-phase`, or phase-centric language across the companion lens,
+  the specialist skills (`needs-and-requirements`, `architecture-design`,
+  `verification-validation`, `traceability-guard`, `document-export`,
+  `sysml2-modelling`, `session-journal`), `project-setup`,
+  `attention-regime`, all PM and SR templates, the PR template, the
+  `hooks/README.md`, the repo-root `README.md`, and the demo
+  (`demo/smart-sensor/`) has been migrated to iteration-centred
+  framing.
+- `skills/project-setup` now detects brownfield indicators (presence
+  of existing SR work products, existing source trees) and proposes a
+  centre-of-gravity entry point other than the hard-coded PM.1 plus
+  SR.1 default so end users can bring existing repositories under VSE
+  governance without first pretending to start at SR.1.
+- `skills/architecture-design` softens its prior SR.2-complete
+  prerequisite into an iteration-inputs check that requires at least
+  one baselined SyRS thread to anchor on, so concurrent SR.2 and SR.3
+  work inside a single iteration (the normal AMBSE mode per
+  `knowledge/ambse-agile-process.md` Section 2.3) is supported as a
+  first-class flow rather than flagged as drift.
+- `templates/github/phase-gate.yml` renamed to
+  `templates/github/iteration-boundary.yml` and updated so the CI
+  workflow runs the advisory script and accepts its exit-zero contract.
+
+### Added
+
+- `knowledge/iteration-centred-operation.md` — new self-contained
+  knowledge file explaining iteration-as-unit-of-work, the three
+  cycles, centre of gravity (including concurrent centres), brownfield
+  entry at arbitrary centre of gravity with baseline harvest of
+  inherited artefacts, iteration-boundary closure semantics (advisory),
+  macrocycle closure semantics (hard gate), and how ISO/IEC 29110
+  tasks map onto iteration activities. Embedded into
+  `iteration-orchestrator` and pointed at from `vse-companion-overview`.
+- `templates/common/vse-iteration.yml` — the new state file template
+  that `project-setup` copies into user projects. Uses `{{DATE}}`
+  substitution and carries an initial Iteration 0 (Architecture Zero)
+  block with centre of gravity PM.1 plus SR.1 for greenfield projects.
+- `commands/vse-microcycle.md` — new thin slash-command wrapper that
+  dispatches `iteration-orchestrator` with intent "open microcycle".
+  Walks the engineer through closing the outgoing iteration, eliciting
+  the mission, eliciting centre of gravity, proposing the
+  `vse/iter-NN-<slug>` branch name, seeding the backlog, writing the
+  new `.vse-iteration.yml`, and optionally routing to the first
+  specialist skill.
+- `commands/vse-nanocycle.md` — new thin slash-command wrapper that
+  dispatches `iteration-orchestrator` with intent "start nanocycle".
+  Walks the engineer through confirming the iteration is open,
+  eliciting the anchor thread (requirement ID, design element,
+  verification case, or backlog item), eliciting the one-sentence
+  intent, selecting a verification action to run before commit,
+  optional implementation handoff to the specialist skill that owns
+  the artefact type, and ending with a suggested conventional-commit
+  message. The command does not commit on the engineer's behalf.
+- Brownfield centre-of-gravity detection in `project-setup`, which
+  scans for existing SR work products and source-tree indicators and
+  proposes an entry point other than PM.1 plus SR.1 when the project
+  is clearly past the greenfield starting line.
+- Iteration-Boundary Closure Checklist and Macrocycle Release
+  Checklist added to `templates/common/CLAUDE.md` (and therefore to
+  the demo's `CLAUDE.md`) so end users see both closure cadences
+  explicitly.
+- AMBSE Iteration Context section added to the PR template so every
+  iteration-closing PR surfaces the iteration number, mission, branch,
+  centre of gravity, closure status, and any debt being carried.
+
+### Removed
+
+- `templates/common/vse-phase` deleted. Replaced by
+  `templates/common/vse-iteration.yml`.
+- "Move to the next phase" and "before proceeding" phrasings removed
+  from the user surface. The plugin no longer frames forward motion
+  as a phase-to-phase gate.
+- Strict phase-gate blocking behaviour removed from the project-side
+  hook. The only hard gate left in the plugin is the macrocycle
+  closure check at release time.
+
+### Migration
+
+- Existing projects with a `.vse-phase` file need to be migrated
+  before upgrading, because the new session-start hook detects
+  `.vse-iteration.yml` and will exit silently if only `.vse-phase`
+  is present. Manual migration: read the single-line value in
+  `.vse-phase`, copy `templates/common/vse-iteration.yml` into the
+  project root, set `current_iteration.centre_of_gravity` to the
+  activity named in the old file (for example `[SR.2]` if the old
+  file read `SR.2`), populate `current_iteration.number`,
+  `current_iteration.mission`, and `current_iteration.branch` to
+  reflect where the project actually sits, then delete `.vse-phase`.
+  A future minor version may ship an automated migration hook.
+- Any CI workflow generated from `templates/github/phase-gate.yml`
+  should be regenerated from `templates/github/iteration-boundary.yml`
+  so the new advisory exit-zero contract is honoured.
+
 ## [0.9.2] - 2026-04-07
 
 ### Fixed
