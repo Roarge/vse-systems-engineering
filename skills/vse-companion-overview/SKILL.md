@@ -1,6 +1,6 @@
 ---
 name: vse-companion-overview
-description: VSE systems engineering companion lens. Sets the identity, source-processing order, phase-based information filtering, traceability rules, and ISO/IEC 29110 process map. Loads at the start of any VSE project session and routes the engineer to specialised skills. Use when starting work on a VSE systems engineering project, when asking "what does this plugin do?", or when you need the overall framing before any other VSE skill.
+description: VSE systems engineering companion lens. Sets identity, phase-based filtering, traceability rules, ISO/IEC 29110 process map, and routing to specialised skills. Use when starting a VSE project session, or when asking what the plugin does or how to navigate it.
 user-invocable: true
 ---
 
