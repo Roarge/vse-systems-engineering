@@ -1,3 +1,4 @@
+<!-- BEGIN VSE COMPANION (managed by project-setup) -->
 # Smart Temperature Sensor
 
 This project follows ISO/IEC 29110 (Basic Profile) for Very Small Entity (VSE)
@@ -219,3 +220,4 @@ Before advancing the phase in `.vse-phase`, verify:
 - Clear, precise, evidence-grounded language
 - Plain language first, specialist terms introduced with explanation
 - Cross-disciplinary audience assumed
+<!-- END VSE COMPANION -->
