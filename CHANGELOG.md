@@ -6,6 +6,40 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-04-07
+
+### Added
+
+- `project-setup` now enters Claude Code's Plan Mode after gathering
+  context (Steps 0 and 1) and before any file creation. The drafted
+  plan covers the chosen layout, every file to be created or modified,
+  the hook installation, and the git operations. Execution begins only
+  after the user approves the plan via `ExitPlanMode`. The new Step 2
+  ("Draft Setup Plan and Enter Plan Mode") is the gate. Step 0
+  reorganises the read-only context-gathering phase, and Step 2
+  formally hands off to the plan review UI.
+- "Operating Mode and Prerequisites" section in
+  `skills/project-setup/SKILL.md` documenting the two-phase split
+  (read-only context gathering, then Plan Mode review and execution)
+  and recommending Claude Opus with extended thinking. The
+  recommendation is reported at Step 0 as a prompt to the user, who
+  can switch model before continuing or proceed on the active model.
+  The recommendation is a soft prerequisite, not an enforced
+  requirement, since skills cannot programmatically select a model in
+  Claude Code.
+
+### Changed
+
+- `project-setup` Steps 2 through 11 renumbered as Steps 3 through 12
+  to make room for the new Step 2 Plan Mode gate. The internal
+  cross-references inside the file (the brownfield CLAUDE.md merge
+  pointer at "merge step in Step 5", the SySiDE configuration pointers
+  at "Step 5", the brownfield Step 12 reminders) are updated in place.
+  No content changes inside the renumbered steps.
+- `project-setup` frontmatter description extended to surface the
+  Plan Mode gate and the Opus recommendation, so the harness's skill
+  picker carries the operating mode hint into the activation cue.
+
 ## [0.7.0] - 2026-04-07
 
 ### Added
