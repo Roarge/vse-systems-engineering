@@ -114,6 +114,33 @@ Document the trade-off rationale in the Justification Document. If the top
 candidate is sensitive to small weight changes, flag this and recommend
 further analysis before committing.
 
+#### Dispatch to `vse-trade-study-runner`
+
+When the decision has at least two named options and a weighted
+criterion set ready, dispatch the trade study to the
+`vse-trade-study-runner` subagent rather than scoring inline. This
+keeps each option evaluation in an isolated context and frees the
+parent skill to focus on the engineer's questions.
+
+**When to dispatch.** As soon as Step 3 has produced a decision
+statement, two or more candidate alternatives, and weighted assessment
+criteria. Do not dispatch before the criteria are defined.
+
+**What to pass.** A short message containing the decision statement,
+the candidate options with one-line descriptions, the weighted criteria
+(weights summing to 1.0), and the paths to any SysML files or
+requirement documents the agent should ground its scores in.
+
+**How to present the result.** The subagent returns a markdown matrix
+with score rationale, sensitivity analysis, and any missing
+alternatives it surfaced. Present this matrix verbatim to the engineer
+and explicitly invite edits before recording any decision in the
+Justification Document. The subagent output is suggestion-shaped,
+never artefact-shaped, so the engineer must accept, edit, or reject
+each cell before it becomes a baselined artefact.
+
+The same dispatch pattern applies in Step 5 (Physical Trade-offs).
+
 ### Step 4: Physical Architecture (SR.3.3)
 
 Allocate logical functions to physical system elements:

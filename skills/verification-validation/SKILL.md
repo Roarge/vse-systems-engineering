@@ -127,6 +127,29 @@ Invoke `@traceability-guard` to verify:
 - Every stakeholder need has at least one validation case
 - No orphan verification cases (cases not linked to any requirement)
 
+#### Dispatch to `vse-traceability-matrix-builder`
+
+When the trace completeness check requires walking the full model
+tree, dispatch to the `vse-traceability-matrix-builder` subagent
+rather than reading every model file in this skill's own context. The
+subagent isolates the heavy file reads so this skill retains room for
+the engineer's V&V questions.
+
+**When to dispatch.** Whenever Step 4 needs a complete matrix across
+more than a handful of model files, particularly at the SR.5 macrocycle
+boundary where every requirement and case must be accounted for.
+
+**What to pass.** The model directory path (default `models/`), the
+identifier prefixes for verification and validation cases (`VER-`,
+`VAL-`), and the trace rules from `traceability-guard` you want
+applied.
+
+**How to present the result.** The subagent returns a suggestion-shaped
+markdown matrix and gap report. Surface the gap report to the engineer
+and route any agreed fixes back through `@needs-and-requirements` or
+`@architecture-design` rather than editing models directly from this
+skill. The subagent never writes files.
+
 ### Step 5: System Integration (SR.5.2)
 
 Guide the integration sequence:
