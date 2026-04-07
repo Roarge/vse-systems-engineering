@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-04-07
+
+### Fixed
+
+- Subagent frontmatter in all three files under `agents/` declared
+  the `tools` field as a YAML list (`- Read`, `- Glob`, `- Grep`).
+  The Claude Code subagent schema expects a comma-separated string,
+  so the installer rejected the manifest with
+  `Validation errors: agents: Invalid input` and refused to load
+  the plugin on 0.9.0. Rewritten as `tools: Read, Glob, Grep` in
+  `vse-stakeholder-elicitor.md`, `vse-traceability-matrix-builder.md`,
+  and `vse-trade-study-runner.md`. 0.9.0 is effectively broken for
+  installers. Upgrade to 0.9.1.
+
 ## [0.9.0] - 2026-04-07
 
 ### Added
