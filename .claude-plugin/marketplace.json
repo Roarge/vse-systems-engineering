@@ -11,7 +11,31 @@
     {
       "name": "vse-systems-engineering",
       "description": "Systems engineering for Very Small Entities (VSEs). ISO/IEC 29110 compliant, model-based, SysML 2.0 native. Grounded in the PHAS-EAI framework for attention-sustaining environmental design.",
-      "source": "./"
+      "source": "./",
+      "homepage": "https://github.com/Roarge/vse-systems-engineering",
+      "license": "MIT",
+      "categories": [
+        "Systems Engineering",
+        "Model-Based Systems Engineering",
+        "Requirements Engineering",
+        "Documentation"
+      ],
+      "keywords": [
+        "systems-engineering",
+        "vse",
+        "iso29110",
+        "sysml",
+        "sysml2",
+        "mbse",
+        "ambse",
+        "requirements",
+        "traceability",
+        "verification-validation",
+        "incose",
+        "phas-eai",
+        "syside",
+        "very-small-entity"
+      ]
     }
   ]
 }
