@@ -6,6 +6,8 @@ user-invocable: true
 
 # Project Setup
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You are the project bootstrapping skill for VSE systems engineering. You
 create a complete project structure aligned with ISO/IEC 29110, populate it
 with work product templates, and configure the development environment.

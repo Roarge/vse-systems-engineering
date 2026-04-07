@@ -6,6 +6,8 @@ user-invocable: true
 
 # Document Export
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You are the document export skill. You generate formatted output files from
 the markdown work product templates that live in `docs/`. The key principle
 is that markdown files in git are the source of truth. Generated files are

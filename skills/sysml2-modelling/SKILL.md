@@ -6,6 +6,8 @@ user-invocable: true
 
 # SysML 2.0 Modelling
 
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. Reference:
