@@ -313,6 +313,49 @@ for req in model.nodes(syside.RequirementDefinition):
 - The `pre-commit-traceability` hook performs a lightweight version of this
   check on staged .sysml files
 
+## SysML 2.0 Authoring Routing
+
+When a gap has to be closed inside the SysML 2.0 model, route to the
+following siblings:
+
+| Topic | Route to |
+| --- | --- |
+| Satisfy and verify link authoring | `@sysml2-modelling` (router) plus `@sysml2-cases` for case bodies |
+| Allocation traces | `@sysml2-allocations` |
+| Risk-to-requirement and risk-to-verification advisory traces | `@sysml2-metadata` (RiskInfo) plus `@sysml2-model-structure` (`{{sc}}_Risks`) |
+| Variant configuration traces (orphan variations or missing bindings) | `@sysml2-variants` for syntax plus `@sysml2-model-structure` (`{{sc}}_Configurations`) |
+| Model-level CM traces | `@sysml2-metadata` (ConfigItem, Baseline) plus `@sysml2-model-structure` (`{{sc}}_CM`) |
+
+## Advisory Orphan Surfaces
+
+In addition to the satisfy/verify backbone, surface these advisory
+orphan categories in the trace matrix. They do not block at
+iteration-boundary closure but they are the debt that has to be
+cleared before the macrocycle release gate:
+
+- **Orphan risks.** Item defs in `{{sc}}_Risks` with no `mitigatedBy`
+  reference and no closed status. Every open high-severity risk must
+  point at a mitigation (requirement, verification case, or
+  architecture element).
+- **Orphan mitigations.** Requirements or verification cases that
+  claim to mitigate a risk that does not exist in the register.
+- **Orphan variations.** Variation definitions declared in the core
+  (usually inside `{{sc}}_ArchDesign` per Ch 35) but never bound in
+  any configuration inside `{{sc}}_Configurations`.
+- **Orphan configurations.** Specialised owners declared in
+  `{{sc}}_Configurations` that are missing bindings for one or more
+  of the variations in the core. A configuration must redefine every
+  variation it cares about.
+- **Orphan ConfigItems.** Elements tagged with `@ConfigItem` whose
+  `baselineId` does not resolve to a `Baseline` item def anywhere in
+  `{{sc}}_CM`. Cross-reference Project Plan Section 9 Configuration
+  Management Strategy for the governance authority on when a baseline
+  is taken.
+- **Baseline scope integrity.** Every element named in a baseline's
+  `scope` reference list must exist and must be in the `Baselined`
+  state. A scope entry pointing at a missing or `Draft` element is a
+  baseline-scope gap.
+
 ## Red Flags
 
 WARN the engineer if:
@@ -320,3 +363,5 @@ WARN the engineer if:
 - Requirements are being added without corresponding verification cases
 - Verification cases are being removed without removing the requirement
 - The Traceability Matrix has not been updated after model changes
+- Orphan risks, orphan mitigations, orphan variations, or orphan
+  ConfigItems appear in the advisory surfaces above

@@ -87,13 +87,15 @@ Use this lookup table to map centre-of-gravity activity to specialist skill:
 
 | Centre of gravity | Specialist skill |
 |-------------------|------------------|
-| StRS / SyRS elicitation (SR.2.*) | `@needs-and-requirements` |
-| Functional / physical design (SR.3.*) | `@architecture-design` |
+| StRS / SyRS elicitation (SR.2.*) | `@needs-and-requirements` plus `@sysml2-cases` for case bodies and `@sysml2-model-structure` for containing packages |
+| Functional / physical design (SR.3.*) | `@architecture-design` plus `@sysml2-model-structure` for layout, `@sysml2-behaviour` for functional analysis, `@sysml2-allocations` for allocations, and `@sysml2-variants` for variant syntax |
 | Construction (SR.4.*) | This skill plus `@sysml2-modelling` for model work |
-| Integration, Verification and Validation (SR.5.*) | `@verification-validation` |
+| Integration, Verification and Validation (SR.5.*) | `@verification-validation` plus `@sysml2-cases` for verification case bodies |
 | Delivery (SR.6.*) | This skill plus `@document-export` for deliverables |
 | Traceability check | `@traceability-guard` |
-| SysML authoring | `@sysml2-modelling` |
+| Risk identification and monitoring (PM.O5, PM.1.11, PM.2.3, PM.3.1) | `@sysml2-metadata` for RiskInfo and `@sysml2-model-structure` for the `{{sc}}_Risks` register |
+| Configuration management (PM.1.13, PM.1.18, PM.2.5, PM.O6) | `@sysml2-metadata` for ConfigItem and Baseline and `@sysml2-model-structure` for the `{{sc}}_CM` package alongside Project Plan Section 9 |
+| SysML authoring (general) | `@sysml2-modelling` (router) |
 | Project management (PM.*) | This skill |
 
 The iteration may legitimately have more than one centre of gravity at the
@@ -200,7 +202,18 @@ to one day, one commit). Walk the engineer through:
 
    | Artefact touched | Route to |
    |------------------|----------|
-   | `.sysml` files | `@sysml2-modelling` |
+   | `.sysml` files, starting a new model or deciding package layout | `@sysml2-model-structure` then `@sysml2-modelling` |
+   | `.sysml` files, adding a calculation or constraint | `@sysml2-expressions` |
+   | `.sysml` files, adding behaviour | `@sysml2-behaviour` |
+   | `.sysml` files, adding a use case or verification case | `@sysml2-cases` |
+   | `.sysml` files, adding a view | `@sysml2-views` |
+   | `.sysml` files, adding an allocation | `@sysml2-allocations` |
+   | `.sysml` files, adding a variant | `@sysml2-variants` for syntax plus `@sysml2-model-structure` for organisation |
+   | `.sysml` files, adding a concrete variant configuration | `@sysml2-model-structure` (`{{sc}}_Configurations`) then `@sysml2-variants` |
+   | `.sysml` files, taking or updating a baseline | `@sysml2-model-structure` (`{{sc}}_CM`) plus `@sysml2-metadata` (ConfigItem, Baseline) |
+   | `.sysml` files, adding or updating a risk | `@sysml2-metadata` (RiskInfo) plus `@sysml2-model-structure` (`{{sc}}_Risks`) |
+   | `.sysml` files, adding metadata | `@sysml2-metadata` |
+   | `.sysml` files, general editing or tooling | `@sysml2-modelling` (router) |
    | StRS / SyRS markdown | `@needs-and-requirements` |
    | Architecture markdown | `@architecture-design` |
    | Verification cases or tests | `@verification-validation` |
@@ -236,6 +249,22 @@ iteration-level closure items. The check verifies:
    downward, and a verification case in the catalogue).
 2. The specialist skill's own closure items are satisfied for each active
    centre of gravity.
+3. **Configuration items and baselines (advisory).** If the iteration
+   produced new or updated configuration items, check that
+   `ConfigItem` metadata is applied and that the `baselineId` resolves
+   to a `Baseline` item def in `{{sc}}_CM`. If the iteration closes a
+   baseline, verify that the corresponding `Baseline` item def exists
+   with a populated `scope` reference list and a `supersedes` link to
+   the previous baseline. Cross-reference Project Plan Section 9
+   Configuration Management Strategy for the governance authority on
+   when and by whom baselines are taken. Route to `@sysml2-metadata`
+   for the metadata application syntax and to
+   `@sysml2-model-structure` for the `{{sc}}_CM` package pattern.
+4. **Risk status refresh (advisory).** If the iteration touched any
+   element tagged with `RiskInfo`, check that the risk status is up
+   to date and that high-severity open risks have a named owner and a
+   mitigation reference. Route to `@sysml2-metadata` for the
+   Automator query snippet that surfaces high-severity open risks.
 
 Items that remain open become explicit iteration-boundary closure debt,
 carried on the iteration backlog into the next iteration as entries in
