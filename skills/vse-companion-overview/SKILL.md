@@ -183,7 +183,14 @@ the tables below as a phase-by-phase timeline.
 | Skill | Applies to | Purpose |
 |-------|-----------|---------|
 | `traceability-guard` | All phases | Check and enforce trace completeness |
-| `sysml2-modelling` | All phases | Author and validate SysML 2.0 models |
+| `sysml2-modelling` | All phases | SysML 2.0 workbench and router (project layout, tooling, validation) |
+| `sysml2-expressions` | All phases | Calculations and constraints inside models |
+| `sysml2-behaviour` | All phases | Actions, states, flows, messages |
+| `sysml2-cases` | SR.2, SR.5 | Use, analysis, and verification cases |
+| `sysml2-views` | SR.6, any | Viewpoints and views for documentation |
+| `sysml2-allocations` | SR.3 | Allocations across architecture layers |
+| `sysml2-variants` | SR.3, SR.4 | Variations and configuration selection |
+| `sysml2-metadata` | All phases | Metadata, reflection, user-defined keywords |
 | `attention-regime` | All phases | Configure hooks, guards, and reminders |
 | `session-journal` | All phases | Manage cross-session continuity journal |
 | `document-export` | SR.6, any | Generate docx/pptx/pdf from markdown |
