@@ -8,6 +8,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-08
+
+### Added
+
+- Seven new focused SysML 2.0 sibling skills, each embedding a single
+  topic knowledge file. The harness now routes activation to the
+  narrowest relevant skill rather than loading the full umbrella for
+  every SysML question.
+  - `sysml2-expressions`: calc definitions, constraint bodies,
+    sequence operations, and classification expressions.
+  - `sysml2-behaviour`: actions, successions, control nodes, state
+    machines, flows, and messages.
+  - `sysml2-cases`: use, analysis, and verification cases with
+    subject/actor/objective framing.
+  - `sysml2-views`: viewpoints, views, expose statements, filters,
+    and the eight standard views catalogue.
+  - `sysml2-allocations`: allocation definitions, directional
+    allocation usages, cross-subsetting, and nested refinement.
+  - `sysml2-variants`: variation definitions, variant membership,
+    configuration constraints, and concrete product specialisation.
+  - `sysml2-metadata`: metadata definitions, reflection,
+    metaclassification, smart-package filters, user-defined keywords,
+    and the Risks metadata library.
+- Seven new knowledge files under `knowledge/`, all paraphrased from
+  Weilkiens and Molnár, *The SysML v2 Book* (MBSE4U, 2026-03 release),
+  with chapter and page citations inline. The source is commercial
+  and remains gitignored. Every file carries an attribution line.
+  - `sysml2-expressions-ref.md` (Ch 27, 30, 31, 59, 86)
+  - `sysml2-behaviour-ref.md` (Ch 26, 28, 29, 39)
+  - `sysml2-cases-ref.md` (Ch 33)
+  - `sysml2-views-ref.md` (Ch 13, 37)
+  - `sysml2-allocations-ref.md` (Ch 34, 41)
+  - `sysml2-variants-ref.md` (Ch 35)
+  - `sysml2-metadata-ref.md` (Ch 36, 38, 41)
+- `knowledge/sysml2-libraries-ref.md` extended with Ch 24 ISQ
+  quantities and units coverage.
+
+### Changed
+
+- `skills/sysml2-modelling/SKILL.md` slimmed from ~500 lines into a
+  router and tooling workbench. The umbrella keeps project layout,
+  SySiDE CLI and Automator sections, model validation, model
+  navigation, and the traceability link summary, and adds a routing
+  table that names each sibling and the trigger situation. Inline
+  authoring patterns for requirements, parts, ports, verification
+  cases, actions, and states have moved to the corresponding siblings.
+- `skills/vse-companion-overview/SKILL.md` cross-cutting skill table
+  now lists every SysML 2.0 sibling alongside the umbrella.
+
 ## [0.10.0] - 2026-04-07
 
 ### Changed
