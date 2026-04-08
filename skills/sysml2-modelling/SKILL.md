@@ -16,9 +16,30 @@ provide templates for common model elements. Reference:
 ## When This Skill Triggers
 
 - The user asks to create or edit a SysML 2.0 model
-- The user asks about SysML 2.0 syntax
+- The user asks about SysML 2.0 syntax at the project level
 - The user wants to navigate or query existing models
+- The user wants tooling integration (SySiDE, Automator, CI validation)
 - Any other skill needs to create model elements
+- The user has a SysML question but the topic is not yet clear
+
+## Routing to Focused Siblings
+
+This skill is the workbench and the router. For topic-specific
+authoring, hand off to one of the seven focused siblings. Keep the
+umbrella active if the engineer moves between topics in one session.
+
+| Topic | Sibling skill | When to route |
+| --- | --- | --- |
+| Expressions, calculations, constraints | `@sysml2-expressions` | Formulas, derived attributes, parametric bodies |
+| Actions, states, flows, messages | `@sysml2-behaviour` | Behaviour bodies, succession graphs, state machines |
+| Use, analysis, verification cases | `@sysml2-cases` | Test cases, trade studies, verification bodies |
+| Views and viewpoints | `@sysml2-views` | Documentation views, standard view catalogue |
+| Allocations across architecture layers | `@sysml2-allocations` | Function-to-platform or behaviour-to-structure maps |
+| Variations and variants | `@sysml2-variants` | Product lines, alternatives, configuration bindings |
+| Metadata, reflection, user-defined keywords | `@sysml2-metadata` | Tagging, filters, domain keywords, risk library |
+
+The umbrella still owns project layout, tooling, CI validation, and the
+high-level quick reference. Siblings own topic authoring.
 
 ## Project Template
 
@@ -83,91 +104,15 @@ package Validation {
 }
 ```
 
-## Syntax Reference (Key Patterns)
+## Top-Level Syntax Summary
 
-### Requirements
+The quick reference at the end of this skill lists all keywords and
+forms. For topic-specific authoring examples, load the appropriate
+sibling. The umbrella keeps only the traceability link summary below
+because every sibling produces at least one trace link and the engineer
+often asks about several link types in a single session.
 
-```sysml
-requirement def RequirementName {
-    doc /* The system shall [do something measurable]. */
-    attribute id : String = "REQ-001";
-    attribute priority : String = "essential";
-    attribute verificationMethod : String = "test";
-    satisfy requirement StakeholderNeeds::NeedName;
-}
-```
-
-### Part Definitions (Architecture)
-
-```sysml
-part def SystemName {
-    part subsystemA : SubsystemAType;
-    part subsystemB : SubsystemBType;
-
-    port externalInput : InputPort;
-    port externalOutput : OutputPort;
-
-    connect subsystemA.outPort to subsystemB.inPort;
-}
-```
-
-### Port Definitions
-
-```sysml
-port def DataPort {
-    attribute dataRate : Real;
-    attribute protocol : String;
-}
-
-// Conjugated port (receiver side)
-port def ~DataPort;
-```
-
-### Verification Cases
-
-```sysml
-verification def VerificationName {
-    doc /* Description of how to verify the requirement. */
-    attribute id : String = "VER-001";
-    attribute method : String = "test";
-    attribute passCriteria : String = "...";
-    verify requirement SystemRequirements::RequirementName;
-}
-```
-
-### Actions (Behaviour)
-
-```sysml
-action def MeasureTemperature {
-    in item rawReading : Real;
-    out item calibratedTemp : Real;
-
-    action read : ReadSensor { in item = rawReading; }
-    action calibrate : ApplyCalibration { out item = calibratedTemp; }
-
-    succession read then calibrate;
-}
-```
-
-### States
-
-```sysml
-state def SensorStates {
-    entry state idle;
-    state measuring;
-    state alerting;
-
-    transition idle_to_measuring
-        first idle then measuring
-        if startMeasurement;
-
-    transition measuring_to_alerting
-        first measuring then alerting
-        if thresholdExceeded;
-}
-```
-
-### Traceability Links
+### Traceability Links at a Glance
 
 ```sysml
 // Satisfaction (requirement satisfies a need)
@@ -179,6 +124,10 @@ verify requirement SystemRequirements::ReqName;
 // Allocation (function allocated to physical element)
 allocate FunctionalArch::FunctionName to PhysicalArch::ElementName;
 ```
+
+For each link type, the authoring details live in the owning sibling:
+`@sysml2-cases` for `verify`, `@sysml2-allocations` for `allocate`, and
+`@needs-and-requirements` for `satisfy`.
 
 ## Model Validation
 
