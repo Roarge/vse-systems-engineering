@@ -17,7 +17,9 @@
 // @sysml2-model-structure
 
 package {{PROJECT_SHORT_CODE}}_ArchDesign {
-    private import {{PROJECT_SHORT_CODE}}_Interfaces::*;
+    // Uncomment and add one named import per interface that a part def
+    // in this package actually uses:
+    // private import {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
     // Uncomment when base architecture is activated:
     // private import {{PROJECT_SHORT_CODE}}_BaseArchitecture::BaseSystem;
 

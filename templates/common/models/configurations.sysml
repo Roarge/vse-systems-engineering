@@ -17,7 +17,9 @@
 // Section 6 for organisation.
 
 package {{PROJECT_SHORT_CODE}}_Configurations {
-    private import {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest;
+    // Uncomment together with the DefaultConfiguration placeholder
+    // below when the first concrete variant configuration is wired up:
+    // private import {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest;
 
     doc /* Concrete variant configurations for {{PROJECT_NAME}}.
            Each configuration is a specialised part def that redefines

@@ -365,6 +365,9 @@ When reviewing a model's structure, check:
 13. Short-code prefixes are applied consistently to all top-level
     packages.
 14. Imports are `private import` with named elements, not wildcards.
+15. Every `private import` resolves to a name that the body actually
+    uses. Dead imports are commented out next to the placeholder they
+    will support.
 
 ## Red Flags
 
@@ -388,6 +391,9 @@ WARN the engineer if:
   package does (the release tag cannot be traced to model elements).
 - VAMOS v1 stereotypes (`«variation»`, `«variant»`, `«XOR»`,
   `«REQUIRES»`) appear anywhere.
+- A `private import` brings a name into scope that nothing in the body
+  references. Either bind the name in a body element or comment the
+  import out until the body uses it.
 
 ## Hand-off Summary
 
