@@ -25,84 +25,70 @@ provide templates for common model elements. Reference:
 ## Routing to Focused Siblings
 
 This skill is the workbench and the router. For topic-specific
-authoring, hand off to one of the seven focused siblings. Keep the
+authoring, hand off to one of the eight focused siblings. Keep the
 umbrella active if the engineer moves between topics in one session.
 
 | Topic | Sibling skill | When to route |
 | --- | --- | --- |
+| Model structure, canonical layout, base architecture, federation, risk register, variant configurations, model-level CM | `@sysml2-model-structure` | Starting a new model, splitting an oversized file, inheriting a base, federating, organising variants or risks or configuration items |
 | Expressions, calculations, constraints | `@sysml2-expressions` | Formulas, derived attributes, parametric bodies |
 | Actions, states, flows, messages | `@sysml2-behaviour` | Behaviour bodies, succession graphs, state machines |
 | Use, analysis, verification cases | `@sysml2-cases` | Test cases, trade studies, verification bodies |
 | Views and viewpoints | `@sysml2-views` | Documentation views, standard view catalogue |
 | Allocations across architecture layers | `@sysml2-allocations` | Function-to-platform or behaviour-to-structure maps |
 | Variations and variants | `@sysml2-variants` | Product lines, alternatives, configuration bindings |
-| Metadata, reflection, user-defined keywords | `@sysml2-metadata` | Tagging, filters, domain keywords, risk library |
+| Metadata, reflection, user-defined keywords, RiskInfo, ConfigItem, Baseline | `@sysml2-metadata` | Tagging, filters, domain keywords, risk library, CM library |
 
 The umbrella still owns project layout, tooling, CI validation, and the
 high-level quick reference. Siblings own topic authoring.
 
 ## Project Template
 
-When initialising a new project, create this structure:
+New projects follow the AMBSE canonical model layout adapted from
+Douglass 2016 Fig 3.13 *Canonical system engineering model
+organization* and Douglass 2021 Cookbook Fig 1.35. Ten mandatory
+top-level packages plus a root `{{sc}}_Model` overview file, with
+three optional packages scaffolded on opt-in. Every top-level package
+carries a two- to four-letter short-code prefix (for example `HS_`
+for a Hydrogen Sensor project) per Ch 15-16 namespace hygiene.
 
-```sysml
-// models/package.sysml
-package ProjectName {
-    import StakeholderNeeds::*;
-    import SystemRequirements::*;
-    import Architecture::*;
-    import Verification::*;
-    import Validation::*;
-}
-```
+The layout is **workflow-centric**, not phase-sequential. Each
+package is named for the kind of work it holds. Concurrent SR.2 and
+SR.3 work inside one microcycle is natural because the packages are
+independently editable.
 
-```sysml
-// models/stakeholder-needs.sysml
-package StakeholderNeeds {
-    // Stakeholder requirements go here
-    // Each need uses: requirement def Name { ... }
-    // Attributes: id, priority, source
-}
-```
+Mandatory packages:
 
-```sysml
-// models/system-requirements.sysml
-package SystemRequirements {
-    import StakeholderNeeds::*;
+| Package | Role | Authoring sibling |
+| --- | --- | --- |
+| `{{sc}}_Model` | Root overview with cross-links | `@sysml2-model-structure` |
+| `{{sc}}_Actors` | Actor part defs, external systems | `@sysml2-model-structure` |
+| `{{sc}}_StakeholderNeeds` | Stakeholder needs with `subject` | `@needs-and-requirements` |
+| `{{sc}}_UseCases` | Use cases and use case diagrams | `@sysml2-cases` |
+| `{{sc}}_Requirements` | System requirements with `satisfy` links | `@needs-and-requirements`, `@sysml2-cases` |
+| `{{sc}}_FunctionalAnalysis` | One sub-package per analysed use case | `@sysml2-behaviour` |
+| `{{sc}}_ArchAnalysis` | One sub-package per trade study | `@architecture-design`, `@sysml2-cases` |
+| `{{sc}}_ArchDesign` | Selected architecture with one sub-package per subsystem | `@architecture-design`, `@sysml2-allocations` |
+| `{{sc}}_Interfaces` | Logical interfaces and logical data schema | `@sysml2-model-structure` |
+| `{{sc}}_Verification` | Verification cases with `verify` links | `@verification-validation`, `@sysml2-cases` |
+| `{{sc}}_Risks` | Risk register with `RiskInfo` metadata applied | `@sysml2-metadata`, `@sysml2-model-structure` |
 
-    // System requirements go here
-    // Each requirement uses: requirement def Name { ... satisfy ... }
-    // Attributes: id, verificationMethod, priority
-}
-```
+Optional packages, scaffolded on opt-in inside `@project-setup`:
 
-```sysml
-// models/architecture.sysml
-package Architecture {
-    import SystemRequirements::*;
+| Package | Role | Opt-in reason |
+| --- | --- | --- |
+| `{{sc}}_BaseArchitecture` | Inherited base specialised via `:>` / `:>>` | Project inherits from a prior programme |
+| `{{sc}}_Configurations` | Concrete variant configurations as specialised owners | Project carries product-line variants |
+| `{{sc}}_CM` | Model-level CIs and baselines | Project declares baselines alongside Project Plan Section 9 |
 
-    // Part definitions, ports, connections go here
-}
-```
+Starter files live at `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
+and are copied into the project by `@project-setup`. Each file is
+heavily commented with citations back to Douglass 2016, Cookbook
+2021, Ch 14-16, Ch 35, VAMOS 2016, and ISO 29110.
 
-```sysml
-// models/verification.sysml
-package Verification {
-    import SystemRequirements::*;
-
-    // Verification cases go here
-    // Each case uses: verification def Name { ... verify ... }
-}
-```
-
-```sysml
-// models/validation.sysml
-package Validation {
-    import StakeholderNeeds::*;
-
-    // Validation cases go here
-}
-```
+For the full pattern walk-through, including base-architecture reuse,
+federation, variant configurations, model-level CM, and the risk
+register pattern, route to `@sysml2-model-structure`.
 
 ## Top-Level Syntax Summary
 
