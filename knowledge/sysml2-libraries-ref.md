@@ -500,4 +500,80 @@ team benefits from a model that stays readable throughout the lifecycle.
 
 ---
 
-*Generated from OMG SysML v2.0 specification Chapter 9 for use with the VSE Systems Engineering plugin.*
+## 7. Quantities and Units (Weilkiens and Molnár, Ch 24)
+
+Drawn from Weilkiens T and Molnár V, The SysML v2 Book, MBSE4U, 2026-03 release,
+Chapter 24 Quantities and Units. Paraphrased for reference. Chapters 87 (Kernel
+Semantics Types), 111 (Geometry Libraries), and 113 (ISQ Quantities and Units Libraries)
+are marked as pending in the 2026-03 release and will be covered here once published.
+
+### 7.1 Quantity Library Positioning (Ch 24.1, p 135)
+
+A quantity is an attribute whose value carries physical meaning. Rather than defining
+a quantity type from scratch, use the predefined SysML domain libraries that ship ISO/IEC
+80000 quantities.
+
+The most commonly needed quantities live in `ISQBase`, covering length, mass, and time.
+The overarching `ISQ` library publicly imports all quantity-specific libraries. A practical
+pattern is to qualify the name at the point of use rather than import the whole namespace:
+
+```sysml
+part def Vehicle {
+    attribute mass : ISQ::MassValue;
+    attribute length : ISQ::LengthValue;
+    attribute cruiseSpeed : ISQ::SpeedValue;
+}
+```
+
+The library exposes both **definition elements** (for example `LengthValue`) and
+**usage elements** (for example `length`, `width`, `height`, `altitude`). The book
+recommends using usage elements because they carry richer semantics and read as the
+physical role, not the underlying type (Ch 24, p 136).
+
+### 7.2 Units Attach to Values, Not Types (Ch 24.2, p 136)
+
+In SysML v2 a unit (kilogram, metre, second) is bound to the value expression, not to
+the attribute declaration. This is a deliberate change from SysML v1 where both the
+quantity and the unit were fixed on the value type. The v2 approach allows a single
+quantity attribute to accept values in different units, with automatic conversion
+during evaluation.
+
+```sysml
+part vehicle : Vehicle {
+    mass = 1200 [kg];
+    length = 4500 [mm];     // accepted and converted internally
+    cruiseSpeed = 100 [km/h];
+}
+```
+
+The consequence for VSEs: declare attributes with the quantity type only, and write
+values with the unit that makes sense at the measurement or specification point. The
+library handles conversion during constraint checks.
+
+### 7.3 Advanced Quantities and Units (Ch 24.3, p 137)
+
+Section 24.3 covers custom unit definition for cases where the standard libraries do
+not provide what a project needs. The 2026-03 release defers the detailed content of
+this section to a future update. Authors needing custom units should consult the OMG
+Systems Modeling Language v2.0 specification (formal/2025-01-01) in the interim.
+
+### 7.4 ISQ Library Catalogue (Ch 113)
+
+The book's Part VIII Ch 113 lists the full ISQ catalogue across 23 subsections:
+Base, Acoustics, Atomic and Nuclear Physics, Chemistry and Molecular Physics,
+Condensed Matter Physics, Electromagnetism, Information Science and Technology,
+Light and Radiation, Mechanics, Space and Time, Thermodynamics, plus measurement
+calculations, SI prefixes, and vector calculations among others. The detailed
+subsection content is marked as pending in the 2026-03 release. Until it is published,
+consult the OMG specification or the library sources in the SysML v2 release
+repository for the exact quantity and unit names in each subsection.
+
+### 7.5 VSE Selection Guidance
+
+Always use ISQ quantities for any numeric attribute that has a physical unit. Treat
+untyped numerical attributes as a smell. The library handles dimensional consistency
+at evaluation time, which removes an entire class of SME modelling errors.
+
+---
+
+*Generated from OMG SysML v2.0 specification Chapter 9 and extended from Weilkiens and Molnár, The SysML v2 Book (MBSE4U, 2026), for use with the VSE Systems Engineering plugin.*
