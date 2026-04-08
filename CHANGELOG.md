@@ -63,10 +63,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `RiskInfo`, `ConfigItem`, and `Baseline` metadata libraries.
 - Fourteen AMBSE canonical model starter templates under
   `templates/common/models/`. Ten mandatory top-level packages
-  (`model-overview.sysml`, `actors.sysml`, `stakeholder-needs.sysml`,
-  `use-cases.sysml`, `requirements.sysml`, `functional-analysis.sysml`,
+  (`actors.sysml`, `stakeholder-needs.sysml`, `use-cases.sysml`,
+  `requirements.sysml`, `functional-analysis.sysml`,
   `arch-analysis.sysml`, `arch-design.sysml`, `interfaces.sysml`,
-  `verification.sysml`, `risks.sysml`) plus three optional packages
+  `verification.sysml`, `risks.sysml`) plus a root overview file
+  (`model-overview.sysml`) and three optional packages
   (`base-architecture.sysml`, `configurations.sysml`, `cm.sysml`).
   Every file uses `private import` with named imports from the first
   commit, carries short-code prefix placeholders, and is heavily

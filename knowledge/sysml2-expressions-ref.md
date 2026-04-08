@@ -64,10 +64,13 @@ The `^` and `**` operators both mean exponentiation. The unary `+` is a no-op. T
 
 ### 2.2 Logical Operators
 
-`and`, `or`, `xor`, and `not` return Boolean results. **All operands are always
-evaluated**, unlike in many programming languages. If short-circuit evaluation is needed,
-use the dedicated control operators `a and b`, `a or b`, `a implies b`, which are listed
-in Ch 30 as a separate category (Ch 30, p 191).
+SysML v2 distinguishes two families of logical operators. The standard logical
+operators `&`, `|`, `xor`, and `not` always evaluate both operands and return a
+Boolean result. The control operators `and`, `or`, and `implies` are short-circuit:
+the right-hand operand is only evaluated if the left-hand operand does not already
+determine the result. Use the control operators when the right-hand side has side
+effects or is only well-defined under a condition checked by the left-hand side
+(Ch 30, p 191).
 
 ### 2.3 Comparison Operators
 

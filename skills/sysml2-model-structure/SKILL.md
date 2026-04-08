@@ -80,7 +80,8 @@ package HS_StakeholderNeeds {
 package HS_UseCases {
     private import HS_Actors::Operator;
     use case def UC_MonitorWaterLevel {
-        subject operator : Operator;
+        subject sensorSystem : SensorSystem;
+        actor operator : Operator;
     }
 }
 ```
@@ -124,9 +125,11 @@ package HS_Interfaces {
 ```sysml
 package HS_Verification {
     private import HS_Requirements::SR_SampleRate;
-    verification case def VC_SampleRateTest {
+    verification def VC_SampleRateTest {
         attribute id : String = "VC-0001";
-        verify requirement SR_SampleRate;
+        objective {
+            verify requirement SR_SampleRate;
+        }
     }
 }
 ```
@@ -236,8 +239,10 @@ package HS_Verification {
     private import HS_Requirements::SR_SampleRate;
     private import HS_Requirements::SR_ResponseTime;
 
-    verification case def VC_SampleRateTest {
-        verify requirement SR_SampleRate;
+    verification def VC_SampleRateTest {
+        objective {
+            verify requirement SR_SampleRate;
+        }
     }
 }
 ```

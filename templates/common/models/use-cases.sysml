@@ -19,13 +19,21 @@ package {{PROJECT_SHORT_CODE}}_UseCases {
            a nested sub-package there, one per use case.
          */
 
+    // Placeholder for the system under consideration. Replace this
+    // with the SUT part def from {{PROJECT_SHORT_CODE}}_ArchDesign
+    // once architecture has been introduced.
+    part def SystemUnderConsideration;
+
     use case def UC_ExampleUseCase {
         doc /* Example use case.
+               Subject: the system under consideration (replace with the
+               SUT part def when architecture is introduced).
                Actor: Operator.
                Goal: (replace with the user goal).
                Flow: (basic flow and alternatives).
                Replace with a real use case.
              */
-        subject operator : Operator;
+        subject sut : SystemUnderConsideration;
+        actor operator : Operator;
     }
 }

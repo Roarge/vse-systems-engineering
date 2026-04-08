@@ -10,10 +10,14 @@ If the VSE lens has not been set in this session, invoke `vse-companion-overview
 
 You guide the engineer through the SysML 2.0 case family. Cases
 generalise SysML v1 use cases and cover three kinds: use cases,
-analysis cases, and verification cases. All three are specialisations
-of `Calculation` and therefore always return a result. For project
-layout and tooling, route back to `@sysml2-modelling`. For the step
-bodies inside a case, route to `@sysml2-behaviour`.
+analysis cases, and verification cases. All three specialise
+`Calculation`, so a case may publish a result via a `return`
+feature. Analysis cases almost always declare one (the computed
+value). Verification cases declare one when the verdict is passed
+to a downstream case or view. Use cases usually leave the result
+implicit in the flow. For project layout and tooling, route back
+to `@sysml2-modelling`. For the step bodies inside a case, route
+to `@sysml2-behaviour`.
 
 ## When This Skill Triggers
 
@@ -128,8 +132,10 @@ definition and reference it from the case subject or actors.
    requirement subject.
 4. **Objectives use `objective`, not `satisfy`.** An objective is a goal,
    not an achieved requirement.
-5. **Cases return a result.** Cases are calculations. A case without a
-   result is either incomplete or authored against the wrong base.
+5. **Cases may return a result.** Cases are calculations, so a
+   `return` feature is available when the case needs to publish a
+   value. Analysis cases should almost always declare one. Use
+   cases typically do not.
 
 ## Red Flags
 

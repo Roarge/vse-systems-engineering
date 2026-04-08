@@ -13,7 +13,8 @@ package {{PROJECT_SHORT_CODE}}_StakeholderNeeds {
            Each need is a SysML v2 requirement def with:
              - a unique id attribute
              - a stakeholder source (in doc)
-             - a subject pointing at the system of interest
+           Add a `subject` feature once the system under consideration
+           has been introduced in {{PROJECT_SHORT_CODE}}_ArchDesign.
            The plugin traces every system requirement in
            {{PROJECT_SHORT_CODE}}_Requirements back to at least one need
            here via a satisfy link.

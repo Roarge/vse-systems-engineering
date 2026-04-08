@@ -100,7 +100,7 @@ the specified metadata. This is called a smart package in the book.
 
 ```sysml
 metadata def functionalAllocation
-    :> SemanticMetadata
+    :> Metaobjects::SemanticMetadata
 {
     attribute :>> baseType = FunctionalAllocation;
 }
@@ -396,8 +396,11 @@ its scope is in the `Baselined` state.
 
 ## Validation Checklist
 
-1. **Metadata definitions specialise a kernel base.** A bare metadata
-   type without a base class will not behave as expected in filters.
+1. **Keyword metadata definitions specialise `Metaobjects::SemanticMetadata`.**
+   Annotation metadata defs (used via `@MetaName` above an element) may
+   be bare and do not need a base class. The specialisation is required
+   only when the metadata def will be used as a keyword shortcut via
+   `#keyword`.
 2. **Annotations use `@` above the element**, not inside its body.
 3. **User-defined keywords have a `SemanticMetadata` specialisation.**
    Without it, the keyword form is just a plain comment.

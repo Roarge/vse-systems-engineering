@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_Verification {
              - a pass/fail criterion and a reference to any test data
          */
 
-    verification case def VC_ExampleVerification {
+    verification def VC_ExampleVerification {
         doc /* Example verification case.
                Method: Test.
                Criterion: (fill in the measurable criterion).
@@ -30,6 +30,8 @@ package {{PROJECT_SHORT_CODE}}_Verification {
         attribute id : String = "VC-0001";
         attribute method : String = "Test";
 
-        verify requirement SR_ExampleRequirement;
+        objective {
+            verify requirement SR_ExampleRequirement;
+        }
     }
 }

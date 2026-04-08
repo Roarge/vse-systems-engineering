@@ -70,6 +70,8 @@ Allocation usages apply an allocation definition in a specific context. The
 without the verbose connection syntax.
 
 ```sysml
+alias PBSE for PlatformBasedSystemsEngineering;
+
 part def Drone {
     occurrence navigation : PBSE::Function;
     occurrence navigationSubsystem : PBSE::Platform;
@@ -155,6 +157,8 @@ Allocate a high-level function to a concrete subsystem using a library-supplied
 allocation definition (Ch 41, p 267).
 
 ```sysml
+alias PBSE for PlatformBasedSystemsEngineering;
+
 part def Drone {
     occurrence navigation : PBSE::Function;
     occurrence navigationSubsystem : PBSE::Platform;

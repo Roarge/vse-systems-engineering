@@ -62,6 +62,8 @@ single `allocate` usage populates both sides of the trace.
 ### Allocation Usage
 
 ```sysml
+alias PBSE for PlatformBasedSystemsEngineering;
+
 part def Drone {
     occurrence navigation : PBSE::Function;
     occurrence navigationSubsystem : PBSE::Platform;

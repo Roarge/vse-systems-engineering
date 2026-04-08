@@ -127,7 +127,7 @@ Before handing a calculation or constraint back to the engineer, confirm:
 3. **Asserted constraints have all their inputs bound** at the call site.
    Unbound inputs mean the assertion cannot be evaluated.
 4. **Unit-aware expressions** use quantity kinds from the ISQ library when
-   the values carry physical units. See `sysml2-libraries-ref.md` Section 4.
+   the values carry physical units. See `sysml2-libraries-ref.md` Section 7.
 5. **Recursion is avoided** in calculations unless the base case is explicit.
    The evaluator does not detect infinite recursion.
 
