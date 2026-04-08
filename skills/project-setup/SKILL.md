@@ -523,7 +523,7 @@ the smart-sensor demo. Does not use the short code. Scaffolds
 `architecture.sysml`, `verification.sysml`, and `validation.sysml`
 inline with `{{PROJECT_PACKAGE}}` as the root package name.
 
-**Minimal AMBSE tier** (eight files, default for new greenfield
+**Minimal AMBSE tier** (nine files, default for new greenfield
 projects). Copies these files from
 `${CLAUDE_PLUGIN_ROOT}/templates/common/models/` and runs placeholder
 substitution on each:
@@ -534,12 +534,15 @@ substitution on each:
 - `use-cases.sysml`
 - `requirements.sysml`
 - `arch-design.sysml`
+- `interfaces.sysml`
 - `verification.sysml`
 - `risks.sysml`
 
-Omits `functional-analysis.sysml`, `arch-analysis.sysml`, and
-`interfaces.sysml` because small VSE projects often postpone the
-functional and trade-study split until a second subsystem appears.
+Omits `functional-analysis.sysml` and `arch-analysis.sysml` because
+small VSE projects often postpone the functional and trade-study
+split until a second subsystem appears. Includes `interfaces.sysml`
+because every architecture has a logical interface surface, even a
+single-subsystem project with only external actor interfaces.
 Includes `risks.sysml` because risk management is a mandatory
 ISO 29110 PM.O5 activity. Does not offer base architecture, variant,
 or CM opt-ins because those usually indicate growth beyond this tier.

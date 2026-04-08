@@ -14,8 +14,9 @@ package {{PROJECT_SHORT_CODE}}_UseCases {
     doc /* Use cases for {{PROJECT_NAME}}.
            Each use case specifies a coherent piece of user-visible
            behaviour, the actors involved, and the flow of actions.
-           Analysis of each use case lives in a nested sub-package of
-           {{PROJECT_SHORT_CODE}}_FunctionalAnalysis, one per use case.
+           When {{PROJECT_SHORT_CODE}}_FunctionalAnalysis is present
+           (Canonical AMBSE tier), analysis of each use case lives in
+           a nested sub-package there, one per use case.
          */
 
     use case def UC_ExampleUseCase {

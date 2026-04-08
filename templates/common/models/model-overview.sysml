@@ -12,18 +12,25 @@
 package {{PROJECT_SHORT_CODE}}_Model {
     doc /* {{PROJECT_NAME}} systems engineering model.
            This package is a root overview only. The engineering content
-           lives in the peer top-level packages:
+           lives in the peer top-level packages. The Minimal AMBSE tier
+           scaffolds the first group. The Canonical AMBSE tier adds the
+           second group.
+
+           Always present (Minimal and Canonical tiers):
              - {{PROJECT_SHORT_CODE}}_Actors           (external actors)
              - {{PROJECT_SHORT_CODE}}_StakeholderNeeds (needs and subject)
              - {{PROJECT_SHORT_CODE}}_UseCases         (use cases)
              - {{PROJECT_SHORT_CODE}}_Requirements     (system requirements)
-             - {{PROJECT_SHORT_CODE}}_FunctionalAnalysis (one nested package per use case)
-             - {{PROJECT_SHORT_CODE}}_ArchAnalysis     (one nested package per trade study)
              - {{PROJECT_SHORT_CODE}}_ArchDesign       (selected architecture, one nested package per subsystem)
              - {{PROJECT_SHORT_CODE}}_Interfaces       (logical interfaces and data schema)
              - {{PROJECT_SHORT_CODE}}_Verification     (verification cases)
              - {{PROJECT_SHORT_CODE}}_Risks            (risk register)
-           Optional peers when activated by project-setup:
+
+           Added by the Canonical AMBSE tier:
+             - {{PROJECT_SHORT_CODE}}_FunctionalAnalysis (one nested package per use case)
+             - {{PROJECT_SHORT_CODE}}_ArchAnalysis       (one nested package per trade study)
+
+           Optional peers when activated by project-setup opt-ins:
              - {{PROJECT_SHORT_CODE}}_BaseArchitecture (inherited base)
              - {{PROJECT_SHORT_CODE}}_Configurations   (concrete variant configurations)
              - {{PROJECT_SHORT_CODE}}_CM               (model-level baselines and CIs)

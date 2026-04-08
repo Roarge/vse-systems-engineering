@@ -114,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `skills/project-setup/SKILL.md` Step 6 now reads starter files
   from `templates/common/models/*.sysml` instead of inline heredocs
   and offers three scaffolding tiers: Flat (legacy five-package,
-  retained for the smart-sensor demo), Minimal AMBSE (eight files,
+  retained for the smart-sensor demo), Minimal AMBSE (nine files,
   default for new greenfield projects), and Canonical AMBSE (eleven
   mandatory files with three independent opt-ins for base
   architecture, variants, and CM, giving 11, 12, 13, or 14 total
