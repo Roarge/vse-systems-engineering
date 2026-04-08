@@ -8,6 +8,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-04-08
+
+### Added
+
+- `knowledge/sysml2-model-structure-ref.md` codifying the AMBSE
+  canonical model layout from Douglass 2016 Fig 3.13 and Douglass
+  2021 Cookbook Fig 1.35, with base-architecture reuse drawn from
+  Ch 14 of *The SysML v2 Book*, federation (SE model plus Shared
+  model plus Subsystem models) drawn from Douglass 2016 Fig 8.4,
+  namespace hygiene drawn from Ch 15-16, risk modelling, variant
+  modelling organisation adapted from Weilkiens *Variant Modeling
+  with SysML* (MBSE4U 2016, VAMOS) to SysML 2.0, and model-level
+  configuration management grounded in ISO/IEC 29110 PM.1.13 and
+  PM.2.5. Every section carries chapter and page citations.
+- `skills/sysml2-model-structure/` sibling skill that teaches the
+  AMBSE canonical layout, the Ch 14 `:>` and `:>>` specialisation
+  pattern, the federation pattern, the risk register pattern, the
+  VAMOS-derived variant configurations pattern, and the model-level
+  configuration management pattern. Cross-references
+  `@sysml2-variants` for Ch 35 syntax and `@sysml2-metadata` for the
+  `RiskInfo`, `ConfigItem`, and `Baseline` metadata libraries.
+- Fourteen AMBSE canonical model starter templates under
+  `templates/common/models/`. Ten mandatory top-level packages
+  (`model-overview.sysml`, `actors.sysml`, `stakeholder-needs.sysml`,
+  `use-cases.sysml`, `requirements.sysml`, `functional-analysis.sysml`,
+  `arch-analysis.sysml`, `arch-design.sysml`, `interfaces.sysml`,
+  `verification.sysml`, `risks.sysml`) plus three optional packages
+  (`base-architecture.sysml`, `configurations.sysml`, `cm.sysml`).
+  Every file uses `private import` with named imports from the first
+  commit, carries short-code prefix placeholders, and is heavily
+  commented with citations.
+- `{{sc}}_Risks` package and `RiskInfo` metadata pattern as a
+  first-class data model for ISO/IEC 29110 PM.O5, PM.1.11, PM.2.3,
+  and PM.3.1 risk management.
+- `{{sc}}_Configurations` optional package as the VAMOS-derived home
+  for concrete variant configurations, with variation definitions
+  staying inline in the owning AMBSE package per SysML 2.0 Ch 35.
+- `{{sc}}_CM` optional package as the model-level complement to the
+  Project Plan Section 9 Configuration Management Strategy
+  (PM.1.13), holding `Baseline` item defs and the CI surface that
+  `@traceability-guard` checks at iteration-boundary closure.
+- `sysml2-metadata` skill extended with a Risk Library section
+  covering the `RiskInfo` metadata def, application examples, an
+  Automator high-severity risk query, and a Configuration Management
+  Library section covering `ConfigItem` and `Baseline` metadata
+  defs, application examples, and an Automator CI-by-baseline query.
+- AMBSE workflow routing fan-out from `iteration-orchestrator`,
+  `needs-and-requirements`, `architecture-design`,
+  `verification-validation`, `traceability-guard`, and
+  `vse-companion-overview` to all eight SysML 2.0 siblings including
+  `sysml2-model-structure`, with variant-, CM-, and risk-specific
+  routing. The iteration-boundary closure check surfaces advisory
+  CI-and-baseline and risk-status refresh items.
+
+### Changed
+
+- `skills/sysml2-modelling/SKILL.md` Project Template replaced with
+  the AMBSE canonical ten-package layout from Douglass 2016 Fig 3.13
+  and Cookbook 2021 Fig 1.35, with three optional packages and an
+  eighth sibling routing row for `sysml2-model-structure`. The
+  umbrella continues to own project layout, tooling, CI validation,
+  and the high-level quick reference.
+- `skills/project-setup/SKILL.md` Step 6 now reads starter files
+  from `templates/common/models/*.sysml` instead of inline heredocs
+  and offers three scaffolding tiers: Flat (legacy five-package,
+  retained for the smart-sensor demo), Minimal AMBSE (eight files,
+  default for new greenfield projects), and Canonical AMBSE (eleven
+  mandatory files with three independent opt-ins for base
+  architecture, variants, and CM, giving 11, 12, 13, or 14 total
+  files). Step 1 gathers a project short code, Step 5 substitutes
+  `{{PROJECT_SHORT_CODE}}` in every copied file.
+
+### Pending (follow-up)
+
+- Dedicated `risk-management` workflow skill covering the full
+  identify-assess-mitigate-monitor loop.
+- Dedicated `cm-workflow` skill covering the full identify-baseline-
+  change-retire loop.
+- Automated scaffolding of federated Shared and Subsystem models in
+  `project-setup`. Federation remains manual for now.
+- Variant interface matrix Automator recipe from VAMOS Ch 3.6.
+- PLEML feature-model integration.
+- Library packaging for redistributable base architectures.
+
 ## [0.11.0] - 2026-04-08
 
 ### Added
