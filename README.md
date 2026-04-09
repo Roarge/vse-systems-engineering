@@ -33,6 +33,8 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 ## Skills
 
+### Core workflow skills
+
 | Skill | Purpose |
 |-------|---------|
 | vse-companion-overview | Set the VSE lens, source-processing order, and routing for any VSE session (loads first) |
@@ -41,11 +43,27 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 | architecture-design | Develop architecture with trade studies, five views, and handoff workflow |
 | verification-validation | Plan and execute V&V with continuous verification and trace links |
 | traceability-guard | Check and enforce trace completeness |
-| sysml2-modelling | Author and validate SysML 2.0 textual models |
+| sysml2-modelling | Author and validate SysML 2.0 textual models (router to specialist skills below) |
 | attention-regime | Configure environmental hooks, guards, and reminders |
 | session-journal | Manage cross-session continuity journal |
 | project-setup | Bootstrap a new VSE project with templates and structure |
+| project-audit | Audit an existing VSE project for structural completeness and non-canonical configuration |
 | document-export | Export work products to docx, pptx, or pdf |
+
+### SysML 2.0 specialist skills
+
+These are routed from `sysml2-modelling` for topic-specific authoring guidance.
+
+| Skill | Purpose |
+|-------|---------|
+| sysml2-model-structure | Organise a SysML 2.0 model into the AMBSE canonical layout with base-architecture reuse, variant configurations, and CM |
+| sysml2-behaviour | Model actions, successions, flows, messages, and state machines |
+| sysml2-allocations | Map behaviour to structure across functional, logical, and physical architecture layers |
+| sysml2-cases | Author use cases, analysis cases, and verification cases |
+| sysml2-expressions | Author expressions, calc definitions, constraints, and parametric calculations |
+| sysml2-metadata | Apply metadata (RiskInfo, ConfigItem, Baseline), user-defined keywords, and model queries |
+| sysml2-variants | Model variation points, variant usages, and configuration selection for product lines |
+| sysml2-views | Author views, viewpoints, expose statements, and rendering configuration |
 
 ## Slash commands
 
@@ -61,6 +79,7 @@ named skill and forwards any arguments you supply.
 | `/vse-nanocycle`  | `iteration-orchestrator` | Plan a single commit: anchor thread, intent, verification hook, commit message               |
 | `/vse-trace`      | `traceability-guard`     | Run a traceability check against the current SysML models and report gaps                    |
 | `/vse-journal`    | `session-journal`        | Open or append the cross-session continuity journal                                          |
+| `/vse-audit`      | `project-audit`          | Audit project structure for completeness and non-canonical configuration                     |
 
 You can still invoke any skill directly with `@skill-name` if you need a
 workflow that the slash commands do not cover.
@@ -87,8 +106,8 @@ or any other baselined work product.
 
 ## Knowledge base
 
-Fifteen reference files in `knowledge/`, each 250 to 600 lines, filtered for VSE
-context and organised by source.
+Twenty-five reference files in `knowledge/`, filtered for VSE context and
+organised by source.
 
 **ISO/IEC 29110** (process backbone, catalogue-style)
 
@@ -114,7 +133,7 @@ context and organised by source.
 - `ambse-architecture.md` -- five architecture views, trade studies, handoff, model-based V&V
 - `ambse-git-workflow.md` -- branch-per-microcycle git mapping, PR template, anti-patterns
 
-**SysML 2.0** (modelling language, all three verified against OMG formal/2025-01-01)
+**SysML 2.0** (modelling language, verified against OMG formal/2025-01-01)
 
 - `sysml2-quick-ref.md` -- textual notation cheat sheet for the constructs a
   VSE engineer touches every day (packages, parts, ports, requirements,
@@ -126,10 +145,22 @@ context and organised by source.
   types) and the Domain Libraries (metadata, quantities, trade studies,
   geometry) from Chapter 9, with VSE guidance on which imports are worth
   the cost
+- `sysml2-model-structure-ref.md` -- canonical AMBSE package layout, naming, and import patterns
+- `sysml2-behaviour-ref.md` -- actions, successions, state machines, flows, and messages
+- `sysml2-allocations-ref.md` -- function-to-platform allocation relationships and nesting
+- `sysml2-cases-ref.md` -- use case, analysis case, and verification case authoring
+- `sysml2-expressions-ref.md` -- constraint bodies, calc definitions, and parametric bindings
+- `sysml2-metadata-ref.md` -- RiskInfo, ConfigItem, Baseline metadata and user keywords
+- `sysml2-variants-ref.md` -- variation points, variant usages, configuration selection, VAMOS
+- `sysml2-views-ref.md` -- viewpoints, views, expose statements, and rendering
 
 **SySiDE Automator** (tooling)
 
 - `syside-automator-ref.md` -- Python API reference, tool selection guide, workflow patterns
+
+**Project structure**
+
+- `canonical-project-structure.md` -- authoritative VSE project directory layout
 
 ## Sources
 

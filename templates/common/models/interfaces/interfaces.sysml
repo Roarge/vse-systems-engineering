@@ -12,14 +12,35 @@
 
 package {{PROJECT_SHORT_CODE}}_Interfaces {
     doc /* Logical interfaces for {{PROJECT_NAME}}.
-           Each interface definition carries the data items that flow
-           across it, the direction (in, out, inout), and a doc comment
-           describing the interaction.
+           This package holds port definitions that declare the data
+           types for communication points between parts. Parts in
+           {{PROJECT_SHORT_CODE}}_ArchDesign reference these port defs
+           on their port features.
+
+           SysML 2.0 distinguishes port definitions (data-carrying
+           types) from interface definitions (connection types with
+           end features). This package starts with port definitions.
+           Add interface definitions when connection-level typing is
+           needed.
          */
 
-    interface def ExampleInterface {
-        doc /* Example logical interface.
-               Replace with real interfaces as they are identified.
+    // ─── Port Definitions ─────────────────────────────────────────
+    //
+    // Each port def declares the data items that flow through a
+    // communication point. Parts reference these as port types.
+    // Replace the example below with real port definitions.
+
+    port def ExampleInterface {
+        doc /* Example port definition carrying typed data items.
+               Replace with real data attributes as they are
+               identified. Attributes on a port def describe what
+               crosses the interface.
              */
+        attribute value : Real;
+        attribute status : Boolean;
     }
+
+    // Add further port definitions here, one per logical data type:
+    // port def CommandPort { attribute commandId : String; }
+    // port def StatusPort { attribute healthy : Boolean; }
 }

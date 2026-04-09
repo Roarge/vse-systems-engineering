@@ -8,6 +8,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-04-09
+
+### Fixed
+
+- SysML model templates now contain structural content (part usages,
+  ports, connections, behaviour, state machines) instead of empty
+  definition-only stubs. Affected templates: arch-design, interfaces,
+  functional-analysis, configurations, actors, arch-analysis.
+- `sysml2-model-structure` validation checklist: added item 11 requiring
+  that every `:>>` redefinition in Configurations targets a part declared
+  as `variation part`, not a regular part. Added corresponding red flag.
+- `sysml2-variants` validation checklist: added item 6 for reverse
+  binding validation (configuration targets must be variation parts).
+  Added corresponding red flag.
+
+### Changed
+
+- README.md: skills table expanded from 11 to 20 entries (12 core
+  workflow, 8 SysML 2.0 specialist). Added `/vse-audit` command.
+  Knowledge file count updated from 15 to 25.
+
+### Added
+
+- `.github/workflows/plugin-ci.yml`: CI workflow for PRs with JSON
+  validation, version consistency, shellcheck, skill structure, and
+  cross-reference checks.
+- `Makefile` with `validate`, `lint`, `check-versions`, `check-skills`,
+  `check-refs`, and `all` targets for pre-PR validation.
+- `knowledge/INDEX.md`: categorised index of all 25 knowledge files
+  with topic summaries and consuming skill cross-references.
+
+### Documentation
+
+- `dev_docs/testing-guide.md` updated for 20 skills, current `/plugin`
+  install commands, subagent testing procedures, and hook testing
+  procedures.
+
 ## [0.14.0] - 2026-04-09
 
 ### Added

@@ -363,14 +363,20 @@ When reviewing a model's structure, check:
    separate top-level package).
 10. Every configuration in `{{sc}}_Configurations` specialises the
     variation owner and redefines every variation it cares about.
-11. Every `ConfigItem` metadata application names a baseline that
+11. Every `:>>` redefinition in `{{sc}}_Configurations` targets a part
+    that is declared as `variation part` in the owning part def. A
+    redefinition of a regular part is a specialisation override, not a
+    variant binding. If the intent is variant selection, the target
+    must be declared as `variation part` in
+    `{{sc}}_ArchDesign`.
+12. Every `ConfigItem` metadata application names a baseline that
     exists as an `item def` in `{{sc}}_CM`.
-12. Every `Baseline` item def in `{{sc}}_CM` names a scope and a
+13. Every `Baseline` item def in `{{sc}}_CM` names a scope and a
     `supersedes` reference (except the initial baseline).
-13. Short-code prefixes are applied consistently to all top-level
+14. Short-code prefixes are applied consistently to all top-level
     packages.
-14. Imports are `private import` with named elements, not wildcards.
-15. Every `private import` resolves to a name that the body actually
+15. Imports are `private import` with named elements, not wildcards.
+16. Every `private import` resolves to a name that the body actually
     uses. Dead imports are commented out next to the placeholder they
     will support.
 
@@ -388,6 +394,10 @@ WARN the engineer if:
   need multiple models).
 - Variation definitions sit in a separate top-level package instead of
   inline in the owning part def (VAMOS v1 pattern, not SysML 2.0).
+- A configuration uses `:>>` to redefine a part that is not declared as
+  `variation part` in the owning part def. This produces a structurally
+  valid model but loses the variant semantics. The engineer may think
+  they are selecting a variant when they are overriding a regular part.
 - Variants are declared as composite parts of the variation (Ch 35
   treats them as members through the variant membership relationship).
 - A `ConfigItem` is applied with a `baselineId` that does not resolve

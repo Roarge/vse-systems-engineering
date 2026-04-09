@@ -53,12 +53,12 @@ for file in $STAGED_SYSML; do
             done
             # Also check all .sysml files in the repo (not just staged)
             if [ "$HAS_SATISFY" = false ]; then
-                for existing in $(find . -name '*.sysml' -not -path './.git/*' 2>/dev/null); do
+                while IFS= read -r -d '' existing; do
                     if grep -qP "satisfy\s+requirement\s+.*${req}" "$existing" 2>/dev/null; then
                         HAS_SATISFY=true
                         break
                     fi
-                done
+                done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
             fi
         fi
     done
@@ -81,12 +81,12 @@ for file in $STAGED_SYSML; do
     for req in $REQ_NAMES; do
         HAS_VERIFY=false
         # Search all .sysml files for a verify link to this requirement
-        for sysml in $(find . -name '*.sysml' -not -path './.git/*' 2>/dev/null); do
+        while IFS= read -r -d '' sysml; do
             if grep -qP "verify\s+requirement\s+.*${req}" "$sysml" 2>/dev/null; then
                 HAS_VERIFY=true
                 break
             fi
-        done
+        done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
 
         if [ "$HAS_VERIFY" = false ]; then
             echo "  WARNING: $file: requirement '$req' has no verification case"

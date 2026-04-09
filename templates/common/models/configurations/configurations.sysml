@@ -17,22 +17,45 @@
 // Section 6 for organisation.
 
 package {{PROJECT_SHORT_CODE}}_Configurations {
-    // Uncomment together with the DefaultConfiguration placeholder
-    // below when the first concrete variant configuration is wired up:
+    // Uncomment when the first configuration is added below:
     // private import {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest;
 
     doc /* Concrete variant configurations for {{PROJECT_NAME}}.
-           Each configuration is a specialised part def that redefines
-           every variation declared in SystemOfInterest by binding it
-           to a specific variant. See @sysml2-variants Section 6 for
-           the pattern.
+
+           VAMOS two-step pattern (SysML 2.0 Ch 35):
+
+           Step 1 (in {{PROJECT_SHORT_CODE}}_ArchDesign). Declare
+           variation points INLINE inside the owning part def using
+           the `variation part` keyword. Each variation owns two or
+           more `variant part` members:
+
+               part def SystemOfInterest {
+                   variation part commLink : CommOption {
+                       variant part wiredComm { ... }
+                       variant part wirelessComm { ... }
+                   }
+               }
+
+           Step 2 (HERE). Specialise the owning part def and bind
+           each variation to a specific variant using `:>>`:
+
+               part def WiredConfig :> SystemOfInterest {
+                   part :>> commLink = commLink::wiredComm;
+               }
+
+           IMPORTANT: the `:>>` target MUST be a part declared as
+           `variation part` in the owning definition. If the target
+           is a regular part, the redefinition compiles but loses
+           variant semantics. See @sysml2-variants for the full
+           pattern and validation checklist.
          */
 
-    // Placeholder configuration. Replace with real configurations once
-    // variations exist in {{PROJECT_SHORT_CODE}}_ArchDesign.
+    // Placeholder configuration. Replace with real configurations
+    // once variation points exist in
+    // {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest.
     //
     // part def DefaultConfiguration :> SystemOfInterest {
-    //     // part :>> battery = battery::standardBattery;
-    //     // part :>> engines = engines::fourEngines;
+    //     // Bind every variation declared in SystemOfInterest:
+    //     // part :>> commLink = commLink::wiredComm;
     // }
 }

@@ -26,8 +26,24 @@ package {{PROJECT_SHORT_CODE}}_ArchAnalysis {
                against each criterion in isolation.
              */
 
-        // part def Candidate_A { ... }
-        // part def Candidate_B { ... }
-        // analysis def CandidateScoring { ... }
+        part def CandidateA {
+            doc /* First candidate architecture. Describe its
+                   distinguishing characteristics and trade-offs.
+                 */
+        }
+
+        part def CandidateB {
+            doc /* Second candidate architecture. Describe how it
+                   differs from CandidateA.
+                 */
+        }
+
+        analysis def CandidateScoring {
+            doc /* Trade study scoring. The subject is the candidate
+                   under analysis. Dispatch to @vse-trade-study-runner
+                   to score each candidate against weighted criteria.
+                 */
+            subject candidate : CandidateA;
+        }
     }
 }
