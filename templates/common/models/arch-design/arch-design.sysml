@@ -44,14 +44,14 @@ package {{PROJECT_SHORT_CODE}}_ArchDesign {
                and description. Each subsystem part def should declare
                the ports through which it communicates.
              */
-        port dataOut : {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
+        port dataOut : ExampleInterface;
     }
 
     part def SubsystemB {
         doc /* Example downstream subsystem that receives data from
                SubsystemA. Replace with real content.
              */
-        port dataIn : {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
+        port dataIn : ExampleInterface;
     }
 
     // ─── System of Interest ───────────────────────────────────────

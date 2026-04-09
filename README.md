@@ -106,8 +106,8 @@ or any other baselined work product.
 
 ## Knowledge base
 
-Twenty-five reference files in `knowledge/`, each 250 to 600 lines, filtered for
-VSE context and organised by source.
+Twenty-five reference files in `knowledge/`, filtered for VSE context and
+organised by source.
 
 **ISO/IEC 29110** (process backbone, catalogue-style)
 

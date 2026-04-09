@@ -17,7 +17,8 @@
 // Section 6 for organisation.
 
 package {{PROJECT_SHORT_CODE}}_Configurations {
-    private import {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest;
+    // Uncomment when the first configuration is added below:
+    // private import {{PROJECT_SHORT_CODE}}_ArchDesign::SystemOfInterest;
 
     doc /* Concrete variant configurations for {{PROJECT_NAME}}.
 

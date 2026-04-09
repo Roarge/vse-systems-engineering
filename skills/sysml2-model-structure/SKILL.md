@@ -367,7 +367,7 @@ When reviewing a model's structure, check:
     that is declared as `variation part` in the owning part def. A
     redefinition of a regular part is a specialisation override, not a
     variant binding. If the intent is variant selection, the target
-    must be declared with the `variation` keyword in
+    must be declared as `variation part` in
     `{{sc}}_ArchDesign`.
 12. Every `ConfigItem` metadata application names a baseline that
     exists as an `item def` in `{{sc}}_CM`.

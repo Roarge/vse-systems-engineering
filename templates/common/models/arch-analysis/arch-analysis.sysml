@@ -39,12 +39,11 @@ package {{PROJECT_SHORT_CODE}}_ArchAnalysis {
         }
 
         analysis def CandidateScoring {
-            doc /* Trade study scoring. The subject is the decision
-                   under analysis. The return is the recommended
-                   candidate. Dispatch to @vse-trade-study-runner
+            doc /* Trade study scoring. The subject is the candidate
+                   under analysis. Dispatch to @vse-trade-study-runner
                    to score each candidate against weighted criteria.
                  */
-            subject candidateSet : CandidateA;
+            subject candidate : CandidateA;
         }
     }
 }

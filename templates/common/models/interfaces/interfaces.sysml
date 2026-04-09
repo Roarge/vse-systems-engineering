@@ -12,18 +12,16 @@
 
 package {{PROJECT_SHORT_CODE}}_Interfaces {
     doc /* Logical interfaces for {{PROJECT_NAME}}.
-           This package holds port definitions (data types for
-           communication points) and interface definitions (connection
-           types between ports).
+           This package holds port definitions that declare the data
+           types for communication points between parts. Parts in
+           {{PROJECT_SHORT_CODE}}_ArchDesign reference these port defs
+           on their port features.
 
-           Port definitions declare the attributes that flow through a
-           port. Parts in {{PROJECT_SHORT_CODE}}_ArchDesign reference
-           these port defs on their port features.
-
-           Interface definitions declare how two ports connect. They
-           carry end features naming the port types at each side. Use
-           interface usages in {{PROJECT_SHORT_CODE}}_ArchDesign to wire
-           parts together.
+           SysML 2.0 distinguishes port definitions (data-carrying
+           types) from interface definitions (connection types with
+           end features). This package starts with port definitions.
+           Add interface definitions when connection-level typing is
+           needed.
          */
 
     // ─── Port Definitions ─────────────────────────────────────────
