@@ -150,6 +150,10 @@ Ask the user for:
 3. **Acquirer name** (the customer or sponsor)
 4. **Primary stakeholder roles** (users, maintainers, regulators, or other parties
    with interest in the system)
+5. **Project short code** (two to four upper-case letters used as the
+   prefix for every top-level SysML package name, for example `HS` for
+   a Hydrogen Sensor project). Offer the initials of the project name
+   as the default.
 
 If the user provides a Statement of Work, extract this information from it.
 
@@ -206,6 +210,10 @@ genuinely require human input (acquirer, stakeholder roles).
 Store the gathered information for template population:
 - `{{PROJECT_NAME}}`: project name in plain text
 - `{{PROJECT_PACKAGE}}`: project name in PascalCase (for SysML 2.0 packages)
+- `{{PROJECT_SHORT_CODE}}`: two- to four-letter upper-case short code
+  (used as the prefix for AMBSE canonical model package names). In
+  brownfield mode, harvest from an existing CLAUDE.md if present;
+  otherwise default to the initials of the project name.
 - `{{DATE}}`: current date in YYYY-MM-DD format
 - `{{ACQUIRER}}`: acquirer name
 - `{{AUTHOR}}`: author name
@@ -444,6 +452,7 @@ Replace the following placeholders in every copied file:
 | Placeholder | Replacement |
 |-------------|-------------|
 | `{{PROJECT_NAME}}` | Project name |
+| `{{PROJECT_SHORT_CODE}}` | Two- to four-letter upper-case short code |
 | `{{DATE}}` | Current date (YYYY-MM-DD) |
 | `{{ACQUIRER}}` | Acquirer name |
 | `{{AUTHOR}}` | Author name |
@@ -502,7 +511,102 @@ These files live under `models/` in greenfield mode and under
 `engineering/models/` in brownfield mode. The content is identical in
 both modes.
 
-Create the root package:
+### Choose a scaffolding tier
+
+Prompt the user to pick one of three tiers. Default to **Minimal
+AMBSE** for greenfield mode and **Canonical AMBSE** for brownfield
+mode when existing `.sysml` files were harvested.
+
+**Flat tier** (legacy, five packages). Retained for teaching and for
+the smart-sensor demo. Does not use the short code. Scaffolds
+`package.sysml`, `stakeholder-needs.sysml`, `system-requirements.sysml`,
+`architecture.sysml`, `verification.sysml`, and `validation.sysml`
+inline with `{{PROJECT_PACKAGE}}` as the root package name.
+
+**Minimal AMBSE tier** (nine files, default for new greenfield
+projects). Copies these files from
+`${CLAUDE_PLUGIN_ROOT}/templates/common/models/` and runs placeholder
+substitution on each:
+
+- `model-overview.sysml`
+- `actors.sysml`
+- `stakeholder-needs.sysml`
+- `use-cases.sysml`
+- `requirements.sysml`
+- `arch-design.sysml`
+- `interfaces.sysml`
+- `verification.sysml`
+- `risks.sysml`
+
+Omits `functional-analysis.sysml` and `arch-analysis.sysml` because
+small VSE projects often postpone the functional and trade-study
+split until a second subsystem appears. Includes `interfaces.sysml`
+because every architecture has a logical interface surface, even a
+single-subsystem project with only external actor interfaces.
+Includes `risks.sysml` because risk management is a mandatory
+ISO 29110 PM.O5 activity. Does not offer base architecture, variant,
+or CM opt-ins because those usually indicate growth beyond this tier.
+
+**Canonical AMBSE tier** (eleven to fourteen files). Copies the full
+mandatory set from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
+and additionally offers three independent opt-ins. The mandatory set:
+
+- `model-overview.sysml`
+- `actors.sysml`
+- `stakeholder-needs.sysml`
+- `use-cases.sysml`
+- `requirements.sysml`
+- `functional-analysis.sysml`
+- `arch-analysis.sysml`
+- `arch-design.sysml`
+- `interfaces.sysml`
+- `verification.sysml`
+- `risks.sysml`
+
+The opt-ins are independent, so the engineer can pick any subset and
+end up with 11, 12, 13, or 14 total files:
+
+| Opt-in | Adds | Use when |
+| --- | --- | --- |
+| Base architecture | `base-architecture.sysml` and activates the `:>` specialisation line inside `arch-design.sysml` | The project inherits from a prior programme |
+| Variants | `configurations.sysml` with a placeholder specialised owner | The project carries product-line variants |
+| CM | `cm.sysml` with the `BL_INIT` baseline item def | The project is expected to pass through baselines and Change Requests |
+
+In brownfield mode with harvested `.sysml` files, always activate the
+base architecture opt-in and populate `{{PROJECT_SHORT_CODE}}_BaseArchitecture`
+from the existing part defs. The variants and CM opt-ins remain
+independent.
+
+### Copy and substitute
+
+For the Minimal and Canonical tiers, copy the selected files from
+`${CLAUDE_PLUGIN_ROOT}/templates/common/models/` into the target
+directory (`models/` greenfield, `engineering/models/` brownfield)
+and apply placeholder substitution using the same table as Step 5:
+
+- `{{PROJECT_NAME}}` becomes the project name
+- `{{PROJECT_SHORT_CODE}}` becomes the uppercase short code
+- `{{DATE}}` becomes the current date
+
+Every top-level package in the copied files starts with the short
+code prefix, for example `HS_Actors`, `HS_Requirements`,
+`HS_ArchDesign`. Package imports inside the templates already use
+`private import` with named imports per Ch 15-16 namespace hygiene,
+so the generated project embodies the hygiene rule from the first
+commit.
+
+In brownfield mode, prepend `arch-design.sysml` with a comment block
+listing the host project's top-level source directories from the
+Step 1 harvest. This gives the SR.3 architecture work a starting
+point grounded in the existing codebase.
+
+### Flat tier fallback
+
+If the user chooses the Flat tier, scaffold the legacy five-package
+layout inline. The Flat tier does not read from
+`templates/common/models/` and does not use the short code. It
+exists to keep the smart-sensor demo installable and to teach the
+traceability chain without structural overhead.
 
 ```sysml
 // models/package.sysml
@@ -515,29 +619,18 @@ package {{PROJECT_PACKAGE}} {
 }
 ```
 
-Create stub files for each model domain:
-
 ```sysml
 // models/stakeholder-needs.sysml
 package StakeholderNeeds {
     // Stakeholder needs use STK- prefix
-    // Example:
-    // requirement def MonitorTemperature {
-    //     doc /* The operator needs to monitor temperature. */
-    // }
 }
 ```
 
 ```sysml
 // models/system-requirements.sysml
 package SystemRequirements {
-    // System requirements use REQ- prefix
-    // Each must have a satisfy link to a stakeholder need
-    // Example:
-    // requirement def MeasureTemperature :> SystemRequirement {
-    //     doc /* The system shall measure temperature within +/- 0.5 C. */
-    //     satisfy requirement StakeholderNeeds::MonitorTemperature;
-    // }
+    // System requirements use REQ- prefix with satisfy links to
+    // StakeholderNeeds
 }
 ```
 
@@ -545,41 +638,29 @@ package SystemRequirements {
 // models/architecture.sysml
 package Architecture {
     // Part definitions for the physical architecture
-    // Example:
-    // part def TemperatureSensor { ... }
 }
 ```
-
-In brownfield mode, prepend the architecture file with a comment block
-listing the host project's top-level source directories (from the Step 1
-harvest). This gives the SR.3 architecture work a starting point grounded
-in the existing codebase.
 
 ```sysml
 // models/verification.sysml
 package Verification {
-    // Verification cases use VER- prefix
-    // Each must have a verify link to a system requirement
-    // Example:
-    // verification def VerifyTempAccuracy {
-    //     doc /* Verify temperature measurement accuracy. */
-    //     verify requirement SystemRequirements::MeasureTemperature;
-    // }
+    // Verification cases use VER- prefix with verify links to
+    // SystemRequirements
 }
 ```
 
 ```sysml
 // models/validation.sysml
 package Validation {
-    // Validation cases use VAL- prefix
-    // Each must have a verify link to a stakeholder need
-    // Example:
-    // validation def ValidateMonitoring {
-    //     doc /* Validate the operator can monitor temperature. */
-    //     verify requirement StakeholderNeeds::MonitorTemperature;
-    // }
+    // Validation cases use VAL- prefix with verify links to
+    // StakeholderNeeds
 }
 ```
+
+For the full AMBSE canonical layout pattern, the base-architecture
+reuse convention, the federation option, the variant configurations
+organisation, the model-level CM package, and the risk register
+pattern, route to `@sysml2-model-structure`.
 
 ## Step 7: Generate TASKS.md
 
@@ -864,9 +945,18 @@ navigation.
 
 - `@iteration-orchestrator`: routes here for new projects, receives handoff after setup
 - `@attention-regime`: hook installation and environment configuration
-- `@sysml2-modelling`: SysML 2.0 model conventions and validation
+- `@sysml2-modelling`: router umbrella for SysML 2.0 authoring, tooling, and CI validation
+- `@sysml2-model-structure`: AMBSE canonical layout, base-architecture reuse, federation, variant configurations, model-level CM, risk register
+- `@sysml2-cases`: use case, analysis case, and verification case authoring
+- `@sysml2-metadata`: RiskInfo risk library and ConfigItem / Baseline CM library
+- `@sysml2-variants`: SysML 2.0 Ch 35 variant syntax
+- `@sysml2-expressions`: calculations, constraints, and derived attributes
+- `@sysml2-behaviour`: actions, states, flows, and messages
+- `@sysml2-allocations`: function-to-part and behaviour-to-structure allocations
+- `@sysml2-views`: documentation views and standard view catalogue
 - `@traceability-guard`: verifies trace completeness in models
 - `@document-export`: generates docx/pptx from the populated templates
+- `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`: AMBSE canonical model starter files copied into the project at Step 6
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`: source for TASKS.md generation
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`: ISO 29110 process reference
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`: branch-per-microcycle workflow that the merged CLAUDE.md points to

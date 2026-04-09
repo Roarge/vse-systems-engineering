@@ -162,9 +162,9 @@ the tables below as a phase-by-phase timeline.
 
 | Activity | Objective | Key Outputs | Route to |
 |----------|-----------|-------------|----------|
-| PM.1 Project Planning | Establish plan, assign resources | Project Plan [accepted] | `iteration-orchestrator` |
-| PM.2 Plan Execution | Monitor progress, manage changes | Progress Status Record | `iteration-orchestrator` |
-| PM.3 Assessment and Control | Evaluate against plan, correct | Correction Register | `iteration-orchestrator` |
+| PM.1 Project Planning | Establish plan, assign resources, document CM Strategy (PM.1.13) | Project Plan [accepted], Risk Management Approach (PM.1.11), CM Strategy (PM.1.13), optional `{{sc}}_CM` model package | `iteration-orchestrator`, `sysml2-model-structure` for `{{sc}}_CM`, `sysml2-metadata` for ConfigItem and Baseline |
+| PM.2 Plan Execution | Monitor progress, manage changes, perform configuration management (PM.2.5), review risk status (PM.2.3) | Progress Status Record, Change Requests, updated ConfigItem metadata | `iteration-orchestrator`, `sysml2-metadata` for ConfigItem updates |
+| PM.3 Assessment and Control | Evaluate against plan, monitor risk (PM.3.1), correct | Correction Register, updated `{{sc}}_Risks` register | `iteration-orchestrator`, `sysml2-model-structure` for `{{sc}}_Risks`, `sysml2-metadata` for RiskInfo |
 | PM.4 Closure | Formalise completion, obtain acceptance | Product Acceptance Record | `iteration-orchestrator` |
 
 ### System Definition and Realisation (SR)
@@ -183,7 +183,15 @@ the tables below as a phase-by-phase timeline.
 | Skill | Applies to | Purpose |
 |-------|-----------|---------|
 | `traceability-guard` | All phases | Check and enforce trace completeness |
-| `sysml2-modelling` | All phases | Author and validate SysML 2.0 models |
+| `sysml2-modelling` | All phases | SysML 2.0 workbench and router (project layout, tooling, validation) |
+| `sysml2-model-structure` | All phases | AMBSE canonical model layout, base-architecture reuse, federation, variant configurations, model-level configuration management, and risk register organisation |
+| `sysml2-expressions` | All phases | Calculations and constraints inside models |
+| `sysml2-behaviour` | All phases | Actions, states, flows, messages |
+| `sysml2-cases` | SR.2, SR.5 | Use, analysis, and verification cases |
+| `sysml2-views` | SR.6, any | Viewpoints and views for documentation |
+| `sysml2-allocations` | SR.3 | Allocations across architecture layers |
+| `sysml2-variants` | SR.3, SR.4 | Variations and configuration selection |
+| `sysml2-metadata` | All phases | Metadata, reflection, user-defined keywords, RiskInfo risk library, ConfigItem and Baseline CM library |
 | `attention-regime` | All phases | Configure hooks, guards, and reminders |
 | `session-journal` | All phases | Manage cross-session continuity journal |
 | `document-export` | SR.6, any | Generate docx/pptx/pdf from markdown |

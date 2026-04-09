@@ -356,6 +356,32 @@ protocol handlers).
 
 Reference: https://docs.sensmetry.com/examples/state_machine_simulation.html
 
+## SysML 2.0 Authoring Routing
+
+When V&V work moves into the SysML 2.0 model, route to the following
+siblings:
+
+| Topic | Route to |
+| --- | --- |
+| Verification case bodies in `{{sc}}_Verification` | `@sysml2-cases` |
+| Verification coverage views and documentation views | `@sysml2-views` |
+| Verdict metadata and result tagging | `@sysml2-metadata` |
+| Containing `{{sc}}_Verification` package structure | `@sysml2-model-structure` |
+| Risk-mitigation verification (verification cases that cover a high-severity risk) | `@sysml2-metadata` (RiskInfo) and `@sysml2-model-structure` (`{{sc}}_Risks`) |
+| Verification case ConfigItem tagging at baseline freeze | `@sysml2-metadata` (ConfigItem, Baseline) and `@sysml2-model-structure` (`{{sc}}_CM`) |
+
+When a verification case covers a high-severity risk, the risk item
+def in `{{sc}}_Risks` should list that verification case in its
+`RiskInfo::mitigatedBy` attribute. The mitigation link is
+centralised on the risk side (`risk.mitigatedBy` points at
+requirements, verification cases, or architecture elements) so the
+risk register is the single place to read what covers each risk.
+This closes the PM.3.1 risk-monitoring loop from
+`@iteration-orchestrator` Step 4 when the verification passes and
+the `RiskInfo::status` is advanced from `Mitigating` to `Closed`.
+See `@sysml2-metadata` for the `RiskInfo` schema and the Automator
+query that lists verification cases by covered risk.
+
 ## Red Flags
 
 WARN the engineer if:
@@ -365,6 +391,10 @@ WARN the engineer if:
 - Stakeholders are not involved in validation
 - Defects are being deferred without documented rationale
 - The Verification or Validation Report is incomplete
+- A verification case that closes a high-severity risk is not named
+  in the risk's `RiskInfo::mitigatedBy` list in `{{sc}}_Risks`, so
+  the risk register cannot be updated automatically when the
+  verification passes
 
 ## Reference: V&V Guide
 

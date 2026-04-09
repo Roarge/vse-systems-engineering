@@ -399,6 +399,32 @@ Every requirement MUST carry these attributes:
 | source | Which stakeholder need this derives from |
 | status | draft, reviewed, approved, baselined |
 
+## SysML 2.0 Authoring Routing
+
+When the engineer is ready to move the elicited content into the
+SysML 2.0 model, route to the following siblings:
+
+| Topic | Route to |
+| --- | --- |
+| Containing `{{sc}}_StakeholderNeeds` and `{{sc}}_UseCases` packages | `@sysml2-model-structure` |
+| Use case and stakeholder need case bodies | `@sysml2-cases` |
+| Requirement expressions, derived attributes, and parametric constraints | `@sysml2-expressions` |
+| Allocating functions to parts inside `{{sc}}_FunctionalAnalysis` and `{{sc}}_ArchDesign` | `@sysml2-allocations` |
+| Risk tagging on requirements | `@sysml2-metadata` (RiskInfo) and `@sysml2-model-structure` (`{{sc}}_Risks`) |
+| Requirement ConfigItem tagging and baseline membership | `@sysml2-metadata` (ConfigItem, Baseline) and `@sysml2-model-structure` (`{{sc}}_CM`) |
+
+## Risks Traced to Requirements
+
+Every high-severity risk in `{{sc}}_Risks` should point at the
+requirement that mitigates it via a `mitigatedBy` reference into
+`{{sc}}_Requirements`, and the requirement should in turn be covered
+by a verification case in `{{sc}}_Verification`. Unmitigated risks
+are legitimate under ISO/IEC 29110 PM.O5 but must carry an explicit
+`status = Open` and a named owner in the `RiskInfo` metadata
+application. An unowned or status-free risk is a silent debt and
+surfaces as a red flag in `@traceability-guard` at iteration-boundary
+closure.
+
 ## Reference: Needs and Requirements Guide
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-reqs-guide.md`

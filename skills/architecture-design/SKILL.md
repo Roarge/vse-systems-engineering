@@ -52,6 +52,17 @@ From the baselined SyRS, identify:
 3. **Interface requirements** that define external connections
 4. **Constraints** (budget, schedule, regulations, technology)
 5. **Quality attributes** (reliability, maintainability, safety)
+6. **Inherited base architecture (optional).** Check whether the
+   project inherits from a prior programme. If so, route to
+   `@sysml2-model-structure` to activate the optional
+   `{{sc}}_BaseArchitecture` package and the Ch 14 `:>` / `:>>`
+   specialisation pattern inside `{{sc}}_ArchDesign`.
+7. **Known risks that drive architecture decisions.** Surface any
+   risks already tagged with `RiskInfo` in `{{sc}}_Risks`. Trade
+   studies downstream must account for high-severity risks on
+   candidate options. Route to `@sysml2-metadata` for risk tagging
+   and to `@sysml2-model-structure` for the `{{sc}}_Risks` package
+   pattern.
 
 **Architecture views** (from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 2.2):
 structure the analysis using five views: subsystem (decomposition), deployment
@@ -410,6 +421,33 @@ separate lists.
 Reference: https://docs.sensmetry.com/examples/extract_parts.html and
 https://docs.sensmetry.com/examples/extract_variants.html
 
+## Risk-Driven Trade-Offs
+
+Trade studies in Step 3 and Step 5 must account for the residual risk
+carried by each candidate. Tag the high-risk options with `RiskInfo`
+metadata so the risk register reflects the decision made. See
+`@sysml2-metadata` for the risk library syntax, `@sysml2-cases` for
+the trade-study analysis case bodies that live in `{{sc}}_ArchAnalysis`,
+and `knowledge/sysml2-model-structure-ref.md` Section 8 for the
+risk-to-requirement trace pattern. Trade studies with high residual
+risk on the selected option must carry a mitigation plan recorded in
+`{{sc}}_Risks` and referenced from the Justification Document.
+
+## SysML 2.0 Authoring Routing
+
+When the architecture work moves into the SysML 2.0 model, route to
+the following siblings:
+
+| Topic | Route to |
+| --- | --- |
+| Canonical layout, `{{sc}}_FunctionalAnalysis` and `{{sc}}_ArchDesign` package structure, base architecture reuse, federation, variant organisation | `@sysml2-model-structure` |
+| Trade study analysis case bodies in `{{sc}}_ArchAnalysis` | `@sysml2-cases` |
+| Function-to-part and behaviour-to-structure allocations | `@sysml2-allocations` |
+| Functional decomposition behaviour bodies | `@sysml2-behaviour` |
+| Variation points, named variants, and concrete configurations | `@sysml2-variants` for syntax plus `@sysml2-model-structure` for the optional `{{sc}}_Configurations` package |
+| Risk tagging on architecture elements and trade study options | `@sysml2-metadata` (RiskInfo) and `@sysml2-model-structure` (`{{sc}}_Risks`) |
+| Architecture ConfigItem tagging at baseline freeze | `@sysml2-metadata` (ConfigItem, Baseline) and `@sysml2-model-structure` (`{{sc}}_CM`) |
+
 ## Red Flags
 
 WARN the engineer if:
@@ -420,6 +458,10 @@ WARN the engineer if:
 - The Traceability Matrix is not updated after architecture decisions
 - The engineer is making premature technology commitments without trade-off
   analysis
+- A high-severity risk on the selected trade-off option lacks a mitigation
+  plan in `{{sc}}_Risks`
+- Variation definitions are placed in a separate top-level package instead of
+  inline in the owning part def (VAMOS v1 pattern, not SysML 2.0 Ch 35)
 
 ## Reference: AMBSE Architecture
 
