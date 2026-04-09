@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_BaseArchitectureView {
     }
 
     view def BaseArchitecturePackageView :> InterconnectionView {
-        satisfy 'Base Architecture Overview';
+        satisfy viewpoint 'Base Architecture Overview';
     }
 
     view baseArchDiagram : BaseArchitecturePackageView {

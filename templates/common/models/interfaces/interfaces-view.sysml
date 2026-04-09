@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_InterfacesView {
     }
 
     view def InterfacesPackageView :> InterconnectionView {
-        satisfy 'Interfaces Overview';
+        satisfy viewpoint 'Interfaces Overview';
     }
 
     view interfacesDiagram : InterfacesPackageView {

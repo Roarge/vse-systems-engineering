@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_ConfigurationsView {
     }
 
     view def ConfigurationsPackageView :> GridView {
-        satisfy 'Variant Configurations Overview';
+        satisfy viewpoint 'Variant Configurations Overview';
     }
 
     view configurationsTable : ConfigurationsPackageView {

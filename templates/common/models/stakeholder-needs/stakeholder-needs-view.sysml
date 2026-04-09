@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_StakeholderNeedsView {
     }
 
     view def StakeholderNeedsPackageView :> GridView {
-        satisfy 'Stakeholder Needs Overview';
+        satisfy viewpoint 'Stakeholder Needs Overview';
     }
 
     view needsTable : StakeholderNeedsPackageView {

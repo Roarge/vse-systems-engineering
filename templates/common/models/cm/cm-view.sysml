@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_CMView {
     }
 
     view def CMPackageView :> GridView {
-        satisfy 'Configuration Management Overview';
+        satisfy viewpoint 'Configuration Management Overview';
     }
 
     view cmTable : CMPackageView {

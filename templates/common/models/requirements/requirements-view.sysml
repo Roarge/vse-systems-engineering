@@ -22,7 +22,7 @@ package {{PROJECT_SHORT_CODE}}_RequirementsView {
     }
 
     view def RequirementsPackageView :> GridView {
-        satisfy 'Requirements Overview';
+        satisfy viewpoint 'Requirements Overview';
     }
 
     view requirementsTable : RequirementsPackageView {

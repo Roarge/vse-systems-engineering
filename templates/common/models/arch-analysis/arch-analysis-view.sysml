@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_ArchAnalysisView {
     }
 
     view def ArchAnalysisPackageView :> GridView {
-        satisfy 'Trade Studies Overview';
+        satisfy viewpoint 'Trade Studies Overview';
     }
 
     view tradeStudyMatrix : ArchAnalysisPackageView {

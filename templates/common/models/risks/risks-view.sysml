@@ -22,7 +22,7 @@ package {{PROJECT_SHORT_CODE}}_RisksView {
     }
 
     view def RisksPackageView :> GridView {
-        satisfy 'Risk Register Overview';
+        satisfy viewpoint 'Risk Register Overview';
     }
 
     view riskTable : RisksPackageView {

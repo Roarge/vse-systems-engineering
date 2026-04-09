@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_ActorsView {
     }
 
     view def ActorsPackageView :> GeneralView {
-        satisfy 'Actors Overview';
+        satisfy viewpoint 'Actors Overview';
     }
 
     view actorsDiagram : ActorsPackageView {

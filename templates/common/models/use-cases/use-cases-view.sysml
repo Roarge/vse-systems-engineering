@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_UseCasesView {
     }
 
     view def UseCasesPackageView :> GeneralView {
-        satisfy 'Use Cases Overview';
+        satisfy viewpoint 'Use Cases Overview';
     }
 
     view useCasesDiagram : UseCasesPackageView {

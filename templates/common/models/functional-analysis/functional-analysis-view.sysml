@@ -21,7 +21,7 @@ package {{PROJECT_SHORT_CODE}}_FunctionalAnalysisView {
     }
 
     view def FunctionalAnalysisPackageView :> ActionFlowView {
-        satisfy 'Functional Analysis Overview';
+        satisfy viewpoint 'Functional Analysis Overview';
     }
 
     view functionalFlows : FunctionalAnalysisPackageView {

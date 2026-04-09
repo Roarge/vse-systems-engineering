@@ -22,7 +22,7 @@ package {{PROJECT_SHORT_CODE}}_VerificationView {
     }
 
     view def VerificationPackageView :> GridView {
-        satisfy 'Verification Overview';
+        satisfy viewpoint 'Verification Overview';
     }
 
     view verificationTable : VerificationPackageView {

@@ -22,7 +22,7 @@ package {{PROJECT_SHORT_CODE}}_ArchDesignView {
     }
 
     view def ArchDesignPackageView :> InterconnectionView {
-        satisfy 'Architecture Overview';
+        satisfy viewpoint 'Architecture Overview';
     }
 
     view architectureDiagram : ArchDesignPackageView {

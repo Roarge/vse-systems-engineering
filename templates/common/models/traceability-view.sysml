@@ -27,7 +27,7 @@ package {{PROJECT_SHORT_CODE}}_TraceabilityView {
     }
 
     view def TraceabilityMatrix :> GridView {
-        satisfy 'Traceability Overview';
+        satisfy viewpoint 'Traceability Overview';
     }
 
     view traceTable : TraceabilityMatrix {
