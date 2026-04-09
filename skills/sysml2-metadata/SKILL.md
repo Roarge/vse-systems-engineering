@@ -11,14 +11,29 @@ If the VSE lens has not been set in this session, invoke `vse-companion-overview
 You guide the engineer through metadata, reflection, and user-defined
 keywords in SysML 2.0. Metadata is the official extension mechanism
 for the language. It supports tagging, filtering, user-defined
-keywords, and domain libraries. This skill owns two concrete
-libraries the plugin uses across AMBSE workflow skills: the `RiskInfo`
-risk library that backs the `{{sc}}_Risks` register, and the
-`ConfigItem` plus `Baseline` library that backs the model-level
-`{{sc}}_CM` package. For project layout and tooling, route back to
+keywords, and domain libraries. This skill owns the **VSE Library**
+(`VSE_Library` package), which is the single definition site for all
+reusable metadata and enumerations the plugin uses across AMBSE
+workflow skills. The library contains: the `RiskInfo` risk library
+that backs the `{{sc}}_Risks` register, the `ConfigItem` and
+`Baseline` library that backs `{{sc}}_CM`, and the variant-aware
+`VariantScope` and `VerificationScope` metadata for VAMOS
+organisation. For project layout and tooling, route back to
 `@sysml2-modelling`. For the canonical `{{sc}}_Risks` and `{{sc}}_CM`
 package structures, route to `@sysml2-model-structure`. For filter
 expressions inside view definitions, route to `@sysml2-views`.
+
+## Migration Note
+
+Projects created before the VSE Library was introduced may have
+declared `RiskInfo`, `ConfigItem`, `Baseline`, and their enumerations
+inline in a per-project `Metadata` package. Those declarations still
+work. New projects should import from `VSE_Library` instead
+(`private import VSE_Library::RiskInfo`). Existing projects can
+migrate at their own pace by replacing `Metadata::` imports with
+`VSE_Library::` imports and removing the inline declarations. The
+library package name is `VSE_Library`, not `Metadata`, so there is
+no collision during migration.
 
 ## When This Skill Triggers
 
@@ -134,32 +149,37 @@ PM.3.1 (evaluate progress including risk).
 
 ### RiskInfo Metadata Def
 
-```sysml
-package Metadata {
-    private import ScalarValues::*;
-    private import Risks::*;
+The canonical definition lives in `VSE_Library`
+(`templates/common/library/vse-library.sysml`). The definition is
+reproduced here for reference:
 
-    metadata def RiskInfo {
-        attribute severity : Severity;
-        attribute likelihood : Likelihood;
-        attribute status : RiskStatus;
-        attribute owner : String;
-        attribute mitigatedBy : Anything[0..*];
-    }
+```sysml
+// Inside VSE_Library (do not redeclare in user projects)
+metadata def RiskInfo {
+    attribute severity : Severity;
+    attribute likelihood : Likelihood;
+    attribute status : RiskStatus;
+    attribute owner : String;
+    attribute mitigatedBy : Anything[0..*];
 }
 ```
 
 `mitigatedBy` is an open-ended reference list so a risk can point at
-one requirement, one verification case, or several. The
-`Severity`, `Likelihood`, and `RiskStatus` enumerations live in
-`{{sc}}_Risks` (see `templates/common/models/risks.sysml`) so the
-scale travels with the project.
+one requirement, one verification case, or several. The `Severity`,
+`Likelihood`, and `RiskStatus` enumerations also live in
+`VSE_Library`. User projects must import the enums explicitly
+alongside `RiskInfo` when they need to reference enum members by
+name (for example, `Severity::High`). See the standalone risk
+example below for the full import set.
 
 ### Applying RiskInfo to a Standalone Risk
 
 ```sysml
 package HS_Risks {
-    private import Metadata::RiskInfo;
+    private import VSE_Library::RiskInfo;
+    private import VSE_Library::Severity;
+    private import VSE_Library::Likelihood;
+    private import VSE_Library::RiskStatus;
     private import HS_Requirements::SR_SampleRate;
 
     item def R_SensorDrift {
@@ -181,7 +201,10 @@ package HS_Risks {
 
 ```sysml
 package HS_Requirements {
-    private import Metadata::RiskInfo;
+    private import VSE_Library::RiskInfo;
+    private import VSE_Library::Severity;
+    private import VSE_Library::Likelihood;
+    private import VSE_Library::RiskStatus;
 
     requirement def SR_SampleRate {
         @RiskInfo {
@@ -205,8 +228,8 @@ and does not need a standalone entry in the risk register.
 from syside import Model
 
 model = Model.load("models/")
-for element in model.elements_with_metadata("Metadata::RiskInfo"):
-    risk = element.metadata("Metadata::RiskInfo")
+for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
+    risk = element.metadata("VSE_Library::RiskInfo")
     if (risk.severity in ("High", "VeryHigh", "Critical")
             and risk.status in ("Open", "Mitigating")):
         print(f"{element.qualified_name}: {risk.severity} / {risk.status}")
@@ -238,36 +261,29 @@ and SR.O6 (System Configuration baselined at handover).
 
 ### ConfigItem Metadata Def
 
+The canonical definition lives in `VSE_Library`. Reproduced here for
+reference:
+
 ```sysml
-package Metadata {
-    private import ScalarValues::*;
-
-    enum def CIState {
-        Draft;
-        Baselined;
-        UnderChange;
-        Superseded;
-        Retired;
-    }
-
-    metadata def ConfigItem {
-        attribute ciId : String;
-        attribute baselineId : String;
-        attribute state : CIState;
-        attribute owner : String;
-    }
+// Inside VSE_Library (do not redeclare in user projects)
+metadata def ConfigItem {
+    attribute ciId : String;
+    attribute baselineId : String;
+    attribute state : CIState;
+    attribute owner : String;
 }
 ```
 
 `baselineId` is a string reference to a `Baseline` item def declared
 in `{{sc}}_CM`. The string form keeps the metadata application light
-and keeps the trace resolvable by Automator query.
+and keeps the trace resolvable by Automator query. `CIState` is an
+enumeration also defined in `VSE_Library`.
 
 ### Baseline Item Def
 
 ```sysml
 package HS_CM {
-    private import Metadata::Baseline;
+    private import VSE_Library::Baseline;
     private import HS_Requirements::SR_SampleRate;
     private import HS_Requirements::SR_ResponseTime;
 
@@ -290,19 +306,16 @@ the chain and is empty for the initial baseline.
 ### Baseline Metadata Def
 
 The `Baseline` metadata def lives alongside `ConfigItem` and
-`RiskInfo` so the `{{sc}}_CM` item defs carry machine-readable scope
-information that Automator can walk.
+`RiskInfo` in `VSE_Library` so the `{{sc}}_CM` item defs carry
+machine-readable scope information that Automator can walk.
 
 ```sysml
-package Metadata {
-    private import ScalarValues::*;
-
-    metadata def Baseline {
-        attribute baselineId : String;
-        attribute date : String;
-        attribute scope : Anything[0..*];
-        attribute supersedes : Anything[0..1];
-    }
+// Inside VSE_Library (do not redeclare in user projects)
+metadata def Baseline {
+    attribute baselineId : String;
+    attribute date : String;
+    attribute scope : Anything[0..*];
+    attribute supersedes : Anything[0..1];
 }
 ```
 
@@ -310,7 +323,8 @@ package Metadata {
 
 ```sysml
 package HS_Requirements {
-    private import Metadata::ConfigItem;
+    private import VSE_Library::ConfigItem;
+    private import VSE_Library::CIState;
 
     requirement def SR_SampleRate {
         @ConfigItem {
@@ -329,7 +343,8 @@ package HS_Requirements {
 
 ```sysml
 package HS_ArchDesign {
-    private import Metadata::ConfigItem;
+    private import VSE_Library::ConfigItem;
+    private import VSE_Library::CIState;
 
     part def SensorSystem {
         @ConfigItem {
@@ -352,8 +367,8 @@ model = Model.load("models/")
 target_baseline = "BL-SRS-0.3"
 baselined = []
 not_yet = []
-for element in model.elements_with_metadata("Metadata::ConfigItem"):
-    ci = element.metadata("Metadata::ConfigItem")
+for element in model.elements_with_metadata("VSE_Library::ConfigItem"):
+    ci = element.metadata("VSE_Library::ConfigItem")
     if ci.baselineId != target_baseline:
         continue
     if ci.state == "Baselined":
@@ -394,6 +409,77 @@ SR.O6 (System Configuration baselined) is satisfied when the
 release-tag baseline exists and every SR-produced artefact named in
 its scope is in the `Baselined` state.
 
+## Variant-Aware Metadata (VariantScope, VerificationScope)
+
+The `VariantScope` and `VerificationScope` metadata defs support
+VAMOS variant organisation across the AMBSE layout. Both live in
+`VSE_Library` and are available to any project that imports the
+library (Minimal and Canonical tiers).
+
+### VariantScope
+
+Tags any element with the configuration(s) it applies to. Use on
+risks, requirements, or other elements that are specific to one or
+more variant configurations. Omit when the element applies to all
+configurations (shared).
+
+```sysml
+package HS_Risks {
+    private import VSE_Library::RiskInfo;
+    private import VSE_Library::VariantScope;
+    private import VSE_Library::Severity;
+    private import VSE_Library::Likelihood;
+    private import VSE_Library::RiskStatus;
+
+    item def R_BatteryOverheat {
+        @RiskInfo {
+            severity = Severity::High;
+            likelihood = Likelihood::Moderate;
+            status = RiskStatus::Open;
+            owner = "systems";
+        }
+        @VariantScope {
+            configurations = ("HighCapacity",);
+        }
+        attribute id : String = "R-0003";
+        attribute description : String =
+            "Battery overheat risk specific to the high-capacity configuration.";
+    }
+}
+```
+
+### VerificationScope
+
+Tags a verification case with the configuration(s) it targets. Used
+by `@traceability-guard` Rule 6 (advisory) and by SR.6
+per-configuration report export.
+
+```sysml
+package HS_Verification {
+    private import VSE_Library::VerificationScope;
+    private import HS_Requirements::SR_BatteryLifetime;
+
+    verification def VC_BatteryLifetimeHighCap {
+        @VerificationScope {
+            configurations = ("HighCapacity",);
+        }
+        objective {
+            verify requirement SR_BatteryLifetime;
+        }
+    }
+}
+```
+
+### Variant-scoping rule for 29110 products
+
+During SR.2 through SR.5, each 29110 work product is one instance with
+inline variant branches. Variant-specific elements are tagged with
+`@VariantScope` or `@VerificationScope`. At the macrocycle boundary
+(SR.6 delivery), configuration-scoped exports are generated from the
+single model by filtering on these metadata tags. This prevents work
+product explosion while preserving per-configuration documentation at
+delivery.
+
 ## Validation Checklist
 
 1. **Keyword metadata definitions specialise `Metaobjects::SemanticMetadata`.**
@@ -407,8 +493,10 @@ its scope is in the `Baselined` state.
 4. **Filter expressions are Boolean.** Mixing metadata classification
    with runtime values in a single filter usually means the intent is
    better expressed as a constraint.
-5. **Risks are library-supplied**, not hand-rolled. Projects should
-   import `RiskInfo` rather than redefine risk metadata from scratch.
+5. **All metadata defs are library-supplied from `VSE_Library`**, not
+   hand-rolled. Projects should import `RiskInfo`, `ConfigItem`,
+   `Baseline`, `VariantScope`, and `VerificationScope` from
+   `VSE_Library` rather than redefine them.
 6. **Every `RiskInfo` application has a named owner and a status.**
    An unowned or status-free risk is a silent debt under ISO 29110
    PM.3.1.
@@ -433,7 +521,9 @@ WARN the engineer if:
   than as a `@RiskInfo` metadata annotation
 - A risk is declared with severity or likelihood values drawn from an
   ad-hoc string scale instead of the `Severity` and `Likelihood`
-  enumerations declared in `{{sc}}_Risks`
+  enumerations from `VSE_Library`
+- A project package redeclares `metadata def RiskInfo`, `ConfigItem`,
+  `Baseline`, or any enumeration that already lives in `VSE_Library`
 - A `ConfigItem` is applied with a `baselineId` that does not resolve
   to a `Baseline` item def anywhere in the model (orphan CI)
 - The Project Plan Section 9 CM Strategy exists but no `{{sc}}_CM`

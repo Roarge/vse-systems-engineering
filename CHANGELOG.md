@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-04-09
+
+### Added
+
+- `templates/common/library/vse-library.sysml`: shipped VSE Library
+  package (`VSE_Library`) containing all reusable metadata definitions
+  and enumerations. Centralises `RiskInfo`, `ConfigItem`, `Baseline`,
+  `Severity`, `Likelihood`, `RiskStatus`, `CIState` (previously
+  declared inline per project) plus two new variant-aware metadata
+  definitions: `VariantScope` (tags any element with its target
+  configurations) and `VerificationScope` (tags verification cases
+  with their target configurations). User projects import from
+  `VSE_Library` rather than redeclaring definitions.
+- `@sysml2-metadata` skill gains a "Variant-Aware Metadata" section
+  with worked examples for `@VariantScope` and `@VerificationScope`,
+  including 29110 activity mapping and Automator query recipes.
+- `knowledge/sysml2-metadata-ref.md` gains Section 10A documenting
+  the VSE Library as the canonical definition site, variant-aware
+  metadata semantics, and the variant-scoping rule for 29110 products.
+
+### Changed
+
+- `@sysml2-metadata` skill: all worked examples and query recipes now
+  reference `VSE_Library::RiskInfo` and `VSE_Library::ConfigItem`
+  instead of `Metadata::RiskInfo` and `Metadata::ConfigItem`. A
+  migration note at the top guides existing projects.
+- `@project-setup` skill: Minimal and Canonical tiers always copy the
+  VSE Library into `models/library/vse-library.sysml`. Variant-awareness
+  is now documented as an orthogonal dimension available from Minimal
+  tier upward (not locked to Canonical). Minimal tier gains a
+  variant-awareness opt-in (`configurations.sysml`). Canonical tier
+  Variants opt-in enriched with cross-package activation guidance.
+
 ## [0.12.0] - 2026-04-08
 
 ### Added
