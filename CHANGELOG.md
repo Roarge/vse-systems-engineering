@@ -8,6 +8,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-04-09
+
+### Added
+
+- `project-audit` skill and `/vse-audit` command: read-only audit of
+  existing VSE projects against the canonical structure. Reports findings
+  at four severity levels (CRITICAL, OUTDATED, NON-CANONICAL, OPTIONAL)
+  and optionally produces a remediation plan. Targets projects set up
+  with older plugin versions that may have drifted from the current
+  canonical layout.
+- `knowledge/canonical-project-structure.md`: shared knowledge file
+  defining the authoritative VSE project layout. Embedded by both
+  `project-setup` and `project-audit` to keep structural definitions
+  in sync.
+- Package-per-directory model layout: each AMBSE top-level package now
+  lives in its own directory containing the package definition file and
+  a co-located SysML 2.0 view file (viewpoint + view satisfying it with
+  an appropriate standard view type). Applies to Minimal and Canonical
+  tiers. Flat tier retains the legacy 6-file flat layout.
+- Per-package view templates for all 13 packages: actors (General View),
+  stakeholder-needs (Grid View), use-cases (General View), requirements
+  (Grid View), arch-design (Interconnection View), interfaces
+  (Interconnection View), verification (Grid View), risks (Grid View),
+  functional-analysis (Action Flow View), arch-analysis (Grid View),
+  configurations (Grid View), base-architecture (Interconnection View),
+  cm (Grid View).
+- Cross-cutting `traceability-view.sysml` at models root: Grid View
+  spanning requirements and verification packages to surface trace gaps.
+
+### Changed
+
+- `@project-setup`: default tier changed from Minimal AMBSE to
+  **Canonical AMBSE with variant modelling**. Minimal is available as
+  an opt-down. The Canonical tier now includes `configurations/` by
+  default because variant-awareness is a standard modelling practice.
+- `@project-setup`: brownfield centre-of-gravity detection rewritten
+  to use an observation-first approach. Findings are presented as
+  numbered observations with verification questions, not as assertions.
+  The user chooses the centre of gravity from a menu rather than the
+  skill proposing one.
+- `@project-setup`: brownfield harvest now explicitly warns that
+  harvested context (source comments, README descriptions) may be stale
+  or aspirational. Values from source comments are marked
+  "[from source comment, verify]".
+- `@project-setup`: seeded system-design.md content in brownfield mode
+  now carries an explicit caveat that it is raw observational input, not
+  a validated architectural description.
+- Model template files restructured from flat layout to
+  package-per-directory layout under `templates/common/models/`.
+
 ## [0.13.0] - 2026-04-09
 
 ### Added
