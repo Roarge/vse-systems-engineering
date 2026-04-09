@@ -517,13 +517,32 @@ Prompt the user to pick one of three tiers. Default to **Minimal
 AMBSE** for greenfield mode and **Canonical AMBSE** for brownfield
 mode when existing `.sysml` files were harvested.
 
+**Variant-awareness is orthogonal to the tier axis.** Both the Minimal
+and Canonical tiers can be variant-aware. The structural depth axis
+(how many model files) is independent of whether the project carries
+VAMOS variant configurations. This mirrors how SysML 2.0 itself treats
+variations: `isVariation` is a Boolean property on any element, not a
+separate package kind. The Flat tier does not support variant-awareness
+(it is a teaching scaffold).
+
+**VSE Library.** Both the Minimal and Canonical tiers always receive
+the VSE Library. Copy `vse-library.sysml` from
+`${CLAUDE_PLUGIN_ROOT}/templates/common/library/` into the project
+`models/library/` (greenfield) or `engineering/models/library/`
+(brownfield). This file has no project-specific placeholders and is
+copied verbatim. It contains all reusable metadata definitions and
+enumerations (`RiskInfo`, `ConfigItem`, `Baseline`, `VariantScope`,
+`VerificationScope`, and their enumerations). The Flat tier does not
+receive the library.
+
 **Flat tier** (legacy, five packages). Retained for teaching and for
-the smart-sensor demo. Does not use the short code. Scaffolds
-`package.sysml`, `stakeholder-needs.sysml`, `system-requirements.sysml`,
+the smart-sensor demo. Does not use the short code. Does not receive
+the VSE Library. Scaffolds `package.sysml`,
+`stakeholder-needs.sysml`, `system-requirements.sysml`,
 `architecture.sysml`, `verification.sysml`, and `validation.sysml`
 inline with `{{PROJECT_PACKAGE}}` as the root package name.
 
-**Minimal AMBSE tier** (nine files, default for new greenfield
+**Minimal AMBSE tier** (nine to ten files, default for new greenfield
 projects). Copies these files from
 `${CLAUDE_PLUGIN_ROOT}/templates/common/models/` and runs placeholder
 substitution on each:
@@ -538,18 +557,27 @@ substitution on each:
 - `verification.sysml`
 - `risks.sysml`
 
+Plus the VSE Library at `models/library/vse-library.sysml` (always,
+no substitution).
+
 Omits `functional-analysis.sysml` and `arch-analysis.sysml` because
 small VSE projects often postpone the functional and trade-study
 split until a second subsystem appears. Includes `interfaces.sysml`
 because every architecture has a logical interface surface, even a
 single-subsystem project with only external actor interfaces.
 Includes `risks.sysml` because risk management is a mandatory
-ISO 29110 PM.O5 activity. Does not offer base architecture, variant,
-or CM opt-ins because those usually indicate growth beyond this tier.
+ISO 29110 PM.O5 activity. Does not offer base architecture or CM
+opt-ins because those usually indicate growth beyond this tier.
+
+Offers one opt-in:
+
+| Opt-in | Adds | Use when |
+| --- | --- | --- |
+| Variant-awareness | `configurations.sysml` with a placeholder specialised owner | The project carries or may grow to carry product-line variants |
 
 **Canonical AMBSE tier** (eleven to fourteen files). Copies the full
 mandatory set from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
-and additionally offers three independent opt-ins. The mandatory set:
+and additionally offers four independent opt-ins. The mandatory set:
 
 - `model-overview.sysml`
 - `actors.sysml`
@@ -563,13 +591,15 @@ and additionally offers three independent opt-ins. The mandatory set:
 - `verification.sysml`
 - `risks.sysml`
 
-The opt-ins are independent, so the engineer can pick any subset and
-end up with 11, 12, 13, or 14 total files:
+Plus the VSE Library at `models/library/vse-library.sysml` (always,
+no substitution).
+
+The opt-ins are independent, so the engineer can pick any subset:
 
 | Opt-in | Adds | Use when |
 | --- | --- | --- |
 | Base architecture | `base-architecture.sysml` and activates the `:>` specialisation line inside `arch-design.sysml` | The project inherits from a prior programme |
-| Variants | `configurations.sysml` with a placeholder specialised owner | The project carries product-line variants |
+| Variants | `configurations.sysml` with a placeholder specialised owner. Variant-aware guidance comments in `requirements.sysml`, `risks.sysml`, `verification.sysml`, and `functional-analysis.sysml` are activated (uncommented). See `@sysml2-model-structure` Part F for the variant-aware packages table. | The project carries product-line variants |
 | CM | `cm.sysml` with the `BL_INIT` baseline item def | The project is expected to pass through baselines and Change Requests |
 
 In brownfield mode with harvested `.sysml` files, always activate the
