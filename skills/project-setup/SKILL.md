@@ -542,7 +542,7 @@ the VSE Library. Scaffolds `package.sysml`,
 `architecture.sysml`, `verification.sysml`, and `validation.sysml`
 inline with `{{PROJECT_PACKAGE}}` as the root package name.
 
-**Minimal AMBSE tier** (nine to ten files, default for new greenfield
+**Minimal AMBSE tier** (ten to eleven files, default for new greenfield
 projects). Copies these files from
 `${CLAUDE_PLUGIN_ROOT}/templates/common/models/` and runs placeholder
 substitution on each:
@@ -575,9 +575,9 @@ Offers one opt-in:
 | --- | --- | --- |
 | Variant-awareness | `configurations.sysml` with a placeholder specialised owner | The project carries or may grow to carry product-line variants |
 
-**Canonical AMBSE tier** (eleven to fourteen files). Copies the full
+**Canonical AMBSE tier** (twelve to fifteen files). Copies the full
 mandatory set from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
-and additionally offers four independent opt-ins. The mandatory set:
+and additionally offers three independent opt-ins. The mandatory set:
 
 - `model-overview.sysml`
 - `actors.sysml`

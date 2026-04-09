@@ -167,8 +167,10 @@ metadata def RiskInfo {
 `mitigatedBy` is an open-ended reference list so a risk can point at
 one requirement, one verification case, or several. The `Severity`,
 `Likelihood`, and `RiskStatus` enumerations also live in
-`VSE_Library`. User projects import them by name:
-`private import VSE_Library::RiskInfo`.
+`VSE_Library`. User projects must import the enums explicitly
+alongside `RiskInfo` when they need to reference enum members by
+name (for example, `Severity::High`). See the standalone risk
+example below for the full import set.
 
 ### Applying RiskInfo to a Standalone Risk
 
@@ -200,6 +202,9 @@ package HS_Risks {
 ```sysml
 package HS_Requirements {
     private import VSE_Library::RiskInfo;
+    private import VSE_Library::Severity;
+    private import VSE_Library::Likelihood;
+    private import VSE_Library::RiskStatus;
 
     requirement def SR_SampleRate {
         @RiskInfo {
@@ -319,6 +324,7 @@ metadata def Baseline {
 ```sysml
 package HS_Requirements {
     private import VSE_Library::ConfigItem;
+    private import VSE_Library::CIState;
 
     requirement def SR_SampleRate {
         @ConfigItem {
@@ -338,6 +344,7 @@ package HS_Requirements {
 ```sysml
 package HS_ArchDesign {
     private import VSE_Library::ConfigItem;
+    private import VSE_Library::CIState;
 
     part def SensorSystem {
         @ConfigItem {

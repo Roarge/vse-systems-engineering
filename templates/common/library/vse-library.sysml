@@ -138,7 +138,7 @@ package VSE_Library {
                targets. Omit when the verification case applies to all
                configurations.
 
-               Used by traceability-guard Rule 6 (advisory: every
+               Used by @traceability-guard Rule 6 (advisory: every
                configuration should have at least one verification case
                with a VerificationScope referencing it) and by SR.6
                per-configuration report export.
