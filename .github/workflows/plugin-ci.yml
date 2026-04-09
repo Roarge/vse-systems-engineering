@@ -64,18 +64,19 @@ jobs:
       - name: Check cross-references
         run: |
           EXIT_CODE=0
-          # Check that knowledge file references in skills resolve
+          # Knowledge file references are errors (these are embedded
+          # at skill load time and must resolve)
           for skill_file in skills/*/SKILL.md; do
             while IFS= read -r ref_path; do
-              # Strip the ${CLAUDE_PLUGIN_ROOT}/ prefix to get relative path
               rel_path=$(echo "$ref_path" | sed 's|\${CLAUDE_PLUGIN_ROOT}/||')
               if [ ! -f "$rel_path" ]; then
                 echo "::error::$skill_file references $rel_path which does not exist"
                 EXIT_CODE=1
               fi
-            done < <(grep -oP '\$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$skill_file" || true)
+            done < <(grep -oP '\$\{CLAUDE_PLUGIN_ROOT\}/knowledge/[a-zA-Z0-9_./-]+' "$skill_file" || true)
           done
-          # Check that template paths referenced in skills resolve
+          # Template and other path references are warnings (some are
+          # conditional or refer to directories)
           for skill_file in skills/*/SKILL.md; do
             while IFS= read -r ref_path; do
               rel_path=$(echo "$ref_path" | sed 's|\${CLAUDE_PLUGIN_ROOT}/||')
