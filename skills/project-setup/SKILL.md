@@ -109,33 +109,52 @@ with a summary and a handoff to `@iteration-orchestrator`.
 
 ### Brownfield centre-of-gravity detection
 
-In brownfield mode, do not assume the incoming centre of gravity is PM.1
-plus SR.1. Before entering Plan Mode, scan for indicators that the host
-project is past the greenfield entry point, and propose a realistic
-initial `current_iteration.centre_of_gravity` based on what is already in
-the repository:
+In brownfield mode, do not assume the incoming centre of gravity. Scan
+the repository for indicators and **present them as observations for
+user verification**, not as assertions. Most brownfield projects require
+reverse engineering, and the skill must not speculate about requirements
+or intent based on file presence alone.
 
-- **Existing stakeholder or system requirements** (files matching
-  `docs/sr/*stakeholder*`, `docs/sr/*system-req*`, or similar, or SysML
-  files containing `requirement def`): propose SR.2 as the first
-  centre of gravity, because the inherited artefacts must be baselined
-  into the StRS and SyRS threads before further work.
-- **Existing design documentation or architecture model** (files
-  matching `docs/sr/*system-design*`, `docs/sr/*architecture*`, or SysML
-  files containing `part def`): propose SR.3 as the centre of gravity.
-- **Non-trivial source tree detected during the language ecosystem
-  scan** with no SR-level documentation: propose SR.4 as the centre of
-  gravity, with SR.2 in parallel if the existing code clearly implies
-  requirements that have never been captured.
-- **No indicators at all**: propose the greenfield default PM.1 plus
-  SR.1.
+Scan for the following indicators and present each as a numbered
+observation with a verification question:
 
-Surface the proposed centre of gravity in the Plan Mode plan so the
-engineer can accept, edit, or replace it before the scaffold is written.
-The first iteration must baseline the inherited artefacts it claims as
-centre-of-gravity inputs, so the Plan Mode plan should also list a
-backlog item of the form "Baseline existing <artefact> into <thread>"
-for each indicator surfaced. See
+1. **Files matching `docs/sr/*stakeholder*`, `docs/sr/*system-req*`, or
+   SysML files containing `requirement def`**:
+   > Observation: found requirement-like artefacts at [paths]. Do these
+   > represent accepted, current requirements, or are they drafts that
+   > need review before baselining?
+
+2. **Files matching `docs/sr/*system-design*`, `docs/sr/*architecture*`,
+   or SysML files containing `part def`**:
+   > Observation: found architecture or design artefacts at [paths].
+   > Does this reflect a deliberate architectural decomposition, or
+   > exploratory or auto-generated structure?
+
+3. **Non-trivial source tree with no SR-level documentation**:
+   > Observation: found a source tree with [N] files across [M]
+   > directories but no SR-level documentation. What is the current
+   > state of requirements for this codebase?
+
+4. **Source code comments that appear to state requirements or design
+   rationale**: flag these individually with a warning:
+   > Observation: found a comment in [file:line] that may state a
+   > requirement or design rationale: "[excerpt]". Source code comments
+   > may be stale. Verify whether this is still current before treating
+   > it as input.
+
+5. **No indicators at all**: note that the project appears to be at the
+   greenfield entry point.
+
+After presenting all observations, offer the centre-of-gravity options
+as a menu for the user to choose from. The skill may suggest a default
+based on the observations, but must frame it as: "Based on these
+observations, SR.2 might be appropriate, but please confirm."
+
+**Do not assert a centre of gravity.** Let the user choose. Whatever
+the user selects, the first iteration must baseline the inherited
+artefacts as centre-of-gravity inputs. The Plan Mode plan should list a
+backlog item of the form "Baseline existing [artefact] into [thread]"
+for each relevant indicator. See
 `${CLAUDE_PLUGIN_ROOT}/knowledge/iteration-centred-operation.md` for the
 brownfield entry rationale.
 
@@ -196,10 +215,32 @@ genuinely require human input (acquirer, stakeholder roles).
    Group the output by top-level directory and count entries per group.
    Record this as a "system context" note that seeds two places later in
    the flow:
-   - A comment block at the top of `engineering/models/architecture.sysml`
-     listing the host project's source layout as raw input for the
-     architectural decomposition.
+   - A comment block at the top of
+     `engineering/models/arch-design/arch-design.sysml` listing the host
+     project's source layout as raw input for the architectural
+     decomposition.
    - The "System overview" section of `engineering/docs/sr/system-design.md`.
+
+### Harvested context is raw input, not validated truth
+
+Source code comments, README descriptions, and inline documentation may
+be stale, aspirational, or incomplete. When presenting harvested values
+in step 6 below, add a warning banner:
+
+> **Verification required.** The following values were harvested from
+> existing files. Source code comments and documentation may be outdated
+> or aspirational. Please verify each value before confirming.
+
+For any value extracted from a source code comment (as opposed to a
+structured manifest like `package.json` or `Cargo.toml`), mark it with
+"[from source comment, verify]" so the user can distinguish between
+machine-readable facts and potentially stale prose.
+
+Do not infer requirements from functional analysis of source code.
+If the code does something that looks like it implements a requirement,
+report what you observe and ask: "The current version does [A]. Why?"
+Let the user decide whether that observation becomes a formal
+requirement.
 
 6. **Present harvested values back to the user** as a confirmation prompt.
    Show each field with its detected value and ask the user to confirm or
@@ -316,7 +357,7 @@ Update the existing `.gitignore`:
 
 ## Step 4: Create Directory Structure
 
-### Greenfield mode
+### Greenfield mode (Canonical AMBSE tier, default)
 
 ```text
 <project-name>/
@@ -327,64 +368,76 @@ Update the existing `.gitignore`:
 ├── CLAUDE.md               (from templates/common/CLAUDE.md, populated)
 ├── syside.toml             (from templates/common/syside.toml, configured)
 ├── models/
-│   ├── package.sysml       (root package with project name)
-│   ├── stakeholder-needs.sysml  (empty, ready for STK- needs)
-│   ├── system-requirements.sysml (empty, ready for REQ- requirements)
-│   ├── architecture.sysml  (empty, ready for part definitions)
-│   ├── verification.sysml  (empty, ready for VER- cases)
-│   └── validation.sysml    (empty, ready for VAL- cases)
+│   ├── model-overview.sysml            (root overview, cross-links all packages)
+│   ├── traceability-view.sysml         (cross-cutting requirements-to-verification)
+│   ├── library/
+│   │   └── vse-library.sysml           (reusable metadata, no substitution)
+│   ├── actors/
+│   │   ├── actors.sysml                (actor part defs)
+│   │   └── actors-view.sysml           (General View)
+│   ├── stakeholder-needs/
+│   │   ├── stakeholder-needs.sysml     (STK- needs)
+│   │   └── stakeholder-needs-view.sysml (Grid View)
+│   ├── use-cases/
+│   │   ├── use-cases.sysml            (use case defs)
+│   │   └── use-cases-view.sysml       (General View)
+│   ├── requirements/
+│   │   ├── requirements.sysml          (REQ- requirements)
+│   │   └── requirements-view.sysml     (Grid View)
+│   ├── functional-analysis/            (Canonical tier)
+│   │   ├── functional-analysis.sysml   (one nested pkg per use case)
+│   │   └── functional-analysis-view.sysml (Action Flow View)
+│   ├── arch-analysis/                  (Canonical tier)
+│   │   ├── arch-analysis.sysml         (one nested pkg per trade study)
+│   │   └── arch-analysis-view.sysml    (Grid View)
+│   ├── arch-design/
+│   │   ├── arch-design.sysml           (one nested pkg per subsystem)
+│   │   └── arch-design-view.sysml      (Interconnection View)
+│   ├── interfaces/
+│   │   ├── interfaces.sysml            (logical interfaces)
+│   │   └── interfaces-view.sysml       (Interconnection View)
+│   ├── verification/
+│   │   ├── verification.sysml          (VER- cases)
+│   │   └── verification-view.sysml     (Grid View)
+│   ├── risks/
+│   │   ├── risks.sysml                 (risk register)
+│   │   └── risks-view.sysml            (Grid View)
+│   └── configurations/                 (Canonical tier, variant modelling)
+│       ├── configurations.sysml        (concrete variant configs)
+│       └── configurations-view.sysml   (Grid View)
 ├── docs/
-│   ├── pm/                 (PM work products from templates/pm/)
-│   │   ├── statement-of-work.md
-│   │   ├── project-plan.md
-│   │   ├── progress-status.md
-│   │   ├── meeting-record.md
-│   │   ├── change-request.md
-│   │   ├── correction-register.md
-│   │   ├── justification-document.md
-│   │   ├── purchase-order.md
-│   │   └── product-acceptance.md
-│   └── sr/                 (SR work products from templates/sr/)
-│       ├── semp.md
-│       ├── data-model.md
-│       ├── stakeholder-requirements.md
-│       ├── system-requirements.md
-│       ├── system-element-requirements.md
-│       ├── traceability-matrix.md
-│       ├── system-design.md
-│       ├── ivv-plan.md
-│       ├── integration-report.md
-│       ├── verification-report.md
-│       ├── validation-report.md
-│       ├── system-user-manual.md
-│       ├── system-operation-guide.md
-│       ├── maintenance-guide.md
-│       └── training-specifications.md
+│   ├── pm/                 (PM work products from templates/pm/, 9 files)
+│   └── sr/                 (SR work products from templates/sr/, 15 files)
 ├── scripts/                (Automator Python scripts, if using Automator)
 ├── build/                  (generated outputs, gitignored)
 └── TASKS.md                (generated ISO 29110 task checklist)
 ```
 
-### Brownfield mode
+The Minimal AMBSE tier omits `functional-analysis/`, `arch-analysis/`,
+and `configurations/`. The Flat tier uses the legacy 6-file flat layout
+with no directories, no views, and no VSE Library.
+
+### Brownfield mode (Canonical AMBSE tier, default)
 
 ```text
 <repo-root>/                 (existing host project, otherwise unchanged)
 ├── README.md                 (existing, untouched)
 ├── .gitignore                (existing, two engineering/ entries appended)
 ├── CLAUDE.md                 (existing, marker block appended or replaced)
-├── .vse-iteration.yml        (NEW, iteration 0 with proposed centre of gravity)
+├── .vse-iteration.yml        (NEW, iteration 0 with user-confirmed centre of gravity)
 ├── .vse-journal.yml          (NEW, empty journal)
 └── engineering/              (NEW SUBFOLDER, all VSE work below)
     ├── .lsp.json             (from templates/common/lsp.json)
     ├── syside.toml           (from templates/common/syside.toml, configured)
     ├── TASKS.md              (generated)
-    ├── models/
-    │   ├── package.sysml
-    │   ├── stakeholder-needs.sysml
-    │   ├── system-requirements.sysml
-    │   ├── architecture.sysml  (seeded with the harvested system context)
-    │   ├── verification.sysml
-    │   └── validation.sysml
+    ├── models/               (same package-per-directory layout as greenfield)
+    │   ├── model-overview.sysml
+    │   ├── traceability-view.sysml
+    │   ├── library/vse-library.sysml
+    │   ├── actors/           (actors.sysml + actors-view.sysml)
+    │   ├── stakeholder-needs/ (stakeholder-needs.sysml + view)
+    │   ├── ...               (all other packages per tier)
+    │   └── arch-design/      (seeded with the harvested system context)
     ├── docs/pm/              (9 PM templates from templates/pm/)
     ├── docs/sr/              (15 SR templates from templates/sr/, system-design.md seeded)
     └── build/                (gitignored)
@@ -442,8 +495,16 @@ root-level LSP config.
 Configure `engineering/syside.toml` with the project name.
 
 Seed `engineering/docs/sr/system-design.md` with the harvested source tree
-summary in its "System overview" section so the host project's existing
-layout becomes input to the SR.3 architectural decomposition.
+summary in its "System overview" section. Prepend the seeded content with
+an explicit caveat:
+
+> **Raw observational input.** This section was populated by the brownfield
+> harvest. It describes the directory layout found during setup. It is not
+> a validated architectural description. Review, verify, and restructure
+> this content during the SR.3 architectural decomposition.
+
+The host project's existing layout becomes raw input for SR.3, not a
+validated starting point.
 
 ### Placeholder substitution (both modes)
 
@@ -513,9 +574,19 @@ both modes.
 
 ### Choose a scaffolding tier
 
-Prompt the user to pick one of three tiers. Default to **Minimal
-AMBSE** for greenfield mode and **Canonical AMBSE** for brownfield
-mode when existing `.sysml` files were harvested.
+Prompt the user to pick one of three tiers. Default to **Canonical
+AMBSE with variant modelling** for both greenfield and brownfield.
+Canonical is the recommended tier because even small VSE projects
+benefit from the full AMBSE structure from the start, and
+variant-awareness is a standard modelling practice, not a premium
+feature. The Minimal tier is available as an opt-down for projects
+that do not yet need functional analysis, trade study, or variant
+packages.
+
+Each top-level package lives in its own directory containing both the
+package definition file and a co-located view file. See
+`knowledge/canonical-project-structure.md` for the exact file listing
+per tier.
 
 **Variant-awareness is orthogonal to the tier axis.** Both the Minimal
 and Canonical tiers can be variant-aware. The structural depth axis
@@ -542,77 +613,73 @@ the VSE Library. Scaffolds `package.sysml`,
 `architecture.sysml`, `verification.sysml`, and `validation.sysml`
 inline with `{{PROJECT_PACKAGE}}` as the root package name.
 
-**Minimal AMBSE tier** (ten to eleven files, default for new greenfield
-projects). Copies these files from
-`${CLAUDE_PLUGIN_ROOT}/templates/common/models/` and runs placeholder
-substitution on each:
+**Minimal AMBSE tier** (opt-down from Canonical). Copies these package
+directories from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`, each
+containing a definition file and a view file. Runs placeholder
+substitution on all files:
 
+- `actors/` (actors.sysml + actors-view.sysml)
+- `stakeholder-needs/` (stakeholder-needs.sysml + view)
+- `use-cases/` (use-cases.sysml + view)
+- `requirements/` (requirements.sysml + view)
+- `arch-design/` (arch-design.sysml + view)
+- `interfaces/` (interfaces.sysml + view)
+- `verification/` (verification.sysml + view)
+- `risks/` (risks.sysml + view)
+
+Plus these root-level files:
 - `model-overview.sysml`
-- `actors.sysml`
-- `stakeholder-needs.sysml`
-- `use-cases.sysml`
-- `requirements.sysml`
-- `arch-design.sysml`
-- `interfaces.sysml`
-- `verification.sysml`
-- `risks.sysml`
+- `traceability-view.sysml` (cross-cutting requirements-to-verification)
 
 Plus the VSE Library at `models/library/vse-library.sysml` (always,
 no substitution).
 
-Omits `functional-analysis.sysml` and `arch-analysis.sysml` because
-small VSE projects often postpone the functional and trade-study
-split until a second subsystem appears. Includes `interfaces.sysml`
-because every architecture has a logical interface surface, even a
-single-subsystem project with only external actor interfaces.
-Includes `risks.sysml` because risk management is a mandatory
-ISO 29110 PM.O5 activity. Does not offer base architecture or CM
-opt-ins because those usually indicate growth beyond this tier.
+Omits `functional-analysis/`, `arch-analysis/`, and `configurations/`
+because small VSE projects often postpone the functional and
+trade-study split until a second subsystem appears. Does not offer
+base architecture or CM opt-ins because those usually indicate growth
+beyond this tier.
 
 Offers one opt-in:
 
 | Opt-in | Adds | Use when |
 | --- | --- | --- |
-| Variant-awareness | `configurations.sysml` with a placeholder specialised owner | The project carries or may grow to carry product-line variants |
+| Variant-awareness | `configurations/` directory with placeholder specialised owner | The project carries or may grow to carry product-line variants |
 
-**Canonical AMBSE tier** (twelve to fifteen files). Copies the full
-mandatory set from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
-and additionally offers three independent opt-ins. The mandatory set:
+**Canonical AMBSE tier** (default for all new projects). Copies all
+Minimal tier package directories, plus these additional directories
+from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`:
 
-- `model-overview.sysml`
-- `actors.sysml`
-- `stakeholder-needs.sysml`
-- `use-cases.sysml`
-- `requirements.sysml`
-- `functional-analysis.sysml`
-- `arch-analysis.sysml`
-- `arch-design.sysml`
-- `interfaces.sysml`
-- `verification.sysml`
-- `risks.sysml`
+- `functional-analysis/` (functional-analysis.sysml + view)
+- `arch-analysis/` (arch-analysis.sysml + view)
+- `configurations/` (configurations.sysml + view, variant modelling)
 
-Plus the VSE Library at `models/library/vse-library.sysml` (always,
-no substitution).
+Plus the same root-level files and VSE Library as the Minimal tier.
+
+The `configurations/` directory is included by default because
+variant-awareness is a standard modelling practice, not a premium
+feature. Even single-variant projects benefit from having the
+structure in place when variants emerge.
 
 The opt-ins are independent, so the engineer can pick any subset:
 
 | Opt-in | Adds | Use when |
 | --- | --- | --- |
-| Base architecture | `base-architecture.sysml` and activates the `:>` specialisation line inside `arch-design.sysml` | The project inherits from a prior programme |
-| Variants | `configurations.sysml` with a placeholder specialised owner. Variant-aware guidance comments in `requirements.sysml`, `risks.sysml`, `verification.sysml`, and `functional-analysis.sysml` are activated (uncommented). See `@sysml2-model-structure` Part F for the variant-aware packages table. | The project carries product-line variants |
-| CM | `cm.sysml` with the `BL_INIT` baseline item def | The project is expected to pass through baselines and Change Requests |
+| Base architecture | `base-architecture/` directory and activates the `:>` specialisation line inside `arch-design/arch-design.sysml` | The project inherits from a prior programme |
+| CM | `cm/` directory with the `BL_INIT` baseline item def | The project is expected to pass through baselines and Change Requests |
 
 In brownfield mode with harvested `.sysml` files, always activate the
 base architecture opt-in and populate `{{PROJECT_SHORT_CODE}}_BaseArchitecture`
-from the existing part defs. The variants and CM opt-ins remain
-independent.
+from the existing part defs. The CM opt-in remains independent.
 
 ### Copy and substitute
 
-For the Minimal and Canonical tiers, copy the selected files from
-`${CLAUDE_PLUGIN_ROOT}/templates/common/models/` into the target
-directory (`models/` greenfield, `engineering/models/` brownfield)
-and apply placeholder substitution using the same table as Step 5:
+For the Minimal and Canonical tiers, copy the selected package
+directories from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/` into
+the target directory (`models/` greenfield, `engineering/models/`
+brownfield). Each directory contains a definition file and a view file.
+Apply placeholder substitution to all files using the same table as
+Step 5:
 
 - `{{PROJECT_NAME}}` becomes the project name
 - `{{PROJECT_SHORT_CODE}}` becomes the uppercase short code
@@ -625,10 +692,11 @@ code prefix, for example `HS_Actors`, `HS_Requirements`,
 so the generated project embodies the hygiene rule from the first
 commit.
 
-In brownfield mode, prepend `arch-design.sysml` with a comment block
-listing the host project's top-level source directories from the
-Step 1 harvest. This gives the SR.3 architecture work a starting
-point grounded in the existing codebase.
+In brownfield mode, prepend `arch-design/arch-design.sysml` with a
+comment block listing the host project's top-level source directories
+from the Step 1 harvest. This gives the SR.3 architecture work a
+starting point grounded in the existing codebase. Mark this content as
+raw observational input per the stale-content warning in Step 1.
 
 ### Flat tier fallback
 
@@ -892,13 +960,16 @@ their default branch.
 PROJECT SETUP COMPLETE (greenfield)
 ====================================
 Project:    [name]
+Tier:       [Canonical AMBSE | Minimal AMBSE | Flat]
 Iteration:  iter-00 Architecture Zero (centre of gravity PM.1 plus SR.1)
 Repository: [path]
 
 Structure:
   docs/pm/   9 PM work product templates
   docs/sr/  15 SR work product templates
-  models/    6 SysML 2.0 model files
+  models/   [N] package directories with per-package views
+             + model-overview.sysml, traceability-view.sysml
+             + library/vse-library.sysml
   TASKS.md   Full ISO 29110 task checklist
   .vse-iteration.yml  Iteration state (iter-00, open)
   .vse-journal.yml    Session journal (empty, ready for use)
@@ -920,7 +991,8 @@ Next Steps:
 VSE ADDED TO EXISTING PROJECT (brownfield)
 ===========================================
 Project:        [name]
-Iteration:      iter-00 Architecture Zero (centre of gravity [proposed])
+Tier:           [Canonical AMBSE | Minimal AMBSE | Flat]
+Iteration:      iter-00 Architecture Zero (centre of gravity [user-confirmed])
 Repository:     [path]
 Engineering:    engineering/
 
@@ -930,7 +1002,7 @@ New at project root:
   CLAUDE.md            VSE companion block merged into existing file
 
 New under engineering/:
-  models/              6 SysML 2.0 model files
+  models/              [N] package directories with per-package views
   docs/pm/             9 PM work product templates
   docs/sr/            15 SR work product templates (system-design.md seeded)
   TASKS.md             Full ISO 29110 task checklist
@@ -990,6 +1062,10 @@ navigation.
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`: source for TASKS.md generation
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`: ISO 29110 process reference
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`: branch-per-microcycle workflow that the merged CLAUDE.md points to
+
+## Reference: Canonical Project Structure
+
+!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/canonical-project-structure.md`
 
 ## Reference: ISO 29110 Task Lists
 
