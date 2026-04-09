@@ -17,9 +17,11 @@
 // @sysml2-model-structure
 
 package {{PROJECT_SHORT_CODE}}_ArchDesign {
-    // Uncomment and add one named import per interface that a part def
-    // in this package actually uses:
-    // private import {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
+    // Add one named import per interface that a part def in this
+    // package actually uses. The example interface is imported here
+    // because SubsystemA and SubsystemB reference it on their ports.
+    // Replace with real interface names as they are identified.
+    private import {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
     // Uncomment when base architecture is activated:
     // private import {{PROJECT_SHORT_CODE}}_BaseArchitecture::BaseSystem;
 
@@ -31,16 +33,83 @@ package {{PROJECT_SHORT_CODE}}_ArchDesign {
            separate top-level package.
          */
 
+    // ─── Subsystem Part Definitions ──────────────────────────────
+    //
+    // Define each subsystem as a part def with ports that declare
+    // its communication points. Replace these examples with real
+    // subsystems as they are identified during SR.3.
+
+    part def SubsystemA {
+        doc /* Example subsystem. Replace with a real subsystem name
+               and description. Each subsystem part def should declare
+               the ports through which it communicates.
+             */
+        port dataOut : {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
+    }
+
+    part def SubsystemB {
+        doc /* Example downstream subsystem that receives data from
+               SubsystemA. Replace with real content.
+             */
+        port dataIn : {{PROJECT_SHORT_CODE}}_Interfaces::ExampleInterface;
+    }
+
+    // ─── System of Interest ───────────────────────────────────────
+    //
+    // The system of interest composes subsystems as part usages and
+    // wires them together with connect statements. This is where the
+    // architecture lives: not in the definitions above, but in the
+    // composition and connections below.
+
     // Greenfield variant:
     part def SystemOfInterest {
         doc /* System of interest for {{PROJECT_NAME}}.
+               Architecture is expressed as:
+                 1. Part usages that instantiate subsystem definitions.
+                 2. Connect statements that wire ports together.
+                 3. Variation points for product-line alternatives.
                When base architecture is activated, change this line to:
                    part def SystemOfInterest :> BaseSystem { ... }
                See @sysml2-model-structure Section 3 for the reuse
                pattern.
              */
+
+        // Part usages: compose subsystems into the system.
+        // Each usage instantiates a subsystem definition above.
+        part subsystemA : SubsystemA;
+        part subsystemB : SubsystemB;
+
+        // Connections: wire ports between composed parts.
+        // Without connections the subsystems are structurally isolated
+        // and interface analysis cannot be performed.
+        connect subsystemA.dataOut to subsystemB.dataIn;
+
+        // Variation points: declare inline per VAMOS and SysML 2.0
+        // Ch 35. Each variation owns two or more variant members.
+        // Concrete configurations that bind these live in
+        // {{PROJECT_SHORT_CODE}}_Configurations.
+        //
+        // Uncomment and adapt when the project has product-line
+        // alternatives:
+        //
+        // variation part commLink : CommOption {
+        //     variant part wiredComm {
+        //         doc /* Wired communication option. */
+        //     }
+        //     variant part wirelessComm {
+        //         doc /* Wireless communication option. */
+        //     }
+        // }
     }
 
-    // Add one nested sub-package per subsystem:
-    // package Subsystem01 { ... }
+    // ─── System Context ───────────────────────────────────────────
+
+    part def SystemContext {
+        doc /* Methodological wrapper. Places the system of interest
+               alongside its external actors in a single composition.
+               See @sysml2-model-structure for the context convention.
+             */
+        part system : SystemOfInterest;
+        // part operator : {{PROJECT_SHORT_CODE}}_Actors::Operator;
+    }
 }
