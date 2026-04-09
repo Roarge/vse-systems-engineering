@@ -121,6 +121,10 @@ directly on the base variation does not produce a concrete product.
    are informational only and do not enforce compatibility.
 5. **Multiplicity on variants is explicit** when the base variation
    carries a range such as `[4..6]`.
+6. **Every `:>>` variant binding in a configuration targets a
+   `variation part` declaration, not a regular part.** If the target
+   is a regular part, the binding is a plain redefinition with no
+   variant semantics.
 
 ## Red Flags
 
@@ -135,6 +139,10 @@ WARN the engineer if:
 - Constraints across variations are written as plain constraints
   without `assert`
 - A concrete product has a constraint that its chosen variants violate
+- A configuration binds a variant via `:>>` on a part that was never
+  declared as `variation part`. The model parses but the variant intent
+  is lost. Declare the target as `variation part` in the owning
+  definition first
 
 ## Reference: SysML 2.0 Variations and Variants
 
