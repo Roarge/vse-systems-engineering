@@ -22,7 +22,54 @@ else
     ENG_ROOT="."
 fi
 
-# Only activate if this is a VSE project (iteration state file exists)
+# Wiki freshness (contributor-facing). Only activates inside the
+# vse-systems-engineering plugin repo itself, detected by the presence
+# of wiki/CLAUDE.md. End-user projects that install the plugin never
+# carry this file, so the block below stays silent for them. Runs
+# before the VSE-project gate because the plugin repo is not a VSE
+# project in its own right.
+if [ -f "wiki/CLAUDE.md" ]; then
+    echo "Wiki (contributor repo):"
+
+    if [ -f "wiki/LOG.md" ]; then
+        LAST_LOG_LINE=$(grep -oE '^## \[[0-9]{4}-[0-9]{2}-[0-9]{2}\]' "wiki/LOG.md" | tail -1 || true)
+        if [ -n "$LAST_LOG_LINE" ]; then
+            LAST_LOG_DATE=$(echo "$LAST_LOG_LINE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            LAST_EPOCH=$(date -d "$LAST_LOG_DATE" +%s 2>/dev/null || echo "")
+            NOW_EPOCH=$(date +%s)
+            if [ -n "$LAST_EPOCH" ]; then
+                DAYS_SINCE=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
+                echo "  Last LOG.md entry: ${LAST_LOG_DATE} (${DAYS_SINCE} days ago)."
+            else
+                echo "  Last LOG.md entry: ${LAST_LOG_DATE}."
+            fi
+        else
+            echo "  LOG.md has no dated entries yet."
+        fi
+
+        UNRESOLVED=$(grep -cE '^## \[[0-9-]+\] source-added \|' "wiki/LOG.md" 2>/dev/null || true)
+        INGESTED=$(grep -cE '^## \[[0-9-]+\] ingest \|' "wiki/LOG.md" 2>/dev/null || true)
+        STUBS=$(( UNRESOLVED - INGESTED ))
+        if [ "$STUBS" -lt 0 ]; then
+            STUBS=0
+        fi
+        echo "  Unresolved source-added stubs: ${STUBS}."
+    else
+        echo "  LOG.md missing (wiki not initialised)."
+    fi
+
+    if [ -f "wiki/LINT_REPORT.md" ]; then
+        ERRORS=$(grep -cE '^- .*ERROR' "wiki/LINT_REPORT.md" 2>/dev/null || true)
+        WARNS=$(grep -cE '^- .*WARN' "wiki/LINT_REPORT.md" 2>/dev/null || true)
+        echo "  Last /vse-wiki-lint report: ${ERRORS} ERROR, ${WARNS} WARN findings."
+    else
+        echo "  No /vse-wiki-lint report on disk. Run /vse-wiki-lint for a health check."
+    fi
+    echo ""
+fi
+
+# Only activate the VSE lens banner if this is a VSE project (iteration
+# state file exists).
 if [ ! -f "$ITERATION_FILE" ]; then
     exit 0
 fi
