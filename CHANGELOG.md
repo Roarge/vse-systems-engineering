@@ -8,6 +8,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-04-16
+
+### Added
+
+- Wiki subsystem scaffolding under `wiki/`, adapting Karpathy's LLM
+  Wiki pattern for the VSE knowledge base. Atomic markdown pages are
+  authored and maintained from raw sources in the gitignored
+  `sources/` directory, then concatenated into per-skill bundles under
+  `wiki/bundles/` which skills embed at load time. Runtime behaviour
+  is unchanged: skills continue to front-load reference material via
+  `!cat ${CLAUDE_PLUGIN_ROOT}/...` at skill-load time.
+- `wiki/CLAUDE.md`: schema document that governs directory layout,
+  layer taxonomy, frontmatter contract, wikilink convention, LOG.md
+  prefixes, and page sizing. Single source of truth for wiki
+  operations. Read first by every wiki skill and subagent.
+- `wiki/schema/`: five page-type templates (reference, concept,
+  process, pattern, glossary) used by `vse-wiki-lint` to detect
+  schema drift.
+- `wiki/INDEX.md`, `wiki/LOG.md`: auto-maintained catalogue and
+  append-only activity record with parseable headings
+  (`source-added`, `ingest`, `refactor`, `lint`, `bundle`).
+- Four contributor-facing skills with slash-command wrappers:
+  `vse-wiki-ingest` (process a source into atomic pages),
+  `vse-wiki-lint` (read-only health check), `vse-wiki-refactor`
+  (periodic full-wiki audit), `vse-wiki-bundle` (deterministic
+  regeneration of per-skill bundles and the index).
+- Two read-only subagents that preserve the suggestion-shaped
+  contract used elsewhere in the plugin: `vse-wiki-ingestor`
+  (dispatched by `vse-wiki-ingest`) and `vse-wiki-curator`
+  (dispatched by `vse-wiki-refactor`).
+- `hooks/source-added-reminder.sh`: PostToolUse hook that emits a
+  reminder to run `/vse-wiki-ingest` when a file under `sources/` is
+  written or edited, and appends an unresolved `source-added` stub to
+  `wiki/LOG.md` for tracking. Only fires inside the plugin repo.
+- `hooks/session-start.sh`: wiki-freshness output (days since last
+  LOG.md entry, unresolved stub count, LINT_REPORT finding count)
+  emitted before the VSE lens banner, gated on `wiki/CLAUDE.md`
+  presence so end-user projects remain unaffected.
+- `.gitignore`: `wiki/LINT_REPORT.md` excluded from commits.
+
+### Changed
+
+- `hooks.json`: `PostToolUse` entry under matcher `Write|Edit` now
+  registers `source-added-reminder.sh` alongside the existing
+  `sysml-change-reminder.sh`.
+
 ## [0.14.1] - 2026-04-09
 
 ### Fixed
