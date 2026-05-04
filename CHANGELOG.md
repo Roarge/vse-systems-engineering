@@ -8,6 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-05-04
+
+### Added
+
+- 33 atomic pages under `wiki/pages/sysml2/`, each 80 to 200 lines,
+  consumed by six rewired SysML 2.0 skills via per-skill bundles
+  under `wiki/bundles/`. The pages are interlinked with Obsidian-
+  style `[[wikilinks]]`, allowing readers and skill consumers to
+  navigate the SysML 2.0 conceptual graph rather than searching a
+  flat reference directory.
+- Eight new pages capture material added to the 2026-04 release of
+  the SysML v2 book (Weilkiens and Molnár): `sysml2-self-and-that`
+  (Section 17.3), `sysml2-binding-connectors` (Chapter 21),
+  `sysml2-advanced-quantities-units` (Section 24.3),
+  `sysml2-occurrences-4d`, `sysml2-portions-and-individuals`,
+  `sysml2-temporal-spatial-relations`,
+  `sysml2-occurrence-context-and-variables` (Chapter 25), and
+  `sysml2-model-execution` (Chapter 39). All cite the new release
+  and, where applicable, the OMG formal specification.
+
+### Changed
+
+- The skills `sysml2-variants`, `sysml2-views`, `sysml2-allocations`,
+  `sysml2-cases`, `sysml2-behaviour`, and `sysml2-expressions` now
+  embed `wiki/bundles/<skill>.md` instead of legacy
+  `knowledge/sysml2-*-ref.md` files. Per-skill bundles are
+  smaller and topically scoped, reducing the token tax that every
+  invocation of these skills used to pay.
+- `knowledge/INDEX.md` updated to reflect the migration: SysML 2.0
+  files that have been atomised are listed under the bundle table;
+  files awaiting migration carry a `pending migration` status.
+
+### Removed
+
+- `knowledge/sysml2-variants-ref.md` (244 lines, atomised into 4
+  pages).
+- `knowledge/sysml2-views-ref.md` (280 lines, atomised into 4
+  pages).
+- `knowledge/sysml2-allocations-ref.md` (257 lines, atomised into 3
+  pages plus binding-connectors page from new release).
+- `knowledge/sysml2-cases-ref.md` (297 lines, atomised into 3 pages).
+- `knowledge/sysml2-behaviour-ref.md` (472 lines, atomised into 6
+  pages plus 6 new chapter pages).
+- `knowledge/sysml2-expressions-ref.md` (465 lines, atomised into 5
+  pages plus advanced-quantities-units page from new release).
+
+### Pending in follow-on PRs
+
+- Migration of `knowledge/sysml2-quick-ref.md`,
+  `sysml2-semantics-ref.md`, `sysml2-libraries-ref.md`,
+  `sysml2-metadata-ref.md`, and `sysml2-model-structure-ref.md`.
+- Migration of the non-SysML 2.0 knowledge files (ISO 29110, AMBSE,
+  PHAS-EAI, INCOSE, HSI, V&V, needs-and-requirements, syside-
+  automator, project structure).
+
 ## [0.15.0] - 2026-04-16
 
 ### Added

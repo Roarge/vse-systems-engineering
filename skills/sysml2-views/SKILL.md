@@ -136,4 +136,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Views and Viewpoints
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-views-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-views.md`

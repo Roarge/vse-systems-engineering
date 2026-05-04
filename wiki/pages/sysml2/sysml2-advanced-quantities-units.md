@@ -12,7 +12,6 @@ sources:
 related:
   - sysml2-expressions-overview
   - sysml2-expressions-constraints
-  - sysml2-libraries-systems
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -183,6 +182,6 @@ helpers for measurements, quantities, and quantity calculations.
   expression language.
 - [[sysml2-expressions-constraints]] for using quantities inside
   constraints.
-- [[sysml2-libraries-systems]] for general guidance on SysML 2.0
-  standard libraries (will be authored when the libraries
-  reference is migrated).
+- The Quantities and Units library reference in Chapter 113 of the
+  SysML v2 book (will be captured as a wiki page when the legacy
+  `knowledge/sysml2-libraries-ref.md` is migrated in a follow-on PR).
