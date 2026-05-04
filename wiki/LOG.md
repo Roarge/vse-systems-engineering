@@ -197,3 +197,76 @@ layer.
 Pages scanned: 61. Bundles scanned: 9. ERROR: 0. WARN: 0. INFO: 0.
 Wiki state clean after Phase 1b migration. The full SysML 2.0 layer
 is now atomised.
+
+## [2026-05-04] ingest | knowledge/iso29110-profile.md
+
+Layer: iso29110. Pages authored:
+
+- iso29110-overview (new, concept)
+- iso29110-pm-process (new, reference)
+- iso29110-sr-process (new, reference)
+- iso29110-roles-and-work-products (new, reference)
+- iso29110-phase-gates (new, process)
+
+Cross-layer wikilinks added: PM.O6 references
+sysml2-vse-library-metadata; SR.O2 references
+sysml2-syntax-requirements-and-cases and sysml2-requirements-semantics;
+SR.O6 references sysml2-vse-library-metadata; SR.O7 references
+sysml2-cases-overview and sysml2-case-kinds. Bundles regenerated:
+project-setup, iteration-orchestrator. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/iso29110-task-lists.md
+
+Layer: iso29110. Pages authored:
+
+- iso29110-pm-task-checklists (new, process)
+- iso29110-sr-task-checklists (new, process)
+- iso29110-template-mapping (new, reference)
+
+Cross-layer wikilinks added: SR.2 task list references
+sysml2-syntax-requirements-and-cases; SR.3 references
+sysml2-canonical-model-layout and sysml2-allocations-overview; SR.5
+references sysml2-cases-overview and sysml2-case-kinds. Bundles
+regenerated: project-setup, iteration-orchestrator. Legacy file
+removed.
+
+## [2026-05-04] ingest | knowledge/iteration-centred-operation.md
+
+Layer: project-structure. Pages authored:
+
+- iteration-centred-operation (new, concept)
+- iteration-boundary-and-macrocycle-closure (new, process)
+
+Bundled by iteration-orchestrator and project-setup. The original
+file's broader claim of consumption by vse-companion-overview and
+needs-and-requirements was reduced to match actual `!cat` embeds:
+both skills only mention the file in prose, not as a runtime embed.
+Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/canonical-project-structure.md
+
+Layer: project-structure. Pages authored:
+
+- vse-canonical-project-layout (new, reference)
+- vse-model-tiers-and-templates (new, reference)
+
+Cross-layer wikilinks added: model-tiers references
+sysml2-canonical-model-layout (the AMBSE package set the tiers
+materialise) and sysml2-vse-library-metadata (the metadata shipped
+in `library/vse-library.sysml`). Bundles regenerated: project-setup,
+project-audit. Legacy file removed.
+
+## [2026-05-04] bundle | phase-2 migration
+
+Bundles regenerated: project-setup (12 pages), iteration-orchestrator
+(10 pages), project-audit (2 pages). Phase 2 created three new
+bundles for skills that previously consumed only flat knowledge
+files. All 12 SysML 2.0 bundles regenerated unchanged. INDEX.md
+rebuilt with 73 atomic pages across two populated layers (sysml2 and
+project-structure) plus iso29110.
+
+## [2026-05-04] lint | post-phase-2
+
+Pages scanned: 73. Bundles scanned: 12. ERROR: 0. WARN: 0. INFO: 0.
+Wiki state clean after Phase 2 migration. Process-backbone layer
+atomised.

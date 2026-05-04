@@ -4,21 +4,21 @@ Categorised index of the reference files remaining in `knowledge/`.
 Each file is embedded into one or more skills via
 `!cat ${CLAUDE_PLUGIN_ROOT}/knowledge/...` at skill load time.
 
-The full SysML 2.0 reference set has been migrated to atomic pages
-under `wiki/pages/sysml2/` and is consumed by SysML 2.0 skills via
+The SysML 2.0 reference set (Phase 1) and the process-backbone
+files (Phase 2: ISO 29110, iteration-centred-operation,
+canonical-project-structure) have been migrated to atomic pages
+under `wiki/pages/<layer>/` and are consumed by skills via
 `!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/<skill>.md`. See
-`wiki/INDEX.md` for the catalogue of atomic pages. Non-SysML 2.0
-knowledge files (ISO 29110, AMBSE, PHAS-EAI, INCOSE, HSI, V&V,
-needs-and-requirements, syside-automator, project-structure)
-remain in this directory pending migration in later phases.
+`wiki/INDEX.md` for the catalogue of atomic pages. The remaining
+knowledge files (PHAS-EAI, INCOSE, HSI, V&V,
+needs-and-requirements, AMBSE, SySiDE) await migration in later
+phases.
 
 ## ISO/IEC 29110 (process backbone)
 
-| File | Topic | Used by |
-|------|-------|---------|
-| iso29110-profile.md | Process structure, roles, work products, lifecycle-neutral entry | vse-companion-overview, project-setup |
-| iso29110-task-lists.md | Actionable checklists by activity, centre-of-gravity selectors | iteration-orchestrator, attention-regime |
-| iteration-centred-operation.md | ISO 29110 tasks mapped onto AMBSE iterations, centre of gravity, brownfield entry, closure checks | iteration-orchestrator |
+Fully migrated to `wiki/pages/iso29110/` (8 pages: overview,
+pm-process, sr-process, roles-and-work-products, phase-gates,
+pm-task-checklists, sr-task-checklists, template-mapping).
 
 ## PHAS-EAI (design rationale)
 
@@ -69,6 +69,14 @@ Fully migrated to `wiki/pages/sysml2/` and consumed via
 
 ## Project structure
 
-| File | Topic | Used by |
-|------|-------|---------|
-| canonical-project-structure.md | Authoritative VSE project directory layout | project-setup, project-audit |
+Fully migrated to `wiki/pages/project-structure/` (4 pages:
+iteration-centred-operation, iteration-boundary-and-macrocycle-closure,
+vse-canonical-project-layout, vse-model-tiers-and-templates).
+
+## Bundles consuming Phase 2 pages
+
+| Bundle | Phase 2 source pages | Consuming skill |
+|---|---|---|
+| `wiki/bundles/project-setup.md` | 12 atomic pages | project-setup |
+| `wiki/bundles/iteration-orchestrator.md` | 10 atomic pages | iteration-orchestrator |
+| `wiki/bundles/project-audit.md` | 2 atomic pages | project-audit |

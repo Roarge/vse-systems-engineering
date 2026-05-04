@@ -330,9 +330,11 @@ files to copy from the plugin templates.
 - `@iteration-orchestrator`: may route here on detected structural issues
 - `@traceability-guard`: checks model-level trace completeness (different
   from structural completeness)
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/canonical-project-structure.md`:
-  authoritative definition of the canonical layout
+- `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`:
+  authoritative definition of the canonical layout (atomic pages
+  `vse-canonical-project-layout` and `vse-model-tiers-and-templates`
+  under `wiki/pages/project-structure/`)
 
 ## Reference: Canonical Project Structure
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/canonical-project-structure.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`
