@@ -2,6 +2,9 @@
 sources/
 dev_docs/
 
+# Wiki lint scratch output (contributor-side, never committed)
+wiki/LINT_REPORT.md
+
 # OS artifacts
 .DS_Store
 Thumbs.db

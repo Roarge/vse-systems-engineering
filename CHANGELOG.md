@@ -8,6 +8,175 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-04
+
+### Added
+
+- 28 new atomic pages under `wiki/pages/sysml2/`, completing the
+  SysML 2.0 layer migration. Each page is 80 to 250 lines and
+  cross-linked with Obsidian-style `[[wikilinks]]`. The wiki now
+  carries 61 atomic pages, 9 bundles, and 0 lint findings.
+- New pages by source family:
+  - From `sysml2-metadata-ref` (6 pages): metadata-overview,
+    metadata-definitions, reflection-and-classification,
+    filter-conditions, language-extension, vse-library-metadata.
+  - From `sysml2-libraries-ref` (6 pages): libraries-architecture,
+    systems-model-library, domain-libraries-metadata-analysis,
+    domain-libraries-causation-geometry, library-import-patterns,
+    quantities-and-units.
+  - From `sysml2-quick-ref` (5 pages): syntax-packages-and-
+    definitions, syntax-features-and-attributes, syntax-structure,
+    syntax-behaviour, syntax-requirements-and-cases.
+  - From `sysml2-semantics-ref` (6 pages): language-architecture,
+    type-hierarchy, specialisation-and-typing, structural-and-
+    behavioural-semantics, requirements-semantics, grammar-and-
+    validation.
+  - From `sysml2-model-structure-ref` (5 pages):
+    canonical-model-layout, base-architecture-and-federation,
+    namespace-hygiene, variant-organisation, model-cm-and-risks.
+
+### Changed
+
+- `sysml2-modelling` skill now embeds `wiki/bundles/sysml2-modelling.md`
+  (17 atomic pages from quick-ref, semantics, and libraries) plus
+  the unchanged `knowledge/syside-automator-ref.md`. The legacy
+  three-file embed is replaced by one bundle plus one knowledge
+  reference.
+- `sysml2-metadata` skill now embeds `wiki/bundles/sysml2-metadata.md`
+  (6 atomic pages from metadata-ref).
+- `sysml2-model-structure` skill now embeds
+  `wiki/bundles/sysml2-model-structure.md` (5 atomic pages from
+  model-structure-ref).
+- `knowledge/INDEX.md` updated: every SysML 2.0 reference file is
+  now in the bundle table; only `syside-automator-ref.md` remains
+  in the SysML 2.0 row pending its own migration in a later phase.
+
+### Removed
+
+- `knowledge/sysml2-libraries-ref.md` (579 lines, atomised into 6
+  pages).
+- `knowledge/sysml2-metadata-ref.md` (496 lines, atomised into 6
+  pages).
+- `knowledge/sysml2-model-structure-ref.md` (599 lines, atomised
+  into 5 pages).
+- `knowledge/sysml2-quick-ref.md` (600 lines, atomised into 5
+  pages).
+- `knowledge/sysml2-semantics-ref.md` (601 lines, atomised into 6
+  pages).
+
+### Pending in follow-on PRs
+
+- Migration of `knowledge/syside-automator-ref.md` (the last
+  remaining SysML 2.0-adjacent file, vendor-specific Python API
+  reference).
+- Migration of the non-SysML 2.0 knowledge files (Phase 2
+  onwards): ISO 29110, AMBSE cluster, PHAS-EAI, INCOSE VSE
+  practices, INCOSE V&V, INCOSE Needs and Requirements, HSI,
+  iteration-centred-operation, canonical-project-structure.
+- Eventual deletion of the `knowledge/` directory once the
+  remaining files are atomised.
+
+## [0.16.0] - 2026-05-04
+
+### Added
+
+- 33 atomic pages under `wiki/pages/sysml2/`, each 80 to 200 lines,
+  consumed by six rewired SysML 2.0 skills via per-skill bundles
+  under `wiki/bundles/`. The pages are interlinked with Obsidian-
+  style `[[wikilinks]]`, allowing readers and skill consumers to
+  navigate the SysML 2.0 conceptual graph rather than searching a
+  flat reference directory.
+- Eight new pages capture material added to the 2026-04 release of
+  the SysML v2 book (Weilkiens and Molnár): `sysml2-self-and-that`
+  (Section 17.3), `sysml2-binding-connectors` (Chapter 21),
+  `sysml2-advanced-quantities-units` (Section 24.3),
+  `sysml2-occurrences-4d`, `sysml2-portions-and-individuals`,
+  `sysml2-temporal-spatial-relations`,
+  `sysml2-occurrence-context-and-variables` (Chapter 25), and
+  `sysml2-model-execution` (Chapter 39). All cite the new release
+  and, where applicable, the OMG formal specification.
+
+### Changed
+
+- The skills `sysml2-variants`, `sysml2-views`, `sysml2-allocations`,
+  `sysml2-cases`, `sysml2-behaviour`, and `sysml2-expressions` now
+  embed `wiki/bundles/<skill>.md` instead of legacy
+  `knowledge/sysml2-*-ref.md` files. Per-skill bundles are
+  smaller and topically scoped, reducing the token tax that every
+  invocation of these skills used to pay.
+- `knowledge/INDEX.md` updated to reflect the migration: SysML 2.0
+  files that have been atomised are listed under the bundle table;
+  files awaiting migration carry a `pending migration` status.
+
+### Removed
+
+- `knowledge/sysml2-variants-ref.md` (244 lines, atomised into 4
+  pages).
+- `knowledge/sysml2-views-ref.md` (280 lines, atomised into 4
+  pages).
+- `knowledge/sysml2-allocations-ref.md` (257 lines, atomised into 3
+  pages plus binding-connectors page from new release).
+- `knowledge/sysml2-cases-ref.md` (297 lines, atomised into 3 pages).
+- `knowledge/sysml2-behaviour-ref.md` (472 lines, atomised into 6
+  pages plus 6 new chapter pages).
+- `knowledge/sysml2-expressions-ref.md` (465 lines, atomised into 5
+  pages plus advanced-quantities-units page from new release).
+
+### Pending in follow-on PRs
+
+- Migration of `knowledge/sysml2-quick-ref.md`,
+  `sysml2-semantics-ref.md`, `sysml2-libraries-ref.md`,
+  `sysml2-metadata-ref.md`, and `sysml2-model-structure-ref.md`.
+- Migration of the non-SysML 2.0 knowledge files (ISO 29110, AMBSE,
+  PHAS-EAI, INCOSE, HSI, V&V, needs-and-requirements, syside-
+  automator, project structure).
+
+## [0.15.0] - 2026-04-16
+
+### Added
+
+- Wiki subsystem scaffolding under `wiki/`, adapting Karpathy's LLM
+  Wiki pattern for the VSE knowledge base. Atomic markdown pages are
+  authored and maintained from raw sources in the gitignored
+  `sources/` directory, then concatenated into per-skill bundles under
+  `wiki/bundles/` which skills embed at load time. Runtime behaviour
+  is unchanged: skills continue to front-load reference material via
+  `!cat ${CLAUDE_PLUGIN_ROOT}/...` at skill-load time.
+- `wiki/CLAUDE.md`: schema document that governs directory layout,
+  layer taxonomy, frontmatter contract, wikilink convention, LOG.md
+  prefixes, and page sizing. Single source of truth for wiki
+  operations. Read first by every wiki skill and subagent.
+- `wiki/schema/`: five page-type templates (reference, concept,
+  process, pattern, glossary) used by `vse-wiki-lint` to detect
+  schema drift.
+- `wiki/INDEX.md`, `wiki/LOG.md`: auto-maintained catalogue and
+  append-only activity record with parseable headings
+  (`source-added`, `ingest`, `refactor`, `lint`, `bundle`).
+- Four contributor-facing skills with slash-command wrappers:
+  `vse-wiki-ingest` (process a source into atomic pages),
+  `vse-wiki-lint` (read-only health check), `vse-wiki-refactor`
+  (periodic full-wiki audit), `vse-wiki-bundle` (deterministic
+  regeneration of per-skill bundles and the index).
+- Two read-only subagents that preserve the suggestion-shaped
+  contract used elsewhere in the plugin: `vse-wiki-ingestor`
+  (dispatched by `vse-wiki-ingest`) and `vse-wiki-curator`
+  (dispatched by `vse-wiki-refactor`).
+- `hooks/source-added-reminder.sh`: PostToolUse hook that emits a
+  reminder to run `/vse-wiki-ingest` when a file under `sources/` is
+  written or edited, and appends an unresolved `source-added` stub to
+  `wiki/LOG.md` for tracking. Only fires inside the plugin repo.
+- `hooks/session-start.sh`: wiki-freshness output (days since last
+  LOG.md entry, unresolved stub count, LINT_REPORT finding count)
+  emitted before the VSE lens banner, gated on `wiki/CLAUDE.md`
+  presence so end-user projects remain unaffected.
+- `.gitignore`: `wiki/LINT_REPORT.md` excluded from commits.
+
+### Changed
+
+- `hooks.json`: `PostToolUse` entry under matcher `Write|Edit` now
+  registers `source-added-reminder.sh` alongside the existing
+  `sysml-change-reminder.sh`.
+
 ## [0.14.1] - 2026-04-09
 
 ### Fixed

@@ -157,4 +157,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Behaviour
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-behaviour-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-behaviour.md`

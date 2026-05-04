@@ -97,7 +97,7 @@ verification def VehicleMassTest {
 
 `verify` inside the objective names the requirement being verified. The
 verification case body orchestrates steps that produce a verdict. See
-`sysml2-cases-ref.md` Section 5 for verdict semantics. Until the
+the `sysml2-case-kinds` atomic page for verdict semantics. Until the
 `VerdictKind` rules are published in a later book release, consult the
 OMG Systems Modeling Language v2.0 specification for the enumeration.
 
@@ -150,4 +150,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Cases
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-cases-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-cases.md`

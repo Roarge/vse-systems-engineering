@@ -132,4 +132,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Allocations
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-allocations-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-allocations.md`

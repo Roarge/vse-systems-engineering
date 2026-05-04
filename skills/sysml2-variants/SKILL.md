@@ -146,4 +146,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Variations and Variants
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-variants-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-variants.md`

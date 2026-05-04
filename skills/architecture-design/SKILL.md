@@ -428,7 +428,7 @@ carried by each candidate. Tag the high-risk options with `RiskInfo`
 metadata so the risk register reflects the decision made. See
 `@sysml2-metadata` for the risk library syntax, `@sysml2-cases` for
 the trade-study analysis case bodies that live in `{{sc}}_ArchAnalysis`,
-and `knowledge/sysml2-model-structure-ref.md` Section 8 for the
+and the `sysml2-model-cm-and-risks` atomic page for the
 risk-to-requirement trace pattern. Trade studies with high residual
 risk on the selected option must carry a mitigation plan recorded in
 `{{sc}}_Risks` and referenced from the Justification Document.
