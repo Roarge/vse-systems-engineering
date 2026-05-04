@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# SessionStart hook: detect VSE project and output lifecycle context.
+# SessionStart hook: detect VSE project (or a lighter SysML-only repo)
+# and output lifecycle context.
 # This script is called by Claude Code at the start of every session.
 # stdout is injected into the conversation as context.
 #
 # Exit 0: always. stdout (if any) is injected into the conversation as context.
-# When no VSE project is detected, the script exits 0 with no output.
+# Three detection modes, evaluated in order:
+#   1. Contributor mode: wiki/CLAUDE.md present (vse-systems-engineering plugin repo)
+#   2. Full VSE project: .vse-iteration.yml present
+#   3. SysML-only repo: .sysml files reachable, but no .vse-iteration.yml
+# When none match, the script exits 0 with no output.
 set -euo pipefail
 
 ITERATION_FILE=".vse-iteration.yml"
@@ -21,6 +26,34 @@ if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
 else
     ENG_ROOT="."
 fi
+
+# Shared SySiDE CLI reporter, called by both the full-VSE and the
+# SysML-only branches below. Emits a single block describing CLI
+# availability and the most useful invocations against $ENG_ROOT/models/.
+# Silent if `syside` is not on $PATH.
+report_syside_cli() {
+    if command -v syside >/dev/null 2>&1; then
+        local syside_ver
+        syside_ver=$(syside --version 2>/dev/null | head -1 || echo "unknown")
+        echo ""
+        echo "SySiDE CLI available: $syside_ver"
+        echo "  Validate models:  syside check --warnings-as-errors --stats"
+        echo "  Check formatting: syside format --check"
+        echo "  Generate diagrams: syside viz view $ENG_ROOT/models/ --output-dir $ENG_ROOT/build/diagrams"
+    fi
+}
+
+# Detect whether the repository carries any SysML 2.0 models. Used by
+# the SysML-only branch and by the full-VSE branch's trace-gap reporter.
+# Cheap short-circuits first; bounded find as a fallback so a large
+# repo does not pay a full-tree walk.
+has_sysml_content() {
+    [ -f "syside.toml" ] && return 0
+    [ -f "engineering/syside.toml" ] && return 0
+    [ -d "$ENG_ROOT/models" ] && return 0
+    [ -n "$(find . -maxdepth 4 -name '*.sysml' -print -quit 2>/dev/null)" ] && return 0
+    return 1
+}
 
 # Wiki freshness (contributor-facing). Only activates inside the
 # vse-systems-engineering plugin repo itself, detected by the presence
@@ -68,9 +101,45 @@ if [ -f "wiki/CLAUDE.md" ]; then
     echo ""
 fi
 
-# Only activate the VSE lens banner if this is a VSE project (iteration
-# state file exists).
+# Mode 2: Full VSE project (.vse-iteration.yml present)
+# ------------------------------------------------------------------
+# When this gate fails, fall through to the SysML-only branch below.
 if [ ! -f "$ITERATION_FILE" ]; then
+    # Mode 3: SysML-only repository (no iteration state, but has SysML
+    # content). Emits a lighter banner pointing at the SysML 2.0
+    # specialist skills rather than the full VSE lens.
+    #
+    # Suppress this branch in the plugin contributor repo (detected by
+    # wiki/CLAUDE.md). The plugin repo carries .sysml files under
+    # templates/ and demo/ that would otherwise trip the SysML-only
+    # detection, but the contributor's task is plugin development, not
+    # SysML modelling.
+    if [ ! -f "wiki/CLAUDE.md" ] && has_sysml_content; then
+        echo "SysML 2.0 modelling repository detected"
+        echo "======================================="
+        echo ""
+        echo "No .vse-iteration.yml found, so this is not a full VSE project"
+        echo "under iteration management. The repository does carry SysML"
+        echo "content, so the SysML 2.0 specialist skills are available"
+        echo "directly:"
+        echo ""
+        echo "  @sysml2-modelling   Author and validate .sysml files"
+        echo "                      (umbrella, routes to siblings below)"
+        echo ""
+        echo "Routed siblings (load on demand):"
+        echo "  @sysml2-behaviour, @sysml2-cases, @sysml2-allocations,"
+        echo "  @sysml2-variants, @sysml2-views, @sysml2-metadata,"
+        echo "  @sysml2-model-structure, @sysml2-expressions"
+        echo ""
+        echo "All nine SysML 2.0 skills front-load atomic-page bundles from"
+        echo "wiki/bundles/ at activation, so reference content is available"
+        echo "without further setup."
+        echo ""
+        echo "To upgrade this repository to a full VSE project (ISO 29110"
+        echo "process backbone, AMBSE iteration framing, traceability"
+        echo "enforcement), run /vse-setup."
+        report_syside_cli
+    fi
     exit 0
 fi
 
@@ -157,14 +226,6 @@ if [ -d "$ENG_ROOT/models" ]; then
     fi
 fi
 
-# Report SySiDE CLI availability
-if command -v syside >/dev/null 2>&1; then
-    SYSIDE_VER=$(syside --version 2>/dev/null | head -1 || echo "unknown")
-    echo ""
-    echo "SySiDE CLI available: $SYSIDE_VER"
-    echo "  Validate models:  syside check --warnings-as-errors --stats"
-    echo "  Check formatting: syside format --check"
-    echo "  Generate diagrams: syside viz view $ENG_ROOT/models/ --output-dir $ENG_ROOT/build/diagrams"
-fi
+report_syside_cli
 
 exit 0
