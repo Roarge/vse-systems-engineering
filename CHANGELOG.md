@@ -8,6 +8,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-04
+
+### Added
+
+- **Phase 2 of the knowledge/ to wiki/ consolidation**: process
+  backbone migrated. 12 new atomic pages under
+  `wiki/pages/iso29110/` (8 pages) and
+  `wiki/pages/project-structure/` (4 pages). Three new bundles
+  consumed by their respective skills:
+  - `wiki/bundles/project-setup.md` (12 pages)
+  - `wiki/bundles/iteration-orchestrator.md` (10 pages)
+  - `wiki/bundles/project-audit.md` (2 pages)
+- New ISO 29110 layer pages: `iso29110-overview` (concept),
+  `iso29110-pm-process` (reference), `iso29110-sr-process`
+  (reference), `iso29110-roles-and-work-products` (reference),
+  `iso29110-phase-gates` (process),
+  `iso29110-pm-task-checklists` (process),
+  `iso29110-sr-task-checklists` (process),
+  `iso29110-template-mapping` (reference).
+- New project-structure layer pages:
+  `iteration-centred-operation` (concept),
+  `iteration-boundary-and-macrocycle-closure` (process),
+  `vse-canonical-project-layout` (reference),
+  `vse-model-tiers-and-templates` (reference).
+- Cross-layer wikilinks added per the approved migration plan.
+  Examples: ISO 29110 PM.O6 and SR.O6 link to
+  `sysml2-vse-library-metadata`; SR.O2 and SR.2 task list link to
+  `sysml2-syntax-requirements-and-cases` and
+  `sysml2-requirements-semantics`; SR.3 task list links to
+  `sysml2-canonical-model-layout` and
+  `sysml2-allocations-overview`; SR.5 and SR.O7 link to
+  `sysml2-cases-overview` and `sysml2-case-kinds`;
+  vse-model-tiers links to `sysml2-canonical-model-layout` and
+  `sysml2-vse-library-metadata`.
+
+### Changed
+
+- `project-setup` skill replaces three legacy `!cat
+  knowledge/...` lines (canonical-project-structure,
+  iso29110-task-lists, iso29110-profile) with one
+  `!cat wiki/bundles/project-setup.md`.
+- `iteration-orchestrator` skill replaces two legacy
+  `!cat knowledge/...` lines (iteration-centred-operation,
+  iso29110-profile) with one
+  `!cat wiki/bundles/iteration-orchestrator.md`. The skill keeps
+  its other three knowledge embeds (`ambse-agile-process`,
+  `ambse-git-workflow`, `incose-vse-practices`), which migrate in
+  later phases.
+- `project-audit` skill replaces its single legacy
+  `!cat knowledge/canonical-project-structure.md` with one
+  `!cat wiki/bundles/project-audit.md`.
+- `knowledge/INDEX.md` updated. ISO 29110 and Project structure
+  rows now point at the migrated bundle catalogue. The remaining
+  rows (PHAS-EAI, INCOSE, AMBSE, HSI, SySiDE) cover the 10 files
+  awaiting migration in Phases 3 to 5.
+
+### Removed
+
+- `knowledge/iso29110-profile.md` (346 lines, atomised into 5
+  pages).
+- `knowledge/iso29110-task-lists.md` (340 lines, atomised into 3
+  pages).
+- `knowledge/iteration-centred-operation.md` (150 lines, atomised
+  into 2 pages).
+- `knowledge/canonical-project-structure.md` (198 lines, atomised
+  into 2 pages).
+
+### Pending in follow-on PRs
+
+- **Phase 3**: `phas-eai-framework`, `hsi-primer`, `vv-guide`,
+  `needs-and-reqs-guide`. Skills rewired: `attention-regime`,
+  `verification-validation`, `needs-and-requirements`. Required
+  cross-layer wikilinks per the approved plan.
+- **Phase 4**: AMBSE cluster (`ambse-agile-process`,
+  `ambse-requirements`, `ambse-architecture`,
+  `ambse-git-workflow`). The largest and most cross-linked.
+- **Phase 5**: `syside-automator-ref` and
+  `incose-vse-practices`.
+- **Phase 6**: Delete the `knowledge/` directory entirely. Run
+  `/vse-wiki-refactor` for cross-link consolidation. Bump to
+  1.0.0 to mark the consolidation milestone.
+
 ## [0.17.2] - 2026-05-04
 
 ### Changed

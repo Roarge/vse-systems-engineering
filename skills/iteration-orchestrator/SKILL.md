@@ -409,9 +409,9 @@ See `ambse-agile-process.md` Sections 5-7 for the planning hierarchy,
 work item management, and Iteration 0 / Architecture 0 conventions, and
 `ambse-git-workflow.md` for branch naming, PR templates, and CI gates.
 
-## Reference: Iteration-Centred Operation
+## Reference: ISO 29110 process and iteration-centred operation
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iteration-centred-operation.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/iteration-orchestrator.md`
 
 ## Reference: AMBSE Agile Process
 
@@ -420,10 +420,6 @@ work item management, and Iteration 0 / Architecture 0 conventions, and
 ## Reference: AMBSE Git Workflow
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`
-
-## Reference: ISO 29110 Profile
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`
 
 ## Reference: INCOSE Practices Scaled for VSEs
 

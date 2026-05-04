@@ -154,9 +154,10 @@ observations, SR.2 might be appropriate, but please confirm."
 the user selects, the first iteration must baseline the inherited
 artefacts as centre-of-gravity inputs. The Plan Mode plan should list a
 backlog item of the form "Baseline existing [artefact] into [thread]"
-for each relevant indicator. See
-`${CLAUDE_PLUGIN_ROOT}/knowledge/iteration-centred-operation.md` for the
-brownfield entry rationale.
+for each relevant indicator. See the
+`iteration-boundary-and-macrocycle-closure` atomic page (under
+`wiki/pages/project-structure/`, bundled into
+`wiki/bundles/project-setup.md`) for the brownfield entry rationale.
 
 ## Step 1: Gather Project Information
 
@@ -762,9 +763,11 @@ pattern, route to `@sysml2-model-structure`.
 
 ## Step 7: Generate TASKS.md
 
-Generate a project-specific task checklist from
-`${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`. The generated
-file should contain:
+Generate a project-specific task checklist from the
+`iso29110-pm-task-checklists` and `iso29110-sr-task-checklists`
+atomic pages (under `wiki/pages/iso29110/`, bundled into
+`wiki/bundles/project-setup.md`). The generated file should
+contain:
 
 1. A header with the project name and date
 2. The complete PM.1 through SR.6 task checklists
@@ -1059,18 +1062,9 @@ navigation.
 - `@traceability-guard`: verifies trace completeness in models
 - `@document-export`: generates docx/pptx from the populated templates
 - `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`: AMBSE canonical model starter files copied into the project at Step 6
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`: source for TASKS.md generation
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`: ISO 29110 process reference
+- `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md`: ISO 29110 process and project-layout reference (12 atomic pages including `iso29110-pm-task-checklists` and `iso29110-sr-task-checklists`, the source for TASKS.md generation)
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`: branch-per-microcycle workflow that the merged CLAUDE.md points to
 
-## Reference: Canonical Project Structure
+## Reference: ISO 29110 process, project layout, and iteration model
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/canonical-project-structure.md`
-
-## Reference: ISO 29110 Task Lists
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-task-lists.md`
-
-## Reference: ISO 29110 Profile
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/iso29110-profile.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md`
