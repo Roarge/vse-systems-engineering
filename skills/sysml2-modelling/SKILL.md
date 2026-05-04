@@ -10,8 +10,11 @@ If the VSE lens has not been set in this session, invoke `vse-companion-overview
 
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
-provide templates for common model elements. Reference:
-`${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-quick-ref.md`.
+provide templates for common model elements. The full SysML 2.0 reference set
+is bundled into this skill via
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md` (atomic pages from
+the `wiki/pages/sysml2/` layer). The SySiDE Python API reference is at
+`${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`.
 
 ## When This Skill Triggers
 

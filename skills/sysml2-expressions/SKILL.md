@@ -102,8 +102,10 @@ attribute heavy : Real[*] = allMasses->select{ in v : Real; v > 2.0 };
 ```
 
 Kernel sequence functions include `sum`, `size`, `first`, `last`,
-`select`, `collect`, `includes`, and set-like operations. See
-`sysml2-expressions-ref.md` Sections 5-6 for the full list and their
+`select`, `collect`, `includes`, and set-like operations. See the
+`sysml2-sequences-and-structures` and
+`sysml2-functions-and-higher-order` atomic pages
+(under `wiki/pages/sysml2/`) for the full list and their
 signatures.
 
 ### Classification Expression
@@ -127,7 +129,9 @@ Before handing a calculation or constraint back to the engineer, confirm:
 3. **Asserted constraints have all their inputs bound** at the call site.
    Unbound inputs mean the assertion cannot be evaluated.
 4. **Unit-aware expressions** use quantity kinds from the ISQ library when
-   the values carry physical units. See `sysml2-libraries-ref.md` Section 7.
+   the values carry physical units. See the `sysml2-quantities-and-units`
+   atomic page for ISQ guidance and `sysml2-advanced-quantities-units`
+   for SimpleUnit/DerivedUnit/ConversionByPrefix.
 5. **Recursion is avoided** in calculations unless the base case is explicit.
    The evaluator does not detect infinite recursion.
 

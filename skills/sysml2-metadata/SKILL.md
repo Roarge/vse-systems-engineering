@@ -135,8 +135,9 @@ keyword shortcuts.
 
 The book's Ch 38 ships a Risks library implemented as metadata usages.
 The plugin carries this pattern forward as the `RiskInfo` library
-declared below. See `sysml2-metadata-ref.md` Section 7 for the book
-schema and the Risk Library section below for the plugin form.
+declared below. See the `sysml2-metadata-definitions` and
+`sysml2-vse-library-metadata` atomic pages for the book schema and
+the plugin form respectively.
 
 ## Risk Library (RiskInfo)
 

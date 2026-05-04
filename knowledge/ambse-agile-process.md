@@ -65,7 +65,9 @@ managed by SySiDE).
 VSE guideline: every model element should have purpose, intent, scope, language,
 accuracy, fidelity, and completeness appropriate to its role. Use a core subset of
 SysML v2 (the 80/20 rule: 80% of work uses 20% of the language) and extend only
-when necessary. See `knowledge/sysml2-quick-ref.md` for the recommended subset.
+when necessary. See the `sysml2-syntax-*` family of atomic pages under
+`wiki/pages/sysml2/` (consumed via `wiki/bundles/sysml2-modelling.md`)
+for the recommended subset.
 
 ---
 
