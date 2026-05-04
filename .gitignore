@@ -15,6 +15,9 @@ Thumbs.db
 *~
 .envrc
 
+# Obsidian vault metadata (contributor-side wiki tooling, not plugin content)
+.obsidian/
+
 # Local, uncommitted contributor instructions for plugin development
 CLAUDE.local.md
 

@@ -238,7 +238,9 @@ for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
 
 The query is advisory. A full risk-management workflow skill covering
 the identify-assess-mitigate-monitor loop is flagged as a follow-up.
-See `knowledge/syside-automator-ref.md` for the Automator API.
+See the `syside-core-api` and `syside-expression-evaluation` atomic pages
+bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md` for the
+Automator API.
 
 ### ISO 29110 Framing
 

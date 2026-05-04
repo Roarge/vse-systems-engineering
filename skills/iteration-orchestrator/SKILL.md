@@ -409,16 +409,14 @@ See `ambse-agile-process.md` Sections 5-7 for the planning hierarchy,
 work item management, and Iteration 0 / Architecture 0 conventions, and
 `ambse-git-workflow.md` for branch naming, PR templates, and CI gates.
 
-## Reference: ISO 29110 process and iteration-centred operation
+## Reference: ISO 29110, AMBSE, and INCOSE practices scaled for VSEs
+
+The bundle below concatenates atomic pages across the iso29110,
+project-structure, ambse, and incose-vse layers. The five
+incose-vse-* pages cover lifecycle models, stakeholder needs,
+requirements engineering, architecture and V&V, and configuration
+management with risk and scaling guidance, filtered from INCOSE
+Handbook 4e and Galinier et al. SME practices for organisations
+with fewer than 25 people.
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/iteration-orchestrator.md`
-
-
-## Reference: INCOSE Practices Scaled for VSEs
-
-Source: INCOSE Systems Engineering Handbook 4e and Galinier et al. SME
-practices, filtered for organisations with fewer than 25 people. Layer 4
-in the source-processing order, paired here with the layer 1 ISO/IEC 29110
-profile above.
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/incose-vse-practices.md`

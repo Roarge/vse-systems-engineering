@@ -883,7 +883,9 @@ Inform the user that the SySiDE tools are optional but recommended:
 - **Editor** (free VS Code extension) provides syntax highlighting and
   basic validation without any licence.
 
-See `${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md` for the full
+See the `syside-tooling-overview`, `syside-project-configuration`, and
+`syside-vse-workflows` atomic pages bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md` for the full
 tool selection guide.
 
 ## Step 10: Detect Other Integrations
