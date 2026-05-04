@@ -117,3 +117,83 @@ with 33 atomic pages across the sysml2 layer.
 
 Pages scanned: 33. Bundles scanned: 6. ERROR: 0. WARN: 0. INFO: 0.
 Wiki state clean after Phase 1a migration.
+
+## [2026-05-04] ingest | knowledge/sysml2-metadata-ref.md
+
+Layer: sysml2. Pages authored from atomisation of legacy reference:
+
+- sysml2-metadata-overview (new, concept)
+- sysml2-metadata-definitions (new, reference)
+- sysml2-reflection-and-classification (new, reference)
+- sysml2-filter-conditions (new, reference)
+- sysml2-language-extension (new, reference)
+- sysml2-vse-library-metadata (new, pattern)
+
+Bundles regenerated: sysml2-metadata. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/sysml2-libraries-ref.md
+
+Layer: sysml2. Pages authored:
+
+- sysml2-libraries-architecture (new, concept)
+- sysml2-systems-model-library (new, reference)
+- sysml2-domain-libraries-metadata-analysis (new, reference)
+- sysml2-domain-libraries-causation-geometry (new, reference)
+- sysml2-library-import-patterns (new, pattern)
+- sysml2-quantities-and-units (new, reference)
+
+Bundles regenerated: sysml2-modelling. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/sysml2-quick-ref.md
+
+Layer: sysml2. Pages authored:
+
+- sysml2-syntax-packages-and-definitions (new, reference)
+- sysml2-syntax-features-and-attributes (new, reference)
+- sysml2-syntax-structure (new, reference)
+- sysml2-syntax-behaviour (new, reference)
+- sysml2-syntax-requirements-and-cases (new, reference)
+
+Bundles regenerated: sysml2-modelling. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/sysml2-semantics-ref.md
+
+Layer: sysml2. Pages authored:
+
+- sysml2-language-architecture (new, concept)
+- sysml2-type-hierarchy (new, reference)
+- sysml2-specialisation-and-typing (new, reference)
+- sysml2-structural-and-behavioural-semantics (new, reference)
+- sysml2-requirements-semantics (new, reference)
+- sysml2-grammar-and-validation (new, reference)
+
+Bundles regenerated: sysml2-modelling. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/sysml2-model-structure-ref.md
+
+Layer: sysml2. Pages authored from a multi-source reference (Douglass
+2016, Douglass 2021, SysML v2 Book Chapters 14-16, VAMOS 2016, ISO
+29110, Galinier et al.):
+
+- sysml2-canonical-model-layout (new, concept)
+- sysml2-base-architecture-and-federation (new, reference)
+- sysml2-namespace-hygiene (new, reference)
+- sysml2-variant-organisation (new, pattern)
+- sysml2-model-cm-and-risks (new, pattern)
+
+Bundles regenerated: sysml2-model-structure. Legacy file removed.
+
+## [2026-05-04] bundle | phase-1b migration
+
+Bundles regenerated: sysml2-allocations (4 pages), sysml2-behaviour
+(12 pages), sysml2-cases (3 pages), sysml2-expressions (6 pages),
+sysml2-metadata (6 pages), sysml2-model-structure (5 pages),
+sysml2-modelling (17 pages), sysml2-variants (4 pages), sysml2-views
+(4 pages). INDEX.md rebuilt with 61 atomic pages across the sysml2
+layer.
+
+## [2026-05-04] lint | post-phase-1b
+
+Pages scanned: 61. Bundles scanned: 9. ERROR: 0. WARN: 0. INFO: 0.
+Wiki state clean after Phase 1b migration. The full SysML 2.0 layer
+is now atomised.
