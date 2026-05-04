@@ -270,3 +270,88 @@ project-structure) plus iso29110.
 Pages scanned: 73. Bundles scanned: 12. ERROR: 0. WARN: 0. INFO: 0.
 Wiki state clean after Phase 2 migration. Process-backbone layer
 atomised.
+
+## [2026-05-04] ingest | knowledge/ambse-agile-process.md
+
+Layer: ambse. Pages authored:
+
+- ambse-principles (new, reference)
+- ambse-vee-three-timeframes (new, reference)
+- ambse-iteration-planning (new, reference)
+- ambse-risk-and-metrics (new, reference)
+- ambse-iso29110-mapping (new, reference)
+
+Cross-layer wikilinks added: principles, three-timeframes,
+iteration-planning, and iso29110-mapping link into the iso29110
+layer (iso29110-pm-process, iso29110-sr-process, iso29110-pm-task-checklists,
+iso29110-sr-task-checklists) and into the project-structure layer
+(iteration-centred-operation, iteration-boundary-and-macrocycle-closure).
+Bundles regenerated: iteration-orchestrator. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/ambse-requirements.md
+
+Layer: ambse. Pages authored:
+
+- ambse-requirements-as-models (new, reference)
+- ambse-use-case-driven-elicitation (new, reference)
+- ambse-system-requirements-derivation (new, reference)
+- ambse-nanocycle-and-use-case-analysis (new, reference)
+- ambse-dependability-and-traceability (new, reference)
+
+Cross-layer wikilinks added: every page links into sysml2
+(sysml2-syntax-requirements-and-cases, sysml2-requirements-semantics,
+sysml2-cases-overview, sysml2-case-kinds, sysml2-case-patterns) per
+the Phase 3+ cross-layer rule, and into needs-and-reqs (writing-good-requirements,
+needs-vs-requirements). Bundles regenerated: needs-and-requirements.
+Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/ambse-architecture.md
+
+Layer: ambse. Pages authored:
+
+- ambse-architecture-analysis (new, reference)
+- ambse-trade-studies (new, reference)
+- ambse-architectural-design (new, reference)
+- ambse-interfaces-and-handoff (new, reference)
+- ambse-architecture-vv-and-iso29110 (new, reference)
+
+Cross-layer wikilinks added: architecture-analysis links into
+sysml2-canonical-model-layout, sysml2-base-architecture-and-federation,
+sysml2-allocations-overview; trade-studies links into
+sysml2-views-overview; interfaces-and-handoff links into
+sysml2-binding-connectors and sysml2-allocations-overview;
+architecture-vv-and-iso29110 links into vv-process-and-incose
+and iso29110-sr-process. Bundles regenerated: architecture-design,
+verification-validation. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/ambse-git-workflow.md
+
+Layer: ambse. Pages authored:
+
+- ambse-git-three-way-mapping (new, reference)
+- ambse-git-nanocycle-commits (new, reference)
+- ambse-git-microcycle-prs (new, reference)
+- ambse-git-ci-gates-and-macrocycle (new, reference)
+- ambse-git-vse-guidance-and-anti-patterns (new, reference)
+
+Cross-layer wikilinks added: pages link into ambse-vee-three-timeframes
+(timeframe mapping), iteration-centred-operation,
+iteration-boundary-and-macrocycle-closure, and the iso29110 layer
+where work products attach to commits and PRs. Bundles regenerated:
+iteration-orchestrator. Legacy file removed.
+
+## [2026-05-04] bundle | phase-4 migration
+
+Bundles regenerated: iteration-orchestrator (20 pages, +10 from
+ambse-agile-process and ambse-git-workflow), needs-and-requirements
+(13 pages, +5 from ambse-requirements), architecture-design (5
+pages, new bundle for architecture-design skill),
+verification-validation (6 pages, +2 from ambse cross-cluster).
+INDEX.md rebuilt with 109 atomic pages across nine populated layers.
+
+## [2026-05-04] lint | post-phase-4
+
+Pages scanned: 109. Bundles scanned: 16. ERROR: 0. WARN: 0. INFO: 0.
+Wiki state clean after Phase 4 migration. AMBSE cluster atomised
+into four sub-clusters with full cross-layer linking into iso29110,
+project-structure, sysml2, vv, and needs-and-reqs.

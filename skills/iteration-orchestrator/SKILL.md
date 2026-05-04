@@ -413,13 +413,6 @@ work item management, and Iteration 0 / Architecture 0 conventions, and
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/iteration-orchestrator.md`
 
-## Reference: AMBSE Agile Process
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`
-
-## Reference: AMBSE Git Workflow
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`
 
 ## Reference: INCOSE Practices Scaled for VSEs
 

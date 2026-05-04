@@ -45,7 +45,7 @@ verification timeframes operate throughout the project:
 - **Macrocycle** (project length): full system V&V, formal acceptance. This is
   the traditional SR.5 activity described below.
 
-See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md` Section 3 and the `vv-reporting-and-vse-guidance` atomic page (bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`, Continuous Verification Timeframes section) for details.
+See the `ambse-vee-three-timeframes` atomic page and the `vv-reporting-and-vse-guidance` atomic page (both bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`, Continuous Verification Timeframes section) for details.
 
 ## Process Flow
 
@@ -191,8 +191,9 @@ Execute validation cases with stakeholder participation:
 1. Invite the Acquirer and relevant stakeholders
 2. Demonstrate the system in its intended operational context
 3. Walk through each validation case
-4. **Use case driven validation** (from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md`
-   Section 7.2): for each stakeholder use case, trace the data and control flow
+4. **Use case driven validation** (from the `ambse-architecture-vv-and-iso29110`
+   atomic page, bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`):
+   for each stakeholder use case, trace the data and control flow
    through the architecture. Verify that every scenario step is supported by a
    subsystem service. Identify gaps as missing requirements or design defects.
 5. Record stakeholder feedback
@@ -399,6 +400,3 @@ WARN the engineer if:
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`
 
-## Reference: AMBSE Agile Process (Verification Timeframes)
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`
