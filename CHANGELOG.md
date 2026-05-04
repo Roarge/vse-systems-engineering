@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.2] - 2026-05-04
+
+### Changed
+
+- `hooks/session-start.sh` gains a third detection mode for
+  repositories that carry SysML 2.0 content but are not full VSE
+  projects under iteration management. Detection priority:
+  contributor (wiki/CLAUDE.md present) → full VSE project
+  (.vse-iteration.yml present) → SysML-only (any of `syside.toml`,
+  `engineering/syside.toml`, `engineering/models/` directory, or a
+  `*.sysml` file reachable within four directory levels) → silent.
+  In SysML-only mode, the hook emits a lighter banner pointing at
+  `@sysml2-modelling` (the umbrella router) and its eight
+  specialist siblings, rather than the full VSE lens via
+  `vse-companion-overview`. The contributor repo is suppressed
+  from this branch because it carries `.sysml` template files that
+  would otherwise trip the detection.
+- The SySiDE CLI reporter (the block that lists `syside check`,
+  `syside format`, and `syside viz` commands) is extracted into a
+  shared shell function and called from both the full-VSE branch
+  and the new SysML-only branch.
+
 ## [0.17.1] - 2026-05-04
 
 ### Documentation
