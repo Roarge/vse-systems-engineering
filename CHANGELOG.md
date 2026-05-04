@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-05-04
+
+### Fixed
+
+- All 9 SysML 2.0 skills (`sysml2-allocations`, `sysml2-behaviour`,
+  `sysml2-cases`, `sysml2-expressions`, `sysml2-metadata`,
+  `sysml2-modelling`, `sysml2-model-structure`, `sysml2-variants`,
+  `sysml2-views`) carried an unconditional opening line directing
+  the model to invoke `vse-companion-overview` "if the VSE lens
+  has not been set in this session". After the 0.17.2
+  session-start hook gained a SysML-only detection mode for
+  repositories without `.vse-iteration.yml`, this directive
+  became wrong in that mode: it forced a SysML-only repository to
+  load the full VSE lens (ISO 29110 process backbone, AMBSE
+  iteration framing, traceability rules) when none of those
+  apply. The opening line in each SysML 2.0 skill now reads "If
+  you are inside a VSE project (.vse-iteration.yml present) and
+  the VSE lens has not been set this session, invoke
+  vse-companion-overview first, then continue. In a SysML-only
+  repository (no .vse-iteration.yml), skip the lens and proceed
+  directly with this skill." This matches the session-start
+  hook's three-mode detection (contributor → full VSE → SysML-only
+  → silent) and avoids loading the wrong lens for the project
+  type.
+
 ## [0.18.0] - 2026-05-04
 
 ### Added

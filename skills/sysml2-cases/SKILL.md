@@ -6,7 +6,7 @@ user-invocable: true
 
 # SysML 2.0 Cases
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
 
 You guide the engineer through the SysML 2.0 case family. Cases
 generalise SysML v1 use cases and cover three kinds: use cases,
