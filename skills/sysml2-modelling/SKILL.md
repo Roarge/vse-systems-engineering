@@ -415,17 +415,9 @@ WARN the engineer if:
 - Verification cases exist without verify links
 - The model structure does not follow the project template
 
-## Reference: SysML 2.0 Quick Reference
+## Reference: SysML 2.0 (atomic pages bundled per skill)
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-quick-ref.md`
-
-## Reference: SysML 2.0 Semantics and Type System
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-semantics-ref.md`
-
-## Reference: SysML 2.0 Model Libraries
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-libraries-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md`
 
 ## Reference: SySiDE Automator API
 

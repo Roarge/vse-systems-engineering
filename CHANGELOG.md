@@ -8,6 +8,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-04
+
+### Added
+
+- 28 new atomic pages under `wiki/pages/sysml2/`, completing the
+  SysML 2.0 layer migration. Each page is 80 to 250 lines and
+  cross-linked with Obsidian-style `[[wikilinks]]`. The wiki now
+  carries 61 atomic pages, 9 bundles, and 0 lint findings.
+- New pages by source family:
+  - From `sysml2-metadata-ref` (6 pages): metadata-overview,
+    metadata-definitions, reflection-and-classification,
+    filter-conditions, language-extension, vse-library-metadata.
+  - From `sysml2-libraries-ref` (6 pages): libraries-architecture,
+    systems-model-library, domain-libraries-metadata-analysis,
+    domain-libraries-causation-geometry, library-import-patterns,
+    quantities-and-units.
+  - From `sysml2-quick-ref` (5 pages): syntax-packages-and-
+    definitions, syntax-features-and-attributes, syntax-structure,
+    syntax-behaviour, syntax-requirements-and-cases.
+  - From `sysml2-semantics-ref` (6 pages): language-architecture,
+    type-hierarchy, specialisation-and-typing, structural-and-
+    behavioural-semantics, requirements-semantics, grammar-and-
+    validation.
+  - From `sysml2-model-structure-ref` (5 pages):
+    canonical-model-layout, base-architecture-and-federation,
+    namespace-hygiene, variant-organisation, model-cm-and-risks.
+
+### Changed
+
+- `sysml2-modelling` skill now embeds `wiki/bundles/sysml2-modelling.md`
+  (17 atomic pages from quick-ref, semantics, and libraries) plus
+  the unchanged `knowledge/syside-automator-ref.md`. The legacy
+  three-file embed is replaced by one bundle plus one knowledge
+  reference.
+- `sysml2-metadata` skill now embeds `wiki/bundles/sysml2-metadata.md`
+  (6 atomic pages from metadata-ref).
+- `sysml2-model-structure` skill now embeds
+  `wiki/bundles/sysml2-model-structure.md` (5 atomic pages from
+  model-structure-ref).
+- `knowledge/INDEX.md` updated: every SysML 2.0 reference file is
+  now in the bundle table; only `syside-automator-ref.md` remains
+  in the SysML 2.0 row pending its own migration in a later phase.
+
+### Removed
+
+- `knowledge/sysml2-libraries-ref.md` (579 lines, atomised into 6
+  pages).
+- `knowledge/sysml2-metadata-ref.md` (496 lines, atomised into 6
+  pages).
+- `knowledge/sysml2-model-structure-ref.md` (599 lines, atomised
+  into 5 pages).
+- `knowledge/sysml2-quick-ref.md` (600 lines, atomised into 5
+  pages).
+- `knowledge/sysml2-semantics-ref.md` (601 lines, atomised into 6
+  pages).
+
+### Pending in follow-on PRs
+
+- Migration of `knowledge/syside-automator-ref.md` (the last
+  remaining SysML 2.0-adjacent file, vendor-specific Python API
+  reference).
+- Migration of the non-SysML 2.0 knowledge files (Phase 2
+  onwards): ISO 29110, AMBSE cluster, PHAS-EAI, INCOSE VSE
+  practices, INCOSE V&V, INCOSE Needs and Requirements, HSI,
+  iteration-centred-operation, canonical-project-structure.
+- Eventual deletion of the `knowledge/` directory once the
+  remaining files are atomised.
+
 ## [0.16.0] - 2026-05-04
 
 ### Added

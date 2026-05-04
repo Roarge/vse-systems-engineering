@@ -425,4 +425,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Model Structure
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-model-structure-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-model-structure.md`

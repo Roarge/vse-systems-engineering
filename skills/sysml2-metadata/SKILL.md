@@ -534,4 +534,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Metadata
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-metadata-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md`
