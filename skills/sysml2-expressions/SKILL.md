@@ -144,4 +144,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Expressions
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-expressions-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-expressions.md`

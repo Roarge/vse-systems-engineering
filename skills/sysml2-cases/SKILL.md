@@ -150,4 +150,4 @@ WARN the engineer if:
 
 ## Reference: SysML 2.0 Cases
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/sysml2-cases-ref.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-cases.md`
