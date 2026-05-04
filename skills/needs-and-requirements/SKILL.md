@@ -46,7 +46,7 @@ Create a lightweight stakeholder register. In a VSE, this can be a simple table:
 
 ### Step 2: Needs Elicitation
 
-Use VSE-appropriate techniques (from `${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-reqs-guide.md`):
+Use VSE-appropriate techniques (from the `requirements-elicitation-and-writing` atomic page, bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`):
 
 **Priority techniques for VSEs:**
 1. **Brainstorming** with stakeholders (low cost, high yield)
@@ -425,16 +425,10 @@ application. An unowned or status-free risk is a silent debt and
 surfaces as a red flag in `@traceability-guard` at iteration-boundary
 closure.
 
-## Reference: Needs and Requirements Guide
+## Reference: Needs and Requirements + HSI
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/needs-and-reqs-guide.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`
 
 ## Reference: AMBSE Requirements
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
-
-## Reference: HSI Primer
-
-Source: INCOSE Human-Systems Integration Primer, scaled for VSE practice.
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/hsi-primer.md`

@@ -8,6 +8,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-04
+
+### Added
+
+- **Phase 3 of the knowledge/ to wiki/ consolidation**: PHAS-EAI,
+  HSI, V&V, and Needs-and-Requirements migrated. 16 new atomic
+  pages across four layers, three new bundles consumed by their
+  respective skills:
+  - `wiki/bundles/attention-regime.md` (4 PHAS-EAI pages, 462
+    lines)
+  - `wiki/bundles/needs-and-requirements.md` (8 pages: 5 HSI + 3
+    needs-and-reqs, 1104 lines)
+  - `wiki/bundles/verification-validation.md` (4 V&V pages, 662
+    lines)
+- New PHAS-EAI layer pages: `phas-eai-overview` (concept),
+  `phas-eai-equations` (reference),
+  `phas-eai-de-requirements` (reference),
+  `phas-eai-levers-and-evidence` (reference).
+- New HSI layer pages: `hsi-foundations` (concept),
+  `hsi-domains` (reference), `hsi-in-requirements` (process),
+  `hsi-in-architecture` (process), `hsi-vse-tiered-approach`
+  (pattern).
+- New V&V layer pages: `vv-definitions` (concept),
+  `vv-planning` (process), `vv-methods` (reference),
+  `vv-reporting-and-vse-guidance` (process).
+- New Needs-and-Requirements layer pages:
+  `needs-vs-requirements` (concept),
+  `requirements-elicitation-and-writing` (process),
+  `requirements-traceability-and-attributes` (reference).
+- Cross-layer wikilinks land per the approved migration plan.
+  Phase 3 examples: V&V definitions and case kinds link to
+  `sysml2-cases-overview`, `sysml2-case-kinds`,
+  `sysml2-systems-model-library` (VerdictKind),
+  `sysml2-syntax-requirements-and-cases`. Needs-and-requirements
+  pages link to `sysml2-syntax-requirements-and-cases`,
+  `sysml2-requirements-semantics`, `sysml2-cases-overview`,
+  `sysml2-vse-library-metadata`,
+  `sysml2-domain-libraries-metadata-analysis`. HSI pages link
+  to the same SysML 2.0 anchors plus
+  `sysml2-canonical-model-layout` and
+  `sysml2-allocations-overview`. PHAS-EAI links to
+  `iso29110-overview` for the complementarity argument.
+
+### Changed
+
+- `attention-regime` skill replaces its single legacy
+  `!cat knowledge/phas-eai-framework.md` with one
+  `!cat wiki/bundles/attention-regime.md`.
+- `needs-and-requirements` skill replaces two legacy
+  `!cat knowledge/...` lines (needs-and-reqs-guide, hsi-primer)
+  with one `!cat wiki/bundles/needs-and-requirements.md`. Keeps
+  `knowledge/ambse-requirements.md` for Phase 4.
+- `verification-validation` skill replaces its single legacy
+  `!cat knowledge/vv-guide.md` with one
+  `!cat wiki/bundles/verification-validation.md`. Keeps
+  `knowledge/ambse-agile-process.md` for Phase 4.
+
+### Removed
+
+- `knowledge/phas-eai-framework.md` (337 lines, atomised into 4
+  pages).
+- `knowledge/hsi-primer.md` (438 lines, atomised into 5 pages).
+- `knowledge/vv-guide.md` (346 lines, atomised into 4 pages).
+- `knowledge/needs-and-reqs-guide.md` (277 lines, atomised into
+  3 pages).
+
+### Pending in follow-on PRs
+
+- **Phase 4**: AMBSE cluster (`ambse-agile-process`,
+  `ambse-requirements`, `ambse-architecture`,
+  `ambse-git-workflow`). The largest and most cross-linked.
+- **Phase 5**: `syside-automator-ref` and
+  `incose-vse-practices`.
+- **Phase 6**: Delete `knowledge/` entirely. Bump to 1.0.0.
+
 ## [0.18.1] - 2026-05-04
 
 ### Fixed
