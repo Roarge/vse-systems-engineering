@@ -8,6 +8,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-05-04
+
+### Added
+
+- **Phase 5 of the knowledge/ to wiki/ consolidation**: the two
+  remaining knowledge files migrated. Eleven new atomic pages
+  across two new layers.
+  - **SySiDE Automator reference** (6 pages, 988 lines) under
+    `wiki/pages/syside/`: `syside-tooling-overview`,
+    `syside-project-configuration`, `syside-core-api`,
+    `syside-expression-evaluation`, `syside-model-modification`,
+    `syside-vse-workflows`. Distributed into the
+    `sysml2-modelling`, `sysml2-metadata`, and `project-setup`
+    bundles.
+  - **INCOSE VSE practices** (5 pages, 535 lines) under
+    `wiki/pages/incose-vse/`: `incose-vse-lifecycle-models`,
+    `incose-vse-stakeholder-needs`,
+    `incose-vse-requirements-engineering`,
+    `incose-vse-architecture-and-vv`,
+    `incose-vse-cm-risk-and-scaling`. Distributed into the
+    `iteration-orchestrator` bundle.
+- New cross-layer wikilinks (per the Phase 3+ rule) connect the
+  two new layers into the `iso29110/`, `project-structure/`,
+  `ambse/`, `sysml2/`, `vv/`, and `needs-and-reqs/` layers.
+
+### Changed
+
+- Bundles that consume the new pages regenerated:
+  - `sysml2-modelling`: now 23 pages, 2,848 lines (+6 SySiDE
+    pages).
+  - `sysml2-metadata`: now 11 pages, 1,388 lines (+5 SySiDE
+    pages).
+  - `project-setup`: now 15 pages, 1,809 lines (+3 SySiDE
+    pages).
+  - `iteration-orchestrator`: now 25 pages, 2,810 lines
+    (+5 INCOSE VSE pages).
+- Four consuming skills rewired:
+  - `skills/sysml2-modelling/SKILL.md`: removed the legacy
+    `!cat ${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`
+    block; updated three prose pointers to atomic-page slugs.
+  - `skills/sysml2-metadata/SKILL.md`: updated one prose
+    pointer to atomic-page slugs.
+  - `skills/project-setup/SKILL.md`: updated one prose
+    pointer to atomic-page slugs.
+  - `skills/iteration-orchestrator/SKILL.md`: removed the legacy
+    `!cat ${CLAUDE_PLUGIN_ROOT}/knowledge/incose-vse-practices.md`
+    block; updated the section header to describe the merged
+    bundle content.
+- `knowledge/INDEX.md` rewritten to record migration completion
+  through Phase 5 and updated bundle counts.
+
+### Removed
+
+- Legacy knowledge files deleted:
+  - `knowledge/syside-automator-ref.md` (604 lines)
+  - `knowledge/incose-vse-practices.md` (378 lines)
+- The `knowledge/` directory now contains only `INDEX.md` (a
+  pointer to the wiki). Deletion of the directory itself is
+  scheduled for the 1.0.0 release in Phase 6.
+
+### Chore
+
+- `.gitignore` adds `.obsidian/` so the contributor-side Obsidian
+  vault metadata does not leak into the plugin distribution.
+
 ## [0.20.0] - 2026-05-04
 
 ### Added

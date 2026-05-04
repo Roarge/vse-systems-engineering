@@ -11,10 +11,9 @@ If you are inside a VSE project (`.vse-iteration.yml` present at the project roo
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. The full SysML 2.0 reference set
-is bundled into this skill via
+plus the SySiDE Python API reference is bundled into this skill via
 `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md` (atomic pages from
-the `wiki/pages/sysml2/` layer). The SySiDE Python API reference is at
-`${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`.
+the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers).
 
 ## When This Skill Triggers
 
@@ -407,7 +406,10 @@ python -m syside interactive models/system-requirements.sysml
 | State machine simulation | Simulate SysML state machines in Python | `@verification-validation` |
 | Constraint checking | Evaluate requirement bounds against model values | `@verification-validation` |
 
-For full API details, see `${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`.
+For full API details, see the `syside-tooling-overview`, `syside-core-api`,
+`syside-expression-evaluation`, `syside-model-modification`, and
+`syside-vse-workflows` atomic pages bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md`.
 
 ## Red Flags
 
@@ -418,10 +420,6 @@ WARN the engineer if:
 - Verification cases exist without verify links
 - The model structure does not follow the project template
 
-## Reference: SysML 2.0 (atomic pages bundled per skill)
+## Reference: SysML 2.0 and SySiDE (atomic pages bundled per skill)
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md`
-
-## Reference: SySiDE Automator API
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/syside-automator-ref.md`

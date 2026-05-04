@@ -355,3 +355,77 @@ Pages scanned: 109. Bundles scanned: 16. ERROR: 0. WARN: 0. INFO: 0.
 Wiki state clean after Phase 4 migration. AMBSE cluster atomised
 into four sub-clusters with full cross-layer linking into iso29110,
 project-structure, sysml2, vv, and needs-and-reqs.
+
+## [2026-05-04] ingest | knowledge/syside-automator-ref.md
+
+Layer: syside. Pages authored:
+
+- syside-tooling-overview (new, reference)
+- syside-project-configuration (new, reference)
+- syside-core-api (new, reference)
+- syside-expression-evaluation (new, reference)
+- syside-model-modification (new, reference)
+- syside-vse-workflows (new, pattern)
+
+Cross-layer wikilinks added: tooling-overview links into
+project-structure/vse-canonical-project-layout and
+sysml2/sysml2-canonical-model-layout; project-configuration links
+into project-structure layer and vse-model-tiers-and-templates;
+core-api links into sysml2-syntax-packages-and-definitions and
+sysml2-canonical-model-layout; expression-evaluation links into
+sysml2-expressions-overview, sysml2-advanced-quantities-units, and
+sysml2-metadata-overview; model-modification links into
+sysml2-syntax-packages-and-definitions and
+sysml2-canonical-model-layout; vse-workflows links into
+sysml2-syntax-requirements-and-cases, sysml2-allocations-overview,
+ambse-dependability-and-traceability, and vse-model-tiers-and-templates.
+Bundles regenerated: sysml2-modelling, sysml2-metadata,
+project-setup. Legacy file removed.
+
+## [2026-05-04] ingest | knowledge/incose-vse-practices.md
+
+Layer: incose-vse. Pages authored:
+
+- incose-vse-lifecycle-models (new, concept)
+- incose-vse-stakeholder-needs (new, concept)
+- incose-vse-requirements-engineering (new, concept)
+- incose-vse-architecture-and-vv (new, concept)
+- incose-vse-cm-risk-and-scaling (new, concept)
+
+Cross-layer wikilinks added: lifecycle-models links into
+ambse-principles, ambse-vee-three-timeframes,
+ambse-iteration-planning, iso29110-pm-process, and
+iso29110-sr-process; stakeholder-needs links into
+needs-vs-requirements, requirements-elicitation-and-writing,
+ambse-use-case-driven-elicitation, ambse-requirements-as-models,
+and sysml2-cases-overview; requirements-engineering links into
+requirements-elicitation-and-writing, ambse-requirements-as-models,
+ambse-system-requirements-derivation,
+ambse-dependability-and-traceability,
+sysml2-syntax-requirements-and-cases, and
+sysml2-requirements-semantics; architecture-and-vv links into
+ambse-architecture-analysis, ambse-trade-studies,
+ambse-architectural-design, ambse-architecture-vv-and-iso29110,
+vv-methods, sysml2-canonical-model-layout, and
+sysml2-allocations-overview; cm-risk-and-scaling links into
+iso29110-pm-process, iso29110-sr-process, iso29110-overview,
+vse-canonical-project-layout, ambse-iso29110-mapping,
+ambse-risk-and-metrics, and sysml2-vse-library-metadata. Bundles
+regenerated: iteration-orchestrator. Legacy file removed.
+
+## [2026-05-04] bundle | phase-5 migration
+
+Bundles regenerated: sysml2-modelling (23 pages, 2,848 lines, +6
+SySiDE pages), sysml2-metadata (11 pages, 1,388 lines, +5 SySiDE
+pages), project-setup (15 pages, 1,809 lines, +3 SySiDE pages),
+iteration-orchestrator (25 pages, 2,810 lines, +5 INCOSE VSE
+pages). INDEX.md rebuilt with 120 atomic pages across 11
+populated layers.
+
+## [2026-05-04] lint | post-phase-5
+
+Pages scanned: 120. Bundles scanned: 16. ERROR: 0. WARN: 0. INFO: 0.
+Wiki state clean after Phase 5 migration. The two remaining
+non-SysML knowledge files are now atomised. Only knowledge/INDEX.md
+remains in the legacy directory, scheduled for deletion in Phase 6
+(1.0.0 release).
