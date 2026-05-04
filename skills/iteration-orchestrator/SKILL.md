@@ -124,7 +124,10 @@ before proceeding to the next:
    and draft a first functional decomposition."
 
 3. **Elicit the centre of gravity.** One or more ISO/IEC 29110 task
-   identifiers from `knowledge/iso29110-task-lists.md`. Concurrent centres
+   identifiers from the `iso29110-pm-task-checklists` and
+   `iso29110-sr-task-checklists` atomic pages bundled into
+   `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/iteration-orchestrator.md`.
+   Concurrent centres
    are normal. Refuse only if the engineer names tasks that contradict each
    other structurally. For example, PM.4 Closure with SR.2 Requirements on
    the same iteration is refused, because Closure reports on the whole

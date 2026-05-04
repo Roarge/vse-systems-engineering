@@ -12,9 +12,9 @@ verification pattern at three timeframes (nanocycle, microcycle, macrocycle),
 with verification performed at every iteration boundary. The plugin pairs use
 case driven elicitation, structured trade studies, and continuous verification
 with a branch-per-microcycle git workflow in which each iteration ends in a
-pull request review. See
-[knowledge/ambse-git-workflow.md](knowledge/ambse-git-workflow.md) for the full
-mapping.
+pull request review. See the
+[ambse-git-three-way-mapping](wiki/pages/ambse/ambse-git-three-way-mapping.md)
+atomic page for the full mapping.
 
 The plugin works in concert with the official Anthropic engineering plugin,
 adding VSE-specific systems engineering knowledge and attention-sustaining
@@ -108,18 +108,16 @@ or any other baselined work product.
 
 The plugin's reference content sits in two surfaces:
 
-- **`wiki/pages/<layer>/`**: atomic markdown pages of 80 to 250 lines,
+- **`wiki/pages/<layer>/`**: atomic markdown pages of 50 to 250 lines,
   cross-linked with Obsidian-style `[[wikilinks]]`, concatenated into
   per-skill bundles under `wiki/bundles/` that skills embed at load
-  time. The full SysML 2.0 reference set (61 pages, 9 bundles) lives
-  here as of version 0.17.0.
-- **`knowledge/`**: 14 flat reference files awaiting atomisation in
-  later migration phases. Each is embedded directly into the
-  consuming skill via `!cat ${CLAUDE_PLUGIN_ROOT}/knowledge/...`.
+  time. As of version 1.0.0, all reference content lives here:
+  120 atomic pages across 11 layers (iso29110, phas-eai, incose-vse,
+  ambse, sysml2, syside, needs-and-reqs, vv, hsi, project-structure),
+  consumed via 16 skill bundles.
 
-See `wiki/INDEX.md` for the page catalogue, `wiki/CLAUDE.md` for the
-authoring schema, and `knowledge/INDEX.md` for the legacy
-catalogue.
+See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the
+authoring schema.
 
 ### SysML 2.0 (wiki, OMG formal/2025-01-01 plus Weilkiens and Molnár 2026-04)
 
@@ -144,42 +142,36 @@ self/that contextual references (Section 17.3), binding connectors
 occurrences and 4D modelling (Chapter 25, four pages), and model
 execution (Chapter 39).
 
-### Legacy reference files awaiting migration
+### Reference layers (wiki)
 
-These are still flat files under `knowledge/`. Each will be
-atomised into `wiki/pages/` in a follow-on migration phase.
+All non-SysML 2.0 reference material has been atomised under
+`wiki/pages/<layer>/` and consumed via the relevant skill bundles.
 
-**ISO/IEC 29110** (process backbone)
+**ISO/IEC 29110** (process backbone): 8 pages in `wiki/pages/iso29110/`
+covering the Basic profile, PM and SR processes, task checklists, and
+work product mappings.
 
-- `iso29110-profile.md` -- process structure, roles, work products, lifecycle-neutral entry
-- `iso29110-task-lists.md` -- actionable checklists organised by activity, for use as centre-of-gravity selectors
-- `iteration-centred-operation.md` -- how ISO 29110 tasks map onto AMBSE iterations, centre of gravity, brownfield entry, closure checks
+**PHAS-EAI** (design rationale): 4 pages in `wiki/pages/phas-eai/`
+covering configuration space, designed cognitive reserve, attention
+constructs, and DE lever tables.
 
-**PHAS-EAI** (design rationale)
+**INCOSE** (best practices, scaled): 5 pages in `wiki/pages/incose-vse/`,
+3 pages in `wiki/pages/needs-and-reqs/`, 4 pages in `wiki/pages/vv/`,
+and 5 pages in `wiki/pages/hsi/` covering lifecycle models, stakeholder
+needs, requirements engineering, architecture, V&V, configuration
+management, scaling guidance, and human-systems integration.
 
-- `phas-eai-framework.md` -- attention constructs, lever tables, DE requirements
+**AMBSE** (agile model-based process): 20 pages in `wiki/pages/ambse/`
+organised into agile-process, requirements, architecture, and
+git-workflow sub-clusters.
 
-**INCOSE** (best practices, scaled)
+**SySiDE Automator** (tooling): 6 pages in `wiki/pages/syside/`
+covering tooling overview, project configuration, core API, expression
+evaluation, model modification, and VSE workflow patterns.
 
-- `incose-vse-practices.md` -- lifecycle models, stakeholder analysis, V&V
-- `needs-and-reqs-guide.md` -- needs elicitation, SMART criteria, writing rules
-- `vv-guide.md` -- verification and validation methods, VCRM
-- `hsi-primer.md` -- human-systems integration
-
-**AMBSE** (agile model-based process)
-
-- `ambse-agile-process.md` -- hybrid lifecycle, iteration planning, verification timeframes, metrics
-- `ambse-requirements.md` -- use case driven elicitation, model-based requirements, nanocycle workflow
-- `ambse-architecture.md` -- five architecture views, trade studies, handoff, model-based V&V
-- `ambse-git-workflow.md` -- branch-per-microcycle git mapping, PR template, anti-patterns
-
-**SySiDE Automator** (tooling)
-
-- `syside-automator-ref.md` -- Python API reference, tool selection guide, workflow patterns
-
-**Project structure**
-
-- `canonical-project-structure.md` -- authoritative VSE project directory layout
+**Project structure**: 4 pages in `wiki/pages/project-structure/`
+covering iteration-centred operation, iteration boundary closure,
+canonical project layout, and model tier templates.
 
 ## Sources
 
@@ -234,7 +226,9 @@ workflows that the CLI alone cannot provide:
 - **State machine simulation**: simulate SysML state machines in Python
 - **Interactive exploration**: REPL mode for ad hoc model queries
 
-See `knowledge/syside-automator-ref.md` for the full API reference.
+See the SySiDE pages under `wiki/pages/syside/` (tooling-overview,
+project-configuration, core-api, expression-evaluation,
+model-modification, vse-workflows) for the full API reference.
 
 ## Getting started
 

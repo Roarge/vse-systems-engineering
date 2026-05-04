@@ -251,22 +251,10 @@ Atomic means one concept per file. A page typically runs 50 to 200 lines.
 Pages over 300 lines are candidates for splitting. When a page grows past
 300 lines during authoring, stop and propose a split before continuing.
 
-The repo's own 600-line soft limit still applies to knowledge files
-(historical `knowledge/` directory during migration), but atomic pages
-under `pages/` should stay well below that limit. The full SysML 2.0
-reference set has already been atomised in version 0.17.0 (61 pages
-across 9 bundles). Future migration slices target the remaining
-`knowledge/` files (ISO 29110, AMBSE cluster, PHAS-EAI, INCOSE V&V,
-INCOSE Needs and Requirements, HSI, syside-automator,
-iteration-centred-operation, canonical-project-structure).
-
-## Migration note
-
-During migration from `knowledge/` to `wiki/`, the two directories
-coexist. Skills read from whichever surface their body currently points
-at. The invariant is that every skill always loads a non-empty reference
-bundle at load time; no skill is left without its reference during the
-move. Migration is slice-by-slice per knowledge file, one PR at a time.
+The full reference base (120 atomic pages across 11 layers, consumed by
+16 skill bundles) has been atomised as of plugin version 1.0.0. New
+material lands directly under `pages/<layer>/` via `/vse-wiki-ingest`,
+not in any other directory.
 
 ## Writing style
 
