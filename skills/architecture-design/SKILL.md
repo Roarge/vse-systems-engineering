@@ -64,7 +64,8 @@ From the baselined SyRS, identify:
    and to `@sysml2-model-structure` for the `{{sc}}_Risks` package
    pattern.
 
-**Architecture views** (from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 2.2):
+**Architecture views** (from the `ambse-architecture-analysis` atomic page,
+bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`):
 structure the analysis using five views: subsystem (decomposition), deployment
 (function-to-physical allocation), dependability (safety/reliability overlay),
 distribution (geographic/network), and concurrency (parallel execution). Not all
@@ -113,7 +114,8 @@ package FunctionalArchitecture {
 
 For the functional architecture, generate at least two alternative
 decompositions. For each alternative, evaluate using the AMBSE trade study
-methodology (see `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 3):
+methodology (see the `ambse-trade-studies` atomic page, bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`):
 
 1. **Define assessment criteria** (MOEs) derived from system requirements
 2. **Assign weights** to criteria reflecting stakeholder priorities (sum to 1.0)
@@ -245,7 +247,8 @@ After the technical verification passes, obtain formal approval:
 ### Step 7: Handoff to Downstream Engineering
 
 When using the hybrid lifecycle, the handoff occurs at iteration boundaries. The
-handoff is a workflow, not an event. See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md` Section 6
+handoff is a workflow, not an event. See the `ambse-interfaces-and-handoff`
+atomic page (bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`)
 for the complete handoff procedure. A complete handoff package includes:
 
 - Subsystem requirements (allocated and derived)
@@ -463,6 +466,3 @@ WARN the engineer if:
 - Variation definitions are placed in a separate top-level package instead of
   inline in the owning part def (VAMOS v1 pattern, not SysML 2.0 Ch 35)
 
-## Reference: AMBSE Architecture
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-architecture.md`

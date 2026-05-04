@@ -54,9 +54,11 @@ Use VSE-appropriate techniques (from the `requirements-elicitation-and-writing` 
 3. **Document analysis** (existing specs, competitor products, standards)
 4. **Interface analysis** (what other systems must this connect to?)
 5. **Use case driven elicitation** (model actor-system interactions as use cases,
-   derive needs from scenario steps). See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
-   Sections 3-6 for the complete use case driven workflow, including three
-   approaches: flow-based, scenario-based, and state-based analysis.
+   derive needs from scenario steps). See the `ambse-use-case-driven-elicitation`
+   and `ambse-nanocycle-and-use-case-analysis` atomic pages (bundled into
+   `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`) for the complete
+   use case driven workflow, including three approaches: flow-based,
+   scenario-based, and state-based analysis.
 
 **Elicitation checklist (ask for each stakeholder):**
 - What problem does the system solve for you?
@@ -120,8 +122,10 @@ package StakeholderNeeds {
 Transform stakeholder needs into system requirements:
 
 1. For each stakeholder need, ask: "What must the system do to satisfy this?"
-2. Follow the model-based derivation workflow from `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`
-   Section 4: identify functions, derive functional requirements, derive performance
+2. Follow the model-based derivation workflow from the
+   `ambse-system-requirements-derivation` atomic page (bundled into
+   `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`):
+   identify functions, derive functional requirements, derive performance
    requirements, derive interface requirements, derive constraint requirements, and
    assign a verification method to each requirement as it is written.
 3. Apply SMART criteria to each requirement:
@@ -252,8 +256,9 @@ detailed V&V planning).
 **Nanocycle verification**: When using the agile MBSE approach, begin nanocycle
 verification (20-60 minute loops) during requirements development, not just at
 SR.5. Run SySiDE validation, check traceability with `@traceability-guard`, and
-review each use case model as it is created. See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md`
-Section 3 for the full verification timeframe model.
+review each use case model as it is created. See the `ambse-vee-three-timeframes`
+atomic page (bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`)
+for the full verification timeframe model.
 
 The IVV Plan defines WHAT will be verified and validated. IVV Procedures define
 HOW each verification and validation activity will be executed. Both are outputs
@@ -429,6 +434,3 @@ closure.
 
 !`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`
 
-## Reference: AMBSE Requirements
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-requirements.md`

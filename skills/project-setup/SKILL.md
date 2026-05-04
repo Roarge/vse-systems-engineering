@@ -1063,7 +1063,7 @@ navigation.
 - `@document-export`: generates docx/pptx from the populated templates
 - `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`: AMBSE canonical model starter files copied into the project at Step 6
 - `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md`: ISO 29110 process and project-layout reference (12 atomic pages including `iso29110-pm-task-checklists` and `iso29110-sr-task-checklists`, the source for TASKS.md generation)
-- `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-git-workflow.md`: branch-per-microcycle workflow that the merged CLAUDE.md points to
+- `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/iteration-orchestrator.md`: branch-per-microcycle workflow (the `ambse-git-three-way-mapping`, `ambse-git-nanocycle-commits`, `ambse-git-microcycle-prs`, `ambse-git-ci-gates-and-macrocycle`, and `ambse-git-vse-guidance-and-anti-patterns` atomic pages) that the merged CLAUDE.md points to
 
 ## Reference: ISO 29110 process, project layout, and iteration model
 

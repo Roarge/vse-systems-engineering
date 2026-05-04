@@ -8,6 +8,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-05-04
+
+### Added
+
+- **Phase 4 of the knowledge/ to wiki/ consolidation**: AMBSE
+  cluster migrated. 20 new atomic pages under `wiki/pages/ambse/`,
+  the largest and most cross-linked layer migration so far.
+  Three existing bundles gain AMBSE pages:
+  - `wiki/bundles/iteration-orchestrator.md` adds 10 AMBSE pages
+    (agile-process + git-workflow), now 20 pages 2318 lines.
+  - `wiki/bundles/needs-and-requirements.md` adds 5 AMBSE
+    requirements pages, now 13 pages 1717 lines.
+  - `wiki/bundles/verification-validation.md` adds 2 AMBSE
+    pages (principles + vee-three-timeframes), now 6 pages 960
+    lines.
+  - `wiki/bundles/architecture-design.md` is created as a new
+    bundle (5 AMBSE architecture pages, 590 lines).
+- New AMBSE layer pages organised into four clusters:
+  - **Agile process** (5): `ambse-principles`,
+    `ambse-vee-three-timeframes`, `ambse-iteration-planning`,
+    `ambse-risk-and-metrics`, `ambse-iso29110-mapping`.
+  - **Requirements** (5): `ambse-requirements-as-models`,
+    `ambse-use-case-driven-elicitation`,
+    `ambse-system-requirements-derivation`,
+    `ambse-nanocycle-and-use-case-analysis`,
+    `ambse-dependability-and-traceability`.
+  - **Architecture** (5): `ambse-architecture-analysis`,
+    `ambse-trade-studies`, `ambse-architectural-design`,
+    `ambse-interfaces-and-handoff`,
+    `ambse-architecture-vv-and-iso29110`.
+  - **Git workflow** (5): `ambse-git-three-way-mapping`,
+    `ambse-git-nanocycle-commits`,
+    `ambse-git-microcycle-prs`,
+    `ambse-git-ci-gates-and-macrocycle`,
+    `ambse-git-vse-guidance-and-anti-patterns`.
+- Cross-layer wikilinks per the approved plan. AMBSE
+  requirements pages link to
+  `sysml2-syntax-requirements-and-cases`,
+  `sysml2-requirements-semantics`, `sysml2-cases-overview`,
+  `sysml2-case-kinds`, `sysml2-actions`, `sysml2-state-machines`,
+  `sysml2-special-action-usages`, `needs-vs-requirements`,
+  `requirements-elicitation-and-writing`,
+  `requirements-traceability-and-attributes`, `hsi-in-requirements`,
+  `sysml2-vse-library-metadata`,
+  `sysml2-model-cm-and-risks`. AMBSE architecture pages link to
+  `sysml2-canonical-model-layout`,
+  `sysml2-base-architecture-and-federation`,
+  `sysml2-allocations-overview`, `sysml2-syntax-structure`,
+  `sysml2-domain-libraries-metadata-analysis`, `vv-definitions`,
+  `vv-methods`, `sysml2-case-kinds`. Git-workflow pages link to
+  `iteration-boundary-and-macrocycle-closure`, `iso29110-phase-gates`.
+  Process pages link to `iso29110-pm-process`, `iso29110-sr-process`,
+  `iteration-centred-operation`, `vv-reporting-and-vse-guidance`.
+
+### Changed
+
+- `iteration-orchestrator` skill removes two legacy `!cat`
+  lines (ambse-agile-process, ambse-git-workflow). The pages
+  now reach the skill via the existing
+  `wiki/bundles/iteration-orchestrator.md` embed.
+- `verification-validation` skill removes one legacy `!cat`
+  line (ambse-agile-process). Two AMBSE pages
+  (ambse-principles, ambse-vee-three-timeframes) reach it via
+  the existing `wiki/bundles/verification-validation.md`
+  embed.
+- `needs-and-requirements` skill removes one legacy `!cat`
+  line (ambse-requirements). Five AMBSE requirements pages
+  reach it via the existing
+  `wiki/bundles/needs-and-requirements.md` embed.
+- `architecture-design` skill removes one legacy `!cat` line
+  (ambse-architecture). Five AMBSE architecture pages reach
+  it via the new `wiki/bundles/architecture-design.md` embed.
+
+### Removed
+
+- `knowledge/ambse-agile-process.md` (429 lines, atomised into
+  5 pages).
+- `knowledge/ambse-requirements.md` (423 lines, atomised into
+  5 pages).
+- `knowledge/ambse-architecture.md` (396 lines, atomised into
+  5 pages).
+- `knowledge/ambse-git-workflow.md` (475 lines, atomised into
+  5 pages).
+
+### Pending in follow-on PRs
+
+- **Phase 5**: `incose-vse-practices` and `syside-automator-ref`.
+- **Phase 6**: Delete `knowledge/` entirely. Bump to 1.0.0.
+
 ## [0.19.0] - 2026-05-04
 
 ### Added
