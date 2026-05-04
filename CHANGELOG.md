@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-05-04
+
+### Documentation
+
+- `README.md` Knowledge base section rewritten to reflect the
+  Phase 1 SysML 2.0 migration. The legacy list of eleven
+  `knowledge/sysml2-*-ref.md` files is replaced by a bundle table
+  describing the 61 atomic pages and 9 bundles now under
+  `wiki/`. Pointers to `wiki/INDEX.md`, `wiki/CLAUDE.md`, and
+  `knowledge/INDEX.md` added.
+- `CLAUDE.local.md` Knowledge File Conventions migration note
+  updated to record that the SysML 2.0 layer migration completed
+  in 0.17.0 (61 pages, 9 bundles), with 14 non-SysML 2.0 files
+  remaining for later phases.
+
 ## [0.17.0] - 2026-05-04
 
 ### Added
