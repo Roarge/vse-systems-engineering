@@ -45,8 +45,7 @@ verification timeframes operate throughout the project:
 - **Macrocycle** (project length): full system V&V, formal acceptance. This is
   the traditional SR.5 activity described below.
 
-See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md` Section 3 and `${CLAUDE_PLUGIN_ROOT}/knowledge/vv-guide.md`
-(Continuous Verification Timeframes section) for details.
+See `${CLAUDE_PLUGIN_ROOT}/knowledge/ambse-agile-process.md` Section 3 and the `vv-reporting-and-vse-guidance` atomic page (bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`, Continuous Verification Timeframes section) for details.
 
 ## Process Flow
 
@@ -398,7 +397,7 @@ WARN the engineer if:
 
 ## Reference: V&V Guide
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/vv-guide.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`
 
 ## Reference: AMBSE Agile Process (Verification Timeframes)
 

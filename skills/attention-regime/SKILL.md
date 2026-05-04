@@ -292,4 +292,4 @@ WARN the engineer if:
 Source: Georgsen (2026), Resilient Smart City Design, the design rationale
 for this plugin's environmental interventions and lever calibration.
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/knowledge/phas-eai-framework.md`
+!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/attention-regime.md`
