@@ -8,6 +8,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-04
+
+The 1.0 release marks the completion of the `knowledge/` to `wiki/`
+consolidation. The plugin now has a single reference surface (the
+wiki) consumed by all skills via deterministic per-skill bundles.
+
+### Removed
+
+- **`knowledge/` directory deleted in full**: the legacy flat-file
+  reference surface has been removed. The directory was migrated
+  slice-by-slice across plugin versions 0.16.0 to 0.21.0:
+  - 0.16.0 (Phase 1): SysML 2.0 reference set
+    (61 atomic pages, 9 bundles)
+  - 0.18.0 (Phase 2): ISO/IEC 29110 process backbone and project
+    structure (12 pages, 3 bundles)
+  - 0.19.0 (Phase 3): PHAS-EAI, HSI, V&V, and INCOSE Needs and
+    Requirements (16 pages, 3 bundles)
+  - 0.20.0 (Phase 4): AMBSE cluster (20 pages, 1 new bundle for
+    architecture-design)
+  - 0.21.0 (Phase 5): SySiDE Automator and INCOSE VSE practices
+    (11 pages, distributed across 4 existing bundles)
+  - 1.0.0 (Phase 6): final cleanup, the directory removed, all
+    stale prose references rewritten to atomic-page slugs, and
+    documentation updated.
+
+### Changed
+
+- Eight stale `${CLAUDE_PLUGIN_ROOT}/knowledge/...` and
+  `knowledge/...` prose references in skill bodies rewritten to
+  point at the corresponding atomic-page slugs and bundles in
+  `wiki/`. Affected skills: `architecture-design`,
+  `needs-and-requirements`, `project-setup`,
+  `iteration-orchestrator`, `vse-companion-overview`.
+- `skills/vse-wiki-lint/SKILL.md`: the legacy "INFO during
+  migration" rule about knowledge files becomes a "WARN if
+  references survive after 1.0.0" rule.
+- `README.md`: legacy reference-file section replaced with a
+  layer-organised summary of the 11 wiki layers and their page
+  counts.
+- `wiki/CLAUDE.md`: page-sizing section updated to describe the
+  consolidated wiki state. The historical migration note removed.
+- `CLAUDE.local.md`: repo-layout table updates `knowledge/` to
+  `wiki/`, distribution rule updates the directory list, skill
+  authoring conventions point at the bundle pattern, and
+  knowledge file conventions are removed (replaced by the wiki
+  authoring conventions section).
+
+### Documentation
+
+- The knowledge index (`knowledge/INDEX.md`) is removed. The wiki
+  catalogue (`wiki/INDEX.md`) is the single navigation surface.
+
 ## [0.21.0] - 2026-05-04
 
 ### Added

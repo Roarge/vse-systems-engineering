@@ -13,8 +13,10 @@ Engineering). This skill implements R1 (information filtering) by
 surfacing requirements knowledge while the iteration has SR.2 as a centre
 of gravity. Do not volunteer unrelated downstream detail, but do
 acknowledge that in AMBSE, SR.2 and SR.3 routinely share the same
-microcycle (see `knowledge/ambse-agile-process.md` Section 2.3 and
-`knowledge/iteration-centred-operation.md`). Surface architectural
+microcycle (see the `ambse-vee-three-timeframes` and
+`iteration-centred-operation` atomic pages bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`).
+Surface architectural
 questions briefly when they arise and route them to `@architecture-design`
 without refusing them as out-of-phase.
 

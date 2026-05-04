@@ -429,3 +429,16 @@ Wiki state clean after Phase 5 migration. The two remaining
 non-SysML knowledge files are now atomised. Only knowledge/INDEX.md
 remains in the legacy directory, scheduled for deletion in Phase 6
 (1.0.0 release).
+
+## [2026-05-04] cleanup | knowledge/ directory deleted
+
+Phase 6 completion. The `knowledge/` directory has been deleted in
+full, including the redirect `INDEX.md` and the empty `.gitkeep`.
+Eight stale prose references rewritten in five skills
+(architecture-design, needs-and-requirements, project-setup,
+iteration-orchestrator, vse-companion-overview) to point at atomic
+pages and bundles. The `vse-wiki-lint` rule that flagged migration-era
+INFO findings escalated to a WARN-on-stale-knowledge-references rule.
+README.md, wiki/CLAUDE.md, and CLAUDE.local.md updated to reflect the
+single-surface architecture. Plugin version bumped to 1.0.0 to mark
+the consolidation milestone.

@@ -585,9 +585,11 @@ that do not yet need functional analysis, trade study, or variant
 packages.
 
 Each top-level package lives in its own directory containing both the
-package definition file and a co-located view file. See
-`knowledge/canonical-project-structure.md` for the exact file listing
-per tier.
+package definition file and a co-located view file. See the
+`vse-canonical-project-layout` and `vse-model-tiers-and-templates`
+atomic pages bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md` for the exact file
+listing per tier.
 
 **Variant-awareness is orthogonal to the tier axis.** Both the Minimal
 and Canonical tiers can be variant-aware. The structural depth axis

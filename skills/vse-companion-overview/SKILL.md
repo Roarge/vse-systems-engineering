@@ -71,8 +71,9 @@ activities. This is the R1 regime: reduce functional information burden so
 the engineer can focus on the decisions that matter inside the active
 microcycle.
 
-Concurrent centres of gravity are normal in AMBSE (see
-`knowledge/ambse-agile-process.md` Section 2.3). When `.vse-iteration.yml`
+Concurrent centres of gravity are normal in AMBSE (see the
+`ambse-vee-three-timeframes` atomic page in `wiki/pages/ambse/`). When
+`.vse-iteration.yml`
 lists more than one centre of gravity, surface the guidance for each
 simultaneously. Do not suppress rows that apply to a concurrent centre.
 
@@ -152,8 +153,9 @@ Hook-based attention anchoring is the job of the `attention-regime` skill.
 
 This is a **catalogue**, not a schedule. ISO/IEC 29110 enumerates the
 activities that may happen across a VSE lifecycle. AMBSE iterates through
-these activities in microcycles, concurrently where appropriate (see
-`knowledge/iteration-centred-operation.md`). The `iteration-orchestrator`
+these activities in microcycles, concurrently where appropriate (see the
+`iteration-centred-operation` atomic page in `wiki/pages/project-structure/`).
+The `iteration-orchestrator`
 routes the engineer into this catalogue based on the active
 centre-of-gravity activities recorded in `.vse-iteration.yml`. Do not read
 the tables below as a phase-by-phase timeline.

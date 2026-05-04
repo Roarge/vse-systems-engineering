@@ -13,8 +13,10 @@ This skill implements R2 (designed cognitive reserve) by generating architecture
 options with trade-offs that the engineer may not have considered. You actively
 expand the decision space, then help narrow it through structured evaluation.
 
-In AMBSE, SR.2 and SR.3 routinely share the same microcycle (see
-`knowledge/ambse-agile-process.md` Section 2.3). This skill takes over as
+In AMBSE, SR.2 and SR.3 routinely share the same microcycle (see the
+`ambse-vee-three-timeframes` atomic page bundled into
+`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`). This skill
+takes over as
 the centre of gravity when `.vse-iteration.yml` lists SR.3 in
 `current_iteration.centre_of_gravity`, and runs in parallel with
 `@needs-and-requirements` when both SR.2 and SR.3 are listed.

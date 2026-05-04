@@ -89,9 +89,10 @@ For each `wiki/bundles/<skill>.md` that exists:
 
 For each skill under `skills/`:
 
-- **INFO** if the skill's `SKILL.md` embeds a knowledge file
-  (`knowledge/*.md`) but no bundle exists under `wiki/bundles/`. This is
-  the expected state during migration; the finding is just tracking.
+- **WARN** if the skill's `SKILL.md` references the legacy reference
+  directory (a path beginning with the legacy directory name, in either
+  a `!cat` block or a prose pointer). The legacy directory was deleted
+  in plugin version 1.0.0 and any remaining reference is stale.
 
 ## Step 5: Orphan Detection
 
