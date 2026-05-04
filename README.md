@@ -106,10 +106,50 @@ or any other baselined work product.
 
 ## Knowledge base
 
-Twenty-five reference files in `knowledge/`, filtered for VSE context and
-organised by source.
+The plugin's reference content sits in two surfaces:
 
-**ISO/IEC 29110** (process backbone, catalogue-style)
+- **`wiki/pages/<layer>/`**: atomic markdown pages of 80 to 250 lines,
+  cross-linked with Obsidian-style `[[wikilinks]]`, concatenated into
+  per-skill bundles under `wiki/bundles/` that skills embed at load
+  time. The full SysML 2.0 reference set (61 pages, 9 bundles) lives
+  here as of version 0.17.0.
+- **`knowledge/`**: 14 flat reference files awaiting atomisation in
+  later migration phases. Each is embedded directly into the
+  consuming skill via `!cat ${CLAUDE_PLUGIN_ROOT}/knowledge/...`.
+
+See `wiki/INDEX.md` for the page catalogue, `wiki/CLAUDE.md` for the
+authoring schema, and `knowledge/INDEX.md` for the legacy
+catalogue.
+
+### SysML 2.0 (wiki, OMG formal/2025-01-01 plus Weilkiens and Molnár 2026-04)
+
+61 atomic pages organised by skill. Each consuming skill loads its
+bundle (`wiki/bundles/<skill>.md`):
+
+| Bundle | Pages | Skill | Topic |
+|---|---|---|---|
+| sysml2-modelling | 17 | `sysml2-modelling` | Notation cheat sheet, semantics, libraries (umbrella) |
+| sysml2-behaviour | 12 | `sysml2-behaviour` | Actions, successions, state machines, flows, occurrences/4D, model execution |
+| sysml2-expressions | 6 | `sysml2-expressions` | Expressions, constraints, calculations, advanced quantities |
+| sysml2-metadata | 6 | `sysml2-metadata` | Metadata, reflection, filters, language extension, VSE_Library |
+| sysml2-model-structure | 5 | `sysml2-model-structure` | Canonical layout, base architecture, namespace hygiene, variants, CM |
+| sysml2-views | 4 | `sysml2-views` | Viewpoints, views, standard views, patterns |
+| sysml2-allocations | 4 | `sysml2-allocations` | Allocations, binding connectors, patterns |
+| sysml2-variants | 4 | `sysml2-variants` | Variations, variant configuration, patterns |
+| sysml2-cases | 3 | `sysml2-cases` | Use, analysis, verification cases |
+
+The 2026-04 release of *The SysML v2 Book* is fully captured:
+self/that contextual references (Section 17.3), binding connectors
+(Chapter 21), advanced quantities and units (Section 24.3),
+occurrences and 4D modelling (Chapter 25, four pages), and model
+execution (Chapter 39).
+
+### Legacy reference files awaiting migration
+
+These are still flat files under `knowledge/`. Each will be
+atomised into `wiki/pages/` in a follow-on migration phase.
+
+**ISO/IEC 29110** (process backbone)
 
 - `iso29110-profile.md` -- process structure, roles, work products, lifecycle-neutral entry
 - `iso29110-task-lists.md` -- actionable checklists organised by activity, for use as centre-of-gravity selectors
@@ -132,27 +172,6 @@ organised by source.
 - `ambse-requirements.md` -- use case driven elicitation, model-based requirements, nanocycle workflow
 - `ambse-architecture.md` -- five architecture views, trade studies, handoff, model-based V&V
 - `ambse-git-workflow.md` -- branch-per-microcycle git mapping, PR template, anti-patterns
-
-**SysML 2.0** (modelling language, verified against OMG formal/2025-01-01)
-
-- `sysml2-quick-ref.md` -- textual notation cheat sheet for the constructs a
-  VSE engineer touches every day (packages, parts, ports, requirements,
-  trace links, verification cases)
-- `sysml2-semantics-ref.md` -- language architecture, the KerML/SysML
-  two-layer model, the definition/usage pattern, type hierarchy, and the
-  semantic rules from Chapters 6 and 8 of the spec
-- `sysml2-libraries-ref.md` -- the Systems Model Library (implicit base
-  types) and the Domain Libraries (metadata, quantities, trade studies,
-  geometry) from Chapter 9, with VSE guidance on which imports are worth
-  the cost
-- `sysml2-model-structure-ref.md` -- canonical AMBSE package layout, naming, and import patterns
-- `sysml2-behaviour-ref.md` -- actions, successions, state machines, flows, and messages
-- `sysml2-allocations-ref.md` -- function-to-platform allocation relationships and nesting
-- `sysml2-cases-ref.md` -- use case, analysis case, and verification case authoring
-- `sysml2-expressions-ref.md` -- constraint bodies, calc definitions, and parametric bindings
-- `sysml2-metadata-ref.md` -- RiskInfo, ConfigItem, Baseline metadata and user keywords
-- `sysml2-variants-ref.md` -- variation points, variant usages, configuration selection, VAMOS
-- `sysml2-views-ref.md` -- viewpoints, views, expose statements, and rendering
 
 **SySiDE Automator** (tooling)
 
