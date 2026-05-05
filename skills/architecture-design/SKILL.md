@@ -24,6 +24,7 @@ The skill activates when the engineer says, in any of these forms:
 - "open a trade study", "evaluate architecture options", "compare variants", "what variant won", "resolve the variations"
 - "decompose into subsystems", "identify subsystems", "allocate to subsystem", "split this requirement across subsystems"
 - "open an architecture branch", "I am working on an `arch/...` branch"
+- "run the as-is survey", "we skipped the as-is survey at setup", "what is locked in vs. what can change", or any project where `docs/as-is-classification.md` carries the `<!-- as-is-survey: skipped at ... -->` marker
 
 Routing partners:
 
@@ -45,6 +46,17 @@ Before starting, verify that the project layout matches §8.3 and that the input
 ## Workflow A: Base Architecture (§2)
 
 Use this workflow when the project is starting, when a previously missed architectural given surfaces, or when the platform is being refined or replaced.
+
+### Brownfield as-is re-entry
+
+Before starting Step 1, check whether the project carries a brownfield as-is survey artefact:
+
+- `<ENG_ROOT>/docs/as-is-classification.md` exists, and
+- the file contains the marker `<!-- as-is-survey: skipped at ... -->`.
+
+If both hold, the project was bootstrapped under `@project-setup` Step 6.5 with the as-is survey declined, and the user has now reached `@architecture-design` to model the platform. Offer to run the survey before continuing with §2.3.1, since the survey produces the candidate set that would otherwise be reconstructed manually here. The survey workflow lives in `@project-setup` Step 6.5; route the user there with the same opt-in posture and the same §2.6 rule 7 guard rails. On completion, remove the skipped marker and resume Workflow A from Step 1 against the populated `model/core/base-architecture/` and `model/core/as-is/` packages.
+
+If the user declines a second time, proceed directly to Step 1 against an empty Base Architecture and capture the givens from user-supplied input only. Do not infer the as-is architecture from the host project's source tree at this point. The reverse-engineering guard (§2.6 rule 7) applies to architectural inference as well as to story synthesis: discovery is permitted only under the explicit opt-in survey, never as an implicit side effect of Workflow A.
 
 ### Step 1: Capture the architectural givens (§2.3.1)
 

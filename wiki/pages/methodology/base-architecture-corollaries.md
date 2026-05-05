@@ -3,7 +3,7 @@ title: "Base Architecture: Forward-Going Stories and the Reverse-Engineering Gua
 slug: base-architecture-corollaries
 type: concept
 layer: methodology
-tags: [base-architecture, methodology, agent-discipline, story-register, reverse-engineering-guard, forward-going]
+tags: [base-architecture, methodology, agent-discipline, story-register, reverse-engineering-guard, forward-going, brownfield-discovery, as-is-survey]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §2 (Base Architecture)."
     raw: methodology/02-base-architecture.md
@@ -15,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements, architecture-design, attention-regime]
+bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
 ---
 
 # Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard
@@ -73,6 +73,17 @@ The rules in §2.6 are read together, not in isolation. They are summarised here
 - Resolve a story's `subject` before writing it. If the subject is a Base Architecture `part def`, stop and ask the user whether the entry is intended as a context story.
 - Refuse to fabricate stakeholders that exist only to motivate a Base Architecture decision. Surface the request, name the rule, and offer a forward-going alternative such as a concern with the project's system as its subject.
 - Record any human-confirmed context story with a marker that distinguishes it from the forward-going register, so later readers can separate organisational memory from project commitment.
+
+## Brownfield discovery and the as-is survey
+
+The §2.7 Discovery lifecycle category authorises *acknowledgement* of architectural givens that pre-existed the project but were missed at initial Base Architecture capture. Brownfield adoption (a project that runs `/vse-setup` against a repo that already contains implementation code) is the canonical Discovery entry path. The `@project-setup` skill performs an opt-in as-is architecture survey at Step 6.5 and walks the user through a per-element classification into two categories.
+
+- **Mandated** elements are externally constrained and live in `model/core/base-architecture/` as `part def`s in a `library package`. They carry `@ConfigItem { :>> ciState = CIState::Baselined; :>> baselineId = "BL-BA-AS-IS-0.1" }`. The four mandate sources from §2.1 corollary 1 (parent organisation, customer, parent product, regulator) are recorded as a `mandateSource` attribute.
+- **Contingent** elements are currently used but the project owns the choice. They live in `model/core/as-is/` and carry `@ConfigItem { :>> ciState = CIState::Proposed; :>> baselineId = "BL-AS-IS-CURRENT-0.1" }`. They may later be promoted, replaced, or retired through forward-going stories.
+
+The survey is bound by rule 7 of §2.6. The dialogue captures evidence and source of mandate, never narrative justification of the decision. The skill MUST NOT ask "why is X mandated?" and MUST NOT emit `concern def`, `requirement def`, or `userStory` constructs from survey output. If the user volunteers a justification narrative, it is recorded verbatim into `docs/as-is-classification.md` and produces no SysML. The classification rationale document is *not* a needs document.
+
+If the user declines the survey, the rationale doc carries a `<!-- as-is-survey: skipped at <date> -->` marker so a later `@architecture-design` invocation can resume under the same opt-in posture.
 
 ## Cross-links
 
