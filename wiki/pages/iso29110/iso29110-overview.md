@@ -16,11 +16,10 @@ related:
   - iso29110-sr-process
   - iso29110-roles-and-work-products
   - iso29110-phase-gates
-  - iteration-centred-operation
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, iteration-orchestrator]
+bundled_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 VSE Systems Engineering Profile Overview
@@ -40,7 +39,7 @@ test-driven approaches. The ISO/IEC 29110 series can be applied at
 any phase of system or software development within a lifecycle.
 This plugin enters the lifecycle at the centre-of-gravity activity
 indicated in `.vse-iteration.yml` rather than at a fixed PM.1 or
-SR.1 starting point. See [[iteration-centred-operation]] for the
+SR.1 starting point. See [[methodology-overview]] for the
 iteration-centred operating model that takes this freedom
 seriously.
 
@@ -88,5 +87,5 @@ checklists, see [[iso29110-phase-gates]].
   and the catalogue of work products.
 - [[iso29110-phase-gates]] for phase-to-phase transition
   checklists.
-- [[iteration-centred-operation]] for the iteration-centred
+- [[methodology-overview]] for the iteration-centred
   operating model the plugin uses on top of this catalogue.

@@ -12,7 +12,6 @@ sources:
 related:
   - ambse-use-case-driven-elicitation
   - ambse-system-requirements-derivation
-  - ambse-nanocycle-and-use-case-analysis
   - ambse-dependability-and-traceability
   - sysml2-syntax-requirements-and-cases
   - sysml2-requirements-semantics
@@ -95,7 +94,7 @@ checklist in [[needs-vs-requirements]] is a fast first pass; the
   primary structuring mechanism.
 - [[ambse-system-requirements-derivation]] for the per-iteration
   derivation workflow.
-- [[ambse-nanocycle-and-use-case-analysis]] for the inner-loop
+- [[methodology-overview]] for the inner-loop
   workflow and the three approaches (flow, scenario, state).
 - [[ambse-dependability-and-traceability]] for safety,
   reliability, security, and the trace recommendations.

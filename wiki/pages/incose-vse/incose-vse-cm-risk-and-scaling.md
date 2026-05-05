@@ -20,7 +20,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # INCOSE CM, Risk Management, and VSE Scaling Guidance

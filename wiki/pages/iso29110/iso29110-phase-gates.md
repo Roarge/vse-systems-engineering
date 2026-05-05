@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, iteration-orchestrator]
+bundled_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 Phase Gate Checklists
@@ -114,7 +114,7 @@ phase open.
   underlying task definitions.
 - [[iso29110-pm-task-checklists]] and [[iso29110-sr-task-checklists]]
   for fully expanded task lists with work-product mappings.
-- [[iteration-boundary-and-macrocycle-closure]] for the
+- [[story-branch-pr-workflow]] for the
   iteration-centred reading of these gates: phases run as
   centres-of-gravity within iterations rather than as a strict
   sequence.

@@ -11,14 +11,12 @@ sources:
     raw: galinier_sme_practices.pdf
 related:
   - ambse-principles
-  - ambse-vee-three-timeframes
-  - ambse-iteration-planning
   - iso29110-pm-process
   - iso29110-sr-process
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # INCOSE Lifecycle Models Scaled for VSEs

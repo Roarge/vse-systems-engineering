@@ -9,26 +9,23 @@ sources:
     raw: ISO_IEC_TR_29110-5-6-2_2014.pdf
 related:
   - ambse-principles
-  - ambse-vee-three-timeframes
-  - ambse-iteration-planning
   - iso29110-pm-process
   - iso29110-sr-process
-  - ambse-git-three-way-mapping
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # AMBSE Workflow Mapping to ISO/IEC 29110
 
 This page is the cross-reference table from AMBSE activities
-(see [[ambse-principles]] and [[ambse-vee-three-timeframes]])
+(see [[ambse-principles]] and [[methodology-overview]])
 to ISO 29110 process activities. For the underlying ISO 29110
 catalogue, see [[iso29110-pm-process]] and
 [[iso29110-sr-process]]. For the git operationalisation that
 runs alongside this mapping, see
-[[ambse-git-three-way-mapping]].
+[[story-branch-pr-workflow]].
 
 ## AMBSE-to-ISO 29110 activity mapping
 
@@ -49,15 +46,15 @@ runs alongside this mapping, see
 
 ## Mapping AMBSE to a git workflow
 
-The three timeframes from [[ambse-vee-three-timeframes]] each
+The three timeframes from [[methodology-overview]] each
 map onto one unit of git collaboration: the commit (nanocycle),
 the feature branch with a pull request (microcycle), and the
 release tag on `main` (macrocycle). This mapping is the
 operational form the plugin enforces. See
-[[ambse-git-three-way-mapping]] for the full breakdown,
-[[ambse-git-nanocycle-commits]] for the nanocycle row,
-[[ambse-git-microcycle-prs]] for the microcycle row, and
-[[ambse-git-ci-gates-and-macrocycle]] for the macrocycle row.
+[[story-branch-pr-workflow]] for the full breakdown,
+[[story-branch-pr-workflow]] for the nanocycle row,
+[[story-branch-pr-workflow]] for the microcycle row, and
+[[iso-29110-compliance-mapping]] for the macrocycle row.
 
 ## Reading note
 
@@ -73,13 +70,13 @@ plugin's hooks and CI.
 
 ## See also
 
-- [[ambse-principles]] and [[ambse-vee-three-timeframes]] for
+- [[ambse-principles]] and [[methodology-overview]] for
   AMBSE methodology.
 - [[iso29110-pm-process]], [[iso29110-sr-process]],
   [[iso29110-pm-task-checklists]], [[iso29110-sr-task-checklists]]
   for the ISO 29110 activity catalogue.
-- [[ambse-git-three-way-mapping]] for the git-flow mapping that
+- [[story-branch-pr-workflow]] for the git-flow mapping that
   runs the iteration cadence.
-- [[iteration-centred-operation]] for the
+- [[methodology-overview]] for the
   centre-of-gravity-driven iteration routing built on top of
   this mapping.

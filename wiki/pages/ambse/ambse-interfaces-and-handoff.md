@@ -12,7 +12,6 @@ sources:
 related:
   - ambse-architectural-design
   - ambse-architecture-vv-and-iso29110
-  - ambse-git-microcycle-prs
   - sysml2-syntax-structure
   - sysml2-allocations-overview
 confidence: high
@@ -142,7 +141,7 @@ converted engineering data, the PR body summarises the
 iteration mission and the trace status, and the PR review is
 the formal handoff acceptance. CI gates run the trace check
 and the phase-gate check before the PR can merge. See
-[[ambse-git-microcycle-prs]] for the full mapping, branch
+[[story-branch-pr-workflow]] for the full mapping, branch
 naming, and PR body template.
 
 VSE guidance: do not over-formalise the handoff for small
@@ -159,7 +158,7 @@ history rather than in chat.
   workflow.
 - [[ambse-architecture-vv-and-iso29110]] for V&V and the ISO
   29110 mapping.
-- [[ambse-git-microcycle-prs]] for the canonical handoff form
+- [[story-branch-pr-workflow]] for the canonical handoff form
   (PR against main).
 - [[sysml2-syntax-structure]] for port and interface syntax.
 - [[sysml2-allocations-overview]] for cross-layer allocations.

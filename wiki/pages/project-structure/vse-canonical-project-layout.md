@@ -9,8 +9,6 @@ sources:
     raw: null
 related:
   - vse-model-tiers-and-templates
-  - iteration-centred-operation
-  - iteration-boundary-and-macrocycle-closure
   - iso29110-template-mapping
 confidence: high
 created: 2026-05-04
@@ -80,13 +78,13 @@ Required fields under `current_iteration`:
 - `branch` (string, `vse/iter-NN-<slug>` form)
 - `status` (enum: `open`, `closing`, `merged`)
 - `centre_of_gravity` (list of ISO 29110 task IDs, see
-  [[iteration-centred-operation]])
+  [[methodology-overview]])
 - `opened` (ISO date string)
 - `macrocycle_target` (string, e.g. `v0.1.0`)
 - `backlog` (list of items with `item`, `status`, `anchor`)
 
 Optional fields: `closure_debt` (consumed by
-[[iteration-boundary-and-macrocycle-closure]]), `notes`, `history`.
+[[story-branch-pr-workflow]]), `notes`, `history`.
 
 ## SySiDE configuration
 
@@ -130,9 +128,9 @@ be executable. It autodetects the engineering root via its
 
 - [[vse-model-tiers-and-templates]] for the SysML model tiers and
   the document templates that live under `docs/pm/` and `docs/sr/`.
-- [[iteration-centred-operation]] for the centre-of-gravity model
+- [[methodology-overview]] for the centre-of-gravity model
   recorded in `.vse-iteration.yml`.
-- [[iteration-boundary-and-macrocycle-closure]] for the closure
+- [[story-branch-pr-workflow]] for the closure
   workflow that consumes `closure_debt`.
 - [[iso29110-template-mapping]] for the phase-to-template-file
   mapping used by `@project-setup`.
