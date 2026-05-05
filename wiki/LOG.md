@@ -442,3 +442,49 @@ INFO findings escalated to a WARN-on-stale-knowledge-references rule.
 README.md, wiki/CLAUDE.md, and CLAUDE.local.md updated to reflect the
 single-surface architecture. Plugin version bumped to 1.0.0 to mark
 the consolidation milestone.
+
+## [2026-05-05] refactor | sysmlv2.pdf Ch 41 atomisation, new sysml2-extension skill
+
+Layer: sysml2. Atomic split of the existing `sysml2-language-extension`
+page into four sibling pages, and a new `sysml2-extension` skill that
+owns the producer side of language extension (declaring domain
+libraries, registering user-defined keywords).
+
+Pages new:
+
+- sysml2-domain-model-libraries (reference, Ch 41.1, library packages
+  and the PBSE example)
+- sysml2-user-defined-keywords (reference, Ch 41.2, SemanticMetadata
+  pattern and the meta-cast)
+- sysml2-extension-gotchas (pattern, Ch 41.2 pp 295-297, the three
+  silent-failure pitfalls)
+
+Pages updated:
+
+- sysml2-language-extension (retitled to overview, body rewritten as a
+  hub pointing at the three new siblings, citation page numbers
+  updated for the 2026-04 release from 265-271 to 291-297, type
+  changed from reference to concept, bundled_by moved from
+  sysml2-metadata to sysml2-extension).
+
+Skills new:
+
+- sysml2-extension (producer side: domain libraries, user-defined
+  keywords, the three pitfalls).
+
+Skills updated:
+
+- sysml2-metadata (description trimmed to remove "user-defined
+  keywords"; the user-defined-keyword subsection collapsed to a
+  routing pointer to @sysml2-extension; SemanticMetadata vocabulary
+  row removed from the core-vocabulary table; checklist items 1, 3
+  and the matching red-flag bullet removed since they now belong to
+  @sysml2-extension).
+
+Bundles regenerated: sysml2-extension (new, 4 pages), sysml2-metadata
+(11 → 10 pages).
+
+Note on page-numbering shift. The 2026-04 release of "The SysML v2
+Book" has Chapter 41 at content pp 291-297; earlier book drafts had
+the same content at pp 265-271. The content has not changed, only the
+pagination. Citations now point at the current pages.

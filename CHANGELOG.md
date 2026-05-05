@@ -8,6 +8,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-05
+
+Producer/consumer split for SysML 2.0 language extension. The new
+`sysml2-extension` skill owns the authoring side of domain libraries
+and user-defined keywords. The existing `sysml2-metadata` skill stays
+focused on metadata application through the `VSE_Library` catalogue
+(`RiskInfo`, `ConfigItem`, `Baseline`, `VariantScope`,
+`VerificationScope`). Source: Chapter 41 of "The SysML v2 Book"
+(Weilkiens and Molnár, 2026-04 release).
+
+### Added
+
+- New skill `sysml2-extension`. Triggers on declaring `library
+  package`, registering user-defined `#keywords` via
+  `Metaobjects::SemanticMetadata`, and the three silent-failure
+  pitfalls of the keyword mechanism.
+- Three new atomic wiki pages under `wiki/pages/sysml2/`:
+  - `sysml2-domain-model-libraries` (reference, Ch 41.1, library
+    packages, the canonical PBSE example with Function, Platform,
+    and FunctionalAllocation, and the "avoid abstract definitions
+    in libraries" guidance).
+  - `sysml2-user-defined-keywords` (reference, Ch 41.2, the
+    `SemanticMetadata` pattern, the meta-cast operator on
+    `baseType`, the `#name` syntax, and keyword stacking).
+  - `sysml2-extension-gotchas` (pattern, Ch 41.2 pp 295-297, the
+    three pitfalls: kind-keyword optionality, `SysML::Type`
+    versus `SysML::Usage` in the meta-cast, and the
+    `annotatedElement` redefinition for definition-only
+    keywords).
+- New bundle `wiki/bundles/sysml2-extension.md` (four pages, the
+  17th bundle in the wiki).
+
+### Changed
+
+- `wiki/pages/sysml2/sysml2-language-extension.md` retitled to
+  "SysML 2.0 Extension: Overview" and rewritten as the hub for the
+  three new sibling pages. Type changed from `reference` to
+  `concept`. Citation page numbers updated from 265-271 to 291-297
+  to match the 2026-04 release of the book. `bundled_by` moved
+  from `sysml2-metadata` to `sysml2-extension`.
+- `skills/sysml2-metadata/SKILL.md` description trimmed to remove
+  "user-defined keywords" so the trigger surface is disjoint from
+  `sysml2-extension`. The user-defined-keyword subsection collapsed
+  to a three-line routing pointer to `@sysml2-extension`. The
+  `SemanticMetadata` row removed from the core-vocabulary table.
+  Validation checklist items and the matching red-flag bullet that
+  referenced user-defined keywords removed.
+- `wiki/bundles/sysml2-metadata.md` regenerated. The bundle now
+  groups ten pages (was eleven), no longer including the
+  language-extension overview.
+- `wiki/INDEX.md` regenerated. Page count 120 to 123. Bundle count
+  16 to 17.
+- `wiki/LOG.md` carries a `refactor` entry recording the split.
+
 ## [1.0.0] - 2026-05-04
 
 The 1.0 release marks the completion of the `knowledge/` to `wiki/`

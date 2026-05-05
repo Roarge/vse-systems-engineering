@@ -1,6 +1,6 @@
 ---
 name: sysml2-metadata
-description: Apply SysML 2.0 metadata, reflection, and user-defined keywords, including the RiskInfo risk library and the ConfigItem and Baseline configuration management library. Use when tagging elements with risk, configuration item state, priority, or status metadata, when defining user keywords, when declaring baselines, or when querying model elements by applied metadata.
+description: Apply SysML 2.0 metadata and reflection through the VSE_Library catalogue (RiskInfo, ConfigItem, Baseline, VariantScope, VerificationScope). Use when tagging elements with risk, configuration item state, priority, or status metadata, when declaring baselines, when filtering imports or views by metadata, or when querying model elements by applied metadata. For authoring domain libraries or registering user-defined `#keywords`, route to `@sysml2-extension`.
 user-invocable: true
 ---
 
@@ -57,7 +57,6 @@ no collision during migration.
 | --- | --- | --- |
 | Metadata definition | `metadata def` | Declares a metadata type |
 | Metadata usage | `metadata`, `@Type` | Annotates a model element |
-| SemanticMetadata | `SemanticMetadata` | Registers a user-defined keyword |
 | Metaclassification | `@`, `@@`, `meta` | Tests classification at run time |
 | Filter condition | `filter`, `[...]` | Metadata-based selection |
 
@@ -111,25 +110,14 @@ package ActiveRequirements {
 A bracketed filter after an import brings in only elements that carry
 the specified metadata. This is called a smart package in the book.
 
-### User-Defined Keyword via SemanticMetadata
+### User-Defined Keywords (route out)
 
-```sysml
-metadata def functionalAllocation
-    :> Metaobjects::SemanticMetadata
-{
-    attribute :>> baseType = FunctionalAllocation;
-}
-```
-
-After registering the keyword, usages can shorten the allocation call
-site to the `#` form:
-
-```sysml
-#functionalAllocation allocate navigation to navigationSubsystem;
-```
-
-See `@sysml2-allocations` for the allocation usage form that this
-keyword shortcuts.
+For authoring user-defined keywords through `Metaobjects::SemanticMetadata`,
+the abstract-usage and `baseType` pattern, the `#name` application syntax,
+and the silent-failure pitfalls (kind-keyword optionality,
+`SysML::Type` versus `SysML::Usage`, `annotatedElement` redefinition),
+route to `@sysml2-extension`. This skill stays focused on metadata
+application through the VSE_Library catalogue.
 
 ### Risks as a Metadata Library
 
@@ -485,35 +473,29 @@ delivery.
 
 ## Validation Checklist
 
-1. **Keyword metadata definitions specialise `Metaobjects::SemanticMetadata`.**
-   Annotation metadata defs (used via `@MetaName` above an element) may
-   be bare and do not need a base class. The specialisation is required
-   only when the metadata def will be used as a keyword shortcut via
-   `#keyword`.
+1. **Annotation metadata defs are bare** and do not need a base
+   class. They are applied via `@MetaName` above an element.
 2. **Annotations use `@` above the element**, not inside its body.
-3. **User-defined keywords have a `SemanticMetadata` specialisation.**
-   Without it, the keyword form is just a plain comment.
-4. **Filter expressions are Boolean.** Mixing metadata classification
+3. **Filter expressions are Boolean.** Mixing metadata classification
    with runtime values in a single filter usually means the intent is
    better expressed as a constraint.
-5. **All metadata defs are library-supplied from `VSE_Library`**, not
+4. **All metadata defs are library-supplied from `VSE_Library`**, not
    hand-rolled. Projects should import `RiskInfo`, `ConfigItem`,
    `Baseline`, `VariantScope`, and `VerificationScope` from
    `VSE_Library` rather than redefine them.
-6. **Every `RiskInfo` application has a named owner and a status.**
+5. **Every `RiskInfo` application has a named owner and a status.**
    An unowned or status-free risk is a silent debt under ISO 29110
    PM.3.1.
-7. **Every `ConfigItem` application names a `baselineId` that resolves
+6. **Every `ConfigItem` application names a `baselineId` that resolves
    to a `Baseline` item def in `{{sc}}_CM`.** An unresolvable
    `baselineId` is an orphan CI.
-8. **Every `Baseline` item def has a `scope` reference list and
+7. **Every `Baseline` item def has a `scope` reference list and
    a `supersedes` attribute** (empty only for the initial baseline).
 
 ## Red Flags
 
 WARN the engineer if:
 
-- A keyword is used without a matching `SemanticMetadata` registration
 - A filter reference uses `@` where `@@` was required (classifier
   versus metaclass confusion)
 - A metadata annotation sits inside an element body rather than above
