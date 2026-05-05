@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Phase 2 of 8 in the v2.0 restructuring around the user-story-first
 AMBSE methodology. The command surface flips from cycle-centric to
-story-centric. The three cycle commands are removed; four new
+story-centric. The three cycle commands are removed. Four new
 commands are added as thin wrappers delegating to skills that are
 authored in subsequent phases. Until those skills land, invoking
-the new commands routes to skill names that do not yet exist; this
+the new commands routes to skill names that do not yet exist. This
 phase is intentionally a stub release that makes the new surface
 visible to reviewers ahead of the skill rewrite.
 
@@ -25,10 +25,10 @@ to `1.2.0` until `2.0.0` lands.
 ### Removed
 
 - `/vse-nanocycle` command. The methodology has no commit-scoped
-  planning concept; commits are small and frequent within story
+  planning concept. Commits are small and frequent within story
   branches, and a story is the smallest unit of planning.
 - `/vse-microcycle` command. The methodology has no iteration
-  concept; work is grouped by story and release, not by
+  concept. Work is grouped by story and release, not by
   fixed-length iteration.
 - `/vse-iteration` command. Same reason. Closure debt and
   centre-of-gravity routing migrate into the new
