@@ -290,7 +290,7 @@ pattern tells the tools **what** is in each baseline.
 
 SysML 2.0 has no built-in CI keyword. The plugin models CI state
 with a user-defined `metadata def` called `ConfigItem` from the
-`VSE_Library`. Attributes: `ciId`, `baselineId`, `state` (Draft,
+`VSE_Library`. Attributes: `ciId`, `baselineId`, `ciState` (Draft,
 Baselined, UnderChange, Superseded, Retired), `owner`. Applied
 with the `@` syntax to any element under configuration control.
 

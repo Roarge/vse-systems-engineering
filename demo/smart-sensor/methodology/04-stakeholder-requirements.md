@@ -160,7 +160,7 @@ package <SS> Aiwell_StakeholderStories {
         @StoryMeta { points = 5; priority = high; status = ready; }
 
         subject sys : Aiwell_OnlineSentral;
-        stakeholder :>> role : Operator;
+        stakeholder role : Operator;
 
         capability = "acknowledge alarms from the dashboard";
         benefit    = "the queue clears without opening each device";
