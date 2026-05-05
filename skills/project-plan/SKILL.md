@@ -1,6 +1,7 @@
 ---
 name: project-plan
 description: Use when authoring or revising the Project Plan, SEMP, Risk Register, CM Strategy, or Disposal Approach (§10.3). Triggers on /vse-plan, "draft project plan", "update SEMP", "revise risk register", "CM strategy", "disposal approach", "PM.O1", "plan-baseline-vN.M".
+user-invocable: true
 ---
 
 # project-plan

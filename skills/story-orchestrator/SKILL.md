@@ -1,6 +1,7 @@
 ---
 name: story-orchestrator
 description: Open or advance a single user story per the story-driven AMBSE methodology (§1, §8.4-§8.5). Use when starting a story, opening a story branch, advancing StoryMeta lifecycle, opening a draft PR, asking "what is the story status", or routing within the story-driven workflow.
+user-invocable: true
 ---
 
 # Story Orchestrator

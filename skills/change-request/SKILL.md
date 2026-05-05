@@ -1,6 +1,7 @@
 ---
 name: change-request
 description: Author and process Change Requests under PM.O3 (§10.4.2). Use when a baselined artefact (Project Plan, baselined story, baselined architecture, anything on .iso-config.yaml baselined_paths) is about to be modified, when /vse-cr is invoked, when the user says "open a CR", "change the Plan", "modify the baselined story", or when another skill routes here on detecting a baselined-path edit. Drafts the impact analysis (cost, schedule, technical, risk), opens the GitHub Issue with the change-request label, and tracks the lifecycle (submitted, evaluated, agreed, in implementation, done, rejected, postponed).
+user-invocable: true
 ---
 
 # Change Request

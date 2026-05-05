@@ -1,6 +1,7 @@
 ---
 name: vse-companion-overview
 description: Story-driven AMBSE methodology lens for VSE projects, ISO 29110 compliant. Load this skill first in every VSE project session before responding, before invoking any other VSE skill, and whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, or how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
+user-invocable: true
 ---
 
 # VSE Companion Overview
