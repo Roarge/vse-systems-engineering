@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-05
+
+Methodology specification ships with the plugin. The
+`Methodology/` directory drafted at the repo root (sections §0–§10
+plus the ISO/IEC TR 29110‑5‑6‑2 hooks guide) moves into the plugin
+tree at `methodology/`. From this version forward, the methodology
+is part of every install and is the canonical reference for skill
+bodies, hooks, and templates.
+
+This release is non-breaking: no command, skill, or hook surface
+changes. Subsequent releases (planned for v2.0.0) restructure the
+plugin around the user-story-first AMBSE process the methodology
+describes.
+
+### Added
+
+- `methodology/00-methodology-overview.md` through
+  `methodology/10-project-management.md`, plus
+  `methodology/iso-29110-hooks-guide.md`. Eleven specification
+  sections and one companion implementation guide.
+- `methodology/README.md` documenting the project-local override
+  convention: when a project runs `/vse-setup`, the directory is
+  copied to `<project>/methodology/`, and the project-local copy
+  takes precedence over the plugin-shipped one.
+- New `Methodology Authoring Conventions` section in
+  `CLAUDE.local.md` (contributor-side instructions, not shipped to
+  installers).
+
+### Changed
+
+- The `Repo Layout` table in `CLAUDE.local.md` now lists
+  `methodology/` alongside the other top-level directories that
+  ship to installers.
+
 ## [1.1.0] - 2026-05-05
 
 Producer/consumer split for SysML 2.0 language extension. The new
