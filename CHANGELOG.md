@@ -8,6 +8,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.5] - 2026-05-05
+
+Phase 4 of the v2.0 restructuring. Adopts the full hook surface
+specified in `methodology/iso-29110-hooks-guide.md`. Eight Claude
+Code lifecycle hooks (some new, some rewritten) and seven
+project-side git hooks (some new, the existing `pre-commit-traceability.sh`
+preserved as a delegate of the new `pre-commit.sh`).
+
+This release is a release candidate. End-user installs should pin to
+`1.2.0` until `2.0.0` lands. Project-side hooks ship to user projects
+via `@attention-regime` (per the v2.0-rc.4 skill) but the install path
+is `<project>/.githooks/<hook>` (no `.sh` extension), activated with
+`git config core.hooksPath .githooks`. Several `pre-push` checks are
+stubs that pass through until the corresponding `tools/lint/` and
+`tools/render/` scripts mature in a downstream phase or in user
+projects.
+
+### Removed
+
+- `hooks/iteration-boundary-check.sh`. No boundary-check concept in
+  the new methodology.
+- `hooks/sysml-change-reminder.sh`. Replaced by `hooks/post-tool-use.sh`,
+  which covers the same use case under the §5.4 lifecycle hook
+  contract.
+
+### Added
+
+Lifecycle hooks (registered in `hooks.json`, run by the harness):
+
+- `hooks/user-prompt-submit.sh` (UserPromptSubmit, §5.2). Reverse-engineering
+  guard, baselined-edit reminder, meeting-record reminder.
+- `hooks/pre-tool-use.sh` (PreToolUse on `Edit|Write|NotebookEdit`,
+  §5.3). Blocks edits to baselined artefacts without an open Change
+  Request, reads `.iso-config.yaml` for the baselined-paths list.
+- `hooks/post-tool-use.sh` (PostToolUse on `Write|Edit`, §5.4).
+  Post-edit reminders for stories, concerns, architecture, Project
+  Plan.
+- `hooks/stop.sh` (Stop, §5.5). ADR / V&V capture prompts.
+- `hooks/subagent-stop.sh` (SubagentStop, §5.6). Marker for subagent
+  completion in VSE project context.
+- `hooks/pre-compact.sh` (PreCompact, §5.7). Snapshots ISO state
+  before context compaction.
+- `hooks/notification.sh` (Notification, §5.8). Stale Change Request
+  reminders.
+
+Project-side scripts (shipped, installed by `@attention-regime`):
+
+- `hooks/pre-commit.sh` (§4.1). Orchestrates four checks: SysML lint,
+  story well-formedness, baselined-artefact protection, traceability
+  integrity (delegated to existing `pre-commit-traceability.sh`).
+- `hooks/commit-msg.sh` (§4.2). Enforces conventional-commit pattern
+  with story scope, CR reference, or meeting-record format.
+- `hooks/prepare-commit-msg.sh` (§4.3). Prepopulates commit subject
+  with the Story ID inferred from the branch name.
+- `hooks/pre-push.sh` (§4.4). Story-state, V&V coverage, traceability
+  freshness, baseline integrity. Stub passthroughs in v2.0-rc.5.
+- `hooks/post-merge.sh` (§4.5). Regenerates model-derived artefacts
+  on `main` advance via configured renderers.
+- `hooks/post-checkout.sh` (§4.6). Branch-status surfacing.
+
+Configuration:
+
+- `templates/iso-config/.iso-config.yaml`. Project-side configuration
+  consumed by the project-side hooks. Schema per §8 of the hooks
+  guide. Includes baselined paths, protected branches, StoryMeta
+  schema, risk register, change request, and renderers.
+
+### Changed
+
+- `hooks/session-start.sh` rewritten. Three-mode detection (plugin
+  contributor / VSE project / SysML-only repo). For VSE projects,
+  surfaces story branches, plan baseline tag, last release tag,
+  open Change Requests, and the §5.1 reminder block including the
+  §2.6 rule 7 reverse-engineering guard. The methodology copy is
+  detected at `methodology/` (greenfield) or `engineering/methodology/`
+  (brownfield). The legacy `.vse-iteration.yml` parsing is removed.
+- `hooks.json` updated to register all eight lifecycle hooks.
+  `source-added-reminder.sh` is preserved as a sibling on PostToolUse
+  for the wiki contributor pipeline.
+- `hooks/README.md` rewritten to document the new hook split and
+  the install procedure. Mentions which v1.x scripts have been
+  removed.
+
 ## [2.0.0-rc.4] - 2026-05-05
 
 Phase 3C of the v2.0 restructuring. Rewrites the three lifecycle skills
