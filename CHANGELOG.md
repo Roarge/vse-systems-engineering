@@ -8,6 +8,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.7] - 2026-05-05
+
+Phase 5.5 of the v2.0 restructuring. Top-level documentation rewrite
+to match the merged Phases 1–5. The README, the `templates/common/CLAUDE.md`
+template that ships into user projects, and the contributor-side
+`CLAUDE.local.md` (gitignored) are all brought current with the
+methodology and the new skill, command, and hook surfaces.
+
+This release is a release candidate. End-user installs should pin to
+`1.2.0` until `2.0.0` lands.
+
+### Changed
+
+- `README.md` rewritten:
+  - "What it does" reframed around the methodology specification at
+    `<plugin>/methodology/` (story-driven AMBSE, the §0.3 connective
+    mechanism, the rejection of fixed-length iteration containers).
+  - Skills section split into orchestration (5), workflow-stage (4),
+    lifecycle (5), and SysML 2.0 specialist (10) groups. The
+    decommissioned `iteration-orchestrator` skill is gone. The new
+    `story-orchestrator`, `release-orchestrator`, `change-request`,
+    `project-plan`, and `sysml2-extension` skills are documented.
+  - Slash command table updated: `/vse-nanocycle`, `/vse-microcycle`,
+    `/vse-iteration` removed. `/vse-story`, `/vse-release`, `/vse-cr`,
+    `/vse-plan` documented.
+  - Sources list updated: methodology spec promoted to source 1.
+    SYSMOD added as source 6 per §2 and §3 origin.
+  - Knowledge base section updated to the current 129 atomic pages
+    across 11 layers, 21 bundles. The `methodology` layer is named.
+  - Hooks section rewritten to describe the eight Claude Code
+    lifecycle hooks and the seven project-side git hooks specified in
+    `methodology/iso-29110-hooks-guide.md`.
+  - Getting-started section reframed around `/vse-setup` Plan Mode,
+    the §8.3 layout, the methodology copy step, and the orchestration
+    skills as the post-setup entry points.
+  - Demo walkthrough section flagged as currently lagging the v2.0
+    restructuring (rebuilt in Phase 6).
+
+- `templates/common/CLAUDE.md` rewritten. The template is what ships
+  into user projects via `project-setup`. Replaced cycle vocabulary
+  (`vse/iter-NN` branches, three-timeframe AMBSE Vee, centre-of-gravity
+  filtering tied to SR.1–SR.6, iteration-boundary closure checklist,
+  macrocycle release checklist) with story-centric guidance: the
+  methodology-first rule, the three foundational artefacts (§1 stories,
+  §2 Base Architecture, §3 System Context), the four workflow stages
+  (§4–§7), the §0.3 connective mechanism, the §8.4 branch model, the
+  §8.5 PR workflow, the §8.6 review checklists, the routing table,
+  and the §8.3 project structure layout. Source order updated to
+  promote the project-local `methodology/` folder to position 1.
+
+- `CLAUDE.local.md` (gitignored, contributor-side) updated:
+  - Distribution rule lists `methodology/` as a shipped artefact and
+    enumerates the project-side hook scripts that
+    `attention-regime` installs into user projects under
+    `<project>/.githooks/`.
+  - Skill authoring conventions: skill count updated from "eleven
+    skills" to "nineteen skills" with the new groupings (5
+    orchestration + 4 workflow-stage + 5 lifecycle + SysML 2.0
+    specialist family).
+  - Source-processing order: the plugin's `methodology/` folder is
+    now position 1, ahead of ISO 29110. SYSMOD inserted at position
+    7 per §2 and §3 adoption. Douglass 2016/2021 reframed as the
+    "source arc adapted in §0.4".
+  - Hook conventions: eight registered lifecycle events listed
+    (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop,
+    SubagentStop, PreCompact, Notification), replacing the old
+    two-event enumeration.
+
 ## [2.0.0-rc.6] - 2026-05-05
 
 Phase 5 of the v2.0 restructuring. The wiki adopts the plugin's
