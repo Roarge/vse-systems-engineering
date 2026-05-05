@@ -14,7 +14,7 @@
 # Install as <project>/.githooks/pre-push.
 set -euo pipefail
 
-while read -r local_ref local_sha remote_ref remote_sha; do
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
     case "$remote_ref" in
         refs/heads/main|refs/heads/release/*)
             # Story state check: stub.
