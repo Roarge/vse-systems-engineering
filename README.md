@@ -4,50 +4,52 @@ A Claude Code plugin for systems engineering in Very Small Entities (VSEs).
 
 ## What it does
 
-This plugin supports ISO/IEC 29110 compliant systems engineering workflows that
-are model-based and digital first, rooted in SysML 2.0 textual syntax. It
-enforces hybrid AMBSE (Agile Model-Based Systems Engineering) per Douglass
-(2021) as the single workflow for VSE projects. AMBSE applies the Vee
-verification pattern at three timeframes (nanocycle, microcycle, macrocycle),
-with verification performed at every iteration boundary. The plugin pairs use
-case driven elicitation, structured trade studies, and continuous verification
-with a branch-per-microcycle git workflow in which each iteration ends in a
-pull request review. See the
-[ambse-git-three-way-mapping](wiki/pages/ambse/ambse-git-three-way-mapping.md)
-atomic page for the full mapping.
+This plugin supports ISO/IEC 29110 compliant systems engineering workflows that are model-based and digital first, rooted in SysML 2.0 textual syntax. The plugin enforces a story-driven adaptation of agile MBSE in which the user story is the canonical stakeholder-intent artefact at every stage. Stakeholder concerns are captured as `concern def` instances. Stakeholder stories `frame` those concerns. System stories `derive` from stakeholder stories. Subsystem stories `derive` from system stories. Architectural trade studies source their assessment criteria from the formalised `benefit` constraints already present on system stories, so architectural decisions cannot drift from stakeholder intent.
 
-The plugin works in concert with the official Anthropic engineering plugin,
-adding VSE-specific systems engineering knowledge and attention-sustaining
-environmental design.
+The methodology rejects fixed-length iteration containers (Douglass nanocycle, microcycle, and macrocycle scheduling units). It embraces iteration as recursive practice. The story register is the cross-iteration index, and `StoryMeta.status` records each story's position. The git workflow operates per story: a `story/<US_id>_<short>` branch is opened from `main`, a draft pull request is opened on the first commit, iterative review proceeds on the draft, and the PR is squash-merged after the §8.6 review checklist passes. Releases group `done` stories under `release-vN.M` tags.
+
+The full specification is shipped under `<plugin>/methodology/` and copied into each project that adopts the plugin, so a project may modify its process without forking the plugin.
+
+The plugin works in concert with the official Anthropic engineering plugin, adding VSE-specific systems engineering knowledge and attention-sustaining environmental design.
 
 ## Design principles
 
 Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
-1. **Reduce information burden** by filtering guidance to the current
-   iteration and its centre-of-gravity activity
-2. **Build designed cognitive reserve** by embedding SE competence in the tooling
-3. **Provide machine-readable traceability** through SysML 2.0 models
-4. **Sustain attention** through environmental design rather than compliance
-   mandates
+1. **Reduce information burden** by filtering guidance to the current story and its workflow stage.
+2. **Build designed cognitive reserve** by embedding SE competence in the tooling.
+3. **Provide machine-readable traceability** through SysML 2.0 model relationships (`derive`, `frame concern`, `verify`, `allocation`).
+4. **Sustain attention** through environmental design rather than compliance mandates.
 
 ## Skills
 
-### Core workflow skills
+### Core orchestration skills
 
 | Skill | Purpose |
-|-------|---------|
-| vse-companion-overview | Set the VSE lens, source-processing order, and routing for any VSE session (loads first) |
-| iteration-orchestrator | Manage AMBSE iterations, open and close microcycles, run iteration-boundary and macrocycle closure checks |
-| needs-and-requirements | Elicit stakeholder needs and derive SysML requirements (use case driven) |
-| architecture-design | Develop architecture with trade studies, five views, and handoff workflow |
-| verification-validation | Plan and execute V&V with continuous verification and trace links |
-| traceability-guard | Check and enforce trace completeness |
-| sysml2-modelling | Author and validate SysML 2.0 textual models (router to specialist skills below) |
-| attention-regime | Configure environmental hooks, guards, and reminders |
+|---|---|
+| vse-companion-overview | Set the methodology lens and route to specialist skills (loads first in any VSE session) |
+| story-orchestrator | Open and advance user stories per §1 and §8.4–§8.5 (story branch, draft PR, StoryMeta lifecycle) |
+| release-orchestrator | Plan, baseline, and report on releases per §10 (story groups, baseline tag, ISO 29110 PM.4 closure) |
+| change-request | Author and process Change Requests per §10.4.2 (PM.O3) |
+| project-plan | Author or revise the Project Plan, SEMP, Risk Register, CM Strategy, Disposal Approach per §10.3 |
+
+### Workflow-stage skills
+
+| Skill | Purpose |
+|---|---|
+| needs-and-requirements | Stakeholder needs elicitation and system requirements analysis (§1, §3, §4, §5) |
+| architecture-design | Base Architecture authoring, trade studies, subsystem decomposition (§2, §6, §7) |
+| verification-validation | Verification cases, validation cases, IVV plan rendering (§4.3.6, §5.4.6, §9.8) |
+| traceability-guard | Trace integrity check (`derive`, `frame concern`, `verify`, `allocation`) |
+
+### Lifecycle skills
+
+| Skill | Purpose |
+|---|---|
+| project-setup | Bootstrap a VSE project per §8.3 layout, copy the methodology into the project, optional brownfield `engineering/` subdirectory |
+| project-audit | Audit project layout, story well-formedness, trace integrity, ISO 29110 artefact presence, hook installation, version drift (read-only) |
+| attention-regime | Configure ISO 29110 hook surface and install project-side git hooks (per `methodology/iso-29110-hooks-guide.md`) |
 | session-journal | Manage cross-session continuity journal |
-| project-setup | Bootstrap a new VSE project with templates and structure |
-| project-audit | Audit an existing VSE project for structural completeness and non-canonical configuration |
 | document-export | Export work products to docx, pptx, or pdf |
 
 ### SysML 2.0 specialist skills
@@ -55,144 +57,78 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 These are routed from `sysml2-modelling` for topic-specific authoring guidance.
 
 | Skill | Purpose |
-|-------|---------|
-| sysml2-model-structure | Organise a SysML 2.0 model into the AMBSE canonical layout with base-architecture reuse, variant configurations, and CM |
-| sysml2-behaviour | Model actions, successions, flows, messages, and state machines |
-| sysml2-allocations | Map behaviour to structure across functional, logical, and physical architecture layers |
-| sysml2-cases | Author use cases, analysis cases, and verification cases |
-| sysml2-expressions | Author expressions, calc definitions, constraints, and parametric calculations |
-| sysml2-metadata | Apply metadata (RiskInfo, ConfigItem, Baseline), user-defined keywords, and model queries |
-| sysml2-variants | Model variation points, variant usages, and configuration selection for product lines |
-| sysml2-views | Author views, viewpoints, expose statements, and rendering configuration |
+|---|---|
+| sysml2-modelling | SysML 2.0 syntax, validation, and the canonical project layout (umbrella) |
+| sysml2-model-structure | Project layout, base architecture reuse, recursive component nesting |
+| sysml2-behaviour | Actions, successions, flows, messages, state machines |
+| sysml2-allocations | Allocation between functional, logical, and physical layers |
+| sysml2-cases | Use cases, analysis cases, verification cases |
+| sysml2-expressions | Expressions, calc definitions, constraints, parametric calculations |
+| sysml2-metadata | Metadata application (RiskInfo, ConfigItem, Baseline) and reflection |
+| sysml2-extension | Domain libraries and user-defined keywords |
+| sysml2-variants | Variation points, variant usages, configuration selection |
+| sysml2-views | Views, viewpoints, expose statements, rendering |
 
 ## Slash commands
 
-The plugin ships a small set of `/vse-*` slash commands as quick entry points
-to the most-used skills. Each command is a thin wrapper that hands off to the
-named skill and forwards any arguments you supply.
+The plugin ships a small set of `/vse-*` slash commands as quick entry points to the most-used skills. Each command is a thin wrapper that hands off to the named skill.
 
-| Command           | Delegates to             | Use case                                                                                     |
-|-------------------|--------------------------|----------------------------------------------------------------------------------------------|
-| `/vse-setup`      | `project-setup`          | Bootstrap a new VSE project (greenfield or brownfield)                                       |
-| `/vse-iteration`  | `iteration-orchestrator` | Report iteration position, run the iteration-boundary closure check, handle a Change Request |
-| `/vse-microcycle` | `iteration-orchestrator` | Open a new AMBSE microcycle: elicit mission, centre of gravity, branch, backlog              |
-| `/vse-nanocycle`  | `iteration-orchestrator` | Plan a single commit: anchor thread, intent, verification hook, commit message               |
-| `/vse-trace`      | `traceability-guard`     | Run a traceability check against the current SysML models and report gaps                    |
-| `/vse-journal`    | `session-journal`        | Open or append the cross-session continuity journal                                          |
-| `/vse-audit`      | `project-audit`          | Audit project structure for completeness and non-canonical configuration                     |
+| Command | Delegates to | Use case |
+|---|---|---|
+| `/vse-setup` | `project-setup` | Bootstrap a new VSE project (greenfield or brownfield) |
+| `/vse-story` | `story-orchestrator` | Open or advance a user story |
+| `/vse-release` | `release-orchestrator` | Plan, baseline, or report on a release |
+| `/vse-cr` | `change-request` | Open a Change Request issue with §10.4.2 impact analysis |
+| `/vse-plan` | `project-plan` | Author or revise the Project Plan, SEMP, Risk Register, CM Strategy |
+| `/vse-trace` | `traceability-guard` | Run a traceability check and report gaps |
+| `/vse-audit` | `project-audit` | Audit project structure, story well-formedness, version drift |
+| `/vse-journal` | `session-journal` | Open or append the cross-session continuity journal |
 
-You can still invoke any skill directly with `@skill-name` if you need a
-workflow that the slash commands do not cover.
+You can still invoke any skill directly with `@skill-name` if you need a workflow that the slash commands do not cover.
 
 ## Subagents
 
-The plugin ships three read-only subagents that the orchestrating
-skills dispatch to for parallelisable, context-heavy work. Each
-subagent runs in an isolated context, returns a suggestion-shaped
-markdown report to the parent skill, and never writes files. The
-parent skill presents the proposals to the engineer for editing.
+The plugin ships read-only subagents that the orchestrating skills dispatch to for parallelisable, context-heavy work. Each subagent runs in an isolated context, returns a suggestion-shaped markdown report to the parent skill, and never writes files. The parent skill presents the proposals to the engineer for editing.
 
 | Subagent | Fired by | What it returns |
 |---|---|---|
-| vse-trade-study-runner | architecture-design at SR.3 trade-off steps | Weighted trade-off matrix with score rationale, sensitivity analysis, and any missing alternatives the engineer may not have considered |
-| vse-traceability-matrix-builder | traceability-guard and verification-validation | Complete trace matrix with gap report keyed by rule and a bidirectional consistency check across the SysML model tree |
-| vse-stakeholder-elicitor | needs-and-requirements at SR.2 persona-driven elicitation | Per-persona interview script, candidate need statements attributed to the persona of origin, and a cross-persona conflict summary |
+| vse-stakeholder-elicitor | needs-and-requirements at §4 persona-driven elicitation | Per-persona interview script, candidate need statements attributed to the persona of origin, and a cross-persona conflict summary |
+| vse-trade-study-runner | architecture-design at §6 trade-off steps | Weighted trade-off matrix with score rationale, sensitivity analysis, and any missing alternatives |
+| vse-traceability-matrix-builder | traceability-guard, project-audit, and verification-validation | Complete trace matrix with gap report keyed by rule, plus a bidirectional consistency check across the SysML model tree |
 
-The tool surface for every subagent is restricted to `Read`, `Glob`,
-and `Grep`. None has access to `Write`, `Edit`, or any other
-file-modifying tool, so the engineer always remains in control of what
-reaches the StRS, the System Design Document, the Traceability Matrix,
-or any other baselined work product.
+The tool surface for every subagent is restricted to `Read`, `Glob`, and `Grep`. None has access to `Write`, `Edit`, or any other file-modifying tool, so the engineer always remains in control of what reaches the StRS, the System Design Document, the Traceability Matrix, or any other baselined work product.
 
 ## Knowledge base
 
-The plugin's reference content sits in two surfaces:
+The plugin's reference content sits in three surfaces:
 
-- **`wiki/pages/<layer>/`**: atomic markdown pages of 50 to 250 lines,
-  cross-linked with Obsidian-style `[[wikilinks]]`, concatenated into
-  per-skill bundles under `wiki/bundles/` that skills embed at load
-  time. As of version 1.0.0, all reference content lives here:
-  120 atomic pages across 11 layers (iso29110, phas-eai, incose-vse,
-  ambse, sysml2, syside, needs-and-reqs, vv, hsi, project-structure),
-  consumed via 16 skill bundles.
+- **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
+- **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`, concatenated into per-skill bundles under `wiki/bundles/` that skills embed at load time. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
+- **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the
-authoring schema.
-
-### SysML 2.0 (wiki, OMG formal/2025-01-01 plus Weilkiens and Molnár 2026-04)
-
-61 atomic pages organised by skill. Each consuming skill loads its
-bundle (`wiki/bundles/<skill>.md`):
-
-| Bundle | Pages | Skill | Topic |
-|---|---|---|---|
-| sysml2-modelling | 17 | `sysml2-modelling` | Notation cheat sheet, semantics, libraries (umbrella) |
-| sysml2-behaviour | 12 | `sysml2-behaviour` | Actions, successions, state machines, flows, occurrences/4D, model execution |
-| sysml2-expressions | 6 | `sysml2-expressions` | Expressions, constraints, calculations, advanced quantities |
-| sysml2-metadata | 6 | `sysml2-metadata` | Metadata, reflection, filters, language extension, VSE_Library |
-| sysml2-model-structure | 5 | `sysml2-model-structure` | Canonical layout, base architecture, namespace hygiene, variants, CM |
-| sysml2-views | 4 | `sysml2-views` | Viewpoints, views, standard views, patterns |
-| sysml2-allocations | 4 | `sysml2-allocations` | Allocations, binding connectors, patterns |
-| sysml2-variants | 4 | `sysml2-variants` | Variations, variant configuration, patterns |
-| sysml2-cases | 3 | `sysml2-cases` | Use, analysis, verification cases |
-
-The 2026-04 release of *The SysML v2 Book* is fully captured:
-self/that contextual references (Section 17.3), binding connectors
-(Chapter 21), advanced quantities and units (Section 24.3),
-occurrences and 4D modelling (Chapter 25, four pages), and model
-execution (Chapter 39).
-
-### Reference layers (wiki)
-
-All non-SysML 2.0 reference material has been atomised under
-`wiki/pages/<layer>/` and consumed via the relevant skill bundles.
-
-**ISO/IEC 29110** (process backbone): 8 pages in `wiki/pages/iso29110/`
-covering the Basic profile, PM and SR processes, task checklists, and
-work product mappings.
-
-**PHAS-EAI** (design rationale): 4 pages in `wiki/pages/phas-eai/`
-covering configuration space, designed cognitive reserve, attention
-constructs, and DE lever tables.
-
-**INCOSE** (best practices, scaled): 5 pages in `wiki/pages/incose-vse/`,
-3 pages in `wiki/pages/needs-and-reqs/`, 4 pages in `wiki/pages/vv/`,
-and 5 pages in `wiki/pages/hsi/` covering lifecycle models, stakeholder
-needs, requirements engineering, architecture, V&V, configuration
-management, scaling guidance, and human-systems integration.
-
-**AMBSE** (agile model-based process): 20 pages in `wiki/pages/ambse/`
-organised into agile-process, requirements, architecture, and
-git-workflow sub-clusters.
-
-**SySiDE Automator** (tooling): 6 pages in `wiki/pages/syside/`
-covering tooling overview, project configuration, core API, expression
-evaluation, model modification, and VSE workflow patterns.
-
-**Project structure**: 4 pages in `wiki/pages/project-structure/`
-covering iteration-centred operation, iteration boundary closure,
-canonical project layout, and model tier templates.
+See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 129 atomic pages across 11 layers, consumed via 21 skill bundles.
 
 ## Sources
 
-Knowledge is extracted from six source categories, consulted in this priority:
+Knowledge is extracted from these source categories, consulted in priority order:
 
-1. **ISO/IEC 29110** -- Systems Engineering Profile for VSEs
-2. **PHAS-EAI framework** -- Georgsen (2026), thesis on attention in SE
-3. **INCOSE SE Handbook 4e** and domain guides (Needs and Requirements, V&V, HSI)
-4. **AMBSE methodology** -- Douglass (2016) *Agile Systems Engineering*, Douglass (2021) *Agile MBSE Cookbook*
-5. **SysML 2.0 specification** -- OMG formal/2025-01-01
-6. **Domain guides** -- Galinier et al. on SME practices
+1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
+2. **ISO/IEC 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
+3. **PHAS-EAI framework**, Georgsen (2026), thesis on attention in SE.
+4. **INCOSE SE Handbook 4e** and domain guides (Needs and Requirements, V&V, HSI).
+5. **AMBSE source methodology**: Douglass (2016) *Agile Systems Engineering* and Douglass (2021) *Agile MBSE Cookbook*. The plugin's methodology adapts the source arc per §0.4 of the spec. Where it disagrees, the spec wins.
+6. **SYSMOD** (Weilkiens, 2020), the source of the Base Architecture and System Context concepts adopted in §2 and §3.
+7. **SysML 2.0 specification**: OMG and *The SysML v2 Book* (Weilkiens and Molnár, 2026-04 release).
+8. **Domain guides**: Galinier et al. on SME practices.
 
 Source PDFs are private (gitignored) and not distributed with the plugin.
 
 ## Tooling
 
 The recommended modelling toolchain is [Sensmetry SySiDE](https://sensmetry.com).
-Choose tools based on your workflow:
 
 | Workflow | Tool | Licence |
-| --- | --- | --- |
+|---|---|---|
 | Learning, lightweight editing | **Syside Editor** (VS Code extension) | Free |
 | Model writing, diagrams, exploration | **Syside Modeler** (VS Code extension) | Licensed |
 | CI/CD validation, headless diagrams | **Syside CLI** (`syside check`, `format`, `viz`) | Licensed |
@@ -200,50 +136,37 @@ Choose tools based on your workflow:
 
 Additionally:
 
-- **Sysand** (open-source) for SysML v2 package management
-- Configuration via `syside.toml` in the project root (read by SySiDE itself)
-- IDE language server wiring via `.lsp.json` in the project root, copied
-  by `project-setup` so Claude Code launches `syside lsp` automatically
-  for `.sysml` and `.kerml` files
+- **Sysand** (open-source) for SysML v2 package management.
+- Configuration via `syside.toml` in the project root (read by SySiDE itself).
+- IDE language server wiring via `.lsp.json` in the project root, copied by `project-setup` so Claude Code launches `syside lsp` automatically for `.sysml` and `.kerml` files.
 
-If you have Modeler, you already have everything Editor offers. Disable the
-Editor extension when Modeler is active to avoid conflicts. Modeler and
-Automator share the same licence key.
+If you have Modeler, you already have everything Editor offers. Disable the Editor extension when Modeler is active to avoid conflicts. Modeler and Automator share the same licence key.
 
 ### Automator capabilities
 
-The Syside Automator (`pip install syside`, Python 3.12+) enables programmatic
-workflows that the CLI alone cannot provide:
+The Syside Automator (`pip install syside`, Python 3.12+) enables programmatic workflows that the CLI alone cannot provide:
 
-- **Requirements import/export**: round-trip between SysML models and Excel
-  spreadsheets for acquirer review
-- **Semantic trace checking**: programmatic satisfy/verify link analysis with
-  broken link detection
-- **Value rollup**: mass, power, and cost budgets with automatic unit conversion
-- **Variant analysis**: extract and compare product line configurations
-- **Report generation**: Jinja2-based pipeline producing PDF, HTML, and DOCX
-  with traceability matrices and dependency graphs
-- **State machine simulation**: simulate SysML state machines in Python
-- **Interactive exploration**: REPL mode for ad hoc model queries
+- **Requirements import/export**: round-trip between SysML models and Excel spreadsheets for acquirer review.
+- **Semantic trace checking**: programmatic `derive`/`frame concern`/`verify` link analysis with broken link detection.
+- **Value rollup**: mass, power, and cost budgets with automatic unit conversion.
+- **Variant analysis**: extract and compare product line configurations.
+- **Report generation**: Jinja2-based pipeline producing PDF, HTML, and DOCX with traceability matrices and dependency graphs.
+- **State machine simulation**: simulate SysML state machines in Python.
+- **Interactive exploration**: REPL mode for ad hoc model queries.
 
-See the SySiDE pages under `wiki/pages/syside/` (tooling-overview,
-project-configuration, core-api, expression-evaluation,
-model-modification, vse-workflows) for the full API reference.
+See the SySiDE pages under `wiki/pages/syside/` for the full API reference.
 
 ## Getting started
 
 ### Prerequisites
 
-- [Claude Code](https://claude.com/claude-code) CLI installed
-- (Recommended) [Sensmetry SySiDE](https://sensmetry.com) VS Code extension for
-  `.sysml` file editing, validation, and navigation
-- (Optional) Syside Automator for programmatic model analysis:
-  `pip install syside` (requires Python 3.12+, same licence key as Modeler)
+- [Claude Code](https://claude.com/claude-code) CLI installed.
+- (Recommended) [Sensmetry SySiDE](https://sensmetry.com) VS Code extension for `.sysml` file editing, validation, and navigation.
+- (Optional) Syside Automator for programmatic model analysis: `pip install syside` (requires Python 3.12+, same licence key as Modeler).
 
 ### Installation from a local clone
 
-Clone the repository, then register it as a local marketplace inside Claude
-Code:
+Clone the repository, then register it as a local marketplace inside Claude Code:
 
 ```bash
 git clone https://github.com/Roarge/vse-systems-engineering.git
@@ -265,114 +188,36 @@ Inside a Claude Code session:
 /plugin install vse-systems-engineering@Roarge-vse-systems-engineering
 ```
 
-After adding the marketplace, you might need to restart Claude Code so it discovers the new
-source. Then install the plugin.
+After adding the marketplace, you might need to restart Claude Code so it discovers the new source. Then install the plugin.
 
-### Git hooks (optional)
+### Hooks
 
-The `hooks/` directory contains two git hook scripts for automated enforcement:
+The plugin ships an ISO 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
-- **pre-commit-traceability.sh** blocks commits when staged `.sysml` files have
-  requirements without `satisfy` or `verify` trace links.
-- **iteration-boundary-check.sh** reports (advisory) which work products required
-  by the iteration's centre-of-gravity activities are missing at iteration close.
-  Missing items become explicit iteration-boundary closure debt on the backlog.
-  The only hard gate in the plugin is the macrocycle closure check at release.
+- **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up.
+- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`. They enforce SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, V&V coverage on `done` stories, and traceability matrix freshness. A seventh hook, `post-receive`, lives on the canonical remote rather than in `.githooks/` and mirrors to the backup remote per §10.8 of the methodology.
 
-To install them in a project:
-
-```bash
-cp hooks/pre-commit-traceability.sh .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
-
-These are standard git hooks, not Claude Code plugin hooks. They complement the
-plugin by catching trace gaps at commit time.
+Project-side hook configuration sits in `<project>/.iso-config.yaml` per §8 of the hooks guide. The schema is reproduced in the `attention-regime` skill body.
 
 ### Starting a new project
 
 1. Open a fresh project directory in your terminal.
-2. Launch Claude Code and invoke the `project-setup` skill.
-3. The skill scaffolds the directory structure, creates SysML 2.0 model stubs,
-   populates work product templates, and writes an initial `.vse-iteration.yml`
-   for Iteration 0 (Architecture Zero) with centre of gravity PM.1 plus SR.1
-   for a greenfield project, or a detected centre of gravity for a brownfield
-   project.
-4. Use `iteration-orchestrator` (or the `/vse-iteration`, `/vse-microcycle`,
-   `/vse-nanocycle` slash commands) to navigate the AMBSE iteration cycles,
-   open the next microcycle, plan a nanocycle commit, or run the
-   iteration-boundary closure check. The plugin enforces hybrid AMBSE as the
-   single VSE lifecycle. Each iteration is a `vse/iter-NN` feature branch
-   ending in a pull request.
+2. Launch Claude Code and invoke `/vse-setup`.
+3. The skill enters Plan Mode, drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. The default is the `engineering/` subdirectory. The user can override to the repo root or a custom subdirectory.
+4. After Plan Mode approval, the skill scaffolds the directories, copies the methodology spec into the project's `methodology/` folder, generates the Project Plan, SEMP, Risk Register, and CM Strategy stubs, and prepares the `.github/`, `.iso-config.yaml`, and `.githooks/` scaffolding. Greenfield mode runs `git init` and an initial commit. Brownfield mode leaves staging to the engineer.
+5. From there, route through the orchestration skills:
+   - `/vse-story` opens the first stakeholder story branch.
+   - `/vse-plan` walks the §10.3 element list to populate `docs/project-plan.md`.
+   - `@needs-and-requirements` begins §4 stakeholder elicitation.
 
 ### Picking up an existing VSE project
 
-For a project that was previously scaffolded by `project-setup` (or any
-project that already carries a `.vse-iteration.yml` file at its root),
-pickup is automatic. Open the project directory in Claude Code and the
-`SessionStart` hook will:
-
-1. Detect the `.vse-iteration.yml` file and read the current iteration
-   number, mission, branch, and centre-of-gravity activities.
-2. Print the iteration position, the mandatory first action (load
-   `vse-companion-overview`), and the SysML model summary.
-3. Surface the session journal via `session-journal` if `.vse-journal.yml`
-   exists, so the previous session's pending work and open issues are
-   visible.
-
-From there, invoke `vse-companion-overview` to set the lens, then route
-iteration work to `iteration-orchestrator` and the other specialised skills
-it indexes. The orchestrator walks the engineer through opening the next
-microcycle, planning a nanocycle commit, and running the iteration-boundary
-closure check.
-
-### Adding VSE to an existing repository
-
-If you have an existing software project (or any other repository) and
-want to bring it under VSE systems engineering governance, invoke
-`project-setup` from inside the repository. The skill detects that it is
-running inside an existing git working tree and switches to brownfield
-mode:
-
-1. **Context harvest.** It reads `README.md`, any existing `CLAUDE.md`,
-   `git config user.name`, the language-ecosystem manifest (for example
-   `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`), and a
-   `git ls-files | head -200` summary of your source tree, then asks you
-   only for the fields it could not infer (typically the acquirer name
-   and primary stakeholder roles).
-2. **Engineering subfolder layout.** All VSE work products land under a
-   new `engineering/` subfolder so your existing project root stays
-   clean. The `models/`, `docs/pm/`, `docs/sr/`, `TASKS.md`, `syside.toml`,
-   and `.lsp.json` files all live under `engineering/`. Only
-   `.vse-iteration.yml`, `.vse-journal.yml`, and the merged `CLAUDE.md`
-   sit at the project root, so the SessionStart hook keeps working
-   without configuration.
-3. **Idempotent CLAUDE.md merge.** If your project already has a
-   `CLAUDE.md`, the skill appends a marker block delimited by
-   `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and
-   `<!-- END VSE COMPANION -->`. Your existing content stays intact at
-   the top of the file. Re-running `project-setup` later replaces the
-   bytes between the markers in place, so you always pick up the
-   current plugin version without duplicating content or drifting from
-   the surrounding text you authored.
-4. **Host-project git history is preserved.** Brownfield mode does not
-   run `git init`, `git add`, or `git commit`. The skill leaves the
-   staging step to you, and the Step 11 summary tells you to stage the
-   new files on a `vse/iter-00-architecture-zero` branch so the AMBSE
-   branch-per-microcycle workflow applies from your first commit.
-5. **Hooks autodetect the layout.** The session-start,
-   iteration-boundary-check, and pre-commit traceability scripts all
-   check for `engineering/models` or `engineering/syside.toml` and point
-   their model and work-product paths at `engineering/` automatically.
-   The same scripts also work in greenfield projects without modification.
-
-Re-running `project-setup` inside a brownfield repository is safe: the
-marker-block merge is idempotent, the existing `engineering/` files are
-left in place unless you confirm otherwise, and your host project's
-source files are never touched.
+Open the project directory in Claude Code. The `SessionStart` hook detects the `methodology/` folder (at the repo root for greenfield, or at `engineering/methodology/` for brownfield), reads the current branch and any open story branches, surfaces the most recent plan-baseline tag and any open Change Requests, and prompts to load `vse-companion-overview` as the first action. From there, route through `story-orchestrator`, `release-orchestrator`, and the workflow-stage skills as required.
 
 ### Demo walkthrough
 
-The `demo/smart-sensor/` directory contains a complete lifecycle example that
-walks through stakeholder needs, system requirements, architecture, verification,
-and validation. See its README for a guided tour.
+The `demo/smart-sensor/` directory contains a worked example. The demo is being rebuilt against the new methodology and currently lags the other phases of the v2.0 restructuring. See its README for the current state.
+
+## Versioning
+
+The plugin follows semantic versioning. The current branch is in flight on the v2.0 restructuring. End-user installs should pin to `1.2.0` until `2.0.0` lands. See `CHANGELOG.md` for the full change history.
