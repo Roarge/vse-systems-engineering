@@ -8,6 +8,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.4] - 2026-05-05
+
+Phase 3C of the v2.0 restructuring. Rewrites the three lifecycle skills
+around the new methodology layout. Phase 3 is now complete, ten skills
+modified across three sub-PRs.
+
+This release is a release candidate. End-user installs should pin to
+`1.2.0` until `2.0.0` lands. Until Phase 7 lands, the templates that
+`project-setup` references (`templates/CONTRIBUTING.md`,
+`templates/github/CODEOWNERS`, `templates/iso-config/.iso-config.yaml`,
+`templates/common/models/core/core.sysml`, the Phase 7 risk-register
+and cm-strategy templates) do not yet exist. The skill describes the
+target file paths but the actual scaffolding will fail until Phase 7
+provides them. End users will see this as a missing-file error if they
+run `/vse-setup` between this release candidate and Phase 7.
+
+### Changed
+
+- `skills/project-setup/SKILL.md` rewritten around the methodology
+  layout. The flat-tier vs canonical-tier choice is dropped (§8.3
+  specifies one canonical layout). The `.vse-iteration.yml` and
+  `.vse-journal.yml` files are no longer scaffolded (project state
+  lives in git per §8.7). Brownfield-prompt-on-run defaults to
+  `engineering/` subdirectory (rationale: SysML modelling work stays
+  separate from implementation code), with override to repo root or
+  custom subdirectory. The skill copies
+  `${CLAUDE_PLUGIN_ROOT}/methodology/` to
+  `<project>/methodology/` so the methodology travels with the
+  project. Plan Mode entry preserved before any file system change.
+- `skills/project-audit/SKILL.md` rewritten as a read-only audit of
+  the methodology layout (§8.3), methodology presence, branch model
+  (§8.4), baseline state (`plan-baseline-*` and `release-*` tags),
+  story well-formedness (§1.9), Base Architecture forward-going rule
+  (§2.6 rule 5), reverse-engineering guard (§2.6 rule 7), System
+  Context completeness (§3.6), concern and story coverage, V&V
+  coverage, trace integrity (with `vse-traceability-matrix-builder`
+  subagent dispatch), ISO 29110 artefact presence, version drift,
+  and hook installation. Reports findings, never edits.
+- `skills/attention-regime/SKILL.md` rewritten around the new hook
+  surface. Eight Claude Code lifecycle hooks (SessionStart,
+  UserPromptSubmit, PreToolUse, PostToolUse, Stop, SubagentStop,
+  PreCompact, Notification) and seven project-side git hooks
+  (pre-commit, commit-msg, prepare-commit-msg, pre-push, post-merge,
+  post-checkout, post-receive on the server). Carries an explicit
+  TODO marker for Phase 4 hook-script delivery. Schema for
+  `.iso-config.yaml` reproduced from the hooks guide §8.
+
 ## [2.0.0-rc.3] - 2026-05-05
 
 Phase 3B of the v2.0 restructuring. Rewrites the three workflow-stage
