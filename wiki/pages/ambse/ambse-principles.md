@@ -10,14 +10,12 @@ sources:
   - citation: "Douglass, B.P. (2021). Agile MBSE Cookbook. Packt. Chapter 1."
     raw: Douglass_2021_Agile_MBSE_Cookbook.pdf
 related:
-  - ambse-vee-three-timeframes
-  - ambse-iteration-planning
   - ambse-risk-and-metrics
   - ambse-iso29110-mapping
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator, verification-validation]
+bundled_by: [release-orchestrator, verification-validation]
 ---
 
 # AMBSE Principles and Modelling Rules
@@ -127,9 +125,9 @@ for VSEs:
 
 ## See also
 
-- [[ambse-vee-three-timeframes]] for the Vee pattern applied at
+- [[methodology-overview]] for the Vee pattern applied at
   nanocycle, microcycle, and macrocycle scales.
-- [[ambse-iteration-planning]] for planning hierarchy, Iteration
+- [[methodology-overview]] for planning hierarchy, Iteration
   0, Architecture 0, and effort estimation.
 - [[ambse-risk-and-metrics]] for risk management and SE
   metrics.

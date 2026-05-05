@@ -488,3 +488,58 @@ Note on page-numbering shift. The 2026-04 release of "The SysML v2
 Book" has Chapter 41 at content pp 291-297; earlier book drafts had
 the same content at pp 265-271. The content has not changed, only the
 pagination. Citations now point at the current pages.
+
+## [2026-05-05] refactor | story-driven AMBSE methodology layer
+
+Phase 5 of the v2.0 plugin restructuring. The wiki adopts the
+plugin's new methodology specification (`<plugin>/methodology/`,
+introduced in PR #33).
+
+Pages deleted (cycle-centric, superseded by the methodology layer):
+- ambse/ambse-git-nanocycle-commits
+- ambse/ambse-git-microcycle-prs
+- ambse/ambse-git-ci-gates-and-macrocycle
+- ambse/ambse-git-three-way-mapping
+- ambse/ambse-git-vse-guidance-and-anti-patterns
+- ambse/ambse-vee-three-timeframes
+- ambse/ambse-iteration-planning
+- ambse/ambse-nanocycle-and-use-case-analysis
+- project-structure/iteration-boundary-and-macrocycle-closure
+- project-structure/iteration-centred-operation
+
+Layer added: methodology (16 atomic pages) summarising §0-§10 of the
+methodology specification:
+- methodology-overview
+- user-story-canonical-artefact
+- frame-concern-pattern
+- role-actor-coupling
+- benefit-as-criterion
+- storymeta-lifecycle
+- base-architecture-corollaries
+- system-context-completeness
+- stakeholder-stories-workflow
+- system-stories-workflow
+- architectural-analysis-workflow
+- architectural-design-workflow
+- story-branch-pr-workflow
+- iso-29110-compliance-mapping
+- project-management-workflow
+- methodology-library-packaging
+
+Bundles regenerated. iteration-orchestrator bundle removed (skill
+decommissioned in PR #35). Five new bundles added: story-orchestrator,
+release-orchestrator, change-request, project-plan,
+vse-companion-overview. The remaining bundles include relevant
+methodology pages per their `bundled_by` lists.
+
+Bulk replacements:
+- `bundled_by: iteration-orchestrator` rewritten to `release-orchestrator`
+  in 19 surviving pages (closest semantic successor for the lifecycle
+  reference role the iteration-orchestrator skill played).
+- Wikilinks to deleted pages rewritten to point at the closest
+  methodology-layer successor (typically [[story-branch-pr-workflow]]
+  or [[methodology-overview]]).
+
+Totals after the refactor: 129 atomic pages across 11 layers
+(methodology added; project-structure shrunk by two; ambse shrunk by
+eight). 21 bundles (was 17 plus 5 new minus 1 decommissioned).

@@ -37,7 +37,7 @@ Architecture in AMBSE has two distinct activities:
 Both activities are performed incrementally, **per iteration**.
 Each iteration refines and extends the architecture as new use
 cases are specified. For the underlying AMBSE iteration model
-see [[ambse-vee-three-timeframes]]. For the SysML 2.0 package
+see [[methodology-overview]]. For the SysML 2.0 package
 layout the architecture lands in, see
 [[sysml2-canonical-model-layout]]. For the ISO 29110 SR.3
 activity catalogue, see [[iso29110-sr-process]].

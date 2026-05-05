@@ -11,7 +11,6 @@ related:
   - ambse-requirements-as-models
   - ambse-use-case-driven-elicitation
   - ambse-system-requirements-derivation
-  - ambse-nanocycle-and-use-case-analysis
   - sysml2-vse-library-metadata
   - sysml2-model-cm-and-risks
   - hsi-in-requirements
@@ -111,7 +110,7 @@ Step-by-step procedure combining AMBSE with ISO 29110 SR.2:
       [[ambse-system-requirements-derivation]]).
    e. Model the use case behaviour (flow, scenario, or
       state-based; see
-      [[ambse-nanocycle-and-use-case-analysis]]).
+      [[methodology-overview]]).
    f. Add verification method to each requirement.
    g. Run the nanocycle workflow: validate, trace-check,
       review.
@@ -131,7 +130,7 @@ Step-by-step procedure combining AMBSE with ISO 29110 SR.2:
   and prioritisation.
 - [[ambse-system-requirements-derivation]] for the per-use-case
   requirement derivation.
-- [[ambse-nanocycle-and-use-case-analysis]] for the inner loop.
+- [[methodology-overview]] for the inner loop.
 - [[requirements-traceability-and-attributes]] for the broader
   trace catalogue and TBX management.
 - [[sysml2-vse-library-metadata]] and

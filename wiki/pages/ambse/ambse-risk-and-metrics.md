@@ -9,14 +9,13 @@ sources:
     raw: Douglass_2016_Agile_Systems_Engineering.pdf
 related:
   - ambse-principles
-  - ambse-iteration-planning
   - ambse-iso29110-mapping
   - sysml2-vse-library-metadata
   - sysml2-model-cm-and-risks
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # AMBSE Risk Management and SE Metrics
@@ -98,7 +97,7 @@ and accurately capture the property of interest.
 ## See also
 
 - [[ambse-principles]] for the SE-versus-software distinction.
-- [[ambse-iteration-planning]] for the planning hierarchy that
+- [[methodology-overview]] for the planning hierarchy that
   generates the work items risk and metrics consume.
 - [[ambse-iso29110-mapping]] for the AMBSE-to-ISO 29110 table
   that maps risk and metric activities to PM.2 / PM.3.

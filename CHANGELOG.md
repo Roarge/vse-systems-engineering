@@ -8,6 +8,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.6] - 2026-05-05
+
+Phase 5 of the v2.0 restructuring. The wiki adopts the plugin's
+methodology specification. Cycle-centric pages from the AMBSE and
+project-structure layers are removed. A new `methodology` layer
+summarises §0-§10 of the methodology spec in 16 atomic pages
+cross-linked to the spec source. All 21 bundles are regenerated
+(17 existing minus 1 decommissioned plus 5 new for the orchestration
+skills introduced in PR #35).
+
+This release is a release candidate. End-user installs should pin to
+`1.2.0` until `2.0.0` lands.
+
+### Removed
+
+Ten cycle-centric wiki pages superseded by the methodology layer:
+
+- `wiki/pages/ambse/ambse-git-nanocycle-commits.md`
+- `wiki/pages/ambse/ambse-git-microcycle-prs.md`
+- `wiki/pages/ambse/ambse-git-ci-gates-and-macrocycle.md`
+- `wiki/pages/ambse/ambse-git-three-way-mapping.md`
+- `wiki/pages/ambse/ambse-git-vse-guidance-and-anti-patterns.md`
+- `wiki/pages/ambse/ambse-vee-three-timeframes.md`
+- `wiki/pages/ambse/ambse-iteration-planning.md`
+- `wiki/pages/ambse/ambse-nanocycle-and-use-case-analysis.md`
+- `wiki/pages/project-structure/iteration-boundary-and-macrocycle-closure.md`
+- `wiki/pages/project-structure/iteration-centred-operation.md`
+
+The `wiki/bundles/iteration-orchestrator.md` bundle is also removed
+(the consuming skill was decommissioned in PR #35).
+
+### Added
+
+New `methodology` layer with 16 atomic pages under
+`wiki/pages/methodology/`:
+
+- methodology-overview (§0)
+- user-story-canonical-artefact (§1)
+- frame-concern-pattern (§1.4.6)
+- role-actor-coupling (§1.4.5)
+- benefit-as-criterion (§0.3 connective mechanism)
+- storymeta-lifecycle (§1.5, §8.7)
+- base-architecture-corollaries (§2.1, §2.6 rule 7 reverse-engineering guard)
+- system-context-completeness (§3)
+- stakeholder-stories-workflow (§4)
+- system-stories-workflow (§5)
+- architectural-analysis-workflow (§6)
+- architectural-design-workflow (§7)
+- story-branch-pr-workflow (§8.4-§8.6)
+- iso-29110-compliance-mapping (§9)
+- project-management-workflow (§10)
+- methodology-library-packaging (§0.8 forthcoming)
+
+Five new skill bundles per the orchestration skills introduced in
+PR #35:
+
+- `wiki/bundles/story-orchestrator.md`
+- `wiki/bundles/release-orchestrator.md`
+- `wiki/bundles/change-request.md`
+- `wiki/bundles/project-plan.md`
+- `wiki/bundles/vse-companion-overview.md`
+
+### Changed
+
+- `wiki/CLAUDE.md` adds the `methodology` layer to the layer table
+  with the methodology spec at `<plugin>/methodology/` as its source.
+- `wiki/INDEX.md` regenerated. 129 pages indexed across 11 populated
+  layers, 21 bundles.
+- `wiki/LOG.md` carries a `refactor` entry for the layer addition and
+  cycle-page removal.
+- `bundled_by` lists across 19 surviving pages: `iteration-orchestrator`
+  rewritten to `release-orchestrator`, the closest semantic successor
+  for the lifecycle reference role.
+- Wikilinks pointing at deleted pages rewritten to point at the
+  closest methodology-layer successor (typically
+  `[[story-branch-pr-workflow]]` or `[[methodology-overview]]`).
+
 ## [2.0.0-rc.5] - 2026-05-05
 
 Phase 4 of the v2.0 restructuring. Adopts the full hook surface

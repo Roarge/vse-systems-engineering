@@ -12,7 +12,6 @@ sources:
 related:
   - ambse-requirements-as-models
   - ambse-system-requirements-derivation
-  - ambse-nanocycle-and-use-case-analysis
   - sysml2-cases-overview
   - sysml2-case-kinds
   - sysml2-case-patterns
@@ -144,7 +143,7 @@ requirements are caught early, when the cost of repair is low.
 - [[ambse-requirements-as-models]] for the conceptual frame.
 - [[ambse-system-requirements-derivation]] for the next step
   (deriving system requirements from use cases).
-- [[ambse-nanocycle-and-use-case-analysis]] for the
+- [[methodology-overview]] for the
   inner-loop workflow and the three analysis approaches (flow,
   scenario, state).
 - [[sysml2-cases-overview]], [[sysml2-case-kinds]],

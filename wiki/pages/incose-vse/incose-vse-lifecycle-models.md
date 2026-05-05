@@ -11,14 +11,12 @@ sources:
     raw: galinier_sme_practices.pdf
 related:
   - ambse-principles
-  - ambse-vee-three-timeframes
-  - ambse-iteration-planning
   - iso29110-pm-process
   - iso29110-sr-process
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # INCOSE Lifecycle Models Scaled for VSEs
@@ -46,18 +44,21 @@ documented workflow. Three overlapping cycles run in pipeline:
 system specification (SR.2 to SR.3), downstream engineering (SR.4),
 and system verification (SR.5). System engineers specify iteration
 N+1 while downstream engineers implement N and testers verify N-1.
-For a one-person VSE, the same person cycles through roles at
-iteration boundaries. AMBSE explicitly applies the Vee verification
-pattern at three timeframes (see ambse-vee-three-timeframes):
-nanocycle (30 minutes to 1 day), microcycle (1 to 4 weeks), and
-macrocycle (project length).
+For a one-person VSE, the same person cycles through roles at story
+boundaries. The plugin's methodology adapts the Douglass Vee pattern
+to the story-driven workflow. See [[methodology-overview]] for the
+iteration discipline that replaces the fixed-length nanocycle,
+microcycle, and macrocycle containers, and [[story-branch-pr-workflow]]
+for the per-story branch and pull-request cadence that operationalises
+verification across iterations.
 
-## Iteration planning as a complement to milestone planning
+## Story planning as a complement to milestone planning
 
-Iteration planning (see ambse-iteration-planning) complements
-traditional milestone-based gates. The project backlog
-(prioritised work items) is allocated to iterations, each with a
-mission statement. Backlog management, velocity tracking, and
+Story planning (see [[methodology-overview]] and [[stakeholder-stories-workflow]])
+complements traditional milestone-based gates. The project backlog
+(prioritised user stories) is allocated to working iterations, each
+with a story or theme as its mission. Backlog management, velocity
+tracking, and
 iteration retrospectives provide ongoing feedback that traditional
 gate reviews alone cannot.
 

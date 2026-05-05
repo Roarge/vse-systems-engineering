@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, iteration-orchestrator]
+bundled_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 Project Management Process (PM.1 to PM.4)

@@ -52,6 +52,7 @@ is the modelling language, and domain guides cover specific concerns.
 | PHAS-EAI | `pages/phas-eai/` | kappe.pdf, PHAS-EAI framework papers. |
 | INCOSE (VSE-scaled) | `pages/incose-vse/` | INCOSE SE Handbook 4e, filtered for VSE scope. |
 | AMBSE | `pages/ambse/` | Douglass 2016 (Agile Systems Engineering), Douglass 2021 (Agile MBSE Cookbook). |
+| Methodology | `pages/methodology/` | The plugin's methodology specification at `<plugin>/methodology/`. Atomic-page summaries cross-linked to the spec. |
 | SysML 2.0 | `pages/sysml2/` | OMG SysML 2.0 specification and derived notes. |
 | SySiDE tooling | `pages/syside/` | Sensmetry SySiDE documentation and Python API. |
 | Needs and Requirements | `pages/needs-and-reqs/` | INCOSE Guide to Needs and Requirements. |

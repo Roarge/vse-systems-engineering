@@ -10,7 +10,6 @@ sources:
 related:
   - ambse-requirements-as-models
   - ambse-use-case-driven-elicitation
-  - ambse-nanocycle-and-use-case-analysis
   - ambse-dependability-and-traceability
   - sysml2-syntax-requirements-and-cases
   - sysml2-requirements-semantics
@@ -130,7 +129,7 @@ verification case is written; see
   principle.
 - [[ambse-use-case-driven-elicitation]] for the upstream
   workflow.
-- [[ambse-nanocycle-and-use-case-analysis]] for the inner-loop
+- [[methodology-overview]] for the inner-loop
   steps that incorporate this derivation.
 - [[ambse-dependability-and-traceability]] for the trace matrix
   and downstream verify link patterns.

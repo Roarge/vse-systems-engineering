@@ -19,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [iteration-orchestrator]
+bundled_by: [release-orchestrator]
 ---
 
 # INCOSE Requirements Engineering for VSEs
@@ -76,7 +76,7 @@ freeze signals risk of cost and schedule overrun. Use the
 volatility indicator to decide when to hold the specification
 review.
 
-The `iteration-orchestrator` skill exposes a `requirements
+The `release-orchestrator` skill exposes a `requirements
 volatility` metric per iteration boundary. The metric counts
 modified `RequirementDefinition` and `RequirementUsage` elements
 across the iteration's PRs, classifies each modification as new

@@ -25,7 +25,7 @@ bundled_by: [architecture-design]
 # AMBSE Architecture-Level V&V and ISO 29110 Mapping
 
 V&V in AMBSE operates at all three verification timeframes
-(see [[ambse-vee-three-timeframes]] and [[vv-definitions]])
+(see [[methodology-overview]] and [[vv-definitions]])
 and uses the model as the primary verification artefact. For
 the architecture activities upstream see
 [[ambse-architecture-analysis]],
