@@ -70,7 +70,7 @@ Run from the project root, after `@project-setup` has scaffolded the repository.
 The hooks read this file to determine what to enforce. Schema reproduced from §8 of `methodology/iso-29110-hooks-guide.md`:
 
 ```yaml
-# .iso-config.yaml — ISO 29110 hook configuration
+# .iso-config.yaml: ISO 29110 hook configuration
 
 baselined_paths:
   - docs/project-plan.md
@@ -103,6 +103,8 @@ renderers:
 ```
 
 Push project-specific behaviour into this file rather than into the hook scripts. The scripts are stable across projects, the configuration varies.
+
+The schema reproduction above omits the `iteration:` block carried by §8 of the hooks guide (`cadence_days`, `current`). The new story-driven methodology has no fixed-length iteration concept. Project state lives in git per §8.7. The hooks guide itself will be updated in a later phase to reflect this.
 
 ## Refusals
 

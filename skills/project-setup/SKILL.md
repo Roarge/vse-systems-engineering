@@ -133,7 +133,8 @@ model/
 │   ├── logical-architecture/
 │   │   ├── interface-types/
 │   │   ├── allocations/
-│   │   └── components/
+│   │   ├── components/
+│   │   └── architecture-context.sysml
 │   ├── product-architecture/
 │   ├── parametrics/
 │   ├── processes/
@@ -155,10 +156,12 @@ Each subfolder receives a placeholder `.gitkeep` so git tracks the empty directo
 `model/core/core.sysml` is generated from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/core.sysml` (created in Phase 7) and uses the project short code from Step 1 to declare the top-level package, for example:
 
 ```sysml
-package <Aiwell_Core> Aiwell_Core {
+package <Aiwell> Aiwell_Core {
     // imports added as sub-packages are populated
 }
 ```
+
+The angle-bracket short code is the project's 3-5 letter prefix (per §8.3.4), not the long PascalCase package name.
 
 `model/library/` receives a copy of `${CLAUDE_PLUGIN_ROOT}/templates/common/library/vse-library.sysml`, the methodology library stub per §0.8.
 

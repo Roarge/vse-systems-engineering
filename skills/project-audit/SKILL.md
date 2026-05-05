@@ -1,6 +1,6 @@
 ---
 name: project-audit
-description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions. Read-only.
+description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions. Read-only except for the audit report it produces.
 user-invocable: true
 ---
 
@@ -131,7 +131,8 @@ Check `<project>/docs/` for the following information products. Each missing art
 - `cm-strategy.md` (§10.8).
 - `correction-register.md` (§10.5).
 - `progress-status-record.md` (§10.5).
-- `justification-document.md` (§9.5; may aggregate ADRs).
+- `justification-document.md` (§9.5, may aggregate ADRs).
+- `disposal-management-approach.md` (§10.9), gated on lifecycle phase.
 - `meetings/` folder (§10.4).
 - `product-acceptance-record.md` (§10.6) once the project closes.
 
