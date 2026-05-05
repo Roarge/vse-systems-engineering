@@ -1,0 +1,57 @@
+# .iso-config.yaml: ISO 29110 hook configuration
+#
+# This file drives the project-side and lifecycle hooks shipped by the
+# vse-systems-engineering plugin. Place at the project root (or under
+# engineering/ for brownfield layout). The hooks read this file to
+# decide what to enforce.
+#
+# Push project-specific behaviour into this file rather than into the
+# hook scripts. The scripts are stable across projects, the
+# configuration varies.
+
+# Plugin version recorded at /vse-setup time. Compared by the audit.
+plugin_version: "2.0.0-rc.x"
+
+# Paths under Change Request protection. Edits to any path on this
+# list (or any path beneath a directory entry) require an open
+# Change Request issue and a "(CR #<n>)" reference in the commit
+# message.
+baselined_paths:
+  - docs/project-plan.md
+  - docs/cm-strategy.md
+  - docs/risk-register.md
+  - docs/disposal-management-approach.md
+  - methodology/
+  - model/library/
+
+# Branches that the plugin treats as protected. Force-push is
+# prohibited on these and additional review gates apply.
+protected_branches:
+  - main
+  - release/*
+
+# StoryMeta fields that every story shall carry once it leaves backlog.
+storymeta:
+  required_fields: [points, priority, status]
+  valid_statuses: [backlog, ready, inProgress, done]
+
+# Risk Register configuration.
+risk_register:
+  path: docs/risk-register.md
+  stale_threshold_days: 30
+
+# Change Request configuration.
+change_request:
+  issue_label: change-request
+  required_for_paths: ${baselined_paths}
+
+# Renderers for §9.8 model-derived artefacts. Each path is an
+# executable script invoked by the post-merge hook on main.
+# Stub paths until the project authors them under tools/render/.
+renderers:
+  traceability_matrix: tools/render/traceability-matrix.py
+  stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
+  system_reqs:         tools/render/system-reqs-doc.py
+  ivv_plan:            tools/render/ivv-plan.py
+  ivv_procedures:      tools/render/ivv-procedures.py
+  justification:       tools/render/justification-doc.py
