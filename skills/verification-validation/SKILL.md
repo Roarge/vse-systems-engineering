@@ -1,6 +1,6 @@
 ---
 name: verification-validation
-description: Plan and execute verification and validation with trace links. Use when creating test cases, running V&V, or working in SR.5.
+description: Author and execute verification cases (against the system model, §5.4.6) and validation cases (against stakeholder intent, §4.3.6). Use when writing a verification def, binding acceptance criteria to a verify clause, choosing between verification and validation, rendering the IVV Plan or IVV Procedures, or running a V&V coverage check before release.
 user-invocable: true
 ---
 
@@ -8,395 +8,167 @@ user-invocable: true
 
 If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
 
-You guide the engineer through ISO 29110 SR.5 (System Integration, Verification
-and Validation). This skill implements R3 (machine-readable traceability) by
-ensuring every requirement has a verification case and every stakeholder need
-has a validation case.
+This skill owns the discipline of binding acceptance criteria to executable cases and turning the resulting `verification def` set into the IVV Plan, the IVV Procedures, and the Verification and Validation Reports specified by ISO 29110.
 
-## When This Skill Triggers
+The methodology distinguishes two activities that share the SysML v2 `verification def` syntax. *Verification* asks whether the system, as modelled, meets its system stories per §5.4.6. *Validation* asks whether the realised system meets stakeholder intent per §4.3.6. Both produce `verification def` instances. The distinction lies in which acceptance the `objective { verify ... }` clause binds, and in which folder the file lives.
 
-- The user asks to plan or execute V&V activities
-- `.vse-iteration.yml` lists SR.5 as a centre of gravity, or the engineer
-  is asking about V&V evidence at iteration-boundary closure or
-  macrocycle release
-- The user wants to create verification or validation cases
-- The user asks about test planning or IVV procedures
+## When this skill triggers
 
-## Key Definitions
+Phrases that activate the skill:
 
-- **Verification**: confirms the product is built right (system satisfies
-  requirements). Answers: "Did we build it correctly?"
-- **Validation**: confirms the right product is built (system satisfies
-  stakeholder needs). Answers: "Did we build the right thing?"
+- "write a verification case", "author a verification def".
+- "write a validation case", "exercise stakeholder intent".
+- "bind this acceptance to a verification def", "verify the acceptance criterion".
+- "render the IVV Plan", "render the IVV Procedures".
+- "verify the system", "exercise the system model".
+- "check V&V coverage", "every acceptance has a case".
 
-Both are necessary. Verification without validation means a correct system that
-nobody wants. Validation without verification means an untested system that
-might fail.
+Routed in by `@story-orchestrator` whenever an acceptance criterion is being formalised on a story moving from `ready` to `inProgress`. Routed in by `@release-orchestrator` during the release baseline coverage check, where every acceptance on `main` must have at least one case bound. Routed in by `@architecture-design` when the architectural model needs verification cases authored against subsystem stories or control laws.
 
-## Continuous Verification Approach (AMBSE)
+## Inputs
 
-When using the agile MBSE lifecycle, V&V is not confined to SR.5. Three
-verification timeframes operate throughout the project:
+The project layout (per §8.3) provides:
 
-- **Nanocycle** (30 min to 1 day): SySiDE validation, trace checking, peer review.
-  Runs during SR.2 and SR.3 as models are created.
-- **Microcycle** (1-4 weeks): iteration-level V&V, stakeholder walkthrough,
-  retrospective. Runs at the end of each iteration.
-- **Macrocycle** (project length): full system V&V, formal acceptance. This is
-  the traditional SR.5 activity described below.
+- `model/core/verification-validation/verification-cases/`. System-level verification cases.
+- `model/core/verification-validation/validation-cases/`. System-level validation cases.
+- `model/core/logical-architecture/components/<comp>/verification-validation/{verification-cases,validation-cases}/`. Recursive subsystem-scope V&V per §8.3.2.
 
-See the `ambse-vee-three-timeframes` atomic page and the `vv-reporting-and-vse-guidance` atomic page (both bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`, Continuous Verification Timeframes section) for details.
+The story register provides:
 
-## Process Flow
+- `model/core/stories/stakeholder/`. Stakeholder stories whose acceptance criteria are bound to validation cases.
+- `model/core/stories/system/`. System stories whose acceptance criteria are bound to verification cases.
+- `model/core/logical-architecture/components/<comp>/stories/`. Subsystem stories.
 
-### Step 1: Review IVV Plan (SR.5.1)
+Each story carries one or more `acceptance` subrequirements per §1.4.4. Each acceptance may be the target of zero or more `verify` clauses. The methodology copy at `<project>/methodology/` is the authoritative reference and is read whenever a rule is in question.
 
-The IVV Plan should have been established during SR.2.9 and updated during
-SR.3.6. Verify that it:
-- [ ] Lists all system requirements to be verified
-- [ ] Lists all stakeholder needs to be validated
-- [ ] Assigns a verification method to each requirement
-- [ ] Defines pass/fail criteria for each test
-- [ ] Specifies the integration sequence
+## Workflow A: Validation case authoring (§4.3.6)
 
-### Step 2: Define Verification Cases
+A validation case exercises stakeholder intent rather than system internals. It asks "does the system, as observed, satisfy what the stakeholder wanted?" Answers are typically obtained by demonstration, walkthrough, or operational test, not by an automated unit-level check.
 
-For each system requirement, create a verification case with the appropriate
-method:
+1. Identify the stakeholder story and the acceptance subrequirement to be validated.
+2. Author a `verification def` whose `subject` matches the stakeholder story's `subject` (per §1.9 rule 5, the verification case's subject shall conform to the story's subject type).
+3. Bind the acceptance via `objective { verify <story>::<acceptance>; }`.
+4. Provide an action body that names the demonstration or operational fixture (collect, evaluate). The body may be deferred per §8.6.3 item 6, but a stub is mandatory at final review.
+5. Place the file in `model/core/verification-validation/validation-cases/<name>.sysml`. Use `VAL_` as the case name prefix.
 
-| Method | When to Use | VSE Applicability |
-|--------|------------|-------------------|
-| **Test** | Quantitative requirements (performance, accuracy) | High, primary method |
-| **Analysis** | Mathematical/computational verification | High for performance |
-| **Inspection** | Documentation, labelling, physical attributes | High, low cost |
-| **Demonstration** | Functional operation without measurement | Medium |
+The pattern is the one shown in methodology §4.3.6:
 
 ```sysml
-package Verification {
-    import SystemRequirements::*;
+verification def VAL_AckFromDashboard {
+    subject sys : Aiwell_OnlineSentral;
 
-    verification def VerifyTempAccuracy {
-        doc /* Test: Apply known reference temperatures at -20, 0, 20, 40,
-               60 degrees C. Verify readings are within +/- 0.5 C. */
-        attribute id : String = "VER-001";
-        attribute method : String = "test";
-        attribute passCriteria : String = "All readings within +/- 0.5 C";
-        verify requirement MeasureTemperature;
+    objective {
+        verify US_042_AckFromDashboard::acceptance;
     }
 
-    verification def VerifyResponseTime {
-        doc /* Test: Apply step change in temperature. Measure time from
-               change to display update. Must be under 2 seconds. */
-        attribute id : String = "VER-002";
-        attribute method : String = "test";
-        attribute passCriteria : String = "Response under 2 seconds";
-        verify requirement ResponseTimeReq;
-    }
-
-    verification def InspectUserInterface {
-        doc /* Inspection: Review the display layout against the
-               human factors requirements in REQ-005. */
-        attribute id : String = "VER-003";
-        attribute method : String = "inspection";
-        verify requirement DisplayReadability;
-    }
+    action collectData { /* observed user task on representative hardware */ }
+    action evaluate    { /* pass criterion in stakeholder vocabulary */ }
 }
 ```
 
-### Step 3: Define Validation Cases
+## Workflow B: Verification case authoring (§5.4.6)
 
-For each stakeholder need, create a validation case:
+A verification case exercises the system as modelled. It asks "does the system exhibit the required behaviour or property?" Answers are typically obtained by model execution, automated check, or simulation.
+
+1. Identify the system story and the acceptance subrequirement to be verified.
+2. Author a `verification def` whose `subject` matches the system story's `subject`.
+3. Bind the acceptance via `objective { verify <story>::<acceptance>; }`. Where the story carries a `require constraint` (formalised benefit), a single case may verify both the constraint and the acceptance.
+4. Provide an action body covering setup, measurement, and evaluation. Stubs are permitted at final review but must be populated by release per §10.5.3.
+5. Place the file in `model/core/verification-validation/verification-cases/<name>.sysml`. Use `VC_` as the case name prefix.
+
+The pattern is the one shown in methodology §5.4.6:
 
 ```sysml
-package Validation {
-    import StakeholderNeeds::*;
+verification def VC_BatchAckLatency {
+    subject sys : Aiwell_OnlineSentral;
 
-    verification def ValidateMonitoring {
-        doc /* Demonstration: Install the system in a representative
-               facility environment. Ask the operator to perform
-               typical monitoring tasks. Confirm the system meets
-               the operator's stated needs for temperature monitoring. */
-        attribute id : String = "VAL-001";
-        attribute method : String = "demonstration";
-        verify requirement MonitorTemperature;
+    objective {
+        verify SYS_142_BatchAcknowledgement::sla;
+        verify SYS_142_BatchAcknowledgement::acceptance;
     }
+
+    action setup    { /* fixture preparation */ }
+    action measure  { /* observation method */ }
+    action evaluate { /* pass criterion in measurable form */ }
 }
 ```
 
-### Step 4: Trace Completeness Check
+A single case may verify multiple acceptance criteria where they share a fixture. An acceptance criterion may be the target of multiple cases when different conditions warrant separate runs.
 
-Invoke `@traceability-guard` to verify:
-- Every system requirement has at least one verification case (verify link)
-- Every stakeholder need has at least one validation case
-- No orphan verification cases (cases not linked to any requirement)
+## Workflow C: Subsystem V&V (§7.3.7 and §7.3.8)
 
-#### Dispatch to `vse-traceability-matrix-builder`
+§7 architectural decomposition introduces new failure modes at subsystem boundaries. Each component identified in §7 is itself a system at its own scope per §8.3.2, so the same authoring discipline applies recursively.
 
-When the trace completeness check requires walking the full model
-tree, dispatch to the `vse-traceability-matrix-builder` subagent
-rather than reading every model file in this skill's own context. The
-subagent isolates the heavy file reads so this skill retains room for
-the engineer's V&V questions.
+- Subsystem-scoped verification cases live under `model/core/logical-architecture/components/<comp>/verification-validation/verification-cases/`.
+- Subsystem-scoped validation cases live under `.../validation-cases/`. The "stakeholders" of a subsystem may be sibling subsystems, the parent system, or external actors local to the subsystem boundary.
+- Each subsystem story's acceptance is bound the same way as a system story's acceptance, against the subsystem `part def` rather than the system `part def`.
+- Where a control law (§7.3.6) is allocated across multiple subsystems, the case verifying that law belongs at the scope (system or component) that contains all the involved parts.
 
-**When to dispatch.** Whenever Step 4 needs a complete matrix across
-more than a handful of model files, particularly at the SR.5 macrocycle
-boundary where every requirement and case must be accounted for.
+The §7.3.8 review questions are asked by `@architecture-design`, not here. This skill answers only "is the case well-formed and does it bind the right acceptance?".
 
-**What to pass.** The model directory path (default `models/`), the
-identifier prefixes for verification and validation cases (`VER-`,
-`VAL-`), and the trace rules from `traceability-guard` you want
-applied.
+## Workflow D: Coverage check
 
-**How to present the result.** The subagent returns a suggestion-shaped
-markdown matrix and gap report. Surface the gap report to the engineer
-and route any agreed fixes back through `@needs-and-requirements` or
-`@architecture-design` rather than editing models directly from this
-skill. The subagent never writes files.
+Walk the story register before any release baseline. For each story:
 
-### Step 5: System Integration (SR.5.2)
+1. Read its `acceptance` subrequirements.
+2. For each acceptance, find every `verification def` whose `objective` includes a `verify` clause naming that acceptance.
+3. Record acceptance criteria with no bound case. These are gaps and are routed to `@story-orchestrator` for remediation.
+4. Record verification cases whose action body is empty (stub state). Per §8.6.3 item 6, stubs are mandatory at final review. Per §10.5.3, bodies must be populated by release. The list is surfaced to the engineer.
 
-Guide the integration sequence:
+Where the model size exceeds what the skill can hold in working context, dispatch to `@traceability-guard` with the trace rule "every acceptance shall be the target of at least one `verify` clause".
 
-1. **Bottom-up** (recommended for VSEs): integrate lowest-level elements first,
-   test each interface as elements are combined
-2. **Incremental**: add one element at a time, test after each addition
+## Workflow E: IVV Plan and IVV Procedures rendering (§9.8)
 
-For each integration step:
-- Identify the elements being integrated
-- List the interfaces to be tested
-- Define the expected behaviour
-- Document results in the Integration Report
+Per §9.8 model-derived artefacts, the IVV Plan and IVV Procedures are *generated* from the model rather than authored.
 
-**Avoid big-bang integration.** It provides poor fault isolation and is the
-highest-risk approach.
+- The IVV Plan is rendered from the `verification def` set: subjects, objectives, expected outcomes. It is the union of `model/core/verification-validation/` and every recursive component-scope equivalent.
+- The IVV Procedures are rendered from the action bodies of those cases.
+- Hand off to `@document-export` for the rendering itself. Refuse to render the IVV Plan if any acceptance criterion in the story register has no verification or validation case bound (route through Workflow D first).
+- The renderer writes to `docs/generated/ivv-plan.md` and `docs/generated/ivv-procedures.md`. CI regenerates these on merge to `main` per §9.10. Confirm that the rendered files are current before reporting completion.
 
-If system elements were provided by external suppliers (SUP), verify that
-each delivered element meets the specifications in the Purchase Order and
-System Elements Requirements before integrating.
+## Workflow F: V&V execution and reporting
 
-### Step 6: System Verification (SR.5.3)
+Authoring stops at the `verification def`. Execution produces a Verification Report or Validation Report per the §10.10 templates.
 
-Execute verification cases against the integrated system:
+- A Verification Report records the result of running a verification case against the model (or, downstream, the realised system). Each report cross-references the story or constraint it covers per §10.5.3.
+- A Validation Report records the result of running a validation case with stakeholder participation in the operational context.
+- The default storage location is `docs/verification-reports/<case>-<date>.md` and `docs/validation-reports/<case>-<date>.md`, subject to the project's CM Strategy (§10.8).
+- Failures are recorded in the Correction Register at `docs/correction-register.md` per §10.5.2, with each correction following the normal PR workflow.
 
-1. Run each verification case per the IVV Procedures
-2. Record results: pass, fail, or blocked
-3. For failures: document the defect, assign for correction
-4. For blocked cases: document the reason, plan resolution
-5. Generate the Verification Report
+## Refusals
 
-### Step 7: System Validation (SR.5.4)
+The skill refuses to act in the following cases.
 
-Execute validation cases with stakeholder participation:
+- The verification case's `subject` does not match (or specialise) the story's `subject` per §1.9 rule 5. The case is malformed.
+- The verification case's `objective` does not name an acceptance criterion of an existing story. There is nothing to verify.
+- The IVV Plan is requested while one or more acceptance criteria in the story register have no bound case. The plan would misrepresent coverage. Route to Workflow D first.
+- A story is asked to transition to `done` while its bound verification cases have empty bodies. Per §8.6.3 item 6 stubs are mandatory at final review, and per §10.5.3 bodies must be populated by release. The transition is blocked.
 
-1. Invite the Acquirer and relevant stakeholders
-2. Demonstrate the system in its intended operational context
-3. Walk through each validation case
-4. **Use case driven validation** (from the `ambse-architecture-vv-and-iso29110`
-   atomic page, bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`):
-   for each stakeholder use case, trace the data and control flow
-   through the architecture. Verify that every scenario step is supported by a
-   subsystem service. Identify gaps as missing requirements or design defects.
-5. Record stakeholder feedback
-6. Obtain formal acceptance or document required changes
-7. Generate the Validation Report
+In each case, the skill states the rule, points to the methodology section, and proposes the corrective routing (typically back to Workflow D, or to `@story-orchestrator`).
 
-### Step 8: Defect Correction (SR.5.5)
+## Hand-offs
 
-For each defect found during V&V:
-1. Classify severity (critical, major, minor)
-2. Assign to the responsible developer
-3. After correction, retest to verify the fix
-4. Regression test to confirm no new defects introduced
+| Situation | Route to |
+|---|---|
+| Story needs a verification case stub authored | `@story-orchestrator` |
+| V&V coverage is the gate for a release baseline | `@release-orchestrator` |
+| `verify` link surfaces as broken in the trace | `@traceability-guard` |
+| The case body needs SysML v2 `verification def` syntax help | `@sysml2-cases` |
+| The case requires `action def` execution detail | `@sysml2-behaviour` |
+| IVV Plan or IVV Procedures rendering | `@document-export` |
+| Verification Report or Validation Report rendering | `@document-export` |
+| The case is being edited inside a baselined artefact | `@change-request` |
 
-Repeat the correction-retest cycle until all defects are resolved or
-formally deferred. Pay particular attention to faults introduced by
-modifications (regression defects). Define a regression test scope
-proportional to the change:
-- Minor fix: retest the affected verification case plus immediate neighbours
-- Major fix: retest all verification cases in the affected subsystem
-- Architectural change: full regression of all system-level verification cases
+## Outputs
 
-### Step 9: System Operation Guide (SR.5.6, optional)
+- `model/core/verification-validation/verification-cases/<name>.sysml`. System-level verification cases (§5.4.6).
+- `model/core/verification-validation/validation-cases/<name>.sysml`. System-level validation cases (§4.3.6).
+- `model/core/logical-architecture/components/<comp>/verification-validation/...`. Subsystem-scope equivalents per §8.3.2.
+- `docs/generated/ivv-plan.md`. Rendered, not authored. Produced by `@document-export`.
+- `docs/generated/ivv-procedures.md`. Rendered, not authored.
+- `docs/verification-reports/<name>-<date>.md`. Execution-time, per §10.10.
+- `docs/validation-reports/<name>-<date>.md`. Execution-time, per §10.10.
 
-If the system requires operational documentation beyond the User Manual:
+## Reference
 
-1. Document operational procedures, maintenance schedules, and troubleshooting
-   guides in `docs/sr/system-operation-guide.md`
-2. Include: startup/shutdown procedures, monitoring points, common fault
-   responses, and escalation contacts
-3. Target audience: operations staff who maintain and operate the system
-
-### Step 10: Verify Operation Guide (SR.5.7, optional)
-
-If an Operation Guide was created:
-
-1. Review for completeness and accuracy (SYS, ACQ, STK)
-2. Verify consistency with the System Design Document and V&V results
-3. Record approval in the document revision history
-
-## V&V Reporting
-
-### Verification Report Structure
-- Summary of verification activities
-- List of verification cases executed
-- Results (pass/fail/blocked) for each case
-- Defects found and their resolution status
-- Overall verification conclusion
-
-### Validation Report Structure
-- Summary of validation activities
-- List of validation cases executed
-- Stakeholder participation record
-- Results and stakeholder feedback
-- Overall validation conclusion and acceptance status
-
-## Test Case Design Guidance
-
-When deriving test cases from requirements:
-
-1. **Boundary value analysis**: test at the edges of specified ranges
-2. **Equivalence partitioning**: test one value from each valid/invalid class
-3. **Error guessing**: test conditions likely to cause failures
-4. **Requirements-based**: one or more test cases per requirement
-
-## Automated V&V Support (Automator)
-
-When the Syside Automator Python library is available, use it for programmatic
-verification coverage analysis, constraint checking, and state machine
-simulation.
-
-### Verification Coverage Analysis
-
-Programmatically check which requirements have verification cases and which
-do not:
-
-```python
-import syside
-
-model, diagnostics = syside.load_model(
-    paths=syside.collect_files_recursively("models/")
-)
-assert not diagnostics.contains_errors(warnings_as_errors=True)
-
-# Collect all verification case definitions
-ver_cases = {
-    ver.declared_name: ver
-    for ver in model.nodes(syside.VerificationCaseDefinition)
-    if ver.document.document_tier is syside.DocumentTier.Project
-}
-
-# Check each requirement for verification coverage
-uncovered = []
-for req in model.nodes(syside.RequirementDefinition):
-    if req.document.document_tier is not syside.DocumentTier.Project:
-        continue
-    has_verify = False
-    for child in req.owned_elements.collect():
-        if child.try_cast(syside.VerificationCaseUsage) is not None:
-            has_verify = True
-    if not has_verify:
-        uncovered.append(req.declared_name or req.name)
-
-print(f"Requirements: {len(list(model.nodes(syside.RequirementDefinition)))}")
-print(f"Verification cases: {len(ver_cases)}")
-print(f"Uncovered requirements: {len(uncovered)}")
-for name in uncovered:
-    print(f"  {name}: no verification case")
-```
-
-### Expression-Based Constraint Checking
-
-Evaluate requirement constraints (mass limits, performance bounds) against
-model values using the Compiler:
-
-```python
-STDLIB = syside.Environment.get_default().lib
-compiler = syside.Compiler()
-
-# Find constraint attributes and evaluate them
-for attr in model.nodes(syside.AttributeUsage):
-    if attr.name in ("MassActual", "MassLimit", "PowerBudget"):
-        value, report = compiler.evaluate_feature(
-            feature=attr,
-            scope=attr.owner,
-            stdlib=STDLIB,
-            experimental_quantities=True,
-        )
-        if not report.fatal:
-            print(f"{attr.name} = {value}")
-        else:
-            print(f"{attr.name}: evaluation failed")
-```
-
-This enables automated checks like "total mass does not exceed the mass
-budget" or "power consumption is within the allocated envelope" without
-manual calculation.
-
-### State Machine Simulation
-
-The Automator can simulate state machines defined in SysML models using
-the `python-statemachine` library:
-
-```bash
-pip install python-statemachine
-```
-
-The workflow:
-
-1. Load the SysML model containing state definitions
-2. Extract the state machine definition by qualified name
-3. Convert SysML states and transitions to Python `python-statemachine` format
-4. Use `syside.Compiler()` to evaluate transition guard expressions
-5. Simulate state transitions against a sequence of input values
-6. Verify that the state machine behaves as specified
-
-This is particularly useful for verifying behavioural requirements that define
-state-dependent system responses (e.g., alarm systems, mode controllers,
-protocol handlers).
-
-Reference: https://docs.sensmetry.com/examples/state_machine_simulation.html
-
-## SysML 2.0 Authoring Routing
-
-When V&V work moves into the SysML 2.0 model, route to the following
-siblings:
-
-| Topic | Route to |
-| --- | --- |
-| Verification case bodies in `{{sc}}_Verification` | `@sysml2-cases` |
-| Verification coverage views and documentation views | `@sysml2-views` |
-| Verdict metadata and result tagging | `@sysml2-metadata` |
-| Containing `{{sc}}_Verification` package structure | `@sysml2-model-structure` |
-| Risk-mitigation verification (verification cases that cover a high-severity risk) | `@sysml2-metadata` (RiskInfo) and `@sysml2-model-structure` (`{{sc}}_Risks`) |
-| Verification case ConfigItem tagging at baseline freeze | `@sysml2-metadata` (ConfigItem, Baseline) and `@sysml2-model-structure` (`{{sc}}_CM`) |
-
-When a verification case covers a high-severity risk, the risk item
-def in `{{sc}}_Risks` should list that verification case in its
-`RiskInfo::mitigatedBy` attribute. The mitigation link is
-centralised on the risk side (`risk.mitigatedBy` points at
-requirements, verification cases, or architecture elements) so the
-risk register is the single place to read what covers each risk.
-This closes the PM.3.1 risk-monitoring loop from
-`@iteration-orchestrator` Step 4 when the verification passes and
-the `RiskInfo::status` is advanced from `Mitigating` to `Closed`.
-See `@sysml2-metadata` for the `RiskInfo` schema and the Automator
-query that lists verification cases by covered risk.
-
-## Red Flags
-
-WARN the engineer if:
-- V&V is being planned without baselined requirements
-- Verification cases exist without verify links to requirements
-- Big-bang integration is planned
-- Stakeholders are not involved in validation
-- Defects are being deferred without documented rationale
-- The Verification or Validation Report is incomplete
-- A verification case that closes a high-severity risk is not named
-  in the risk's `RiskInfo::mitigatedBy` list in `{{sc}}_Risks`, so
-  the risk register cannot be updated automatically when the
-  verification passes
-
-## Reference: V&V Guide
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`
-
+`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`

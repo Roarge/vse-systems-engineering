@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.3] - 2026-05-05
+
+Phase 3B of the v2.0 restructuring. Rewrites the three workflow-stage
+skills around the new methodology. Each is reframed in terms of the
+methodology section it owns and the specific subagent dispatches it
+performs, and uses the canonical `model/core/` path layout from §8.3.
+
+This release is a release candidate. End-user installs should pin to
+`1.2.0` until `2.0.0` lands.
+
+### Changed
+
+- `skills/needs-and-requirements/SKILL.md` rewritten around §1
+  (UserStory authoring discipline), §3.6 (System Context completeness
+  check), §4 (Stakeholder Requirements Engineering), and §5 (System
+  Requirements Definition and Analysis). The §0.3 connective mechanism
+  (benefit constraints feed §6 trade studies) is surfaced in workflow
+  step 5.4.2 with formalisation guidance. The `vse-stakeholder-elicitor`
+  subagent dispatch is preserved with a clear return contract.
+- `skills/architecture-design/SKILL.md` rewritten around §2 Base
+  Architecture authoring (§2.6 well-formedness checklist including the
+  reverse-engineering guard), §6 Architectural Analysis and Trade
+  Studies (criteria sourced from story benefit constraints, candidates
+  modelled as `variation`/`variant`), and §7 Architectural Design
+  (subsystem decomposition, allocation patterns, recursive component
+  nesting per §8.3.2). The `vse-trade-study-runner` subagent dispatch
+  is preserved.
+- `skills/verification-validation/SKILL.md` updated to align with §4.3.6
+  validation cases (exercise stakeholder intent), §5.4.6 verification
+  cases (exercise the system model), §7.3.7–§7.3.8 subsystem V&V, and
+  §9.8 model-derived IVV Plan and IVV Procedures rendering. The
+  coverage-check workflow surfaces gaps before release baseline.
+
 ## [2.0.0-rc.2] - 2026-05-05
 
 Phase 3A of the v2.0 restructuring. Decommissions the
