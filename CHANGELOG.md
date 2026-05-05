@@ -15,8 +15,9 @@ AMBSE methodology specified at `methodology/`. End users opt in by
 running `/vse-setup` against the project root or the chosen
 engineering subdirectory.
 
-This release closes the seven-phase restructuring opened against
-v1.2.0:
+This release closes the eight-phase restructuring opened against
+v1.2.0. Phases are listed in landing order, so Phase 7 precedes
+Phase 6 (templates rewrote first, the demo rebuild followed):
 
 - Phase 1 — Methodology integration (PR #33).
 - Phase 2 — Command surface rewrite (PR #34).
