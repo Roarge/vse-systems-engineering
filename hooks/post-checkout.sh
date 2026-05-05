@@ -7,20 +7,16 @@
 # Install as <project>/.githooks/post-checkout.
 set -euo pipefail
 
-prev=$1
-new=$2
-checkout_type=$3
+# git invokes post-checkout with three positional arguments:
+#   $1 = previous HEAD ref, $2 = new HEAD ref, $3 = flag (1 if branch
+# checkout, 0 if file checkout). The first two are unused here.
+checkout_type="${3:-0}"
 
 # Only on branch checkouts (not file checkouts).
-[[ "$checkout_type" == "1" ]] || exit 0
+[ "$checkout_type" = "1" ] || exit 0
 
 # Skip silently outside a VSE project.
-ENG_ROOT=""
-if [ -d "engineering/methodology" ]; then
-    ENG_ROOT="engineering"
-elif [ -d "methodology" ]; then
-    ENG_ROOT="."
-else
+if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 

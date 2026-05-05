@@ -27,7 +27,7 @@ fi
 if echo "$PROMPT" | grep -qiE '(change|edit|modify|update|delete|revise|amend).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture|risk register|cm strategy)'; then
     cat <<'EOF'
 
-[methodology reminder — PM.O3]
+[methodology reminder, PM.O3]
 This prompt may involve changes to baselined or load-bearing artefacts.
 Per §10.4.2 Change Request lifecycle:
 - Confirm with the user whether a Change Request issue exists.
@@ -40,7 +40,7 @@ fi
 if echo "$PROMPT" | grep -qiE '(meeting|reviewed with|sync|standup|workshop|kickoff) (today|yesterday|this morning|earlier|just now)'; then
     cat <<'EOF'
 
-[methodology reminder — PM.O4]
+[methodology reminder, PM.O4]
 A synchronous review may have occurred. Per §10.4.3:
 - Capture a Meeting Record in docs/meetings/<YYYY-MM-DD>-<topic>.md.
 - Include attendees, agreements, open issues, next meeting.
@@ -51,7 +51,7 @@ fi
 if echo "$PROMPT" | grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)'; then
     cat <<'EOF'
 
-[methodology reminder — agent-collaboration discipline (§2.6 rule 7)]
+[methodology reminder, agent-collaboration discipline (§2.6 rule 7)]
 This prompt may be asking for stories, stakeholders, or concerns to be
 synthesised from pre-existing context (Base Architecture, legacy
 system, existing infrastructure). Per §2.1 corollary 2 and §2.6 rule
@@ -60,7 +60,7 @@ reverse-engineer Base Architecture justifications.
 
 If the user explicitly wants context stories for organisational memory
 or audit trail, confirm intent first ("you want me to author X
-deliberately as context — confirm?") and clearly mark the resulting
+deliberately as context, confirm?") and clearly mark the resulting
 artefacts as context, not as forward-going required output.
 
 If the user wants forward-going work, ignore the existing context as

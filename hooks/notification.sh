@@ -13,15 +13,9 @@ if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 
-# Locate iso-config.yaml for stale-risk threshold.
-ISO_CONFIG=""
-if [ -f ".iso-config.yaml" ]; then
-    ISO_CONFIG=".iso-config.yaml"
-elif [ -f "engineering/.iso-config.yaml" ]; then
-    ISO_CONFIG="engineering/.iso-config.yaml"
-fi
-
 # Stale Change Requests (open longer than 14 days) via gh CLI.
+# A future revision will read the threshold from .iso-config.yaml's
+# change_request.stale_threshold_days field.
 if command -v gh >/dev/null 2>&1; then
     STALE_CRS=$(gh issue list -l change-request -s open --json number,createdAt 2>/dev/null \
         | jq -r --arg threshold "$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)" \

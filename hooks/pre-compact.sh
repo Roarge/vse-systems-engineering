@@ -13,10 +13,14 @@ if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 
-# Persist a snapshot of the current ISO state to a workspace file so
-# post-compaction context can re-read it. Use the same layout as the
-# session-start banner.
-SNAPSHOT="/tmp/vse-iso-state-snapshot-$$.txt"
+# Persist a snapshot of the current ISO state to a workspace file
+# the engineer can inspect after compaction. Same shape as the
+# session-start banner. The file is informational; nothing reads it
+# back automatically.
+SNAPSHOT=$(mktemp -t vse-iso-state-XXXXXX.txt 2>/dev/null || mktemp 2>/dev/null) || {
+    # mktemp unavailable; fall back to a deterministic location.
+    SNAPSHOT="/tmp/vse-iso-state-snapshot.txt"
+}
 
 {
     echo "VSE PROJECT STATE SNAPSHOT"

@@ -118,8 +118,8 @@ not a free change.
 
 The following scripts existed in v1.x and have been removed for v2:
 
-- `hooks/iteration-boundary-check.sh` — no boundary-check concept in
+- `hooks/iteration-boundary-check.sh`. No boundary-check concept in
   the new methodology. Stories advance individually through the §8.5
-  PR workflow; no fixed-length iteration closes en bloc.
-- `hooks/sysml-change-reminder.sh` — replaced by `hooks/post-tool-use.sh`,
+  PR workflow. No fixed-length iteration closes en bloc.
+- `hooks/sysml-change-reminder.sh`. Replaced by `hooks/post-tool-use.sh`,
   which covers the same use case under the §5.4 lifecycle hook contract.

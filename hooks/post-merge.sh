@@ -17,16 +17,22 @@ cd "$ROOT"
 
 # Locate iso-config to find renderer paths.
 ISO_CONFIG=""
-[ -f ".iso-config.yaml" ] && ISO_CONFIG=".iso-config.yaml"
-[ -f "engineering/.iso-config.yaml" ] && ISO_CONFIG="engineering/.iso-config.yaml"
+if [ -f ".iso-config.yaml" ]; then
+    ISO_CONFIG=".iso-config.yaml"
+elif [ -f "engineering/.iso-config.yaml" ]; then
+    ISO_CONFIG="engineering/.iso-config.yaml"
+fi
 
 if [ -z "$ISO_CONFIG" ]; then
     exit 0
 fi
 
-# Stub: invoke renderers when they exist. The real implementations
-# land in tools/render/ as the project matures. The hook is silent
-# when renderers are absent.
+# Invoke renderers when they exist. The real implementations live in
+# tools/render/ as the project matures. The hook is silent when
+# renderers are absent.
+#
+# Renderer paths are constrained to start with tools/render/ to prevent
+# arbitrary command execution from a project-controlled YAML.
 RENDERERS=$(awk '
     /^renderers:/ { inside=1; next }
     inside && /^[A-Za-z]/ { inside=0 }
@@ -39,9 +45,17 @@ RENDERERS=$(awk '
 DREW=0
 while IFS= read -r renderer; do
     [ -z "$renderer" ] && continue
+    case "$renderer" in
+        tools/render/*) ;;
+        *)
+            echo "[post-merge] Skipping renderer with unsafe path: ${renderer}" >&2
+            echo "[post-merge] Renderer paths shall start with tools/render/." >&2
+            continue
+            ;;
+    esac
     if [ -x "$renderer" ]; then
         DREW=1
-        # Run the renderer; output goes to docs/generated/ by convention.
+        # Run the renderer. Output goes to docs/generated/ by convention.
         # The renderer is responsible for its own destination path.
         "$renderer" > /dev/null 2>&1 || true
     fi

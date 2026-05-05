@@ -40,9 +40,13 @@ Lifecycle hooks (registered in `hooks.json`, run by the harness):
 - `hooks/user-prompt-submit.sh` (UserPromptSubmit, §5.2). Reverse-engineering
   guard, baselined-edit reminder, meeting-record reminder.
 - `hooks/pre-tool-use.sh` (PreToolUse on `Edit|Write|NotebookEdit`,
-  §5.3). Blocks edits to baselined artefacts without an open Change
-  Request, reads `.iso-config.yaml` for the baselined-paths list.
-- `hooks/post-tool-use.sh` (PostToolUse on `Write|Edit`, §5.4).
+  §5.3). Surfaces an advisory reminder when a baselined artefact
+  is being edited (per `.iso-config.yaml` `baselined_paths`). The
+  firm gate lives in `commit-msg.sh`. The hook is advisory because
+  the open-CR heuristic is too coarse for a hard block without
+  false positives.
+- `hooks/post-tool-use.sh` (PostToolUse on `Edit|Write|NotebookEdit`,
+  §5.4).
   Post-edit reminders for stories, concerns, architecture, Project
   Plan.
 - `hooks/stop.sh` (Stop, §5.5). ADR / V&V capture prompts.
@@ -55,11 +59,15 @@ Lifecycle hooks (registered in `hooks.json`, run by the harness):
 
 Project-side scripts (shipped, installed by `@attention-regime`):
 
-- `hooks/pre-commit.sh` (§4.1). Orchestrates four checks: SysML lint,
-  story well-formedness, baselined-artefact protection, traceability
-  integrity (delegated to existing `pre-commit-traceability.sh`).
-- `hooks/commit-msg.sh` (§4.2). Enforces conventional-commit pattern
-  with story scope, CR reference, or meeting-record format.
+- `hooks/pre-commit.sh` (§4.1). Orchestrates three checks: SysML
+  lint, story well-formedness, and traceability integrity (the
+  last delegated to existing `pre-commit-traceability.sh`).
+  Baselined-artefact awareness is surfaced as an advisory reminder
+  here. The firm CR-reference gate lives in `commit-msg.sh`.
+- `hooks/commit-msg.sh` (§4.2). Enforces the conventional-commit
+  pattern with story scope, CR reference, or meeting-record format.
+  Additionally, when staged files include any baselined path, the
+  hook requires the message to reference an open Change Request.
 - `hooks/prepare-commit-msg.sh` (§4.3). Prepopulates commit subject
   with the Story ID inferred from the branch name.
 - `hooks/pre-push.sh` (§4.4). Story-state, V&V coverage, traceability

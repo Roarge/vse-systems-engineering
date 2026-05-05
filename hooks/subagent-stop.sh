@@ -18,6 +18,6 @@ if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 
-echo "[subagent complete in VSE project context — methodology spec at $(test -d methodology && echo methodology/ || echo engineering/methodology/)]"
+echo "[subagent complete in VSE project context. Methodology spec at $(test -d methodology && echo methodology/ || echo engineering/methodology/).]"
 
 exit 0
