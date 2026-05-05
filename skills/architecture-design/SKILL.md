@@ -97,23 +97,36 @@ A function whose realisation is unambiguous is *not* a decision point and shall 
 
 ### Step 2: Define candidate solutions as variations (§6.3.2)
 
-For each architectural decision, declare a `variation part def` and its candidate `variant part`s in `model/variations/decision-points/` and `model/variations/candidate-variants/`. Variants implicitly subset the variation, so any variant is substitutable for it. Cross-decision constraints (rules of the form "if A then B") are expressed as `assert constraint` clauses on the configurable system part def.
+For each architectural decision, declare a `variation part def` and its candidate `variant part`s in `model/variations/decision-points/` and `model/variations/candidate-variants/`. Variants implicitly subset the variation, so any variant is substitutable for it.
 
-Route to `@sysml2-variants` for the variation/variant syntax and to `@sysml2-expressions` for `assert constraint` bodies.
+Route to `@sysml2-variants` for the variation/variant syntax.
 
-### Step 3: Run the trade study sub-workflow (§6.3.3)
+### Step 3: Express cross-decision constraints (§6.3.3)
 
-This is the methodology's connective mechanism in operation. Walk through the five sub-steps:
+Cross-decision constraints (rules of the form "if A then B") are expressed as `assert constraint` clauses on the configurable system part def. They encode feasibility rules across multiple decisions, for example "if engine = diesel then tank capacity ≥ 80 L".
 
-1. **Source criteria from story benefits.** Extract the `require constraint` clauses already present in the system story register. The constraints *are* the criteria. Do not author criteria as a separate artefact. If a candidate-bearing function or property has no relevant story, either the decision needs no trade study, or a story is missing from §5. In the second case, hand off to `@needs-and-requirements` to add the story retroactively before continuing.
-2. **Assign weights** that normalise to 1.0 across criteria. Weights may be informed by `StoryMeta.priority` (per §1.5) or by concern severity (per §4).
-3. **Define utility curves per criterion** as calculations mapping value-property values to a normalised utility score. Curves may be discrete (lookup tables) or continuous (linear, exponential, sigmoid). Declare upper and lower bounds.
-4. **Score MOEs** by dispatching the `vse-trade-study-runner` subagent. The agent evaluates each (variant, criterion) pair in an isolated context and returns a markdown matrix with score rationale, sensitivity analysis, and any missing alternatives it surfaces. Pass the decision statement, the variant set, the weighted criteria, and the paths to relevant SysML files. Present the returned matrix verbatim to the engineer and invite edits before recording any decision.
-5. **Determine the solution** as the variant with the best weighted total. The trade study is itself an `analysis def` placed in `model/variations/trade-studies/`. Route to `@sysml2-cases` for the analysis-case body.
+Route to `@sysml2-expressions` for `assert constraint` bodies.
 
-### Step 4: Resolve variations (§6.3.4)
+### Step 4: Source assessment criteria from story benefits (§6.3.4)
+
+This is the methodology's connective mechanism in operation. Extract the `require constraint` clauses already present in the system story register. The constraints *are* the criteria. Do not author criteria as a separate artefact.
+
+If a candidate-bearing function or property has no relevant story, either the decision needs no trade study, or a story is missing from §5. In the second case, hand off to `@needs-and-requirements` to add the story retroactively before continuing.
+
+### Step 5: Perform the trade study (§6.3.5)
+
+Walk through the four sub-steps of §6.3.5:
+
+1. **Assign weights** that normalise to 1.0 across criteria. Weights may be informed by `StoryMeta.priority` (per §1.5) or by concern severity (per §4).
+2. **Define utility curves per criterion** as calculations mapping value-property values to a normalised utility score. Curves may be discrete (lookup tables) or continuous (linear, exponential, sigmoid). Declare upper and lower bounds.
+3. **Score MOEs** by dispatching the `vse-trade-study-runner` subagent. The agent evaluates each (variant, criterion) pair in an isolated context and returns a markdown matrix with score rationale, sensitivity analysis, and any missing alternatives it surfaces. Pass the decision statement, the variant set, the weighted criteria, and the paths to relevant SysML files. Present the returned matrix verbatim to the engineer and invite edits before recording any decision.
+4. **Determine the solution** as the variant with the best weighted total. The trade study is itself an `analysis def` placed in `model/variations/trade-studies/`. Route to `@sysml2-cases` for the analysis-case body.
+
+### Step 6: Resolve variations (§6.3.6)
 
 The selected architecture is a *specialisation* of the configurable system `part def` that redefines every `variation` to its chosen `variant`. Place the resolution in `model/variations/resolved/`. Refuse to ship a resolution that leaves any variation unresolved or that violates an `assert constraint`.
+
+### Step 7: Merge across decisions (§6.3.7)
 
 If the integration of multiple decisions surfaces conflicts the `assert constraint` clauses did not anticipate, run a meta-trade-study over the conflict by adding a new decision point whose variants are the conflicting combinations.
 

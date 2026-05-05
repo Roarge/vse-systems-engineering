@@ -24,9 +24,10 @@ This release is a release candidate. End-user installs should pin to
   (UserStory authoring discipline), §3.6 (System Context completeness
   check), §4 (Stakeholder Requirements Engineering), and §5 (System
   Requirements Definition and Analysis). The §0.3 connective mechanism
-  (benefit constraints feed §6 trade studies) is surfaced in workflow
-  step 5.4.2 with formalisation guidance. The `vse-stakeholder-elicitor`
-  subagent dispatch is preserved with a clear return contract.
+  (benefit constraints feed §6 trade studies) is surfaced under
+  Workflow B Step 2 with formalisation guidance per §5.4.2. The
+  `vse-stakeholder-elicitor` subagent dispatch is preserved with a
+  clear return contract.
 - `skills/architecture-design/SKILL.md` rewritten around §2 Base
   Architecture authoring (§2.6 well-formedness checklist including the
   reverse-engineering guard), §6 Architectural Analysis and Trade

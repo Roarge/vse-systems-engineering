@@ -46,7 +46,7 @@ Each story carries one or more `acceptance` subrequirements per §1.4.4. Each ac
 A validation case exercises stakeholder intent rather than system internals. It asks "does the system, as observed, satisfy what the stakeholder wanted?" Answers are typically obtained by demonstration, walkthrough, or operational test, not by an automated unit-level check.
 
 1. Identify the stakeholder story and the acceptance subrequirement to be validated.
-2. Author a `verification def` whose `subject` matches the stakeholder story's `subject` (per §1.9 rule 5, the verification case's subject shall conform to the story's subject type).
+2. Author a `verification def` whose `subject` matches the stakeholder story's `subject`. The §4.3.6 example fixes this discipline.
 3. Bind the acceptance via `objective { verify <story>::<acceptance>; }`.
 4. Provide an action body that names the demonstration or operational fixture (collect, evaluate). The body may be deferred per §8.6.3 item 6, but a stub is mandatory at final review.
 5. Place the file in `model/core/verification-validation/validation-cases/<name>.sysml`. Use `VAL_` as the case name prefix.
@@ -139,7 +139,7 @@ Authoring stops at the `verification def`. Execution produces a Verification Rep
 
 The skill refuses to act in the following cases.
 
-- The verification case's `subject` does not match (or specialise) the story's `subject` per §1.9 rule 5. The case is malformed.
+- The verification case's `subject` does not match (or specialise) the story's `subject`. Per §4.3.6 and §5.4.6, the case binds to the story it verifies, and a subject mismatch makes the binding incoherent.
 - The verification case's `objective` does not name an acceptance criterion of an existing story. There is nothing to verify.
 - The IVV Plan is requested while one or more acceptance criteria in the story register have no bound case. The plan would misrepresent coverage. Route to Workflow D first.
 - A story is asked to transition to `done` while its bound verification cases have empty bodies. Per §8.6.3 item 6 stubs are mandatory at final review, and per §10.5.3 bodies must be populated by release. The transition is blocked.
