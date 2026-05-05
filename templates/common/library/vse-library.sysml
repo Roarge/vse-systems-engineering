@@ -108,7 +108,7 @@ package VSE_Library {
              */
         attribute points   : Integer[0..1];
         attribute priority : Priority[0..1];
-        attribute status   : StoryStatus;
+        attribute status   : StoryStatus[1];
         attribute invest   : InvestFlags[0..1];
     }
 
