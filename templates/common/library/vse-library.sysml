@@ -1,31 +1,119 @@
 // VSE Systems Engineering Library
 //
-// Reusable definitions for VSE projects using the AMBSE hybrid lifecycle
-// with optional VAMOS variant modelling. This library is the single
-// definition site for metadata, enumerations, and variant-aware tagging.
+// Reusable definitions for VSE projects following the story-driven
+// AMBSE methodology. This library is the single definition site for
+// methodology constructs (UserStory, StoryMeta, StakeholderNeed),
+// risk metadata, configuration metadata, and variant-aware tagging.
 // User projects import from it rather than redeclaring definitions.
 //
-// Copied into user projects by @project-setup (Minimal and Canonical
-// tiers). Lives at models/library/vse-library.sysml in greenfield
-// projects and engineering/models/library/vse-library.sysml in
-// brownfield projects.
+// Copied into user projects by @project-setup. Lives at
+// model/library/vse-library.sysml.
 //
 // This file has no project-specific placeholders. It is
 // project-independent by design.
 //
 // Sources:
+//   Methodology constructs: vse-systems-engineering plugin,
+//     methodology/01-user-stories.md (§1) and §0.8.
 //   Risk metadata: ISO/IEC TR 29110-5-6-2:2014 PM.O5, PM.1.11, PM.2.3.
 //   CM metadata: ISO/IEC TR 29110-5-6-2:2014 PM.1.13, PM.2.5, SR.O6.
 //   Variant-aware metadata: Weilkiens 2016 VAMOS Ch 3 (organisation),
 //     SysML v2 Book Ch 35 (syntax), SysML v2 Book Ch 38 (metadata).
 // Authoring help: @sysml2-metadata, @sysml2-model-structure,
-//   @sysml2-variants
+//   @sysml2-variants, @needs-and-requirements (for the §1 constructs).
 
 package VSE_Library {
     private import ScalarValues::*;
 
     // =================================================================
-    // Enumerations
+    // Methodology constructs (§1 user stories, §0.8 forecast)
+    // =================================================================
+    //
+    // Per methodology §0.8, these constructs will eventually ship as
+    // a dedicated `MBSEMethodology` library imported by every project.
+    // Until that work lands, projects import them from VSE_Library.
+
+    enum def StoryStatus {
+        doc /* The four valid values of StoryMeta.status per §1.5
+               and §8.7. CI checks that StoryMeta.status is consistent
+               with the branch and pull-request state. */
+        backlog;
+        ready;
+        inProgress;
+        done;
+    }
+
+    enum def Priority {
+        doc /* Story prioritisation enum used in StoryMeta.priority. */
+        low;
+        medium;
+        high;
+        critical;
+    }
+
+    enum def InvestFlags {
+        doc /* INVEST attribute flags (independent, negotiable,
+               valuable, estimable, small, testable). Optional. */
+        I; N; V; E; S; T;
+    }
+
+    abstract requirement def StakeholderNeed {
+        doc /* Per §1.3, the abstract base type beneath UserStory.
+               Concrete StakeholderNeed specialisations may include
+               coarser-grained agile constructs such as Feature or
+               Epic, all connecting down to UserStory through
+               `derive` relationships. */
+    }
+
+    requirement def UserStory :> StakeholderNeed {
+        doc /* Per §1.2, the canonical stakeholder-intent artefact.
+               A UserStory:
+                 - declares a primary stakeholder via `role`,
+                 - describes a desired `capability` (narrative string),
+                 - articulates a `benefit` (narrative string,
+                   optionally formalised as a require constraint per
+                   §1.4.3 to feed §6 trade studies, §0.3),
+                 - carries one or more `acceptance` subrequirements,
+                 - may `frame` one or more `concern def` instances
+                   (per §1.4.6).
+               §1.9 well-formedness rules apply: typed role, declared
+               subject, at least one acceptance before `ready`,
+               retained narrative capability and benefit.
+
+               Concrete project stories specialise UserStory and
+               redefine the role, subject, capability, benefit, and
+               acceptance members. The base type leaves them open so
+               specialisations can attach typed bindings. */
+    }
+
+    requirement def Feature :> StakeholderNeed {
+        doc /* Coarser-grained intent above UserStory. Use `derive`
+               to connect a Feature down to the UserStory set that
+               realises it. */
+    }
+
+    requirement def Epic :> StakeholderNeed {
+        doc /* Coarsest intent. Use `derive` down to Features or
+               directly to UserStory specialisations. */
+    }
+
+    metadata def StoryMeta {
+        doc /* Per §1.5, agile lifecycle and planning metadata applied
+               to every UserStory via `@StoryMeta { ... }`. `status`
+               is mandatory. The other attributes are optional and
+               project-determined.
+
+               Example:
+                   @StoryMeta { points = 5; priority = high; status = ready; }
+             */
+        attribute points   : Integer[0..1];
+        attribute priority : Priority[0..1];
+        attribute status   : StoryStatus;
+        attribute invest   : InvestFlags[0..1];
+    }
+
+    // =================================================================
+    // Enumerations (risk and configuration management)
     // =================================================================
 
     enum def Severity {
