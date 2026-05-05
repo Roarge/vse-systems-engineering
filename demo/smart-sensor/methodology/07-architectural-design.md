@@ -129,7 +129,7 @@ package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
 
     requirement def ALM_001_BatchCommit :> UserStory {
         subject sub : AlarmManagementSubsystem;
-        stakeholder :>> role : OperatorUISubsystem;
+        stakeholder role : OperatorUISubsystem;
 
         capability = "commit a batch of alarm acknowledgements
                       atomically and notify the persistence layer";
@@ -245,7 +245,7 @@ package <ALM_CON> AlarmManagementSubsystem_Concerns {
 package <ALM_STR> AlarmManagementSubsystem_Stories {
     requirement def ALM_002_DurableAcknowledgement :> UserStory {
         subject sub : AlarmManagementSubsystem;
-        stakeholder :>> role : OperatorUISubsystem;
+        stakeholder role : OperatorUISubsystem;
 
         capability = "ensure acknowledged state survives subsystem
                       restart without loss or duplication";

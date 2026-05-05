@@ -142,7 +142,7 @@ part def Operator;
 
 requirement def US_042_AckFromDashboard :> UserStory {
     subject sys : Aiwell_OnlineSentral;
-    stakeholder :>> role : Operator;
+    stakeholder role : Operator;
 
     capability = "acknowledge alarms from the dashboard";
     benefit    = "the queue clears quickly";
@@ -196,7 +196,7 @@ concern def FastIncidentResponse {
 }
 
 requirement def US_042_AckFromDashboard :> UserStory {
-    stakeholder :>> role : Operator;
+    stakeholder role : Operator;
     capability = "acknowledge alarms from the dashboard";
     benefit    = "the queue clears quickly";
 
@@ -263,7 +263,7 @@ behavioral or analytical model are not required at this stage.
 requirement def US_042_AckFromDashboard :> UserStory {
     @StoryMeta { points = 5; priority = high; status = ready; }
 
-    stakeholder :>> role : Operator;
+    stakeholder role : Operator;
     capability = "acknowledge alarms from the dashboard";
     benefit    = "the queue clears without opening each device";
 
@@ -294,7 +294,7 @@ requirement def US_042_AckFromDashboard :> UserStory {
     @StoryMeta { points = 5; status = inProgress; }
 
     subject sys : Aiwell_OnlineSentral;
-    stakeholder :>> role : Operator;
+    stakeholder role : Operator;
 
     capability = "acknowledge alarms from the dashboard";
     benefit    = "the queue clears quickly";

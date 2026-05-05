@@ -102,7 +102,7 @@ package <SYS> Aiwell_SystemStories {
         @StoryMeta { points = 5; priority = high; status = inProgress; }
 
         subject sys : Aiwell_OnlineSentral;
-        stakeholder :>> role : Operator;
+        stakeholder role : Operator;
 
         capability = "process batch acknowledgement requests against
                       a filtered alarm set, transitioning all matching
@@ -150,7 +150,7 @@ story usable as a §6 trade-study criterion (§0.3).
 ```sysml
 requirement def SYS_143_AlarmFiltering :> UserStory {
     subject sys : Aiwell_OnlineSentral;
-    stakeholder :>> role : Operator;
+    stakeholder role : Operator;
 
     capability = "filter active alarm set by severity, source,
                   acknowledgement state, and free-text match";
@@ -363,7 +363,7 @@ concern def OperatorSafety {
 
 requirement def SYS_198_MaintenanceLockout :> UserStory {
     subject sys : Aiwell_OnlineSentral;
-    stakeholder :>> role : SafetyOfficer;
+    stakeholder role : SafetyOfficer;
 
     capability = "lock out actuators while maintenance mode active,
                   releasing only on positive acknowledgement";

@@ -8,6 +8,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-05
+
+The v2.0 release. The plugin is restructured around the story-driven
+AMBSE methodology specified at `methodology/`. End users opt in by
+running `/vse-setup` against the project root or the chosen
+engineering subdirectory.
+
+This release closes the eight-phase restructuring opened against
+v1.2.0. Phases are listed in landing order, so Phase 7 precedes
+Phase 6 (templates rewrote first, the demo rebuild followed):
+
+- Phase 1 — Methodology integration (PR #33).
+- Phase 2 — Command surface rewrite (PR #34).
+- Phase 3 — Skill restructuring across three sub-PRs (PR #35, #36, #37).
+- Phase 4 — Hook adoption (PR #38).
+- Phase 5 — Wiki rewrite (PR #39).
+- Phase 5.5 — README and stale-doc sweep (PR #40).
+- Phase 7 — Templates rewrite (PR #41).
+- Phase 6 — Demo rebuild (PR #42).
+- Phase 8 — Audit, vocabulary sweep, and v2.0.0 release (this PR).
+
+### Changed
+
+- The methodology examples in `methodology/01-user-stories.md`,
+  `methodology/04-stakeholder-requirements.md`,
+  `methodology/05-system-requirements.md`, and
+  `methodology/07-architectural-design.md` change the stakeholder-role
+  declaration from `stakeholder :>> role : Type` (redefinition form)
+  to `stakeholder role : Type` (declaration form). The redefinition
+  form requires the abstract `UserStory` base to declare
+  `stakeholder role`, but the SysML 2.0 parser rejects a
+  `stakeholder` declaration without a preceding `subject` declaration
+  in the same body, so the abstract base cannot carry it. Concrete
+  stories therefore declare the stakeholder fresh. The
+  parser-accepted form is now the canonical methodology form. The
+  demo's project-local methodology copy is updated in lockstep
+  (byte-identical mirror).
+
+### Fixed
+
+- `wiki/pages/sysml2/sysml2-model-cm-and-risks.md` and the
+  regenerated bundle `wiki/bundles/sysml2-model-structure.md`: the
+  `ConfigItem` attribute list called the lifecycle field `state`,
+  matching the now-deprecated library form. Renamed to `ciState` in
+  lockstep with the library's metadata def (the `state` keyword
+  collides with SysML 2.0 state machines).
+
 ## [2.0.0-rc.9] - 2026-05-05
 
 Phase 6 of the v2.0 restructuring. The Smart Sensor demo is rebuilt
