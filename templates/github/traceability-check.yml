@@ -1,19 +1,26 @@
-# AMBSE microcycle handoff gate.
+# Story-branch trace gate.
 #
-# In hybrid AMBSE, every pull request is the merge of one microcycle iteration
-# branch (vse/iter-NN) and is the formal handoff event Douglass describes
-# (Cookbook, p. 61). This workflow runs the trace check on every PR so that
-# no microcycle ends with broken satisfy/verify links. See the plugin's
-# knowledge/ambse-git-workflow.md for the full mapping.
+# Per methodology §8.5.4, every pull request lands a story (or a small
+# coherent group of stories) on `main`. This workflow runs the SysML
+# validation and traceability check on every PR so that no story
+# branch merges with broken `derive`, `frame concern`, or `verify`
+# links. See `methodology/08-project-structure.md` §8.5–§8.6 for the
+# full PR review obligations and `methodology/iso-29110-hooks-guide.md`
+# §6 for the CI integration pattern.
 #
-# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: invoke the
-# same hooks/pre-commit-traceability.sh script from your host's PR pipeline.
-# The script is host-agnostic plain bash.
+# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: invoke
+# the project-side `pre-commit` hook from `<project>/.githooks/` (which
+# orchestrates the trace check internally) from your host's PR
+# pipeline. The hook is host-agnostic plain bash.
 
-name: SysML Validation (microcycle trace gate)
+name: SysML Validation (story-branch trace gate)
 
 on:
   pull_request:
+    branches: [main, 'release/**']
+  push:
+    branches: [main]
+    tags: ['release-*', 'plan-baseline-*']
 
 jobs:
   validate:
@@ -31,31 +38,37 @@ jobs:
 
       - name: Install SySiDE CLI
         run: |
-          # Download and extract syside CLI
-          # Adjust the URL and version for your installation
+          # Download and extract syside CLI.
+          # Adjust the URL and version for your installation.
           mkdir -p ~/.local/bin
           # tar -xf syside-*.tar.xz -C ~/.local
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Validate models (SySiDE)
-        if: hashFiles('syside.toml') != ''
+        if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
         run: syside check --warnings-as-errors --stats
         continue-on-error: true
 
       - name: Check formatting (SySiDE)
-        if: hashFiles('syside.toml') != ''
+        if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
         run: syside format --check
         continue-on-error: true
 
-      - name: Check traceability links (fallback)
+      - name: Run project-side pre-commit checks
+        # Invokes the project-side pre-commit hook from .githooks/, which
+        # orchestrates SysML lint, story well-formedness (§1.9), and
+        # traceability integrity. The hook is project-determined; this
+        # CI step runs the same checks at the unbypassable gate.
         run: |
-          echo "Checking SysML 2.0 traceability links..."
-          chmod +x hooks/pre-commit-traceability.sh
-          ./hooks/pre-commit-traceability.sh
+          if [ -x .githooks/pre-commit ]; then
+              .githooks/pre-commit
+          elif [ -x hooks/pre-commit-traceability.sh ]; then
+              hooks/pre-commit-traceability.sh
+          fi
         env:
           CI: true
 

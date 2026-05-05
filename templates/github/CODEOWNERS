@@ -1,0 +1,38 @@
+# CODEOWNERS for {{PROJECT_NAME}}
+#
+# Maps ISO 29110 roles (§10.11 of the methodology) to git identities.
+# Multiple roles per identity are permitted and expected at VSE scale.
+# A single CODEOWNERS line can list multiple owners when a path is
+# jointly owned.
+#
+# At least one owner per protected path is required. The PR review
+# workflow (§8.5.4) assigns owners as required reviewers.
+
+# Project Manager (PJM): Plan, Risk Register, CM Strategy, Closure
+docs/project-plan.md            @{{PJM_GIT_HANDLE}}
+docs/cm-strategy.md             @{{PJM_GIT_HANDLE}}
+docs/risk-register.md           @{{PJM_GIT_HANDLE}}
+docs/correction-register.md     @{{PJM_GIT_HANDLE}}
+docs/progress-status-record.md  @{{PJM_GIT_HANDLE}}
+docs/product-acceptance-record.md @{{PJM_GIT_HANDLE}} @{{ACQ_GIT_HANDLE}}
+
+# Systems Engineer (SYS): stakeholder needs, system requirements
+model/core/stakeholders/        @{{SYS_GIT_HANDLE}}
+model/core/concerns/            @{{SYS_GIT_HANDLE}}
+model/core/stories/             @{{SYS_GIT_HANDLE}}
+model/core/context/             @{{SYS_GIT_HANDLE}}
+
+# Designer (DES): functional, logical, and physical architecture
+model/core/functional-architecture/  @{{DES_GIT_HANDLE}}
+model/core/logical-architecture/     @{{DES_GIT_HANDLE}}
+model/core/product-architecture/     @{{DES_GIT_HANDLE}}
+model/variations/                    @{{DES_GIT_HANDLE}}
+
+# IVV Engineer (IVV): verification and validation
+model/core/verification-validation/  @{{IVV_GIT_HANDLE}}
+
+# Methodology spec (elevated review per §2.6 rule 4)
+methodology/                    @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
+
+# Base Architecture (elevated review per §2.6 rule 4)
+model/core/base-architecture/   @{{DES_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}

@@ -1,62 +1,65 @@
-## AMBSE Iteration Context
+<!-- PR template per methodology §8.6.1. -->
 
-- **Iteration:** <!-- e.g., iter-03 Temperature Control -->
-- **Branch:** <!-- e.g., vse/iter-03-temperature-control -->
-- **Centre of gravity:** <!-- e.g., SR.2, SR.3 (concurrent centres are normal) -->
-- **Iteration closing?** <!-- Yes / No. If Yes, this PR includes the iteration-boundary closure record. -->
+## Story or change summary
 
-## Iteration Mission
+<!-- For story branches: the story's narrative form (As a <role>, I want
+     <capability>, so that <benefit>). For methodology and architectural
+     branches: the change rationale. One paragraph. -->
 
-<!-- One or two sentences stating what this iteration set out to deliver. -->
+## Stories advanced
 
-## Summary
+<!-- List the story IDs and the StoryMeta status transitions this PR
+     applies. Example:
+       US_042_AckFromDashboard: ready -> inProgress
+       SYS_142_BatchAcknowledgement: backlog -> ready
+     -->
 
-<!-- Brief description of what this PR accomplishes -->
+## Concerns addressed
 
-## Changes
+<!-- List the concern def references for which this PR adds or
+     strengthens framing. Example:
+       OpsConcerns::FastIncidentResponse
+     -->
 
-<!-- List the key changes -->
+## Files changed by package
 
--
+<!-- Automated section if your CI populates it. Otherwise list the
+     model/core/ packages and docs/ files touched. Group by package. -->
 
-## Work Products Affected
+## Author readiness checklist (§8.6.2)
 
-<!-- Check all that apply -->
+For every story advanced by this PR:
 
-- [ ] Stakeholder Requirements (StRS)
-- [ ] System Requirements (SyRS)
-- [ ] Traceability Matrix
-- [ ] System Design Document
-- [ ] IVV Plan / Procedures
-- [ ] Verification Report
-- [ ] Validation Report
-- [ ] SysML 2.0 models
-- [ ] Project Plan
-- [ ] Other: <!-- specify -->
+- [ ] Story declares `role`, typed by a part def from the appropriate stakeholders package.
+- [ ] Story declares `capability` and `benefit` strings (narrative form retained per §1.7.2).
+- [ ] Story declares `subject` referencing a part def from the enclosing scope.
+- [ ] Story declares at least one `acceptance` criterion in Given/When/Then form (or as a `verification def` reference).
+- [ ] Framed `concern def`s exist in the appropriate concerns package.
+- [ ] Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
+- [ ] `StoryMeta.points`, `priority`, and `status` are set.
+- [ ] CI lint and well-formedness checks pass on the latest commit.
+- [ ] Cross-references resolve (no dangling type names, no orphan stories).
 
-## Traceability
+## Reviewer checklist (§8.6.3)
 
-<!-- Confirm trace link integrity for every thread this iteration touched. -->
+In addition to confirming the §8.6.2 items:
 
-- [ ] All modified requirements maintain their satisfy links
-- [ ] All modified requirements maintain their verify links
-- [ ] Traceability Matrix updated (if requirements changed)
-- [ ] No orphan verification or validation cases
+- [ ] **Methodology conformance**: §1.9 well-formedness rules and the level-specific rules of §4 / §5 / §7.
+- [ ] **Concern coverage**: no concern in the affected stakeholders' set is newly orphaned.
+- [ ] **Trace integrity**: `derive` from system stories to stakeholder stories, from subsystem stories to system stories. No dangling references.
+- [ ] **No methodology drift**: methodology amendments are not smuggled through a story PR.
+- [ ] **Variation hygiene** (§6 work only): variations declare all feasible variants, `assert constraint` covers cross-decision rules, the resolved architecture redefines every variation.
+- [ ] **Verification-case stubs exist** for each acceptance criterion, even if the case body is deferred.
+- [ ] **Self-contained**: no half-finished work in unrelated packages.
 
-## Iteration-Boundary Closure
+For architectural branches, additionally:
 
-<!-- If this PR closes the iteration, complete this section. Delete it if
-     the PR is mid-iteration work. The iteration-boundary check is
-     advisory: closure debt carried onto the next iteration's backlog is
-     normal AMBSE behaviour. -->
+- [ ] Trade-study `analysis def` is reproducible.
+- [ ] Selected variant's score advantage is documented in the PR description.
 
-- [ ] Work products required by every active centre of gravity exist
-      (or are recorded as closure debt in `.vse-iteration.yml`)
-- [ ] `closure_debt[]` is populated for any unresolved items
-- [ ] `history[]` entry added for the closing iteration
+## Change Request reference
 
-## Review
-
-- [ ] Work products reviewed by Work Team
-- [ ] Changes consistent with the iteration mission and centre of gravity
-- [ ] No modifications to baselined artefacts outside a Change Request
+<!-- If this PR modifies any baselined artefact (per .iso-config.yaml
+     baselined_paths), reference the open Change Request Issue:
+       Refs: CR #<n>
+     The commit-msg hook enforces this. -->

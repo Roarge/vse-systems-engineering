@@ -67,31 +67,42 @@ System
 
 ### 4.1 Lifecycle Model
 
-**Lifecycle**: hybrid AMBSE (Agile Model-Based Systems Engineering) per
-Douglass (2021). The Vee verification pattern is applied at three timeframes
-(nanocycle, microcycle, macrocycle). The VSE Systems Engineering plugin
-sets AMBSE as the single VSE lifecycle for every project.
+**Lifecycle**: story-driven AMBSE per the methodology specification at
+`methodology/`. The methodology adapts the Harmony aMBSE process arc
+(Douglass, 2016, 2021) with three substantive changes (per §0.1 of the
+spec): user stories are the canonical stakeholder-intent artefact at
+every stage, SysML v2 throughout, and Base Architecture and System
+Context are explicit foundational artefacts.
 
-**Iteration cadence**: _two-week microcycles_ (default). Record the actual
-chosen cadence here, with rationale if it differs from the default.
+**Iteration cadence**: project-determined. The methodology rejects
+fixed-length iteration containers but embraces iteration as recursive
+practice. Record the project's working cadence (typically two weeks
+of story-branch and review activity, or the project's adopted
+ceremony cadence) here, with rationale.
 
-**Git workflow**: branch per microcycle. Iteration branches are named
-`vse/iter-NN[-short-desc]` and are merged into `main` via pull request at
-the end of each iteration. Each merged PR is one microcycle handoff. A
-release tag on `main` (semantic version) is one macrocycle delivery.
+**Git workflow**: per §8.4–§8.5 of the methodology. Standard branches
+are `story/<US_id>_<short>` for stories, `methodology/<topic>` for
+spec amendments, `arch/<decision>` for §6 trade studies, and
+`release/<tag>` for tagged releases. Every branch carries one open
+draft pull request from creation. Squash-and-merge after the §8.6
+review checklists pass. Releases group `done` stories under
+`release-vN.M` annotated tags. The Project Plan is baselined at
+`plan-baseline-vN.M` per §10.3.4.
 
-**Why AMBSE for this project**: _summarise in one paragraph why AMBSE is
-the right fit for this specific project: typically a combination of
-mixed hardware/software content, the value of model-based specification,
-the need for incremental verification, and the availability of
-stakeholders for frequent feedback._
+**Why AMBSE for this project**: _summarise in one paragraph why
+story-driven AMBSE is the right fit for this specific project,
+typically a combination of mixed hardware and software content, the
+value of model-based specification, the need for incremental
+verification, and the availability of stakeholders for frequent
+feedback._
 
-### 4.2 Macrocycle Milestones
+### 4.2 Release Milestones
 
-> Macrocycle milestones sit above the iteration cadence and define the points
-> at which `main` will be tagged with a semantic version. Each milestone has
-> a gate criterion drawn from accumulated iteration closure items, applied
-> as the hard macrocycle closure gate.
+> Release milestones sit above the working iteration cadence and
+> define the points at which `main` will be tagged `release-vN.M`.
+> Each milestone has a gate criterion drawn from the §8.6.3 final
+> review checklist (concern coverage, trace integrity, V&V coverage)
+> and the §10.6 closure activities for the final release.
 
 | Milestone | Description | Target Date | Gate Criteria |
 |-----------|-------------|-------------|---------------|

@@ -8,6 +8,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.8] - 2026-05-05
+
+Phase 7 of the v2.0 restructuring. Templates are brought in sync
+with the methodology layout from §8.3. The flat 14-directory model
+template is replaced by the canonical `model/core/{...}` skeleton
+with story/concern/stakeholder/trade-study/interface skeletons.
+Cycle-era templates are removed. New top-level templates land for
+CONTRIBUTING.md, CODEOWNERS, the ADR template, the Risk Register,
+and the CM Strategy. The PR template and traceability-check
+workflow are rewritten around the story-branch model.
+
+This release is a release candidate. End-user installs should pin
+to `1.2.0` until `2.0.0` lands.
+
+### Removed
+
+- `templates/common/models/` flat layout (14 directories of
+  actor/req/arch/cm/etc. SysML stubs from the v1.x canonical tier).
+  Replaced by the §8.3 `model/core/` skeleton.
+- `templates/common/vse-iteration.yml`. Project state lives in git
+  per §8.7. The closure-debt and centre-of-gravity fields are gone.
+- `templates/github/iteration-boundary.yml`. No boundary-check
+  concept in the new methodology.
+- Five `templates/sr/*.md` deliverables that §10.10 declares
+  out-of-scope (data-model, system-operation-guide, system-user-manual,
+  maintenance-guide, training-specifications).
+- `templates/pm/purchase-order.md`. §10.10 out-of-scope deliverable.
+
+### Added
+
+Model skeletons under `templates/common/models/` (replacing the
+flat layout):
+
+- `core/core.sysml` (top-level package declaration with project
+  short code per §8.3.4).
+- `core/{stakeholders, concerns, base-architecture, context, domain,
+  stories/{stakeholder, system}, use-cases, logical-architecture/interface-types,
+  verification-validation/{verification-cases, validation-cases}}/_template.sysml`
+  per the §8.3.1 layout.
+- `core/{functional-architecture, logical-architecture/{allocations,
+  components}, parametrics, processes, product-architecture}/.gitkeep`
+  to track empty package directories.
+- `core/context/architecture-context.sysml` (System Context composite
+  per §3.3.4).
+- `variations/{decision-points, candidate-variants, trade-studies,
+  resolved}/_template.sysml` (§6 trade-study mechanism).
+- `library/.gitkeep` and `sandbox/README.md`.
+
+Top-level project scaffolding templates:
+
+- `templates/CONTRIBUTING.md` documenting the §8.4 branch model,
+  §8.5 PR workflow, conventional-commit conventions, Change Request
+  workflow, and the project-side hooks.
+- `templates/github/CODEOWNERS` mapping ISO 29110 roles to git
+  identities per §10.11. Methodology-spec edits and Base Architecture
+  edits trigger elevated review.
+- `templates/docs/risk-register.md` per §10.7.
+- `templates/docs/cm-strategy.md` per §10.8 with the YAML schema.
+- `templates/docs/decisions/_template.md` ADR template per §10.5.3.
+
+### Changed
+
+- `templates/github/pull-request-template.md` rewritten around
+  §8.6.1 fields: story summary, stories advanced, concerns
+  addressed, files changed by package, §8.6.2 author checklist,
+  §8.6.3 reviewer checklist, Change Request reference. Replaces the
+  "AMBSE Iteration Context" / "Iteration Mission" / "Iteration
+  Boundary Closure" section structure.
+- `templates/github/traceability-check.yml` updated for the story
+  branch model. Trigger expanded to PRs against `main` and
+  `release/**`, plus pushes to `main` and tags
+  (`release-*`, `plan-baseline-*`). Calls `.githooks/pre-commit`
+  (the project-side orchestrator hook) when present, falling back
+  to the legacy `pre-commit-traceability.sh`.
+- `templates/common/library/vse-library.sysml` extended with the
+  methodology constructs from §1: `StakeholderNeed` (abstract base
+  type), `UserStory` (canonical artefact), `Feature` and `Epic`
+  (coarser-grained intent), `StoryMeta` metadata (with `points`,
+  `priority`, `status`, `invest`), and the `StoryStatus`,
+  `Priority`, and `InvestFlags` enumerations. The pre-existing
+  RiskInfo, ConfigItem, Baseline, and variant-aware metadata are
+  preserved unchanged.
+- `templates/pm/project-plan.md` §4.1 Lifecycle Model rewritten:
+  drops "hybrid AMBSE per Douglass (2021)" branch-per-microcycle
+  language, adopts story-driven AMBSE language with §8.4–§8.5
+  branch and PR rules. §4.2 retitled "Release Milestones" with
+  §8.6.3 / §10.6 gate criteria.
+
 ## [2.0.0-rc.7] - 2026-05-05
 
 Phase 5.5 of the v2.0 restructuring. Top-level documentation rewrite
