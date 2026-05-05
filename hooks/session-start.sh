@@ -130,7 +130,7 @@ if command -v git >/dev/null 2>&1 && [ -d ".git" ]; then
     if [ -n "$PLAN_BASELINE" ]; then
         echo "Plan baseline:    ${PLAN_BASELINE}"
     else
-        echo "Plan baseline:    (none yet; run /vse-plan to author)"
+        echo "Plan baseline:    (none yet, run /vse-plan to author)"
     fi
 
     # Most recent release tag.
@@ -156,7 +156,7 @@ echo "  one acceptance criterion (§1.9)."
 echo "- After modifying a story, update its bound verification case (SR.O7)."
 echo "- Stories build forward from the Base Architecture (§2.1). Do NOT"
 echo "  reverse-engineer or auto-generate stakeholders, concerns, or"
-echo "  stories that explain Base Architecture decisions; create context"
+echo "  stories that explain Base Architecture decisions. Create context"
 echo "  stories only on explicit user request, with confirmation of intent"
 echo "  (§2.6 rule 7)."
 

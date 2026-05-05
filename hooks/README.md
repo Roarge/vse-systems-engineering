@@ -20,7 +20,7 @@ time and wires them up.
 |----------------------------|--------------------|------------------------|------------------------------------------------------------------------------------------------------|
 | `session-start.sh`         | `SessionStart`     | (none)                 | Detect VSE project / SysML repo / contributor mode and inject methodology context per §5.1.          |
 | `user-prompt-submit.sh`    | `UserPromptSubmit` | (none)                 | Reverse-engineering guard, baselined-edit reminder, meeting-record reminder per §5.2.                |
-| `pre-tool-use.sh`          | `PreToolUse`       | `Edit\|Write\|NotebookEdit` | Block edits to baselined artefacts without an open Change Request per §5.3.                          |
+| `pre-tool-use.sh`          | `PreToolUse`       | `Edit\|Write\|NotebookEdit` | Advisory reminder when edits target a baselined artefact per §5.3. The firm gate is `commit-msg`.    |
 | `post-tool-use.sh`         | `PostToolUse`      | `Write\|Edit`          | Post-edit reminders for stories, concerns, architecture, Project Plan per §5.4.                      |
 | `source-added-reminder.sh` | `PostToolUse`      | `Write\|Edit`          | Wiki-only contributor hook: appends source-added stub to wiki/LOG.md when sources/ files change.     |
 | `stop.sh`                  | `Stop`             | (none)                 | ADR / V&V capture prompts at end of agent response per §5.5.                                         |
