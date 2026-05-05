@@ -108,10 +108,10 @@ The Disposal Management Approach states the trigger event (decommission, replace
 
 | Role | PM responsibility |
 |---|---|
-| Project Manager (PJM) | Owns Plan, Progress Status Record, Correction Register, Risk Register; chairs review meetings; approves Change Requests; signs Acceptance Record |
-| Acquirer (ACQ) | Reviews and accepts Plan; reviews and signs Change Requests against baselined artefacts; reviews and signs Acceptance Record |
-| Stakeholder (STK) | Participates in Plan review; raises Change Requests; reviews Meeting Records for accuracy |
-| Systems Engineer (SYS), Designer (DES), IVV Engineer (IVV) | Author Plan content within their scope; participate in Assessment and Control; raise Change Requests for technical needs |
-| Work Team (WT) | Performs Plan tasks; updates Progress Status Record entries; participates in retrospectives that feed the Justification Document |
+| Project Manager (PJM) | Owns Plan, Progress Status Record, Correction Register, Risk Register, chairs review meetings, approves Change Requests, signs Acceptance Record |
+| Acquirer (ACQ) | Reviews and accepts Plan, reviews and signs Change Requests against baselined artefacts, reviews and signs Acceptance Record |
+| Stakeholder (STK) | Participates in Plan review, raises Change Requests, reviews Meeting Records for accuracy |
+| Systems Engineer (SYS), Designer (DES), IVV Engineer (IVV) | Author Plan content within their scope, participate in Assessment and Control, raise Change Requests for technical needs |
+| Work Team (WT) | Performs Plan tasks, updates Progress Status Record entries, participates in retrospectives that feed the Justification Document |
 
 CODEOWNERS in the repository assigns each role to git identities. Multiple roles per identity are permitted and expected at VSE scale.
