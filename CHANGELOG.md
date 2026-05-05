@@ -8,6 +8,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.2] - 2026-05-05
+
+Phase 3A of the v2.0 restructuring. Decommissions the
+`iteration-orchestrator` skill and adds five orchestration skills
+that bind to the commands shipped in `2.0.0-rc.1`. The lens skill
+`vse-companion-overview` is rewritten to drop the AMBSE Vee
+three-timeframes framing and adopt story-centric routing.
+
+This release is a release candidate. End-user installs should pin
+to `1.2.0` until `2.0.0` lands.
+
+### Removed
+
+- `skills/iteration-orchestrator/`. The methodology has no
+  microcycle, nanocycle, or macrocycle concept. The skill's
+  centre-of-gravity routing, journal integration, and red-flag
+  warnings are salvaged into `story-orchestrator` and
+  `release-orchestrator`.
+
+### Added
+
+- `skills/story-orchestrator/`. Opens or advances a single user
+  story per §1 and §8.4–§8.5. Bound to `/vse-story`.
+- `skills/release-orchestrator/`. Plans, baselines, or reports on
+  a release per §10. Bound to `/vse-release`.
+- `skills/change-request/`. Authors and processes Change Requests
+  per §10.4.2. Bound to `/vse-cr`.
+- `skills/project-plan/`. Authors or revises the Project Plan,
+  SEMP, Risk Register, CM Strategy, and Disposal Approach per
+  §10.3. Bound to `/vse-plan`.
+
+### Changed
+
+- `skills/vse-companion-overview/SKILL.md` rewritten to frame the
+  story-driven AMBSE methodology. The AMBSE Vee three-timeframes
+  table, centre-of-gravity routing, and `.vse-iteration.yml`
+  reference are removed. New content includes story-centric
+  routing, the methodology-as-source-of-truth convention, the
+  §2.6 rule 7 reverse-engineering guard, and the new drift
+  indicators (baselined edits without CR, story branches without
+  draft PR, stakeholder stories without framed concerns, system
+  stories without derive links, trade studies whose criteria are
+  not sourced from story benefits).
+
 ## [2.0.0-rc.1] - 2026-05-05
 
 Phase 2 of 8 in the v2.0 restructuring around the user-story-first
