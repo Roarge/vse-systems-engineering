@@ -1,5 +1,11 @@
-[project]
-name = "SmartTemperatureSensor"
+# SySiDE project configuration for the Smart Sensor demo.
+#
+# Per methodology §8.2 / §8.3, the project model lives under model/.
+# The vse-library.sysml shipped at model/library/ is loaded from this
+# project, alongside the SysML 2.0 standard library.
 
-[build]
-source = ["models"]
+[project]
+name = "smart-sensor"
+
+[paths]
+sources = ["model/"]

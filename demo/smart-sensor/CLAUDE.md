@@ -1,252 +1,206 @@
-<!-- BEGIN VSE COMPANION (managed by project-setup) -->
-# Smart Temperature Sensor
+# Smart Sensor Demo
 
-This project follows ISO/IEC 29110 (Basic Profile) for Very Small Entity (VSE)
-systems engineering. All work is governed by the VSE Systems Engineering plugin.
+This project is the dogfood demo for the `vse-systems-engineering`
+plugin. It exercises the installed plugin in a realistic story-driven
+AMBSE workflow against a small IoT sensor product.
 
-## VSE-First Rule
+This project follows ISO/IEC 29110 (Basic Profile) for Very Small
+Entity (VSE) systems engineering. All work is governed by the VSE
+Systems Engineering plugin and the methodology specification at
+`methodology/` (a project-local copy of the plugin's authoritative
+spec).
+
+## Methodology First
 
 When answering any question about this project:
 
-1. Consult the VSE Systems Engineering plugin skills first
-2. Check the current iteration state in `.vse-iteration.yml`
-3. Apply iteration-appropriate guidance (the `vse-companion-overview`
-   skill is the canonical lens, with iteration work routed by
-   centre-of-gravity activity to specialised skills such as
-   `iteration-orchestrator`, `needs-and-requirements`,
-   `architecture-design`, and `verification-validation`)
-4. Warn if the requested action touches a baselined artefact without a
-   Change Request or conflicts with the iteration's declared centre of
-   gravity
+1. Consult the project's `methodology/` folder. The project-local
+   copy is authoritative for this project. The plugin-shipped copy
+   at `${CLAUDE_PLUGIN_ROOT}/methodology/` is the fallback.
+2. Invoke the `vse-companion-overview` skill before any other VSE
+   skill. It sets the methodology lens, story-centric routing, and
+   the §2.6 rule 7 reverse-engineering guard.
+3. Route work to the right specialist skill via the routing table
+   below.
+4. Warn if the requested action touches a baselined artefact
+   without an open Change Request, or if it would synthesise a
+   context story that justifies a Base Architecture decision
+   (forbidden by §2.6 rule 7 unless the user explicitly confirms
+   intent).
 
-If the VSE plugin is not installed, follow the ISO 29110 process map below.
+If the VSE plugin is not installed, follow the methodology
+specification at `methodology/` directly.
 
-## AMBSE Workflow
+## Story-driven Workflow
 
-This project uses hybrid AMBSE (Agile Model-Based Systems Engineering) per
-Douglass (2021). AMBSE is the fixed VSE lifecycle for every project that uses
-this plugin. AMBSE applies the Vee verification pattern at three timeframes:
+This project follows a story-driven adaptation of agile MBSE
+expressed natively in SysML 2.0. Three ideas carry the methodology.
 
-- **Nanocycle** (30 minutes to 1 day): one model edit, one trace fix, one
-  constraint added. The unit of git work is a commit on a feature branch.
-  The pre-commit traceability hook runs at this scale.
-- **Microcycle** (1 to 4 weeks): one iteration with a stated mission. The unit
-  of git work is a feature branch named `vse/iter-NN[-short-desc]`, merged via
-  pull request (or merge request, on non-GitHub hosts). The PR review is the
-  formal handoff event Douglass describes (Cookbook, p. 61). CI workflows in
-  `.github/workflows/` run the trace check and the advisory
-  iteration-boundary check before the PR can merge.
-- **Macrocycle** (project length): one major release. The unit of git work
-  is a semantic version tag on `main`, created after formal system V&V is
-  complete.
+**Foundational artefacts (§1–§3).** User stories are the canonical
+stakeholder-intent artefact at every workflow stage. The Base
+Architecture (§2) captures architectural and technical decisions
+that pre-exist the project (the parent product line picked the
+ESP32 platform and the MQTT broker). The System Context (§3)
+declares the system boundary, the four categories of external
+actor, and the interfaces and item flows.
 
-The Vee verification pattern is the inner shape of every cycle. Douglass
-(Cookbook, p. 64) frames it directly: "a traditional V process is simply this
-process cycle done once". AMBSE applies the Vee many times, at three scales,
-with verification at every iteration boundary.
+**Workflow stages (§4–§7).** Stakeholder Requirements Engineering
+(§4) produces the stakeholder story register. System Requirements
+Definition and Analysis (§5) derives system stories with formalised
+`require constraint` benefits. Architectural Analysis and Trade
+Studies (§6) sources criteria from those benefit constraints (the
+§0.3 connective mechanism). Architectural Design (§7) decomposes
+into subsystems and propagates stories downward.
 
-### Branch and PR conventions for this project
+**Connective mechanism (§0.3).** The `benefit` slot of a user
+story, when expressed as a `require constraint`, is the same model
+element that supplies trade-study criteria in §6. Architectural
+decisions cannot drift from stakeholder intent because the criteria
+are the stakeholder intent.
 
-- All non-trivial work goes on a `vse/iter-NN[-short-desc]` branch.
-- Each commit on the branch is one nanocycle and references the affected work
-  product or use case in the commit message.
-- Merging the branch via pull request is the microcycle handoff. The PR body
-  states the iteration mission and trace status.
-- Trace gates: the `pre-commit-traceability` hook blocks local commits with
-  broken traces. The `traceability-check` GitHub Actions workflow blocks PR
-  merge with broken traces.
-- Iteration-boundary check: the `iteration-boundary-check` script reports
-  closure debt across every active centre of gravity. The
-  `iteration-boundary` GitHub Actions workflow runs the same script on
-  PRs that touch `.vse-iteration.yml` and reports as advisory (does not
-  block). The hard closure gate lives at the macrocycle (release tag on
-  `main`), not at the iteration boundary.
+The methodology rejects fixed-length iteration containers and
+embraces iteration as recursive practice. Revisiting earlier stages
+as feedback arrives is allowed and encouraged. The story register
+is the cross-iteration index. `StoryMeta.status` records each
+story's position.
 
-For the full mapping (anti-patterns, solo-developer guidance, host-agnostic
-notes, the worked microcycle history example), see the
-`@iteration-orchestrator` skill, which loads the AMBSE git workflow
-knowledge file at activation time.
+## Branch and PR conventions
 
-## Current Iteration
+- All non-trivial work goes on a `story/<US_id>_<short>` branch
+  (or `methodology/<topic>`, `arch/<decision>`, `release/<tag>`
+  per §8.4.3). Direct commits to `main` are prohibited.
+- A draft pull request is opened on the first commit of every
+  story branch. The draft is the operational expression of
+  `StoryMeta.status = inProgress` (§8.5.1).
+- The author marks the PR ready for review when the §8.6.2
+  readiness checklist passes. Final review applies the §8.6.3
+  reviewer checklist. The PR is squash-merged on approval. The
+  branch is deleted on merge.
+- Commits use conventional-commit form with story scope or Change
+  Request reference: `feat(US_042): subject`,
+  `fix(SYS_142): subject`, `plan: revise schedule (CR #17)`.
+- Releases group `done` stories under annotated `release-vN.M`
+  tags. The Project Plan is baselined at `plan-baseline-vN.M` per
+  §10.3.4.
 
-Read `.vse-iteration.yml` in the project root to determine the active
-iteration. At the start of every SE-related interaction, state:
+For the full mapping see `methodology/08-project-structure.md` and
+`methodology/iso-29110-hooks-guide.md`.
 
-- **Iteration**: the iteration number and mission
-- **Status**: open, closing, or merged
-- **Centre of gravity**: one or more ISO 29110 task identifiers governing
-  which specialist skills apply inside the active microcycle
-- **Next action**: what the engineer should work on next inside the
-  iteration
+## Routing Table
 
-Read the `.vse-journal.yml` file to understand what was done in the previous
-session and what the engineer should work on next. If the file exists and has
-entries, present a SESSION CONTINUITY block after the iteration information:
+| Topic | Route to |
+|---|---|
+| Open or advance a story | `@story-orchestrator` (or `/vse-story`) |
+| Plan, baseline, or report on a release | `@release-orchestrator` (or `/vse-release`) |
+| Open a Change Request | `@change-request` (or `/vse-cr`) |
+| Author or revise the Project Plan | `@project-plan` (or `/vse-plan`) |
+| §4 stakeholder elicitation, §5 system stories | `@needs-and-requirements` |
+| §2 Base Architecture, §6 trade studies, §7 decomposition | `@architecture-design` |
+| Verification or validation case authoring | `@verification-validation` |
+| Trace integrity check | `@traceability-guard` |
+| SysML 2.0 syntax and validation | `@sysml2-modelling` (umbrella) |
+| Project layout audit, version drift | `@project-audit` |
+| Hook installation | `@attention-regime` |
+| Cross-session continuity | `@session-journal` |
+| Document export | `@document-export` |
 
-- **Last session**: when the previous session occurred
-- **Summary**: what was accomplished
-- **Pending**: next steps from the previous session
-- **Open issues**: unresolved items needing attention
+## Source Order
 
-### Centre-of-Gravity Filtering
+When the methodology spec disagrees with any source, the spec wins.
 
-| Centre of gravity | Focus on | Deprioritise |
-| ----------------- | -------- | ------------ |
-| SR.1 Initiation | SEMP, data model, environment setup | Late delivery detail |
-| SR.2 Requirements | Stakeholder needs, SMART criteria, elicitation | Detailed V&V tactics |
-| SR.3 Architecture | Decomposition, interfaces, trade-offs | Detailed test case design |
-| SR.4 Construction | Build/buy/reuse, component specs | Upstream requirements debates |
-| SR.5 IVV | Verification methods, test derivation, trace checking | Re-opening baselines outside a Change Request |
-| SR.6 Delivery | Acceptance, documentation, training, maintenance | All upstream activities |
-
-Concurrent centres of gravity are normal: surface the focus row for every
-centre listed in `current_iteration.centre_of_gravity`. If the engineer
-asks about a topic outside the active centres of gravity, provide the
-information but flag it: "Note: this relates to [activity], which is not
-the current centre of gravity. Consider opening an iteration with this
-activity as its centre of gravity, or handling the change via a Change
-Request if it touches a baselined artefact."
-
-## Source Processing Order
-
-1. **ISO/IEC 29110** (process backbone): what activities to perform
-2. **PHAS-EAI framework** (design rationale): why those activities work
-3. **INCOSE SE Handbook** (best practices): how to execute, scaled for VSEs
-4. **SysML 2.0 specification** (modelling language): machine-readable models
+1. The project's `methodology/` folder (project-local, authoritative).
+2. `${CLAUDE_PLUGIN_ROOT}/methodology/` (plugin-shipped, fallback).
+3. ISO/IEC 29110-5-6-2 (process backbone).
+4. PHAS-EAI / Kappe (design rationale for VSE-scaled SE).
+5. Galinier et al. (SME practices).
+6. INCOSE SE Handbook (best practices, scaled for VSEs).
+7. Douglass 2016 and 2021 (the Harmony aMBSE arc the methodology adapts).
+8. SYSMOD (Weilkiens 2020, Base Architecture and System Context).
+9. SysML v2 specification and SySiDE notes.
+10. Domain guides (Needs and Requirements, V&V, HSI).
 
 ## Project Information
 
-- **Project:** Smart Temperature Sensor
-- **Acquirer:** Facility Management AS
-- **Date created:** 2026-02-28
-- **Author:** Roar Georgsen
+- **Project:** Smart Sensor (demo)
+- **Acquirer:** dogfood (internal)
+- **Date created:** 2026-05-05
+- **Author:** vse-systems-engineering plugin contributor
 
-## Project Structure
+## Project Structure (per §8.3)
 
+```text
+methodology/                Project-local methodology spec
+model/
+  core/
+    stakeholders/           Operator, MaintenanceTechnician, Regulator
+    concerns/               StableMonitoring, AlertResponseTime, ...
+    base-architecture/      ESP32 MCU, MQTT broker (library package)
+    context/                System Context composite
+    domain/                 Reading, Alert, AcknowledgementCommand
+    stories/
+      stakeholder/          US_001..US_003
+      system/               SYS_001, SYS_002 (derive from stakeholder)
+    use-cases/              §1.4.5 elaborations
+    logical-architecture/
+      interface-types/      Reusable interface defs
+    verification-validation/
+      verification-cases/   VC_001, VC_002
+      validation-cases/     VAL_001, VAL_002
+    core.sysml              top-level package declaration
+  variations/               §6 trade-study mechanism
+    decision-points/        AlertHistoryStorageStrategy
+    trade-studies/          AlertHistoryStorageTrade
+    resolved/               Selected variant
+  library/                  vse-library.sysml (UserStory, etc.)
+docs/
+  project-plan.md           §10.3 Project Plan
+  risk-register.md          §10.7
+  cm-strategy.md            §10.8
+  decisions/                ADRs
+  meetings/                 Meeting Records
+  releases/                 Release plans
+  templates/                Out-of-scope §10.10 deliverable templates
+.iso-config.yaml            ISO 29110 hook configuration
 ```
-models/           SysML 2.0 model files (.sysml)
-docs/pm/          Project Management work products
-docs/sr/          System Definition and Realisation work products
-TASKS.md          ISO 29110 task checklist
-```
 
-## Traceability Chain
+## Traceability
 
-```
-Stakeholder Needs (STK-)
-    | satisfy
-System Requirements (REQ-)
-    | satisfy
-System Element Requirements (ELE-)
-    | verify
-Verification Cases (VER-)
+Every system story (`SYS_*`) traces upward to at least one
+stakeholder story (`US_*`) through `derive`. Every acceptance
+criterion traces downward to at least one verification case (or a
+direct validation case for stakeholder-side checks). Every
+stakeholder concern is framed by at least one stakeholder story
+through `frame concern`.
 
-Validation Cases (VAL-)
-    | verify (back to stakeholder needs)
-```
+Trace integrity is checked by `@traceability-guard` and by the
+project-side `pre-commit` hook.
 
-Every system requirement MUST trace upward to at least one stakeholder need
-via a `satisfy` link. Every system requirement MUST trace downward to at
-least one verification case via a `verify` link. Every stakeholder need
-MUST have at least one validation case. Macrocycle release (tagging
-`main`) MUST NOT proceed if trace gaps exist. Iteration-boundary closure
-MAY proceed with explicit iteration-boundary closure debt carried onto
-the next iteration's backlog.
+## SysML 2.0 conventions
 
-## SysML 2.0 Conventions
-
-- Package names: `PascalCase` (e.g., `SmartSensor`)
-- Definition names: `PascalCase` (e.g., `part def TemperatureSensor`)
-- Usage names: `camelCase` (e.g., `part tempSensor : TemperatureSensor`)
-- Requirement IDs: `REQ-` prefix (e.g., `REQ-001`)
-- Stakeholder need IDs: `STK-` prefix (e.g., `STK-001`)
-- Element requirement IDs: `ELE-` prefix (e.g., `ELE-001`)
-- Verification case IDs: `VER-` prefix (e.g., `VER-001`)
-- Validation case IDs: `VAL-` prefix (e.g., `VAL-001`)
-- All trace links use `satisfy` and `verify` keywords in SysML 2.0
-
-### Trace Link Syntax
-
-```sysml
-// Upward: system requirement satisfies stakeholder need
-requirement def MeasureTemperature :> SystemRequirement {
-    doc /* The system shall measure temperature within +/- 0.5 C. */
-    satisfy requirement StakeholderNeeds::MonitorTemperature;
-}
-
-// Downward: verification case verifies system requirement
-verification def VerifyTempAccuracy {
-    doc /* Verify temperature measurement accuracy. */
-    verify requirement SystemRequirements::MeasureTemperature;
-}
-```
+- Package names: `PascalCase` with `SmartSensor_` prefix.
+- User Story IDs: `US_<n>_<ShortName>` per §1.6.
+- System story IDs: `SYS_<n>_<ShortName>`.
+- Verification case IDs: `VC_<n>_<ShortName>`.
+- Validation case IDs: `VAL_<n>_<ShortName>`.
 
 ## Roles
 
-This is a VSE project. One person may fill multiple roles. Document which
-person holds which role in `docs/pm/project-plan.md`.
+For the demo, one contributor fills every role.
 
-| Role | Abbr | Responsibility |
-|------|------|----------------|
-| Project Manager | PJM | Planning, monitoring, control, repository management |
-| Systems Engineer | SYS | Requirements, architecture, V&V coordination |
-| Designer | DES | Functional and physical design, interface definitions |
-| Developer | DEV | Construction of software and hardware elements |
-| IVV Engineer | IVV | Integration, verification, validation execution |
-| Acquirer | ACQ | Customer acceptance, needs provision |
-| Stakeholder | STK | Needs and concerns provision across lifecycle |
-| Work Team | WT | All internal team members collectively |
-| Supplier | SUP | External provider of system elements |
-
-## ISO 29110 Process Map
-
-### Project Management (PM)
-
-| Activity | Objective |
-|----------|-----------|
-| PM.1 Project Planning | Establish plan, assign resources, obtain acquirer acceptance |
-| PM.2 Plan Execution | Monitor progress, manage changes, conduct reviews |
-| PM.3 Assessment and Control | Evaluate against plan, take corrective actions |
-| PM.4 Closure | Formalise completion, baseline repository, execute disposal |
-
-### System Definition and Realisation (SR)
-
-| Activity | Objective |
-|----------|-----------|
-| SR.1 Initiation | Set up SEMP, data model, implementation environment |
-| SR.2 Requirements | Elicit needs, derive system and element requirements |
-| SR.3 Architecture | Design functional and physical architecture |
-| SR.4 Construction | Build, buy, or reuse system elements |
-| SR.5 IVV | Integrate, verify against requirements, validate against needs |
-| SR.6 Delivery | Review product, prepare maintenance and training, deliver |
-
-## Iteration-Boundary Closure Checklist
-
-Before closing an iteration and merging its feature branch, verify:
-
-- Work products required by the iteration's centre-of-gravity activities
-  exist in `docs/` (the `iteration-boundary-check` script reports any
-  missing items as advisory closure debt)
-- All SysML trace links are complete for threads this iteration touched
-  (the pre-commit hook checks this)
-- The iteration-boundary closure items in the iteration backlog are
-  satisfied or explicitly carried as `closure_debt` into the next
-  iteration
-- The Traceability Matrix in `docs/sr/traceability-matrix.md` is current
-
-## Macrocycle Release Checklist
-
-Before tagging a release on `main`, verify:
-
-- All stakeholder needs, system requirements, and verification cases
-  accumulated across the merged iterations trace cleanly end-to-end
-- All `closure_debt` items from prior iterations have been resolved
-- The acquirer has signed the Product Acceptance Record
+| Role | Abbr |
+|---|---|
+| Project Manager | PJM |
+| Systems Engineer | SYS |
+| Designer | DES |
+| Developer | DEV |
+| IVV Engineer | IVV |
+| Acquirer | ACQ |
+| Stakeholder | STK |
 
 ## Writing Style
 
-- UK English throughout (organisation, behaviour, modelling)
-- Clear, precise, evidence-grounded language
-- Plain language first, specialist terms introduced with explanation
-- Cross-disciplinary audience assumed
-<!-- END VSE COMPANION -->
+- UK English throughout (organisation, behaviour, modelling).
+- No em-dashes. Restructure with commas, parentheses, or "that is".
+- No semicolons in body text. Split into two sentences.
+- No contractions (do not, cannot, will not, it is).
+- Plain language first, specialist terms introduced with explanation.

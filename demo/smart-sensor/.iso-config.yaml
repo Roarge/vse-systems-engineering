@@ -1,0 +1,44 @@
+# .iso-config.yaml for the Smart Sensor demo project.
+#
+# Drives project-side and lifecycle hooks shipped by the
+# vse-systems-engineering plugin. Hooks read this file to decide
+# what to enforce.
+
+# Plugin version recorded at /vse-setup time.
+plugin_version: "2.0.0-rc.9"
+
+# Baselined paths require an open Change Request and a
+# "(CR #<n>)" reference in the commit message.
+baselined_paths:
+  - docs/project-plan.md
+  - docs/cm-strategy.md
+  - docs/risk-register.md
+  - methodology/
+  - model/library/
+
+# Protected branches. Force-push is prohibited on these.
+protected_branches:
+  - main
+  - release/*
+
+# StoryMeta required fields once a story leaves backlog.
+storymeta:
+  required_fields: [points, priority, status]
+  valid_statuses: [backlog, ready, inProgress, done]
+
+# Risk Register configuration.
+risk_register:
+  path: docs/risk-register.md
+  stale_threshold_days: 30
+
+# Change Request configuration.
+change_request:
+  issue_label: change-request
+  required_for_paths: ${baselined_paths}
+
+# Renderers for §9.8 model-derived artefacts. The demo ships stubs.
+renderers:
+  traceability_matrix: tools/render/traceability-matrix.py
+  stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
+  system_reqs:         tools/render/system-reqs-doc.py
+  ivv_plan:            tools/render/ivv-plan.py

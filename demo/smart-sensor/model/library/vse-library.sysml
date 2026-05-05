@@ -87,8 +87,15 @@ package VSE_Library {
         // The `stakeholder role` declaration and `subject` clause
         // are declared by concrete stories. The SysML 2.0 parser
         // requires `subject` to appear before `stakeholder` inside
-        // the body, so the abstract base leaves both to the
-        // specialisation.
+        // the same body, so a stakeholder feature cannot be declared
+        // in the abstract base without first declaring a subject.
+        // Concrete stories therefore use the form
+        //   subject system : SmartSensor_System;
+        //   stakeholder role : Operator;
+        // (declaration, not `:>>` redefinition). The methodology's
+        // §1.7 examples that show `stakeholder :>> role` predate this
+        // parser constraint and are tracked for revision in a future
+        // methodology branch.
     }
 
     requirement def Feature :> StakeholderNeed {

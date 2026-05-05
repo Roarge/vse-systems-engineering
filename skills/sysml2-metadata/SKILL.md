@@ -260,7 +260,7 @@ reference:
 metadata def ConfigItem {
     attribute ciId : String;
     attribute baselineId : String;
-    attribute state : CIState;
+    attribute ciState : CIState;
     attribute owner : String;
 }
 ```

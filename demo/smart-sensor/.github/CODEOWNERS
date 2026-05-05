@@ -1,0 +1,28 @@
+# CODEOWNERS for the Smart Sensor demo.
+#
+# Maps ISO 29110 roles (§10.11) to a single demo-owner identity.
+# A real project distributes these across the Work Team.
+
+# Project Manager (PJM)
+docs/project-plan.md            @smart-sensor-demo-owner
+docs/cm-strategy.md             @smart-sensor-demo-owner
+docs/risk-register.md           @smart-sensor-demo-owner
+
+# Systems Engineer (SYS)
+model/core/stakeholders/        @smart-sensor-demo-owner
+model/core/concerns/            @smart-sensor-demo-owner
+model/core/stories/             @smart-sensor-demo-owner
+model/core/context/             @smart-sensor-demo-owner
+
+# Designer (DES)
+model/core/logical-architecture/  @smart-sensor-demo-owner
+model/variations/                 @smart-sensor-demo-owner
+
+# IVV Engineer (IVV)
+model/core/verification-validation/  @smart-sensor-demo-owner
+
+# Methodology spec (elevated review per §2.6 rule 4)
+methodology/                    @smart-sensor-demo-owner
+
+# Base Architecture (elevated review per §2.6 rule 4)
+model/core/base-architecture/   @smart-sensor-demo-owner

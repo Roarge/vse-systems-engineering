@@ -8,6 +8,145 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.9] - 2026-05-05
+
+Phase 6 of the v2.0 restructuring. The Smart Sensor demo is rebuilt
+from scratch around the §8.3 layout to dogfood the new methodology
+end to end. The legacy flat `models/` tree, `docs/{pm,sr}/` artefacts,
+and cycle-era state files are deleted. The replacement demo carries
+a complete §1–§7 trace from three stakeholder stories through two
+derived system stories into a §6 trade study (`AlertHistoryStorage`),
+two verification cases, and two validation cases. Governance
+artefacts (CLAUDE.md, CONTRIBUTING.md, CODEOWNERS, PR template,
+.iso-config.yaml) and project documents (Project Plan, Risk Register,
+CM Strategy, sample ADR, sample release plan) are authored fresh
+against the new methodology.
+
+The pre-existing `Anything` and reserved-keyword `state` errors in
+the metadata library are fixed in both the demo's library copy and
+the templates' canonical copy, so `vse-library.sysml` parses clean
+under SySiDE's strict checker for the first time.
+
+This release is a release candidate. End-user installs should pin
+to `1.2.0` until `2.0.0` lands.
+
+### Removed
+
+Demo legacy content:
+
+- `demo/smart-sensor/models/` (flat 7-file SysML tree from v1.x).
+- `demo/smart-sensor/docs/{pm,sr}/` (29 cycle-era markdown
+  artefacts replaced by the §10 document set).
+- `demo/smart-sensor/.vse-iteration.yml`,
+  `demo/smart-sensor/.vse-journal.yml`, `demo/smart-sensor/TASKS.md`
+  (cycle-state files; project state now lives in git per §8.7).
+
+### Added
+
+Demo model under `demo/smart-sensor/model/core/`:
+
+- `core.sysml` top-level package with project short code `<SS>`.
+- `domain/sensor-domain.sysml` (Reading, Alert, AcknowledgementCommand
+  item defs and the `AlertSeverity` enum).
+- `stakeholders/stakeholders.sysml` (Operator, MaintenanceTechnician,
+  Regulator part defs).
+- `concerns/concerns.sysml` (StableMonitoring, AlertResponseTime,
+  DeviceServiceability, DataRetentionCompliance).
+- `base-architecture/base-architecture.sysml` (ESP32 MCU + MQTT 5.0
+  broker as a `library package`, MemoryConstraint requirement def).
+- `context/architecture-context.sysml` (SmartSensor_System with
+  three boundary ports, CloudDashboard, AmbientClimate, plus the
+  System Context composite).
+- `stories/stakeholder/stakeholder-stories.sysml` (US_001 through
+  US_003).
+- `stories/system/system-stories.sysml` (SYS_001 with formalised
+  `dashboardSla` constraint, SYS_002 with `batchAckSla`).
+- `use-cases/use-cases.sysml` (`AcknowledgeAlertBatch` elaborates
+  US_002).
+- `logical-architecture/interface-types/interfaces.sysml`
+  (OperatorDashboardInterface, DeviceToCloudInterface).
+- `verification-validation/verification-cases/verification-cases.sysml`
+  (VC_001, VC_002).
+- `verification-validation/validation-cases/validation-cases.sysml`
+  (VAL_001, VAL_002).
+
+Demo `model/variations/`:
+
+- `decision-points/decision-points.sysml` (`AlertHistoryStorageStrategy`
+  variation point with `deviceLocalRing` and `cloudTimeSeries`
+  variants).
+- `trade-studies/alert-history-trade.sysml` (analysis def with
+  weighted scoring sourced from system-story constraints per §0.3).
+- `resolved/resolved-variants.sysml` (selected variant
+  `cloudTimeSeries`).
+
+Demo governance:
+
+- `CLAUDE.md` rewritten for the methodology and demo specifics.
+- `CONTRIBUTING.md` covering branch model, PR workflow, commit
+  conventions, Change Requests, and hooks.
+- `.github/pull_request_template.md` with §8.6.1/§8.6.2/§8.6.3
+  embedded checklists.
+- `.github/CODEOWNERS` mapping ISO 29110 roles to a single demo owner.
+- `.iso-config.yaml` (baselined paths, protected branches, StoryMeta
+  rules, Risk Register, Change Requests, renderer paths).
+- `.gitignore` adding `docs/generated/` and `.iso-config.local.yaml`.
+
+Demo `docs/`:
+
+- `project-plan.md` (§10.3 Project Plan).
+- `risk-register.md` (§10.7) with four risks tied to the demo's
+  acceptance and trade decisions.
+- `cm-strategy.md` (§10.8) covering baseline naming, change governance,
+  and traceability rendering.
+- `decisions/2026-04-15-alert-history.md` ADR documenting the
+  AlertHistoryStorage trade disposition.
+- `releases/release-v0.1-plan.md` planning the first release scope.
+- `meetings/.gitkeep`, `audit-reports/.gitkeep`.
+
+Methodology copy:
+
+- `demo/smart-sensor/methodology/` populated with the project-local
+  copy of the plugin's authoritative spec (12 markdown files +
+  README + hooks guide), demonstrating the override convention.
+
+### Fixed
+
+- `templates/common/library/vse-library.sysml` and the demo's
+  library copy: imported `Base::Anything` for `mitigatedBy`, `scope`,
+  and `supersedes` attributes (previously unresolved). Renamed
+  `ConfigItem.state` to `ConfigItem.ciState` to avoid the reserved
+  `state` keyword. The library now parses clean under
+  `syside check --warnings-as-errors`.
+- Demo `domain/sensor-domain.sysml`: removed the `DurationValue`
+  wrapper that did not conform to decimal literals; system stories
+  now type duration attributes as `ScalarValues::Rational` directly.
+- `skills/sysml2-metadata/SKILL.md`: the worked `ConfigItem` example
+  reflected the old `state` attribute name; renamed to `ciState` to
+  match the library.
+- `demo/smart-sensor/model/core/stories/stakeholder/stakeholder-stories.sysml`:
+  added US_004_RetainAlertHistory (Regulator-driven story) framing
+  the `DataRetentionCompliance` concern, so the trade-study criterion
+  sourced from that concern traces back to stakeholder intent through
+  the story register (the §0.3 connective mechanism).
+- `demo/smart-sensor/model/variations/resolved/resolved-variants.sysml`:
+  restructured to follow the §6.3.6 / §6.6 rule 5 pattern. Introduces
+  `SmartSensor_System_Configurable :> SmartSensor_System` declaring
+  the `alertHistory` slot, and `SmartSensor_System_v1 :> _Configurable`
+  redefining it as `part :>> alertHistory = AlertHistoryStorageStrategy::cloudTimeSeries`.
+- `demo/smart-sensor/model/core/verification-validation/verification-cases/`
+  and `validation-cases/`: added `objective { verify ... }` clauses to
+  every case so the trace from acceptance to verification is
+  model-checkable. SySiDE emits an advisory "use dot notation for
+  nesting" warning on these clauses; the requirement def referenced
+  is a classifier, not a feature usage, so the warning is not
+  applicable. The methodology §5.4.6 example uses the same `::` form.
+- `demo/smart-sensor/model/core/use-cases/use-cases.sysml`: added
+  `objective realisesUS002 : US_002_AcknowledgeAlertsBatched` to bind
+  the use case to its story per §1.4.5.
+- `demo/smart-sensor/model/core/core.sysml`: imported
+  `SmartSensor_InterfaceTypes` so the umbrella covers every package.
+
 ## [2.0.0-rc.8] - 2026-05-05
 
 Phase 7 of the v2.0 restructuring. Templates are brought in sync
