@@ -15,6 +15,8 @@ package <SS> SmartSensor_Core {
     private import SmartSensor_SystemStories::*;
     private import SmartSensor_UseCases::*;
 
+    private import SmartSensor_InterfaceTypes::*;
+
     private import SmartSensor_VerificationCases::*;
     private import SmartSensor_ValidationCases::*;
 }

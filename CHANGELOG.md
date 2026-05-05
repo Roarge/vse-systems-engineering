@@ -121,6 +121,31 @@ Methodology copy:
 - Demo `domain/sensor-domain.sysml`: removed the `DurationValue`
   wrapper that did not conform to decimal literals; system stories
   now type duration attributes as `ScalarValues::Rational` directly.
+- `skills/sysml2-metadata/SKILL.md`: the worked `ConfigItem` example
+  reflected the old `state` attribute name; renamed to `ciState` to
+  match the library.
+- `demo/smart-sensor/model/core/stories/stakeholder/stakeholder-stories.sysml`:
+  added US_004_RetainAlertHistory (Regulator-driven story) framing
+  the `DataRetentionCompliance` concern, so the trade-study criterion
+  sourced from that concern traces back to stakeholder intent through
+  the story register (the §0.3 connective mechanism).
+- `demo/smart-sensor/model/variations/resolved/resolved-variants.sysml`:
+  restructured to follow the §6.3.6 / §6.6 rule 5 pattern. Introduces
+  `SmartSensor_System_Configurable :> SmartSensor_System` declaring
+  the `alertHistory` slot, and `SmartSensor_System_v1 :> _Configurable`
+  redefining it as `part :>> alertHistory = AlertHistoryStorageStrategy::cloudTimeSeries`.
+- `demo/smart-sensor/model/core/verification-validation/verification-cases/`
+  and `validation-cases/`: added `objective { verify ... }` clauses to
+  every case so the trace from acceptance to verification is
+  model-checkable. SySiDE emits an advisory "use dot notation for
+  nesting" warning on these clauses; the requirement def referenced
+  is a classifier, not a feature usage, so the warning is not
+  applicable. The methodology §5.4.6 example uses the same `::` form.
+- `demo/smart-sensor/model/core/use-cases/use-cases.sysml`: added
+  `objective realisesUS002 : US_002_AcknowledgeAlertsBatched` to bind
+  the use case to its story per §1.4.5.
+- `demo/smart-sensor/model/core/core.sysml`: imported
+  `SmartSensor_InterfaceTypes` so the umbrella covers every package.
 
 ## [2.0.0-rc.8] - 2026-05-05
 

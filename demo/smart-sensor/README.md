@@ -26,15 +26,11 @@ model/
     context/                System Context with operator, maintainer, dashboard, ambient climate
     domain/                 Reading, Alert, AcknowledgementCommand item defs
     stories/
-      stakeholder/          US_001..003 (operator and maintainer needs)
+      stakeholder/          US_001..004 (operator, maintainer, regulator needs)
       system/               SYS_001..002 (derived system stories)
     use-cases/              AcknowledgeAlertBatch (elaborates US_002)
-    functional-architecture/
     logical-architecture/
       interface-types/      OperatorDashboardInterface, DeviceToCloudInterface
-      allocations/
-      components/           (decomposition deferred to a later release)
-    product-architecture/
     verification-validation/
       verification-cases/   VC_001 (P95 latency), VC_002 (batch ack)
       validation-cases/     VAL_001, VAL_002
@@ -42,19 +38,16 @@ model/
   variations/
     decision-points/        AlertHistoryStorageStrategy
     trade-studies/          AlertHistoryStorageTrade
-    resolved/               cloudTimeSeries selected
+    resolved/               System_Configurable + System_v1
   library/                  vse-library.sysml (UserStory, StoryMeta, etc.)
-  sandbox/                  (empty)
 docs/
   project-plan.md           Project Plan (§10.3)
   risk-register.md          Risk Register (§10.7)
   cm-strategy.md            CM Strategy (§10.8)
   decisions/                ADRs (e.g. 2026-04-15-alert-history.md)
   releases/                 release-v0.1-plan.md
-  meetings/                 (empty placeholder)
-  audit-reports/            (empty placeholder)
-sketches/
-tools/
+  meetings/                 (placeholder, .gitkeep)
+  audit-reports/            (placeholder, .gitkeep)
 .github/
   pull_request_template.md
   CODEOWNERS
@@ -64,6 +57,8 @@ CONTRIBUTING.md
 .gitignore
 syside.toml
 ```
+
+Empty `model/core/{functional-architecture,parametrics,product-architecture,processes,logical-architecture/{allocations,components}}/` directories created by `/vse-setup` are not committed. Git does not track empty directories; running `/vse-setup` against this project recreates them.
 
 ## What this demo does NOT do
 

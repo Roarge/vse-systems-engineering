@@ -26,8 +26,11 @@ package SmartSensor_UseCases {
         doc /* #derive from US_002_AcknowledgeAlertsBatched.
 
                Primary actor: Operator.
-               Secondary actors: CloudDashboard, MQTT_Broker (Base
-               Architecture), the device(s) holding the alerts.
+               Secondary actor: CloudDashboard (the device holding
+               the alerts is the system itself, declared as
+               `subject`; the cloud-side MQTT broker is a Base
+               Architecture element and is not declared as a
+               separate use-case actor).
 
                Trigger: the alert queue contains N unacknowledged
                alerts (N up to maxBatchSize).
@@ -50,5 +53,10 @@ package SmartSensor_UseCases {
         subject system     : SmartSensor_System;
         actor operator     : Operator;
         actor dashboard    : CloudDashboard;
+
+        // Per methodology §1.4.5, the use case declares the story it
+        // elaborates as its `objective`. This couples the actor to
+        // the stakeholder by shared typing of `Operator`.
+        objective realisesUS002 : US_002_AcknowledgeAlertsBatched;
     }
 }

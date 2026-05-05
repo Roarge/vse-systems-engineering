@@ -14,9 +14,7 @@ package SmartSensor_VerificationCases {
 
     // VC_001 verifies SYS_001_DashboardLatency.
     verification def VC_001_DashboardLatencyP95 {
-        doc /* Verifies SYS_001_DashboardLatency.dashboardSla.
-
-               Method: instrument the cloud broker and the dashboard
+        doc /* Method: instrument the cloud broker and the dashboard
                renderer with timestamp probes. Replay one hour of
                nominal device traffic at the standard cadence.
                Compute the 95th percentile end-to-end latency from
@@ -29,16 +27,25 @@ package SmartSensor_VerificationCases {
              */
 
         subject system : SmartSensor_System;
+
+        // The verify clause references the system story's members
+        // through SysML 2.0 namespace-qualifier notation. SySiDE may
+        // emit a "use dot notation for nesting" warning; the
+        // requirement def referenced is a classifier, not a feature
+        // usage, so dot notation is not applicable here. The
+        // methodology §5.4.6 example uses the same `::` form.
+        objective {
+            verify SYS_001_DashboardLatency::dashboardSla;
+            verify SYS_001_DashboardLatency::acceptance;
+        }
     }
 
     // VC_002 verifies SYS_002_BatchAcknowledgement.
     verification def VC_002_BatchAckLatency {
-        doc /* Verifies SYS_002_BatchAcknowledgement.batchAckSla.
-
-               Method: stage 1000 unacknowledged alerts in the
-               cloud store. Trigger "Acknowledge all" via the
-               operator-side API. Measure wall-clock time from
-               request to last alert state-transition.
+        doc /* Method: stage 1000 unacknowledged alerts in the cloud
+               store. Trigger "Acknowledge all" via the operator-side
+               API. Measure wall-clock time from request to last
+               alert state-transition.
 
                Pass criterion: total time <= 1.0 second.
 
@@ -47,5 +54,10 @@ package SmartSensor_VerificationCases {
              */
 
         subject system : SmartSensor_System;
+
+        objective {
+            verify SYS_002_BatchAcknowledgement::batchAckSla;
+            verify SYS_002_BatchAcknowledgement::acceptance;
+        }
     }
 }

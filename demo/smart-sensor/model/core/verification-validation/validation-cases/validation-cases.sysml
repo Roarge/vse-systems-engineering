@@ -15,42 +15,41 @@ package SmartSensor_ValidationCases {
     // VAL_001 validates US_001_SeeReadingsOnDashboard with the
     // operator stakeholder, in a representative deployment.
     verification def VAL_001_OperatorSeeReadings {
-        doc /* Validates US_001_SeeReadingsOnDashboard.
-
-               Subject of validation: the operator's experience
-               of seeing live readings on the dashboard at a real
+        doc /* Subject of validation: the operator's experience of
+               seeing live readings on the dashboard at a real
                deployment site (not a lab replay).
 
-               Method: deploy one device at the demo site for
-               one full work shift. Have the operator describe
-               readings observed at agreed times. Compare to
-               independent reference instrument. Confirm the
-               operator could act on conditions without travelling
-               to the site.
+               Method: deploy one device at the demo site for one
+               full work shift. Have the operator describe readings
+               observed at agreed times. Compare to independent
+               reference instrument. Confirm the operator could act
+               on conditions without travelling to the site.
 
                Pass criterion: operator self-reports the dashboard
                as "timely and accurate enough to make daily
-               decisions" and reference-instrument deviation
-               remains within calibration band.
+               decisions" and reference-instrument deviation remains
+               within calibration band.
              */
 
         subject system : SmartSensor_System;
+
+        objective {
+            verify US_001_SeeReadingsOnDashboard::acceptance;
+        }
     }
 
     // VAL_002 validates US_003_CalibrateInField.
     verification def VAL_002_TechnicianFieldCalibration {
-        doc /* Validates US_003_CalibrateInField.
-
-               Subject of validation: the maintenance technician's
+        doc /* Subject of validation: the maintenance technician's
                ability to calibrate the device against a portable
                reference probe in the field.
 
                Method: technician performs calibration unaccompanied
-               at one outdoor and one indoor deployment site,
-               using only the documented procedure and the
-               supplied portable reference. Outcome is observed
-               and the calibration offset stored is read back from
-               the next reading.
+               at one outdoor and one indoor deployment site, using
+               only the documented procedure and the supplied
+               portable reference. Outcome is observed and the
+               calibration offset stored is read back from the next
+               reading.
 
                Pass criterion: both calibrations complete within
                documented time budget, calibration offset is
@@ -58,5 +57,9 @@ package SmartSensor_ValidationCases {
              */
 
         subject system : SmartSensor_System;
+
+        objective {
+            verify US_003_CalibrateInField::acceptance;
+        }
     }
 }

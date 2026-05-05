@@ -71,4 +71,31 @@ package SmartSensor_StakeholderStories {
                    then the device stores the calibration offset and reports it on the next reading. */
         }
     }
+
+    requirement def US_004_RetainAlertHistory :> UserStory {
+        doc /* StoryMeta: points=3, priority=medium, status=ready.
+
+               Regulator-side story. The Regulator is a non-interacting
+               stakeholder, so this story has no use case. The story
+               exists to frame DataRetentionCompliance into the story
+               register so trade-study criteria sourced from that
+               concern (the §0.3 connective mechanism) trace back to
+               stakeholder intent. */
+
+        subject system : SmartSensor_System;
+        stakeholder role : Regulator;
+
+        attribute :>> capability = "retain every alert in a tamper-evident store for the regulator-mandated retention window";
+        attribute :>> benefit    = "regulatory audits can reconstruct the full alert history of any deployment";
+
+        frame concern : DataRetentionCompliance;
+
+        requirement acceptance[1] {
+            doc /* Given an alert raised at time t, when the regulator's
+                   audit process queries the alert store at any time
+                   within the mandated retention window, then the alert
+                   is retrievable and a tamper-evidence check confirms
+                   the record is unmodified. */
+        }
+    }
 }
