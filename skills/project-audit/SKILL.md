@@ -1,340 +1,192 @@
 ---
 name: project-audit
-description: >-
-  Audit an existing VSE project for structural completeness, version drift,
-  and non-canonical configuration. Use when checking project health,
-  upgrading from an older plugin version, or verifying setup correctness.
-  Read-only, never modifies files.
+description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions. Read-only.
 user-invocable: true
 ---
 
 # Project Audit
 
-If the VSE lens has not been set in this session, invoke
-`vse-companion-overview` first, then continue.
+If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
 
-You are the project auditing skill for VSE systems engineering. You check
-an existing VSE project against the canonical structure defined by the
-current plugin version and produce a structured report of findings.
-
-**This skill is strictly read-only.** It never modifies files, creates
-directories, installs hooks, or writes to disk. It produces a report and
-optionally a remediation plan. The user decides what to act on.
+You are the project auditing skill for VSE systems engineering. You inspect an existing VSE project against the methodology specified in `${CLAUDE_PLUGIN_ROOT}/methodology/` and produce a structured report of findings. The skill is strictly read-only. It never modifies files, creates directories, installs hooks, or writes to disk outside the audit-report path that the engineer explicitly approves. It produces a report. The engineer decides what to act on.
 
 ## When This Skill Triggers
 
-- The user asks to audit, check, or verify their VSE project setup
-- The user asks if their project is up to date with the current plugin
-- The user asks what is missing from their project
-- The user asks to upgrade or refresh their project structure
-- The `@iteration-orchestrator` routes here on detected structural issues
+- The engineer types `/vse-audit` or asks to audit, check, or verify the project.
+- The engineer asks "is this project methodology-conformant".
+- The engineer asks for a version drift check between plugin, methodology, and project.
+- The engineer asks what is missing from the project.
+- `@vse-companion-overview` routes here when project state is unclear at session start.
+- `@release-orchestrator` routes here when structural drift is suspected before a release baseline.
 
-## Step 0: Detect Layout
+## Inputs
 
-Run the following to confirm the project is VSE-initialised:
+The audit consults the following inputs in order:
 
-```bash
-git rev-parse --is-inside-work-tree 2>/dev/null
-```
+1. **Project root.** The current working directory, or the `engineering/` subdirectory if the project uses the brownfield layout. Detect via `git rev-parse --show-toplevel` and presence of `engineering/`.
+2. **Project-local methodology copy.** `<project>/methodology/`. The project must carry the 12-section methodology (sections 00 through 10, plus README and the hooks guide).
+3. **Plugin methodology copy.** `${CLAUDE_PLUGIN_ROOT}/methodology/`. Used for version comparison only. Never edited.
+4. **ISO configuration.** `<project>/.iso-config.yaml` if present, recording project name, short code, plugin version recorded at setup, methodology version recorded at setup, and contact details.
+5. **Plugin manifest.** `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, for the current plugin version.
 
-If not inside a git repository, report "This is not a git repository.
-The audit requires an existing VSE project." and exit.
+## Audit Checks
 
-Capture the repository root:
-
-```bash
-PROJECT_ROOT=$(git rev-parse --show-toplevel)
-```
-
-Check for the VSE iteration file:
-
-```bash
-test -f "$PROJECT_ROOT/.vse-iteration.yml"
-```
-
-If the file does not exist, report: "This project has not been set up
-with the VSE plugin. Run `/vse-setup` first." and exit.
-
-Detect the layout:
-
-```bash
-test -d "$PROJECT_ROOT/engineering"
-```
-
-- **Directory exists**: brownfield layout. Set `MODEL_ROOT` to
-  `$PROJECT_ROOT/engineering/models` and `DOC_ROOT` to
-  `$PROJECT_ROOT/engineering/docs`.
-- **Directory does not exist**: greenfield layout. Set `MODEL_ROOT` to
-  `$PROJECT_ROOT/models` and `DOC_ROOT` to `$PROJECT_ROOT/docs`.
-
-## Step 1: Structural Completeness Checks
-
-For each check, record a finding with one of these severity levels:
+Each check produces a finding with one of these severities:
 
 | Severity | Meaning |
-|----------|---------|
-| CRITICAL | Required file missing or project cannot function correctly |
-| OUTDATED | File exists but content is from an older plugin version |
-| OPTIONAL | Optional file or feature not present (informational) |
-| NON-CANONICAL | File exists but in a non-standard location or format |
+|---|---|
+| ERROR | Mandatory rule violated. The project is not methodology-conformant on this point. |
+| WARN | Soft rule violated, methodology-level reminder, or possible reverse-engineering pattern. |
+| PASS | Check satisfied. |
 
-### Check 1: Root Files
+Findings include the rule reference (for example "§1.9 rule 3"), the file path, and a one-sentence explanation. The skill does not propose fixes inside findings. Remediation is the engineer's decision and is delegated through hand-offs (see below).
 
-1. **`.vse-iteration.yml`**: must exist (already confirmed in Step 0).
-   Parse the `version` field. If absent or not `1`, report OUTDATED.
-   Check for required fields under `current_iteration`:
-   `number`, `mission`, `branch`, `status`, `centre_of_gravity`,
-   `opened`, `macrocycle_target`, `backlog`. Report any missing fields
-   as OUTDATED.
+### 1. Layout Audit (§8.3)
 
-2. **`.vse-journal.yml`**: check existence at `$PROJECT_ROOT`. If
-   missing, report CRITICAL.
+Verify that every required directory listed in §8.2 and §8.3.1 exists under `model/core/`:
 
-3. **`CLAUDE.md`**: check existence at `$PROJECT_ROOT`. If missing,
-   report CRITICAL. If present, check for the marker block delimiters:
-   ```
-   <!-- BEGIN VSE COMPANION (managed by project-setup) -->
-   <!-- END VSE COMPANION -->
-   ```
-   If markers are absent, report NON-CANONICAL ("CLAUDE.md exists but
-   does not contain the VSE companion marker block").
-   If markers are present, extract the marker block content and compare
-   it against the current template at
-   `${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md` (after
-   placeholder substitution using values from the project). If content
-   differs, report OUTDATED with a summary of what changed.
+- `stakeholders/`, `concerns/`, `base-architecture/`, `context/`, `domain/`, `stories/stakeholder/`, `stories/system/`, `use-cases/`, `functional-architecture/`, `logical-architecture/`, `product-architecture/`, `parametrics/`, `processes/`, `verification-validation/verification-cases/`, `verification-validation/validation-cases/`.
+- `core.sysml` top-level package declaration.
+- `model/variations/`, `model/library/`, `model/sandbox/`.
+- `sketches/`, `tools/`, `docs/`, `.github/`.
 
-### Check 2: Model Files and Directory Structure
+For each missing directory, emit ERROR with the §8.3 reference. For each component folder under `logical-architecture/components/<name>/`, verify the recursive structure of §8.3.2.
 
-1. **Detect the model tier.** Scan `$MODEL_ROOT` for the layout:
+### 2. Methodology Presence
 
-   - **Package directories present** (subdirectories like `actors/`,
-     `requirements/`, `verification/` each containing `.sysml` files):
-     this is the package-per-directory layout (0.14.0+).
-     - If `functional-analysis/` and `arch-analysis/` and
-       `configurations/` are present: **Canonical AMBSE**.
-     - If those are absent: **Minimal AMBSE**.
-   - **Flat `.sysml` files at root** (`package.sysml` or
-     `model-overview.sysml` with no subdirectories): this is the flat
-     layout (pre-0.14.0 or Flat tier).
-     - If `model-overview.sysml` exists with short-code-prefixed
-       packages: **Minimal or Canonical (flat layout, pre-0.14.0)**.
-       Report NON-CANONICAL ("model files use flat layout, current
-       plugin version uses package-per-directory").
-     - If `package.sysml` exists with non-prefixed packages
-       (`StakeholderNeeds`, `SystemRequirements`): **Flat tier**.
+- Verify `<project>/methodology/` exists.
+- Verify it contains the twelve files: `00-methodology-overview.md`, `01-user-stories.md` through `10-project-management.md`, `iso-29110-hooks-guide.md`, and `README.md`.
+- Compare the project copy against `${CLAUDE_PLUGIN_ROOT}/methodology/`. If file hashes differ, emit WARN ("methodology drift between project and plugin"). Do not assume which is canonical. Record both versions.
 
-2. **Check VSE Library.** Look for `$MODEL_ROOT/library/vse-library.sysml`.
-   If the tier is Minimal or Canonical and the library is missing, report
-   CRITICAL ("VSE Library missing, introduced in plugin version 0.13.0").
+### 3. Branch Model Audit (§8.4)
 
-3. **Check per-package views.** For each package directory, check that
-   both a definition file and a `-view.sysml` file exist. If views are
-   missing, report OUTDATED ("package views missing, introduced in plugin
-   version 0.14.0").
+Using `git for-each-ref refs/heads/`:
 
-4. **Check cross-cutting views.** Look for
-   `$MODEL_ROOT/traceability-view.sysml`. If missing and tier is Minimal
-   or Canonical, report OUTDATED.
+- Confirm `main` exists.
+- List branches matching `story/<US_id>_<short>`, `story/<theme-name>`, `methodology/<topic>`, `arch/<decision>`, and `release/<tag>`. Branches outside these patterns emit WARN.
+- For every story branch, confirm a draft pull request is open via `gh pr list --head <branch>` (§8.5.1). A story branch with no PR emits ERROR.
 
-5. **Check `model-overview.sysml`.** Must exist at `$MODEL_ROOT` for
-   Minimal and Canonical tiers. For Flat tier, check `package.sysml`.
+### 4. Baseline State Audit
 
-6. **Check optional packages.** Look for `base-architecture/`,
-   `configurations/` (Minimal only, since Canonical includes it),
-   `cm/`. Report as OPTIONAL if missing.
+- List git tags matching `plan-baseline-*` and `release-*`. Emit PASS if at least one of each kind exists once the project has reached the corresponding lifecycle phase.
+- Compare the current `main` HEAD against the most recent `release-*` tag. If the working tree contains modifications to files marked baselined in `.iso-config.yaml` since that tag, emit WARN ("baselined-artefact drift, consider raising a Change Request").
 
-### Check 3: Document Templates
+### 5. Story Well-Formedness Audit (§1.9)
 
-1. **PM templates.** Count files in `$DOC_ROOT/pm/`. The canonical set
-   has 9 files. List any missing from:
-   `project-plan.md`, `statement-of-work.md`, `progress-status.md`,
-   `meeting-record.md`, `change-request.md`, `correction-register.md`,
-   `justification-document.md`, `purchase-order.md`,
-   `product-acceptance.md`.
-   Report missing files as CRITICAL.
+For every `*.sysml` file under `model/core/stories/` and every component-scope `stories/` folder, parse each `requirement def` specialising `UserStory`. For each story, check:
 
-2. **SR templates.** Count files in `$DOC_ROOT/sr/`. The canonical set
-   has 15 files. List any missing from:
-   `semp.md`, `data-model.md`, `stakeholder-requirements.md`,
-   `system-requirements.md`, `system-element-requirements.md`,
-   `traceability-matrix.md`, `system-design.md`, `ivv-plan.md`,
-   `integration-report.md`, `verification-report.md`,
-   `validation-report.md`, `system-user-manual.md`,
-   `system-operation-guide.md`, `maintenance-guide.md`,
-   `training-specifications.md`.
-   Report missing files as CRITICAL.
+- Rule 1: exactly one `role` declared.
+- Rule 2: exactly one `subject` declared.
+- Rule 3: at least one `acceptance` clause if `StoryMeta.status` is `ready` or beyond.
+- Rule 4: `role` redefined with a concrete part def if status is past `backlog`.
+- Rule 6: `capability` and `benefit` strings retained.
+- Rule 7: story does not specialise a Use Case, Action, or Case definition.
 
-3. **TASKS.md.** Check for `TASKS.md` at the project root (greenfield)
-   or `$PROJECT_ROOT/engineering/TASKS.md` (brownfield). If missing,
-   report CRITICAL.
+Each violation emits ERROR keyed to the rule.
 
-### Check 4: Hooks
+### 6. Base Architecture Forward-Going Rule (§2.6 rule 5)
 
-1. **Pre-commit traceability hook.** Check
-   `$PROJECT_ROOT/.git/hooks/pre-commit`:
-   - Does the file exist? If not, report CRITICAL.
-   - Is it executable? If not, report NON-CANONICAL.
-   - Compare its content against
-     `${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh`.
-     If content differs, report OUTDATED ("pre-commit hook does not
-     match current plugin version").
+For every system or stakeholder story, resolve the `subject` reference and inspect the package qualified name. If the subject's part def is declared inside a `library package` under `model/core/base-architecture/` or `model/library/`, emit WARN with the §2.6 rule 5 reference. The warning is informational and does not block. The intent is to confirm that the story is a deliberately added context story rather than a reverse-engineered explanation of a platform decision.
 
-### Check 5: SySiDE Configuration
+### 7. Reverse-Engineering Guard (§2.6 rule 7)
 
-1. **`syside.toml`**: check at the correct location per layout
-   ($PROJECT_ROOT for greenfield, `$PROJECT_ROOT/engineering/` for
-   brownfield). If missing, report CRITICAL. If present but empty,
-   report NON-CANONICAL.
+Heuristic check. Inspect concerns, stakeholder stories, and commit messages added in the most recent twenty commits. Emit WARN when:
 
-2. **`.lsp.json`**: check at the correct location per layout. If
-   missing, report CRITICAL.
+- a concern's narrative explains why the Base Architecture is what it is, rather than what the project shall do given the constraint,
+- a stakeholder story's subject is a Base Architecture part def and the story was authored without a paired human-confirmation note in the commit body or PR description.
 
-### Check 6: GitHub Actions
+This rule is a methodology-level instruction to agents and is not enforced strictly by CI. The audit surfaces candidates for engineer review.
 
-All findings in this group are OPTIONAL severity.
+### 8. System Context Completeness (§3.6)
 
-1. `.github/workflows/traceability-check.yml`
-2. `.github/workflows/iteration-boundary.yml`
-3. `.github/workflows/document-export.yml`
-4. `.github/pull_request_template.md` (or
-   `.github/PULL_REQUEST_TEMPLATE.md`)
+Inspect `model/core/context/`:
 
-Report each missing file as OPTIONAL.
+- Rule 1: exactly one system part declared.
+- Rule 2: every actor part def classified into one of the four categories of §3.2.1.
+- Rule 3: every interface on the system part is connected to at least one actor.
+- Rule 4: every item flow declares an item type.
+- Rule 5: stakeholders that also appear as actors use the same part def in both roles.
 
-### Check 7: Gitignore
+### 9. Concern and Story Coverage
 
-1. **Both layouts**: check that `.gitignore` contains a `build/` entry.
-   If missing, report NON-CANONICAL.
+- Every `concern def` in `model/core/concerns/` is framed by at least one stakeholder story (§1.4.6). Otherwise WARN ("orphan concern").
+- Every system story declares a `derive` link to a stakeholder story (§5). Otherwise ERROR.
+- Every subsystem story declares a `derive` link to a system story (§7). Otherwise ERROR.
 
-2. **Brownfield only**: check that `.gitignore` contains
-   `engineering/build/` and `engineering/.venv/` entries. If missing,
-   report NON-CANONICAL.
+### 10. Verification and Validation Coverage
 
-## Step 2: Produce Report
+- Every acceptance criterion has a bound `verification def` in `model/core/verification-validation/verification-cases/` or under the corresponding component folder. Missing binding emits WARN.
 
-Present the findings as a structured report:
+### 11. Trace Integrity
 
-```text
-VSE PROJECT AUDIT REPORT
-========================
-Plugin version: [current plugin version from plugin.json]
-Project layout: [greenfield | brownfield]
-Detected tier:  [Flat | Minimal AMBSE | Canonical AMBSE]
-Model layout:   [package-per-directory | flat (pre-0.14.0)]
+Walk every `derive`, `frame concern`, `satisfy`, `verify`, and `allocate` relation in the model. Confirm that each end-point resolves to a defined element. Dispatch the `vse-traceability-matrix-builder` subagent for the heavy walk, in line with the dispatching pattern documented for that subagent. The subagent returns a suggestion-shaped report. The audit surfaces the report and adds an ERROR finding for every unresolved reference.
 
-CRITICAL ([N] items)
-  - [description and path]
-  ...
+### 12. ISO 29110 Artefact Presence (§9.5)
 
-OUTDATED ([N] items)
-  - [description, current state, expected state]
-  ...
+Check `<project>/docs/` for the following information products. Each missing artefact emits ERROR if the project has progressed beyond project initiation, otherwise WARN:
 
-NON-CANONICAL ([N] items)
-  - [description and recommendation]
-  ...
+- `project-plan.md` (§10.3).
+- `semp.md` (or a corresponding section of the Project Plan).
+- `risk-register.md` (§10.7).
+- `cm-strategy.md` (§10.8).
+- `correction-register.md` (§10.5).
+- `progress-status-record.md` (§10.5).
+- `justification-document.md` (§9.5; may aggregate ADRs).
+- `meetings/` folder (§10.4).
+- `product-acceptance-record.md` (§10.6) once the project closes.
 
-OPTIONAL ([N] items)
-  - [description of what could be added]
-  ...
+The `traceability-matrix.md`, `stakeholder-requirements.md`, `system-requirements.md`, and IVV documents are model-derived (§9.8) and their absence is reported as WARN with a hand-off to `@document-export`.
 
-Summary: [N] critical, [N] outdated, [N] non-canonical, [N] optional
-```
+### 13. Version Drift
 
-If the project passes all checks with no CRITICAL or OUTDATED findings,
-report:
+Compare three version sources:
 
-```text
-VSE PROJECT AUDIT: PASS
-========================
-All structural checks passed. The project matches the current plugin
-version's canonical structure.
-```
+- Plugin version, from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
+- Methodology version, from `<project>/methodology/00-methodology-overview.md` if version-stamped, or from a hash comparison against the plugin copy.
+- Project's recorded plugin version, from `<project>/.iso-config.yaml` field `plugin_version`.
 
-## Step 3: Remediation Plan (On Request)
+If the plugin version is newer than the project's recorded version, emit WARN ("plugin updated since last project setup. Review changelog for breaking changes."). If the methodology hashes differ, emit WARN ("methodology drift between project and plugin"). If `.iso-config.yaml` is missing, emit ERROR ("project does not record its setup version").
 
-If the user asks for remediation (via `--remediate` argument or by
-asking "how do I fix this?"), produce an actionable plan grouped by
-approach. Each remediation step includes the exact commands or file
-paths needed.
+### 14. Hook Installation (per `iso-29110-hooks-guide.md` §3.1)
 
-### 3a. Missing Files (CRITICAL)
+- `<project>/.githooks/` exists and contains `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`, and the `lib/` helpers.
+- `git config core.hooksPath` returns `.githooks`.
+- `<project>/.claude/settings.json` exists with hook configuration.
 
-For each missing template file, provide the exact copy command:
+Missing scripts or unset `core.hooksPath` emit ERROR. Hand off to `@attention-regime` for installation.
 
-```bash
-cp "${CLAUDE_PLUGIN_ROOT}/templates/[category]/[file]" "[target path]"
-```
+## Reporting
 
-Note: placeholder substitution must be applied after copying. List the
-placeholders that need replacement (`{{PROJECT_NAME}}`,
-`{{PROJECT_SHORT_CODE}}`, `{{DATE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`).
+Produce a structured Markdown report grouped by check, then by severity. Each finding includes the rule reference, file path, and one sentence of context. The report header records:
 
-### 3b. Outdated Hook
+- plugin version, methodology version, project recorded version,
+- detected layout (greenfield or brownfield),
+- number of ERROR, WARN, and PASS findings.
 
-```bash
-cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" \
-   "$PROJECT_ROOT/.git/hooks/pre-commit"
-chmod +x "$PROJECT_ROOT/.git/hooks/pre-commit"
-```
+The report is saved to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` when a `docs/audit-reports/` directory exists or the engineer authorises the skill to create one. When the project carries no `docs/` folder, the report is surfaced inline in the chat instead.
 
-### 3c. CLAUDE.md Refresh
+If every check passes with no ERROR findings, the report header reads "VSE PROJECT AUDIT: PASS".
 
-If the marker block is outdated, recommend re-running the marker block
-merge. Provide the manual approach:
+## Refusals
 
-1. Read the current template from
-   `${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md`
-2. Apply placeholder substitution
-3. Replace the content between (and including) the marker lines in the
-   project's `CLAUDE.md`
+The skill never edits files in the project, never installs hooks, never copies templates, and never modifies the plugin tree. Requests to "fix the findings" are routed through hand-offs. If an engineer asks the skill to perform a write directly, refuse and name the appropriate skill from the hand-off list.
 
-### 3d. VSE Library Installation
+## Hand-Offs
 
-For projects predating 0.13.0:
+The audit produces findings. Remediation is delegated to other skills:
 
-```bash
-mkdir -p "$MODEL_ROOT/library"
-cp "${CLAUDE_PLUGIN_ROOT}/templates/common/library/vse-library.sysml" \
-   "$MODEL_ROOT/library/"
-```
+- Missing scaffolding directories or absent ISO 29110 templates, hand off to `@project-setup`.
+- Story well-formedness gaps under §1.9, hand off to `@story-orchestrator`.
+- Trace integrity errors, hand off to `@traceability-guard`.
+- Baseline state suggesting an unfinished release, hand off to `@release-orchestrator`.
+- Baselined-artefact drift, hand off to `@change-request`.
+- Hooks not installed or `core.hooksPath` not set, hand off to `@attention-regime`.
+- Model-derived artefact rendering gaps, hand off to `@document-export`.
 
-Note: existing model files may need `import VSE_Library::*` lines added
-to use the metadata definitions.
+## Outputs
 
-### 3e. Model Layout Migration (Flat to Package-Per-Directory)
+A single Markdown audit report per invocation, written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` if the engineer authorises the path, or surfaced inline otherwise. The skill does not modify any other file.
 
-For projects using the pre-0.14.0 flat layout:
+## Reference
 
-1. Create package subdirectories under `$MODEL_ROOT`
-2. Move each `.sysml` file into its corresponding directory
-3. Copy view template files from
-   `${CLAUDE_PLUGIN_ROOT}/templates/common/models/[pkg]/[pkg]-view.sysml`
-4. Copy `traceability-view.sysml` to `$MODEL_ROOT`
-5. Apply placeholder substitution to the new view files
-
-This is a significant restructuring. Recommend doing it on a dedicated
-branch and verifying that all SysML imports still resolve correctly
-after the move.
-
-### 3f. Tier Upgrade
-
-If the user wants to move from Minimal to Canonical (or from Flat to
-either), list the additional package directories to create and the
-files to copy from the plugin templates.
-
-## Cross-References
-
-- `@project-setup`: scaffolds the canonical structure this skill audits
-- `@iteration-orchestrator`: may route here on detected structural issues
-- `@traceability-guard`: checks model-level trace completeness (different
-  from structural completeness)
-- `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`:
-  authoritative definition of the canonical layout (atomic pages
-  `vse-canonical-project-layout` and `vse-model-tiers-and-templates`
-  under `wiki/pages/project-structure/`)
-
-## Reference: Canonical Project Structure
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`
+`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`
