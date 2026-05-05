@@ -159,7 +159,7 @@ Trace integrity is checked by `@traceability-guard` and by the project-side `pre
 - User Story IDs: `US_<n>_<ShortName>` per §1.6 (e.g., `US_042_AckFromDashboard`).
 - System story IDs: `SYS_<n>_<ShortName>` (e.g., `SYS_142_BatchAcknowledgement`).
 - Subsystem story IDs: project-determined component prefix (e.g., `ALM_001`).
-- Verification case IDs: `VC_` prefix; validation case IDs: `VAL_` prefix.
+- Verification case IDs: `VC_` prefix. Validation case IDs: `VAL_` prefix.
 
 ## Roles
 

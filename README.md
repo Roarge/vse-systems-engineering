@@ -102,9 +102,9 @@ The tool surface for every subagent is restricted to `Read`, `Glob`, and `Grep`.
 
 The plugin's reference content sits in three surfaces:
 
-- **`methodology/`** — the canonical methodology specification (§0–§10 plus the ISO 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
-- **`wiki/pages/<layer>/`** — atomic markdown reference pages, cross-linked with `[[wikilinks]]`, concatenated into per-skill bundles under `wiki/bundles/` that skills embed at load time. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
-- **`templates/`** — work-product templates copied into user projects by `project-setup`.
+- **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
+- **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`, concatenated into per-skill bundles under `wiki/bundles/` that skills embed at load time. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
+- **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
 See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 129 atomic pages across 11 layers, consumed via 21 skill bundles.
 
@@ -112,14 +112,14 @@ See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authorin
 
 Knowledge is extracted from these source categories, consulted in priority order:
 
-1. **The plugin's own methodology specification** — `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
-2. **ISO/IEC 29110-5-6-2:2014** — Systems Engineering Profile for VSEs.
-3. **PHAS-EAI framework** — Georgsen (2026), thesis on attention in SE.
+1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
+2. **ISO/IEC 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
+3. **PHAS-EAI framework**, Georgsen (2026), thesis on attention in SE.
 4. **INCOSE SE Handbook 4e** and domain guides (Needs and Requirements, V&V, HSI).
-5. **AMBSE source methodology** — Douglass (2016) *Agile Systems Engineering*, Douglass (2021) *Agile MBSE Cookbook*. The plugin's methodology adapts the source arc per §0.4 of the spec; where it disagrees, the spec wins.
-6. **SYSMOD** (Weilkiens, 2020) — Base Architecture and System Context concepts adopted in §2 and §3.
-7. **SysML 2.0 specification** — OMG and *The SysML v2 Book* (Weilkiens and Molnár, 2026-04 release).
-8. **Domain guides** — Galinier et al. on SME practices.
+5. **AMBSE source methodology**: Douglass (2016) *Agile Systems Engineering* and Douglass (2021) *Agile MBSE Cookbook*. The plugin's methodology adapts the source arc per §0.4 of the spec. Where it disagrees, the spec wins.
+6. **SYSMOD** (Weilkiens, 2020), the source of the Base Architecture and System Context concepts adopted in §2 and §3.
+7. **SysML 2.0 specification**: OMG and *The SysML v2 Book* (Weilkiens and Molnár, 2026-04 release).
+8. **Domain guides**: Galinier et al. on SME practices.
 
 Source PDFs are private (gitignored) and not distributed with the plugin.
 
@@ -195,7 +195,7 @@ After adding the marketplace, you might need to restart Claude Code so it discov
 The plugin ships an ISO 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
 - **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up.
-- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`. They enforce SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, V&V coverage on `done` stories, and traceability matrix freshness.
+- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`. They enforce SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, V&V coverage on `done` stories, and traceability matrix freshness. A seventh hook, `post-receive`, lives on the canonical remote rather than in `.githooks/` and mirrors to the backup remote per §10.8 of the methodology.
 
 Project-side hook configuration sits in `<project>/.iso-config.yaml` per §8 of the hooks guide. The schema is reproduced in the `attention-regime` skill body.
 
@@ -203,7 +203,7 @@ Project-side hook configuration sits in `<project>/.iso-config.yaml` per §8 of 
 
 1. Open a fresh project directory in your terminal.
 2. Launch Claude Code and invoke `/vse-setup`.
-3. The skill enters Plan Mode, drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes (default: `engineering/` subdirectory; override: repo root or custom subdirectory).
+3. The skill enters Plan Mode, drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. The default is the `engineering/` subdirectory. The user can override to the repo root or a custom subdirectory.
 4. After Plan Mode approval, the skill scaffolds the directories, copies the methodology spec into the project's `methodology/` folder, generates the Project Plan, SEMP, Risk Register, and CM Strategy stubs, and prepares the `.github/`, `.iso-config.yaml`, and `.githooks/` scaffolding. Greenfield mode runs `git init` and an initial commit. Brownfield mode leaves staging to the engineer.
 5. From there, route through the orchestration skills:
    - `/vse-story` opens the first stakeholder story branch.
