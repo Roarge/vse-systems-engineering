@@ -8,6 +8,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-05
+
+Brownfield as-is architecture survey in `@project-setup`.
+
+### Added
+
+- New Step 6.5 in `skills/project-setup/SKILL.md`: an opt-in
+  brownfield as-is architecture survey that detects implementation
+  code in the host project, presents the architectural fingerprints
+  as a candidate list, and walks the user through per-element
+  classification into mandated, contingent, or irrelevant. Runs only
+  in brownfield mode and only when implementation code was detected
+  in Step 0. Operationalises the §2.7 Discovery lifecycle category
+  of the methodology.
+- Five new templates supporting the survey:
+  `templates/common/models/core/base-architecture/as-is.sysml.tmpl`,
+  `templates/common/models/core/base-architecture/as-is-cm.sysml.tmpl`,
+  `templates/common/models/core/as-is/_template.sysml`,
+  `templates/common/models/core/as-is/as-is-current.sysml.tmpl`, and
+  `templates/docs/as-is-classification.md`.
+- New `model/core/as-is/` package category for contingent elements,
+  imported by `core.sysml` and tagged with `@ConfigItem
+  { ciState = CIState::Proposed }` under baseline
+  `BL-AS-IS-CURRENT-0.1`. Mandated elements continue to live in
+  `model/core/base-architecture/` as `library package` content,
+  tagged `@ConfigItem { ciState = CIState::Baselined }` under
+  baseline `BL-BA-AS-IS-0.1`.
+- Re-entry hand-off in `skills/architecture-design/SKILL.md`:
+  Workflow A detects the `<!-- as-is-survey: skipped at ... -->`
+  marker in `docs/as-is-classification.md` and offers to resume the
+  survey before modelling givens manually.
+- Brownfield discovery subsection in
+  `wiki/pages/methodology/base-architecture-corollaries.md`,
+  bundled into `project-setup` for the survey's reference material.
+
+### Changed
+
+- Methodology §2.7 (Lifecycle, in `methodology/02-base-architecture.md`)
+  gains a paragraph naming brownfield adoption as the canonical
+  Discovery entry path. The §2.6 rule 7 reverse-engineering guard
+  remains the binding constraint on the survey: it captures evidence
+  and source of mandate, never narrative justification.
+- Slash command `commands/vse-setup.md` documents the new survey
+  step, the four output paths, the four mandate sources
+  (parent organisation, customer, parent product, regulator), and
+  the §2.6 rule 7 boundary.
+
 ## [2.0.0] - 2026-05-05
 
 The v2.0 release. The plugin is restructured around the story-driven
