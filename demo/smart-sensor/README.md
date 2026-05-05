@@ -1,97 +1,86 @@
-# Smart Sensor Demo Project
+# Smart Sensor (demo project)
 
-A minimal VSE systems engineering project demonstrating the full ISO/IEC 29110
-lifecycle using the `vse-systems-engineering` plugin.
+A worked example of the story-driven AMBSE methodology applied to a small connected-sensor product. The project is fictitious. The artefacts in this directory exercise the methodology end to end so a reader can see how the pieces fit together: stakeholders, concerns, stakeholder stories, system stories, base architecture, system context, a trade study, verification cases, the Project Plan, and the supporting governance artefacts (Risk Register, CM Strategy, ADRs).
 
-## System description
+## What the smart sensor is
 
-A smart temperature sensor system for indoor climate monitoring. The system
-reads ambient temperature, applies threshold logic, and sends alerts when
-temperature exceeds configurable bounds.
+The Smart Sensor is a small embedded device that streams temperature and humidity readings from a single deployment site (a greenhouse, a cold-store, or a server room) to a cloud-hosted dashboard. The device is wired-powered, mounted on a wall or rail, and uses Wi-Fi for connectivity. The system of interest is the device firmware plus the cloud ingest path, treated as one product. The customer-facing operator monitors readings and acknowledges alerts. A maintenance technician installs and calibrates the device.
 
-## Project structure
+This scope is small enough to fit on one page yet exercises all the methodology's foundational artefacts and at least one architectural trade study.
 
-```
-smart-sensor/
-├── .vse-iteration.yml      Iteration state (iter-05, centre of gravity SR.5)
-├── .gitignore              Ignores build/ and generated files
-├── syside.toml             SySiDE configuration
-├── TASKS.md                ISO 29110 task checklist
-├── README.md               This file
-├── models/
-│   ├── package.sysml       Root package (imports all domains)
-│   ├── stakeholder-needs.sysml  5 stakeholder needs (STK-001 to STK-005)
-│   ├── system-requirements.sysml  8 system requirements (REQ-001 to REQ-008)
-│   ├── architecture.sysml  Part definitions, ports, connections, behaviour
-│   ├── verification.sysml  8 verification cases (VER-001 to VER-008)
-│   └── validation.sysml    5 validation cases (VAL-001 to VAL-005)
-├── docs/
-│   ├── pm/                 PM work product templates (6 files)
-│   │   ├── project-plan.md
-│   │   ├── progress-status.md
-│   │   ├── meeting-record.md
-│   │   ├── change-request.md
-│   │   ├── correction-register.md
-│   │   └── product-acceptance.md
-│   └── sr/                 SR work product templates (9 files)
-│       ├── semp.md
-│       ├── stakeholder-requirements.md
-│       ├── system-requirements.md
-│       ├── traceability-matrix.md
-│       ├── system-design.md
-│       ├── ivv-plan.md
-│       ├── verification-report.md
-│       ├── validation-report.md
-│       └── maintenance-guide.md
-└── build/                  Generated outputs (gitignored)
-```
+## Where to start
 
-## Traceability chain
+If you have read the methodology specification at `methodology/`, start with the stakeholder stories under `model/core/stories/stakeholder/`. They name the operators and maintainers of the device and frame the concerns the project addresses.
 
-Every requirement traces upward to a stakeholder need via `satisfy` links
-and downward to a verification case via `verify` links. Every stakeholder
-need has a validation case.
+If you have not read the methodology yet, read `methodology/00-methodology-overview.md` first. The four-section structure (foundational artefacts §1–§3, workflow stages §4–§7) maps directly onto the directory layout under `model/core/`.
 
-```
-STK-001 MonitorTemperature
-  ├── REQ-001 MeasureTemperature    -> VER-001 VerifyTempAccuracy
-  └── REQ-002 SamplingRate          -> VER-002 VerifySamplingRate
-  └── VAL-001 ValidateMonitoring
+## Layout
 
-STK-002 ReceiveAlerts
-  ├── REQ-003 ThresholdAlert        -> VER-003 VerifyAlertActivation
-  └── REQ-004 AlertClear            -> VER-004 VerifyAlertClear
-  └── VAL-002 ValidateAlerts
-
-STK-003 ConfigureThresholds
-  └── REQ-005 ThresholdConfiguration -> VER-005 VerifyThresholdConfig
-  └── VAL-003 ValidateConfiguration
-
-STK-004 EasyToRead
-  └── REQ-006 DisplayReadability    -> VER-006 VerifyDisplayReadability
-  └── VAL-004 ValidateReadability
-
-STK-005 ReliableOperation
-  ├── REQ-007 OperatingLife         -> VER-007 VerifyOperatingLife
-  └── REQ-008 SelfDiagnostic       -> VER-008 VerifySelfDiagnostic
-  └── VAL-005 ValidateReliability
+```text
+methodology/                Project-local methodology copy
+model/
+  core/
+    stakeholders/           Operator, MaintenanceTechnician, Regulator
+    concerns/               StableMonitoring, AlertResponseTime, DeviceServiceability, DataRetentionCompliance
+    base-architecture/      ESP32 MCU platform, MQTT 5.0 broker
+    context/                System Context with operator, maintainer, dashboard, ambient climate
+    domain/                 Reading, Alert, AcknowledgementCommand item defs
+    stories/
+      stakeholder/          US_001..003 (operator and maintainer needs)
+      system/               SYS_001..002 (derived system stories)
+    use-cases/              AcknowledgeAlertBatch (elaborates US_002)
+    functional-architecture/
+    logical-architecture/
+      interface-types/      OperatorDashboardInterface, DeviceToCloudInterface
+      allocations/
+      components/           (decomposition deferred to a later release)
+    product-architecture/
+    verification-validation/
+      verification-cases/   VC_001 (P95 latency), VC_002 (batch ack)
+      validation-cases/     VAL_001, VAL_002
+    core.sysml              top-level package
+  variations/
+    decision-points/        AlertHistoryStorageStrategy
+    trade-studies/          AlertHistoryStorageTrade
+    resolved/               cloudTimeSeries selected
+  library/                  vse-library.sysml (UserStory, StoryMeta, etc.)
+  sandbox/                  (empty)
+docs/
+  project-plan.md           Project Plan (§10.3)
+  risk-register.md          Risk Register (§10.7)
+  cm-strategy.md            CM Strategy (§10.8)
+  decisions/                ADRs (e.g. 2026-04-15-alert-history.md)
+  releases/                 release-v0.1-plan.md
+  meetings/                 (empty placeholder)
+  audit-reports/            (empty placeholder)
+sketches/
+tools/
+.github/
+  pull_request_template.md
+  CODEOWNERS
+.iso-config.yaml
+CLAUDE.md
+CONTRIBUTING.md
+.gitignore
+syside.toml
 ```
 
-## How to use with the plugin
+## What this demo does NOT do
 
-1. **Navigate iterations**: invoke `@iteration-orchestrator` (or `/vse-iteration`, `/vse-microcycle`, `/vse-nanocycle`) to see iteration state, open the next microcycle, or plan a nanocycle commit
-2. **Capture needs**: invoke `@needs-and-requirements` to review stakeholder needs and derive system requirements
-3. **Design architecture**: invoke `@architecture-design` to develop the system design
-4. **Plan V&V**: invoke `@verification-validation` to create verification and validation cases
-5. **Check traces**: invoke `@traceability-guard` to verify all trace links
-6. **Model syntax**: invoke `@sysml2-modelling` for SysML 2.0 authoring help
-7. **Environment health**: invoke `@attention-regime` for a project health check
-8. **Export documents**: invoke `@document-export` to generate docx/pptx from work products
-9. **Bootstrap new projects**: invoke `@project-setup` to create a project with this structure from scratch
+- It does not exercise a full subsystem decomposition. The §7 work is intentionally shallow so the reader can follow the trace from a stakeholder concern to a verification case without losing the thread.
+- It does not run the renderer pipeline. The `docs/generated/` directory is empty. A real project's CI would populate it from the model on merge to `main`.
+- It does not exercise SR.4 (Construction) or SR.6 (Product Delivery). Those activities are out of scope for the methodology per §9.2.
 
-## Purpose
+## Validating the demo
 
-This demo walks through every ISO 29110 activity as centre-of-gravity
-work inside AMBSE iterations, producing SysML 2.0 models with full
-bidirectional traceability and ISO 29110 work product templates ready
-for population.
+Inside Claude Code, with the plugin installed:
+
+```text
+/vse-audit
+```
+
+The audit reports any gaps in story well-formedness, trace integrity, ISO 29110 artefact presence, and version drift. The demo is intended to pass the audit with a few warnings (concerns coverage and StoryMeta on a couple of mid-state stories), surfaced for the reader to inspect.
+
+## Methodology version
+
+The methodology copy in this directory matches the plugin version this demo ships with. To upgrade the demo to a newer methodology version, follow the upgrade flow in `methodology/README.md`.
