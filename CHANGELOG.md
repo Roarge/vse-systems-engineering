@@ -29,9 +29,11 @@ describes.
   `methodology/iso-29110-hooks-guide.md`. Eleven specification
   sections and one companion implementation guide.
 - `methodology/README.md` documenting the project-local override
-  convention: when a project runs `/vse-setup`, the directory is
-  copied to `<project>/methodology/`, and the project-local copy
-  takes precedence over the plugin-shipped one.
+  convention: forthcoming `/vse-setup` work will copy the directory
+  to `<project>/methodology/`, and the project-local copy will
+  take precedence over the plugin-shipped one. Skill-side
+  resolution (project-local first, falling back to the plugin
+  copy) is delivered in a later phase.
 - New `Methodology Authoring Conventions` section in
   `CLAUDE.local.md` (contributor-side instructions, not shipped to
   installers).
