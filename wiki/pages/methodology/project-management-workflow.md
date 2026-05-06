@@ -11,9 +11,10 @@ related:
   - methodology-overview
   - story-branch-pr-workflow
   - iso-29110-compliance-mapping
+  - project-bootstrap-prerequisites
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-05-06
 bundled_by: [vse-companion-overview, project-plan, release-orchestrator, change-request, project-setup]
 ---
 
