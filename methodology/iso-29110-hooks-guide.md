@@ -42,7 +42,7 @@ authoring.
 | PM.O7 — V&V performed | `pre-push` checks V&V cases for ready stories |
 | PM.O8 — Disposal Management Approach | CI lint for Plan completeness |
 | SR.O2 — Requirements analysed and baselined | `pre-commit` story well-formedness; CC `PreToolUse` story-file checks |
-| SR.O3 — Architectural design baselined; traceability | `post-merge` Traceability Matrix regeneration |
+| SR.O3 — Architectural design baselined; traceability | `pre-push` traceability integrity check (rejects dangling `derive`, `frame concern`, `verify` references; see §4.4); `post-merge` Traceability Matrix regeneration |
 | SR.O6 — System Configuration baselined | tag-protection; `pre-push` on tags |
 | SR.O7 — V&V tasks performed; reports stored | `post-merge` V&V report aggregator; CC `Stop` after V&V execution |
 
