@@ -8,6 +8,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-05-06
+
+Wiki and methodology repairs surfaced by a navigation stress test of
+the knowledge base.
+
+### Added
+
+- New wiki page `project-bootstrap-prerequisites` in the
+  `project-structure` layer, synthesising the §10 PM.1 viewpoint
+  (Project Plan, SEMP, Project Repository) with the §4.2 inputs
+  viewpoint (Base Architecture, System Context) so a contributor
+  bootstrapping a project sees both prerequisite sets in one
+  place. Bundled by `project-setup` and `project-audit`.
+
+### Changed
+
+- Four wiki pages in the `sysml2` layer carry an explicit
+  "canonical-for-this-plugin" callout pointing at the
+  `methodology/08-project-structure.md` directory layout. The
+  templated SysML 2.0 package names (`{{sc}}_ArchDesign`,
+  `{{sc}}_Verification`, and similar) used on these pages
+  describe the AMBSE/Douglass language-level convention; the
+  plugin's canonical project paths remain the kebab-case
+  directories that `project-setup` scaffolds. Pages updated:
+  `sysml2-canonical-model-layout`,
+  `sysml2-variant-organisation`, `sysml2-namespace-hygiene`,
+  `sysml2-base-architecture-and-federation`.
+- `methodology/iso-29110-hooks-guide.md` §2 obligation table
+  now lists the `pre-push` traceability integrity check under
+  SR.O3, matching the implementation already in §4.4 of the
+  same guide.
+- Bundles `project-setup`, `project-audit`, and
+  `sysml2-model-structure` regenerated. INDEX rebuilt. Total
+  pages 129 → 130.
+
 ## [2.1.0] - 2026-05-05
 
 Brownfield as-is architecture survey in `@project-setup`.
