@@ -13,11 +13,20 @@ related:
   - sysml2-syntax-packages-and-definitions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-06
 bundled_by: [sysml2-model-structure]
 ---
 
 # SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules
+
+> **Canonical for this plugin: methodology §8.3.4.** The
+> short-code prefix and SysML 2.0 package-naming guidance below
+> describes the language-level convention. Project file and
+> folder names follow the kebab-case rules in
+> `methodology/08-project-structure.md` §8.3.4
+> (`base-architecture/`, `system-stories.sysml`, and so on).
+> Where the two conventions appear to disagree, the methodology
+> spec wins.
 
 The structural chapters of *The SysML v2 Book* contribute one
 discipline to the plugin's canonical layout: how to keep

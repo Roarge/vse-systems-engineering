@@ -17,11 +17,20 @@ related:
   - sysml2-specialisation-and-typing
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-06
 bundled_by: [sysml2-model-structure]
 ---
 
 # Base Architecture Reuse and Federation in AMBSE Models
+
+> **Canonical for this plugin: methodology §2 and §8.3.1.**
+> Templated SysML 2.0 package names below describe the AMBSE
+> convention at the language level. The plugin's canonical
+> project directory for the Base Architecture is
+> `model/core/base-architecture/` per
+> `methodology/08-project-structure.md` §8.3.1, and the
+> §2 specification at `methodology/02-base-architecture.md`
+> is the authoritative source on Base Architecture content.
 
 Most projects are not greenfield. A base architecture records
 decisions an earlier programme has already made and constrains

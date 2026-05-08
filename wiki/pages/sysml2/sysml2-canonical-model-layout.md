@@ -16,11 +16,23 @@ related:
   - sysml2-model-cm-and-risks
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-06
 bundled_by: [sysml2-model-structure]
 ---
 
 # AMBSE Canonical Model Layout for VSE Projects
+
+> **Canonical for this plugin: methodology §8.3.1.** The
+> templated SysML 2.0 package names used on this page (for
+> example `{{sc}}_ArchDesign`, `{{sc}}_Verification`) describe
+> the AMBSE/Douglass package convention at the SysML 2.0
+> language level. The plugin's canonical *project* layout is
+> the kebab-case directory structure in
+> `methodology/08-project-structure.md` §8.3.1
+> (`model/core/logical-architecture/allocations/`,
+> `model/core/verification-validation/verification-cases/`, and so
+> on). Where the two appear to disagree, the methodology spec
+> wins, and the `project-setup` skill scaffolds against §8.3.1.
 
 This page captures the recommended top-level package layout for a
 VSE SysML 2.0 model and the rationale that drives it. Companion

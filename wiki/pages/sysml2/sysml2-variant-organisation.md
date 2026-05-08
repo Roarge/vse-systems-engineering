@@ -19,11 +19,20 @@ related:
   - sysml2-variant-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-06
 bundled_by: [sysml2-model-structure]
 ---
 
 # Variant Modelling Organisation in AMBSE Models
+
+> **Canonical for this plugin: methodology §8.3.3.** Templated
+> package names (`{{sc}}_Variations`, and similar) used below
+> describe the AMBSE convention at the SysML 2.0 language
+> level. The plugin's canonical project directory for variation
+> material is `model/variations/` (with `trade-studies/`,
+> `decision-points/`, `candidate-variants/`, and `resolved/`
+> subdirectories) per `methodology/08-project-structure.md`
+> §8.3.3, which is what `project-setup` scaffolds.
 
 The variant **syntax** authority is Chapter 35 of *The SysML v2
 Book*, covered in [[sysml2-variations-overview]],

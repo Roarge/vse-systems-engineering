@@ -10,9 +10,10 @@ sources:
 related:
   - vse-model-tiers-and-templates
   - iso29110-template-mapping
+  - project-bootstrap-prerequisites
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-05-06
 bundled_by: [project-setup, project-audit]
 ---
 
