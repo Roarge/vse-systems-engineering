@@ -87,7 +87,7 @@ TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qP "verify\s+requirement\s+.*${req}" "$sysml" 2>/dev/null; then
+        if grep -qP "verify\s+requirement\s+.*\b${req}\b" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)

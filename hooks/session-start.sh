@@ -142,7 +142,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "(no git)")
 echo "Branch:      ${CURRENT_BRANCH}"
 
 # In-flight stories: count story branches and surface the active one.
-if command -v git >/dev/null 2>&1 && [ -d ".git" ]; then
+if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     STORY_BRANCHES=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep -c '^story/' || true)
     if [ -n "$STORY_BRANCHES" ] && [ "$STORY_BRANCHES" -gt 0 ]; then
         echo "In-flight story branches: ${STORY_BRANCHES}"
