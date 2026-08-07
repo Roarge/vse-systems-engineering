@@ -1,21 +1,24 @@
 ---
 name: vse-wiki-lint
 description: >-
-  Health-check the VSE wiki. Reports orphan pages, broken wikilinks,
-  frontmatter violations, stale pages, contradiction candidates, and
-  schema drift. Read-only. Use when the contributor asks to lint, audit,
-  or validate the wiki, or after an ingest or refactor as a sanity check.
+  Health-check the VSE wiki. Reports frontmatter violations, routing
+  table drift, broken wikilinks, missing contents blocks, unresolvable
+  raw source paths, stale pages, contradiction candidates, and schema
+  drift. Read-only. Use when the contributor asks to lint, audit, or
+  validate the wiki, or after an ingest or refactor as a sanity check.
 user-invocable: true
 ---
 
 # VSE Wiki Lint
 
-This skill performs a read-only health check across `wiki/pages/` and
-`wiki/bundles/`. It produces a report at `wiki/LINT_REPORT.md` (gitignored
-scratch, never committed) for the contributor to apply by hand.
+This skill performs a read-only health check across `wiki/pages/`, the
+derived surfaces (`wiki/INDEX.md` and the `wiki-routing` marker blocks
+inside consuming skills), and the page-to-source links. It produces a
+report at `wiki/LINT_REPORT.md` (gitignored scratch, never committed)
+for the contributor to apply by hand.
 
-**This skill never writes to `pages/`, `bundles/`, `INDEX.md`, or
-`LOG.md`.** The only file it writes is `LINT_REPORT.md`.
+**This skill never writes to `pages/`, `INDEX.md`, `LOG.md`, or any
+skill body.** The only file it writes is `LINT_REPORT.md`.
 
 Before any action on `wiki/`, read `wiki/CLAUDE.md`. The schema document
 is the contract this skill validates against.
@@ -46,17 +49,22 @@ find wiki/pages -type f -name '*.md' | sort
 ```
 
 For each page, parse the YAML frontmatter into fields. Record the slug,
-type, layer, sources, related, confidence, created, updated, bundled_by.
+title, type, layer, summary, sources, related, confidence, created,
+updated, and referenced_by. Record the page's line count and its H2
+headings in document order, both of which the contents-block rule needs.
 
 ## Step 2: Frontmatter Checks
 
 For each page, record a finding with severity `ERROR`, `WARN`, or `INFO`:
 
 - **ERROR**: Missing required field (`title`, `slug`, `type`, `layer`,
-  `confidence`, `created`, `updated`). Missing `sources` on non-glossary
-  pages. Malformed YAML.
+  `summary`, `confidence`, `created`, `updated`, `referenced_by`).
+  Missing `sources` on non-glossary pages. Malformed YAML.
 - **ERROR**: `slug` does not match the filename (without extension).
 - **ERROR**: `layer` does not match the page's parent directory.
+- **ERROR**: `summary` is longer than 120 characters or spans more than
+  one line. It is rendered into two generated tables and a multi-line
+  value breaks both.
 - **WARN**: `confidence: medium` or `low` without a body paragraph
   starting "Confidence note:" or equivalent explanation.
 - **WARN**: `updated` is earlier than `created`.
@@ -72,50 +80,81 @@ For each page, extract all `[[slug]]` occurrences in the body. For each:
 - **WARN** if the wikilink's slug is not also listed in the page's
   `related:` frontmatter array (suggests stale metadata).
 
-## Step 4: Bundle Consistency
+## Step 4: Routing Table Consistency
 
-For each `wiki/bundles/<skill>.md` that exists:
+Parse every `wiki-routing` marker block under `skills/*/SKILL.md`. A
+block is the text between `<!-- wiki-routing:begin -->` and
+`<!-- wiki-routing:end -->`, and its rows carry a page title, a path
+relative to the wiki root, and a "Read when" cell.
 
-- Confirm a skill directory `skills/<skill>/` exists. **ERROR** otherwise
-  (bundle without consumer).
-- Parse the bundle's source-pages comment (`<!-- Source pages: ... -->`).
-  For each listed page slug:
-  - Confirm the page exists. **ERROR** if missing.
-  - Confirm the page's `bundled_by:` list includes this skill name.
-    **ERROR** if missing.
-- Confirm that every page whose `bundled_by:` includes this skill is
-  present in the bundle's source-pages comment. **WARN** on mismatch
-  (bundle needs regeneration).
+The block is generated from page frontmatter by `/vse-wiki-index`, so
+every check below asks the same question: does the generated surface
+still agree with the pages it was generated from?
+
+- **ERROR** (page to skill): a row names a page whose `referenced_by:`
+  does not list the skill carrying the block.
+- **ERROR** (skill to page): a page's `referenced_by:` names a skill
+  whose block carries no row for that page.
+- **ERROR**: a row's `pages/...` path does not resolve to a file on
+  disk.
+- **ERROR**: a row's "Read when" cell is not the page's `summary:`
+  verbatim. A divergence means the block was hand-edited, which the
+  schema forbids, because the page is the source of truth.
+- **WARN**: rows inside a block are not sorted by layer, then by slug.
+  The block needs regenerating.
+- **INFO**: a skill is named in some page's `referenced_by:` but carries
+  no marker block at all. During the 3.0.0 transition this is the
+  expected state for every consumer skill until the runtime flip lands,
+  so it is an observation and not a defect.
 
 For each skill under `skills/`:
 
-- **WARN** if the skill's `SKILL.md` references the legacy reference
-  directory (a path beginning with the legacy directory name, in either
-  a `!cat` block or a prose pointer). The legacy directory was deleted
-  in plugin version 1.0.0 and any remaining reference is stale.
+- **WARN** if the skill's `SKILL.md` references a retired reference
+  surface, that is a path under `wiki/bundles/` or a path beginning with
+  the legacy `knowledge/` directory name, in either a `!cat` block or a
+  prose pointer. Both were deleted, and any remaining reference is
+  stale.
 
 ## Step 5: Orphan Detection
 
-An orphan page satisfies all of:
+An orphan page satisfies both of:
 
-- `bundled_by:` is empty.
+- `referenced_by:` is empty.
 - No other page lists it in `related:`.
-- No bundle sources it.
 
-Report each orphan as **WARN** with the page path.
+Report each orphan as **INFO** with the page path. An orphan is no
+longer a runtime defect, because every page is reachable through
+`INDEX.md` regardless of which skills route to it. It is a curation
+observation: nothing points at this page except a full-index scan.
 
-## Step 6: Source Freshness
+## Step 6: Contents Blocks
+
+For each page, apply the schema rule: a page over 100 lines with three
+or more H2 headings carries a `## Contents` bullet list of its H2
+headings, immediately after the H1.
+
+- **WARN**: the page qualifies and carries no block.
+- **WARN**: the block exists but its bullets do not match the page's H2
+  headings, in document order.
+- **WARN**: the block exists on a page that does not qualify.
+
+## Step 7: Source Integrity and Freshness
 
 For each page, for each entry in `sources:`:
 
-- If the `raw:` file exists under `sources/`, compare its mtime to the
-  page's `updated:` date. If the raw file is newer by more than 14 days,
-  report **INFO** ("source file has been modified since last page
-  update, candidate for re-ingestion").
-- If the `raw:` file does not exist, report **INFO** ("raw source not
-  present locally; re-ingestion would require fetching the original"). 
+- `raw:` is optional. When it is absent, check nothing here.
+- **ERROR** when a present `raw:` value matches none of the three legal
+  forms: an exact filename under `sources/`, a repo-relative path that
+  resolves inside the plugin tree, or `null`. A value that merely labels
+  the source belongs in `citation:` instead.
+- **INFO** when a resolvable `raw:` file is newer than the page's
+  `updated:` date by more than 14 days ("source file has been modified
+  since the last page update, candidate for re-ingestion").
+- **INFO** when `raw:` is `null`. The citation has to carry a URL or
+  enough bibliographic detail to re-find the source, because there is no
+  local file to re-open.
 
-## Step 7: Contradiction Candidates
+## Step 8: Contradiction Candidates
 
 For each pair of pages that satisfy all of:
 
@@ -129,7 +168,7 @@ and any paragraph in page B starting similarly. Report these as **INFO**
 contradiction candidates (contributor inspects; the lint skill does not
 arbitrate).
 
-## Step 8: Schema Drift
+## Step 9: Schema Drift
 
 For each page, confirm the body contains the section headings implied by
 its `type` per the corresponding `wiki/schema/<type>.md` template.
@@ -147,7 +186,7 @@ its `type` per the corresponding `wiki/schema/<type>.md` template.
 Missing expected headings produce **WARN** (pages may evolve away from the
 template deliberately; lint flags, does not block).
 
-## Step 9: Write the Report
+## Step 10: Write the Report
 
 Write `wiki/LINT_REPORT.md`:
 
@@ -156,7 +195,7 @@ Write `wiki/LINT_REPORT.md`:
 
 Generated: <ISO-8601-timestamp>
 Pages scanned: <n>
-Bundles scanned: <n>
+Routing blocks scanned: <n>
 
 ## Summary
 
@@ -168,7 +207,7 @@ Bundles scanned: <n>
 
 ### ERROR
 
-<bulleted list, each item: page or bundle path, field, description>
+<bulleted list, each item: page or skill path, field, description>
 
 ### WARN
 
@@ -182,7 +221,7 @@ Bundles scanned: <n>
 If there are no findings at any severity, write a short "all clear" note
 rather than deleting the file.
 
-## Step 10: Summarise to the Contributor
+## Step 11: Summarise to the Contributor
 
 Report a one-paragraph summary of totals and point the contributor at
 `wiki/LINT_REPORT.md` for details. Do not paste the full report into the
@@ -193,8 +232,7 @@ conversation unless the contributor asks for it.
 - `vse-wiki-ingest`: triggers this skill as a post-ingest sanity check.
 - `vse-wiki-refactor`: runs this skill first to seed the refactor
   priorities.
+- `vse-wiki-index`: regenerates the surfaces this skill validates. Most
+  routing findings are cleared by running it rather than by editing a
+  table.
 - `wiki/CLAUDE.md`: the schema this skill validates against.
-
-## Reference: Wiki Schema
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/CLAUDE.md`

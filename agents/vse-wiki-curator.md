@@ -63,8 +63,8 @@ Perform the following passes in order. Each pass produces a section in
 the output package.
 
 1. **Inventory pass.** Parse frontmatter for every page. Build a map of
-   `slug → page path`, layer groupings, `bundled_by` coverage, and the
-   full set of `[[wikilinks]]` encountered in bodies.
+   `slug → page path`, layer groupings, `referenced_by` coverage, and
+   the full set of `[[wikilinks]]` encountered in bodies.
 2. **Merge candidates.** Identify pairs or triplets of pages that share
    title stems, tags, source citations, and overlapping body content.
    Propose merging where the combined page would remain under 250 lines
@@ -93,9 +93,12 @@ the output package.
    material is under-captured by existing pages. Propose a new page
    (slug, layer, one-line scope) rather than an edit to an existing
    page where the topic is genuinely new.
-8. **Orphan resolution.** For every page with `bundled_by: []` and no
-   backlinks, propose either adding it to a bundle, retiring it, or
-   justifying the orphan status in the frontmatter.
+8. **Orphan resolution.** For every page with `referenced_by: []` and
+   no backlinks, propose either routing it from a named skill, adding a
+   cross-link from a related page, retiring it, or leaving it as an
+   index-only reference with the reason recorded. An orphan is reachable
+   through `INDEX.md`, so it is a curation question and not a defect.
+   Do not manufacture a routing entry merely to empty the list.
 
 Do not fix lint findings silently. Every proposed change must be
 visible to the contributor in the output package.
@@ -160,8 +163,9 @@ modified, or skipped.
 
 ### Orphan resolution
 
-- **[slug]**: currently `bundled_by: []` and has no backlinks. Options:
-  - Add to `[skill-name]` bundle (recommended because [reason]).
+- **[slug]**: currently `referenced_by: []` and has no backlinks.
+  Options:
+  - Route from `[skill-name]` (recommended because [reason]).
   - Retire (move to `wiki/retired/` with a tombstone).
   - Keep as authoring reference (document the decision in a
     `Confidence note:` paragraph).
@@ -176,8 +180,8 @@ modified, or skipped.
 This is a draft refactor plan. Review each proposed change
 individually. Approve, modify, or skip per line. The parent skill will
 apply only the changes you approve, bump `updated:` dates, regenerate
-every bundle at the end, and append a single entry to `LOG.md` under
-the `refactor` prefix.
+`INDEX.md` and every affected routing table at the end, and append a
+single entry to `LOG.md` under the `refactor` prefix.
 ```
 
 ## Reporting Style
@@ -190,9 +194,9 @@ the `refactor` prefix.
   source and the revision. When you propose a merge, name the fields
   that overlap. When you propose a cross-link, name the shared tags or
   citations.
-- Do not write any files. Do not modify pages, bundles, `INDEX.md`, or
-  `LOG.md`. Do not regenerate bundles. The parent skill is responsible
-  for all file operations.
+- Do not write any files. Do not modify pages, `INDEX.md`, `LOG.md`, or
+  any skill body. Do not regenerate the index or any routing table. The
+  parent skill is responsible for all file operations.
 - If the lint report is clean and the page inventory shows no staleness
   against the source inventory, return a short "No refactor needed"
   report rather than manufacturing low-value changes.
