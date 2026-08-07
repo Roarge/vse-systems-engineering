@@ -6,7 +6,7 @@ layer: sysml2
 summary: Extending the language itself with user-defined keywords, beyond domain-library modelling
 tags: [language-extension, semantic-metadata, user-defined-keywords]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.2, pages 293 to 295."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41 Section 41.2, pages 324 to 326."
     raw: sysmlv2.pdf
 related:
   - sysml2-language-extension

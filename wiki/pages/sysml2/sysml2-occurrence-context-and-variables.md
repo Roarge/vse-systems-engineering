@@ -6,7 +6,7 @@ layer: sysml2
 summary: Suboccurrence versus portion, the context occurrence this, and variable features as time-functions
 tags: [this, suboccurrence, portion, variable-features, time-function, context]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.8, 25.9, and 25.10, pages 155 to 158."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 25.8, 25.10, and 25.11, pages 159 to 160 and 162 to 164."
     raw: sysmlv2.pdf
 related:
   - sysml2-occurrences-4d

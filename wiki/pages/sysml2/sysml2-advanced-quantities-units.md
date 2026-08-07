@@ -6,7 +6,7 @@ layer: sysml2
 summary: Unit definitions, derived units, conversions, and scalar and vector quantity values
 tags: [quantities, units, iso80000, simpleunit, derivedunit, mref]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 24.3, pages 140 to 143. New section in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 24.3, pages 144 to 147."
     raw: sysmlv2.pdf
   - citation: "ISO 80000-1:2009. Quantities and units — Part 1: General."
     raw: null

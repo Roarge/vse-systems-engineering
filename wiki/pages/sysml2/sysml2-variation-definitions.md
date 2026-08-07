@@ -6,7 +6,7 @@ layer: sysml2
 summary: The two declaration forms for variations and the variant usages they own
 tags: [variants, syntax, definitions]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 246 to 248."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 293 to 295."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview

@@ -6,7 +6,7 @@ layer: sysml2
 summary: The standard library defines built-in action usages with specific semantics for typical patterns
 tags: [actions, assignment, send, accept, if, loop, time-trigger]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 153 to 164."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 178 to 189."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Three pitfalls that accompany the user-defined-keyword extension mechanism
 tags: [language-extension, gotchas, semantic-metadata]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.2, pages 295 to 297."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41 Section 41.2, pages 326 to 328."
     raw: sysmlv2.pdf
 related:
   - sysml2-user-defined-keywords

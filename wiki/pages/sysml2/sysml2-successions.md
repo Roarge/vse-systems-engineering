@@ -6,7 +6,7 @@ layer: sysml2
 summary: Successions are a special kind of connection usage defined by the KerML library type HappensBefore
 tags: [successions, control-flow, decision, fork, join, merge]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 145 to 152."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 170 to 177."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions

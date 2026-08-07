@@ -6,7 +6,7 @@ layer: sysml2
 summary: Imports can be restricted with filter conditions that impact which elements are brought into a namespace
 tags: [filters, imports, smart-packages, views]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 256 to 257; Chapter 37, page 260."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, pages 303 to 304; Chapter 37, page 307."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview

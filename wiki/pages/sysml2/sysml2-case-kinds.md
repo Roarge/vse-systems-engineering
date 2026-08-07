@@ -6,7 +6,7 @@ layer: sysml2
 summary: Syntax for the three standard case kinds, that is use case, analysis case, and verification case
 tags: [cases, use-cases, analysis-cases, verification-cases, syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 233 to 242."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 279 to 290."
     raw: sysmlv2.pdf
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. VerdictKind enumeration."
     raw: 2-OMG_Systems_Modeling_Language.pdf

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Declaring allocation definitions and applying them through allocation usages
 tags: [allocations, syntax, connection, cross-subsetting]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview

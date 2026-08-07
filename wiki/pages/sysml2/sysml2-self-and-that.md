@@ -6,7 +6,7 @@ layer: sysml2
 summary: The two special features every type and every feature inherits, self and that
 tags: [self, that, this, navigation, context, kerml]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 17.3, pages 98 to 99. New in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 17.3, pages 102 to 103."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions

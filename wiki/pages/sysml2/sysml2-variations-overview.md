@@ -6,7 +6,7 @@ layer: sysml2
 summary: SysML 2.0 treats product variation as a first-class language feature
 tags: [variants, product-line-engineering, configuration]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 246 to 250."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 293 to 298."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC 26580:2021. Software and systems engineering — Methods and tools for the feature-based approach to software and systems product line engineering."
     raw: null

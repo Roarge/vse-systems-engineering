@@ -6,7 +6,7 @@ layer: sysml2
 summary: Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules
 tags: [namespace, imports, short-code, file-organisation, reuse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapters 15 and 16, pages 74 to 84."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapters 15 and 16, pages 75 to 89."
     raw: sysmlv2.pdf
 related:
   - sysml2-canonical-model-layout

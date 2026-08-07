@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical variation patterns and the recurring mistakes that show up in review
 tags: [variants, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 247 to 250."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 294 to 298."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview

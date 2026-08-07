@@ -6,7 +6,7 @@ layer: sysml2
 summary: Viewpoints, views, and stakeholder concerns, grounded in ISO/IEC/IEEE 42010
 tags: [views, viewpoints, concerns, stakeholders, iso42010]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 258 to 260."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 37, pages 305 to 307."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC/IEEE 42010:2022. Systems and software engineering — Architecture description."
     raw: null

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Standard allocation mapping patterns and the recurring mistakes that show up in review
 tags: [allocations, patterns, gotchas, vse, mapping]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 271."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 328."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview

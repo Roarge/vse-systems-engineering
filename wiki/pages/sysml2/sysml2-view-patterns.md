@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical view patterns and the recurring mistakes that show up in review
 tags: [views, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 258 to 260."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 37, pages 305 to 307."
     raw: sysmlv2.pdf
 related:
   - sysml2-viewpoints-and-concerns

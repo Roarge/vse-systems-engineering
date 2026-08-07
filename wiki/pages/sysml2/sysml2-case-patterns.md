@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical case patterns and the recurring mistakes that show up in review
 tags: [cases, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 230 to 242."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 276 to 290."
     raw: sysmlv2.pdf
 related:
   - sysml2-cases-overview

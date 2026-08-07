@@ -8,7 +8,7 @@ tags: [variants, vamos, configurations, pleml, organisation, ambse]
 sources:
   - citation: "Weilkiens, T. (2016). Variant Modeling with SysML. MBSE4U. Chapters 2 and 3 (VAMOS)."
     raw: null
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC 26580:2021. Software and systems engineering — Methods and tools for the feature-based approach to software and systems product line engineering."
     raw: null

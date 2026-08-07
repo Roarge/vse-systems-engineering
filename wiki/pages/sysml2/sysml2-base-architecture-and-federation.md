@@ -6,7 +6,7 @@ layer: sysml2
 summary: Reusing a Base Architecture and federating models when a project is not greenfield
 tags: [base-architecture, federation, reuse, shared-model, subsystem-model]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 14, pages 56 to 58."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 14, pages 59 to 62."
     raw: sysmlv2.pdf
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Chapter 8.3 and Figures 3.12, 3.14, 8.2, 8.4."
     raw: "Agile Systems Engineering.pdf"

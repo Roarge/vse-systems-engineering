@@ -6,7 +6,7 @@ layer: sysml2
 summary: Calculations and constraints are the two main expression-bearing constructs in SysML 2.0
 tags: [calculations, constraints, assert-constraint, calc-def]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 27, page 168; Chapter 31, pages 208 to 210."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 27, pages 203 to 206; Chapter 31, pages 253 to 255."
     raw: sysmlv2.pdf
 related:
   - sysml2-expressions-overview

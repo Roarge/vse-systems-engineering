@@ -6,7 +6,7 @@ layer: sysml2
 summary: Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism
 tags: [reflection, metaclassification, meta-operator, m2]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 254 to 255."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, page 302."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview

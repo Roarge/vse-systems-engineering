@@ -6,7 +6,7 @@ layer: sysml2
 summary: SysML 2.0 defines eight standard views in the StandardViewDefinitions package
 tags: [views, standard-views, library, sysmlv1-migration]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 13, pages 51 to 54."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 13, pages 55 to 58."
     raw: sysmlv2.pdf
 related:
   - sysml2-viewpoints-and-concerns

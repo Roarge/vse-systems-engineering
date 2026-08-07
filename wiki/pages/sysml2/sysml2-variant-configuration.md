@@ -6,7 +6,7 @@ layer: sysml2
 summary: Cross-variation constraints, materialising a configuration, and binding to an external feature model
 tags: [variants, configuration, constraints, feature-binding]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 249 to 250."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 296 to 298."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview

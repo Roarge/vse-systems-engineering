@@ -6,7 +6,7 @@ layer: sysml2
 summary: Allocations bridge different layers and viewpoints in a systems model
 tags: [allocations, architecture-mapping, traceability]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocation-definitions
