@@ -105,18 +105,16 @@ still agree with the pages it was generated from?
   schema forbids, because the page is the source of truth.
 - **WARN**: rows inside a block are not sorted by layer, then by slug.
   The block needs regenerating.
-- **INFO**: a skill is named in some page's `referenced_by:` but carries
-  no marker block at all. During the 3.0.0 transition this is the
-  expected state for every consumer skill until the runtime flip lands,
-  so it is an observation and not a defect.
+- **ERROR**: a skill is named in some page's `referenced_by:` but
+  carries no marker block at all. This is the skill-to-page error seen
+  from the other side. Report it once, against the skill.
 
 For each skill under `skills/`:
 
 - **WARN** if the skill's `SKILL.md` references a retired reference
   surface, that is a path under `wiki/bundles/` or a path beginning with
   the legacy `knowledge/` directory name, in either a `!cat` block or a
-  prose pointer. The `knowledge/` directory was deleted and
-  `wiki/bundles/` is retired at the runtime flip, so any remaining
+  prose pointer. Both directories have been deleted, so any remaining
   reference is stale. Exempt only this skill (`vse-wiki-lint`) from the
   check. It names the retired surfaces in order to detect them, so
   matching on its own text produces a finding against the detector

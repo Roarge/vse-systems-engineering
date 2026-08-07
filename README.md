@@ -103,10 +103,10 @@ The tool surface for every subagent is restricted to `Read`, `Glob`, and `Grep`.
 The plugin's reference content sits in three surfaces:
 
 - **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
-- **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`, concatenated into per-skill bundles under `wiki/bundles/` that skills embed at load time. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
+- **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`. Each skill carries a generated routing table naming the pages it is expected to need, and reads those pages on demand rather than loading them up front. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 130 atomic pages across 11 layers, consumed via 21 skill bundles.
+See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 130 atomic pages across 11 layers, routed to by 20 skills.
 
 ## Sources
 
