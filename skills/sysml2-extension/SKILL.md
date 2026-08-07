@@ -206,3 +206,19 @@ WARN the engineer if:
 - A library duplicates a built-in concept that already exists in
   the Systems Model Library or one of the standard domain
   libraries (see `[[sysml2-libraries-architecture]]`)
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Domain Model Libraries | pages/sysml2/sysml2-domain-model-libraries.md | Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs |
+| SysML 2.0 Extension Gotchas | pages/sysml2/sysml2-extension-gotchas.md | Three pitfalls that accompany the user-defined-keyword extension mechanism |
+| SysML 2.0 Extension: Overview | pages/sysml2/sysml2-language-extension.md | Choosing between model libraries and user-defined keywords when extending SysML 2.0 |
+| SysML 2.0 User-Defined Keywords | pages/sysml2/sysml2-user-defined-keywords.md | Extending the language itself with user-defined keywords, beyond domain-library modelling |
+<!-- wiki-routing:end -->

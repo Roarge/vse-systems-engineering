@@ -111,3 +111,17 @@ In both cases, the skill names the obligation, points at the relevant section, a
 - A GitHub Issue with the `change-request` label, lifecycle line in the body, and the §10.4.2 impact analysis rendered as the issue body.
 - The impact-analysis markdown block, returned to the engineer for review before the issue is opened.
 - Optionally, a follow-up story branch and PR opened by `/vse-story` once the lifecycle reaches `agreed`.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Project Management workflow (§10) | pages/methodology/project-management-workflow.md | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests |
+| Story branch, draft PR, and final review workflow | pages/methodology/story-branch-pr-workflow.md | The methodology operationalises every model change through a single git pattern |
+<!-- wiki-routing:end -->

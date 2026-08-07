@@ -129,3 +129,19 @@ WARN the engineer if:
   physical element allocated to a logical function, for example)
 - The model uses custom keywords without a corresponding
   `SemanticMetadata` registration
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Allocation Definitions and Usages | pages/sysml2/sysml2-allocation-definitions.md | Declaring allocation definitions and applying them through allocation usages |
+| SysML 2.0 Allocation Patterns and Gotchas | pages/sysml2/sysml2-allocation-patterns.md | Standard allocation mapping patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Allocations Overview | pages/sysml2/sysml2-allocations-overview.md | Allocations bridge different layers and viewpoints in a systems model |
+| SysML 2.0 Binding Connectors | pages/sysml2/sysml2-binding-connectors.md | A binding connector is a binary relationship that requires the usages at the ends to have the same values |
+<!-- wiki-routing:end -->

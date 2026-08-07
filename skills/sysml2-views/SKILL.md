@@ -133,3 +133,19 @@ WARN the engineer if:
 - The view uses a rendering style that does not exist in the standard
   library without declaring its own
 - A viewpoint frames no concerns (an empty viewpoint is a code smell)
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Standard Views Catalogue | pages/sysml2/sysml2-standard-views.md | SysML 2.0 defines eight standard views in the StandardViewDefinitions package |
+| SysML 2.0 View Definitions, Expose, Filters, and Render | pages/sysml2/sysml2-view-definitions.md | View definitions and the three content mechanisms, that is expose statements, filters, and render usages |
+| SysML 2.0 View Patterns and Gotchas | pages/sysml2/sysml2-view-patterns.md | Practical view patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Viewpoints, Views, and Concerns | pages/sysml2/sysml2-viewpoints-and-concerns.md | Viewpoints, views, and stakeholder concerns, grounded in ISO/IEC/IEEE 42010 |
+<!-- wiki-routing:end -->

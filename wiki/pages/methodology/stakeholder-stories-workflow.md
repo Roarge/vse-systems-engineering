@@ -18,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, needs-and-requirements, story-orchestrator]
+referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
 # Stakeholder Requirements Engineering workflow (§4)

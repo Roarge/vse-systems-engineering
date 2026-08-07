@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, needs-and-requirements, architecture-design]
+referenced_by: [needs-and-requirements, architecture-design]
 ---
 
 # System Context: actor categories, interfaces, and completeness checks

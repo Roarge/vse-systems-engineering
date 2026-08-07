@@ -205,3 +205,10 @@ reference:
 - `methodology/` (project root) or `engineering/methodology/`: the marker that
   identifies a VSE project, matching `hooks/session-start.sh`
 - `docs/pm/session-archive.yml`: archive for rotated journal entries
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

@@ -339,3 +339,10 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 - `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:
   original templates (source files are in `docs/pm/` and `docs/sr/` after
   project setup)
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

@@ -515,3 +515,25 @@ WARN the engineer if:
 - A `Baseline` item def is declared without a `scope` reference list,
   which leaves `@traceability-guard` unable to check CI coverage at
   iteration-boundary closure
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SySiDE Automator Core API | pages/syside/syside-core-api.md | The Automator is a Python library for programmatic analysis of SysML 2.0 models |
+| SySiDE Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | The Compiler class evaluates SysML expressions, attribute values, and metadata filters |
+| SySiDE Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the SySiDE API, with an element type reference |
+| SySiDE Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | SySiDE offers four complementary tools for SysML v2 |
+| SySiDE VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation |
+| SysML 2.0 Filter Conditions on Imports and Views | pages/sysml2/sysml2-filter-conditions.md | Imports can be restricted with filter conditions that impact which elements are brought into a namespace |
+| SysML 2.0 Metadata Definitions and Annotations | pages/sysml2/sysml2-metadata-definitions.md | Declaring metadata definitions and applying them as annotations |
+| SysML 2.0 Metadata, Reflection, and Annotations Overview | pages/sysml2/sysml2-metadata-overview.md | Metadata definitions, annotations, and reflection: how models describe and query their own structure |
+| SysML 2.0 Reflection: Metaclassification and Meta Operators | pages/sysml2/sysml2-reflection-and-classification.md | Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism |
+| VSE_Library Metadata: Risks, Configurations, Variants, Verification | pages/sysml2/sysml2-vse-library-metadata.md | The VSE_Library package of shared metadata definitions and enumerations used across the skills |
+<!-- wiki-routing:end -->

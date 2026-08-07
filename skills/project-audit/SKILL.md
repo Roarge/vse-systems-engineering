@@ -187,3 +187,21 @@ The audit produces findings. Remediation is delegated to other skills:
 ## Outputs
 
 A single Markdown audit report per invocation, written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` if the engineer authorises the path, or surfaced inline otherwise. The skill does not modify any other file.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
+| Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
+| Story branch, draft PR, and final review workflow | pages/methodology/story-branch-pr-workflow.md | The methodology operationalises every model change through a single git pattern |
+| Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
+| VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
+| VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
+<!-- wiki-routing:end -->

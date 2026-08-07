@@ -147,3 +147,18 @@ WARN the engineer if:
   actor should be external)
 - An analysis case has no `return` feature
 - Verdict handling is missing in a verification body that expects one
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Case Kinds: Use, Analysis, Verification | pages/sysml2/sysml2-case-kinds.md | Syntax for the three standard case kinds, that is use case, analysis case, and verification case |
+| SysML 2.0 Case Patterns and Gotchas | pages/sysml2/sysml2-case-patterns.md | Practical case patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Cases Overview | pages/sysml2/sysml2-cases-overview.md | The case construct family: use, analysis, verification, and validation cases share one structure |
+<!-- wiki-routing:end -->

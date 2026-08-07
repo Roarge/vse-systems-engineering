@@ -189,3 +189,35 @@ The skill refuses, by default and without exception, to:
 - `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that verify acceptance criteria exercising stakeholder intent.
 - `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that verify acceptance criteria exercising system internals.
 - Updated `model/core/context/architecture-context.sysml` where the stakeholder set extends the System Context with a previously unmodelled actor.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| AMBSE Dependability Requirements and Traceability Matrix | pages/ambse/ambse-dependability-and-traceability.md | Dependability requirements and the engineering data trace behind the AMBSE traceability matrix |
+| AMBSE Requirements as Model Elements; Stakeholder Identification | pages/ambse/ambse-requirements-as-models.md | Requirements as model elements rather than text, and how stakeholders are identified in AMBSE |
+| AMBSE System Requirements Derivation | pages/ambse/ambse-system-requirements-derivation.md | Deriving system requirements from stakeholder needs, one per thing the system must do or be |
+| AMBSE Use Case Driven Elicitation | pages/ambse/ambse-use-case-driven-elicitation.md | Use cases as the structuring mechanism for stakeholder requirements in AMBSE |
+| HSI Domains: 13 Perspectives | pages/hsi/hsi-domains.md | The thirteen HSI domains (manpower, training, safety and the rest) and what each asks of a design |
+| Human-Systems Integration Foundations: TOP in Environment | pages/hsi/hsi-foundations.md | Human-Systems Integration as a transdisciplinary approach, and the technology, organisation, and people frame |
+| HSI in Architecture | pages/hsi/hsi-in-architecture.md | Where human-systems concerns enter architectural decisions and allocations |
+| HSI in Requirements | pages/hsi/hsi-in-requirements.md | How HSI concerns become requirements alongside technical ones from the start |
+| Lightweight HSI for VSEs: Tiered Approach | pages/hsi/hsi-vse-tiered-approach.md | Tiered HSI practice for a VSE with no dedicated human factors team or simulation facilities |
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| Benefit constraint as trade-study criterion | pages/methodology/benefit-as-criterion.md | Using the benefit constraint of a user story as an assessment criterion in architectural trade studies |
+| frame concern: linking stories to stakeholder concerns | pages/methodology/frame-concern-pattern.md | The frame concern member that ties a User Story to persistent stakeholder concerns in the model |
+| Coupling story role to use-case actor via objective | pages/methodology/role-actor-coupling.md | Coupling a story role to a use-case actor through the shared objective |
+| Stakeholder Requirements Engineering workflow (§4) | pages/methodology/stakeholder-stories-workflow.md | The section 4 stakeholder requirements stage: eliciting concerns and authoring stakeholder stories |
+| System Context: actor categories, interfaces, and completeness checks | pages/methodology/system-context-completeness.md | System boundary, actor categories, crossing item flows, and the context completeness checks |
+| System Requirements Definition and Analysis workflow (§5) | pages/methodology/system-stories-workflow.md | Translating stakeholder intent into a verifiable system-level specification, per §5 |
+| User Story as Canonical Artefact (§1) | pages/methodology/user-story-canonical-artefact.md | The User Story is the elementary unit of stakeholder intent in the VSE methodology |
+| Needs vs Requirements: Core Distinction and Categorisation | pages/needs-and-reqs/needs-vs-requirements.md | A need expresses what stakeholders expect from the System of Interest (SOI) |
+| Requirements Elicitation Techniques and Writing Rules | pages/needs-and-reqs/requirements-elicitation-and-writing.md | Elicitation techniques and the rules for writing well-formed requirement statements |
+| Requirements Traceability, Attributes, TBX, and AMBSE Model-Based Requirements | pages/needs-and-reqs/requirements-traceability-and-attributes.md | Requirement traceability, attributes, TBX resolution, and model-based requirements in AMBSE |
+<!-- wiki-routing:end -->

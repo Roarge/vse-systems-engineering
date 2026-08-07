@@ -168,3 +168,20 @@ In each case, the skill states the rule, points to the methodology section, and 
 - `docs/generated/ivv-procedures.md`. Rendered, not authored.
 - `docs/verification-reports/<name>-<date>.md`. Execution-time, per §10.10.
 - `docs/validation-reports/<name>-<date>.md`. Execution-time, per §10.10.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
+| Verification and Validation Definitions | pages/vv/vv-definitions.md | What verification and validation each mean, how they differ, and the levels they apply at |
+| Verification and Validation Methods, Test Case Design | pages/vv/vv-methods.md | The four standard methods apply to both verification and validation |
+| V&V Planning, Success Criteria, and the VCRM | pages/vv/vv-planning.md | V&V planning, success criteria, and the verification cross-reference matrix |
+| V&V Reporting, VSE Guidance, and AMBSE Continuous Verification | pages/vv/vv-reporting-and-vse-guidance.md | V&V records, the SVCM, approval packages, and continuous verification scaled for a VSE |
+<!-- wiki-routing:end -->

@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
+referenced_by: [story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
 ---
 
 # Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard

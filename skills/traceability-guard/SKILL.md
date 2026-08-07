@@ -367,3 +367,10 @@ WARN the engineer if:
 - The Traceability Matrix has not been updated after model changes
 - Orphan risks, orphan mitigations, orphan variations, or orphan
   ConfigItems appear in the advisory surfaces above
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

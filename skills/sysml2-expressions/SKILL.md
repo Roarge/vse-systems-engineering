@@ -145,3 +145,21 @@ WARN the engineer if:
 - A classification expression uses `@` where `@@` was meant (metaclass
   versus classifier confusion)
 - An `assert constraint` binding leaves an `in` parameter unset
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Advanced Quantities and Units Concepts | pages/sysml2/sysml2-advanced-quantities-units.md | Unit definitions, derived units, conversions, and scalar and vector quantity values |
+| SysML 2.0 Expression Patterns and Gotchas | pages/sysml2/sysml2-expression-patterns.md | Practical patterns and recurring mistakes for expressions, calculations, and constraints |
+| SysML 2.0 Calculations and Constraints | pages/sysml2/sysml2-expressions-constraints.md | Calculations and constraints are the two main expression-bearing constructs in SysML 2.0 |
+| SysML 2.0 Expressions Overview and Scalar Values | pages/sysml2/sysml2-expressions-overview.md | The native expression language and scalar values, usable in feature values, constraints, and guards |
+| SysML 2.0 Functions, Invocations, and Higher-Order Operations | pages/sysml2/sysml2-functions-and-higher-order.md | Calling functions and calculations, the higher-order function library, and runtime type tests |
+| SysML 2.0 Sequences and Complex Structures | pages/sysml2/sysml2-sequences-and-structures.md | Multiplicity as sequences, ordering and uniqueness, and modelling complex structured values |
+<!-- wiki-routing:end -->

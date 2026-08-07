@@ -334,3 +334,33 @@ Report a concise summary listing every directory created, every file copied from
 For brownfield projects, the report also names the outcome of the as-is survey (Step 6.5): whether it ran, the count of mandated rows, the count of contingent rows, and the count of skipped rows. If the survey was declined, the report names the resumption marker in `docs/as-is-classification.md` and points at `@architecture-design` as the re-entry skill.
 
 If any refusal triggered in Step 3, the report instead names the conflict and explains how to resolve it.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| ISO/IEC 29110 VSE Systems Engineering Profile Overview | pages/iso29110/iso29110-overview.md | What ISO/IEC TR 29110-5-6-2 covers and how the Basic Profile applies to a VSE |
+| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO 29110 process gates |
+| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
+| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO 29110 Project Management activity |
+| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO 29110 roles and the PM and SR work products each role produces |
+| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO 29110 System Definition and Realization activities SR.1 to SR.6 |
+| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO 29110 System Definition and Realization activity |
+| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO 29110 phase to the markdown template file it produces |
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
+| Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
+| Project Management workflow (§10) | pages/methodology/project-management-workflow.md | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests |
+| Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
+| VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
+| VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
+| SySiDE Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | The two SySiDE config files a project carries: syside.toml and .lsp.json, and what belongs in each |
+| SySiDE Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | SySiDE offers four complementary tools for SysML v2 |
+| SySiDE VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation |
+<!-- wiki-routing:end -->

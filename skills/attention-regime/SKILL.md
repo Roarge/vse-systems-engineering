@@ -131,3 +131,20 @@ After a successful run, the following exist in the user project:
 - `core.hooksPath` set to `.githooks` in the local git config.
 
 `post-receive` is **not** installed locally. Document it in the project README as a server-side responsibility.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| PHAS-EAI Digital Engineering Integration Requirements R1-R4 | pages/phas-eai/phas-eai-de-requirements.md | The four PHAS-EAI digital engineering integration requirements R1 to R4 |
+| PHAS-EAI Equations: Response Time, Resilience, Functional Information | pages/phas-eai/phas-eai-equations.md | The three PHAS-EAI equation families for response time, resilience, and functional information |
+| PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence | pages/phas-eai/phas-eai-levers-and-evidence.md | The four PHAS-EAI lever tables and the hypotheses with the strongest cross-case support |
+| PHAS-EAI Framework: Core Constructs | pages/phas-eai/phas-eai-overview.md | The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction |
+<!-- wiki-routing:end -->

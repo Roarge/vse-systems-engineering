@@ -141,3 +141,26 @@ This skill does **not** produce:
 - Verification case bodies beyond stubs (route to `@verification-validation`).
 - Concern definitions (route to `@needs-and-requirements`).
 - Methodology-spec changes (separate methodology PR per §8.4.3).
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Architectural Analysis and Trade Studies workflow (§6) | pages/methodology/architectural-analysis-workflow.md | Turning a System User Story set into a resolved architecture through trade studies, per §6 |
+| Architectural Design workflow (§7) | pages/methodology/architectural-design-workflow.md | Decomposing the resolved architecture into subsystems and allocating the specification down, per §7 |
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| frame concern: linking stories to stakeholder concerns | pages/methodology/frame-concern-pattern.md | The frame concern member that ties a User Story to persistent stakeholder concerns in the model |
+| Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
+| Coupling story role to use-case actor via objective | pages/methodology/role-actor-coupling.md | Coupling a story role to a use-case actor through the shared objective |
+| Stakeholder Requirements Engineering workflow (§4) | pages/methodology/stakeholder-stories-workflow.md | The section 4 stakeholder requirements stage: eliciting concerns and authoring stakeholder stories |
+| Story branch, draft PR, and final review workflow | pages/methodology/story-branch-pr-workflow.md | The methodology operationalises every model change through a single git pattern |
+| StoryMeta status lifecycle and branch alignment | pages/methodology/storymeta-lifecycle.md | The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle |
+| System Requirements Definition and Analysis workflow (§5) | pages/methodology/system-stories-workflow.md | Translating stakeholder intent into a verifiable system-level specification, per §5 |
+| User Story as Canonical Artefact (§1) | pages/methodology/user-story-canonical-artefact.md | The User Story is the elementary unit of stakeholder intent in the VSE methodology |
+<!-- wiki-routing:end -->

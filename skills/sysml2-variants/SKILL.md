@@ -143,3 +143,19 @@ WARN the engineer if:
   declared as `variation part`. The model parses but the variant intent
   is lost. Declare the target as `variation part` in the owning
   definition first
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Variant Configuration and Constraints | pages/sysml2/sysml2-variant-configuration.md | Cross-variation constraints, materialising a configuration, and binding to an external feature model |
+| SysML 2.0 Variant Patterns and Gotchas | pages/sysml2/sysml2-variant-patterns.md | Practical variation patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Variation Definitions and Variant Usages | pages/sysml2/sysml2-variation-definitions.md | The two declaration forms for variations and the variant usages they own |
+| SysML 2.0 Variations and Variants Overview | pages/sysml2/sysml2-variations-overview.md | SysML 2.0 treats product variation as a first-class language feature |
+<!-- wiki-routing:end -->

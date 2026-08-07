@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-06
-referenced_by: [vse-companion-overview, project-plan, release-orchestrator, change-request, project-setup]
+referenced_by: [project-plan, release-orchestrator, change-request, project-setup]
 ---
 
 # Project Management workflow (§10)

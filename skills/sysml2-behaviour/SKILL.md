@@ -154,3 +154,27 @@ WARN the engineer if:
 - A transition has no trigger and no guard (always fires, usually a bug)
 - A `stream flow` connects endpoints of mismatched item types
 - A `send` action has no matching `accept` anywhere in the model
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Actions, Parameters, and Perform Actions | pages/sysml2/sysml2-actions.md | Action definitions and usages, parameters, and perform actions for modelling behaviour |
+| SysML 2.0 Behaviour Patterns and Gotchas | pages/sysml2/sysml2-behaviour-patterns.md | Practical behaviour-modelling patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Flows and Messages | pages/sysml2/sysml2-flows-and-messages.md | Transferring items, signals, and values between behavioural elements with flows and messages |
+| SysML 2.0 Model Execution | pages/sysml2/sysml2-model-execution.md | Executing or simulating a model so that its specified behaviour can be observed |
+| SysML 2.0 Occurrence Context (this), Suboccurrence vs Portion, and Time-Functions | pages/sysml2/sysml2-occurrence-context-and-variables.md | Suboccurrence versus portion, the context occurrence this, and variable features as time-functions |
+| SysML 2.0 Occurrences and 4D Modelling | pages/sysml2/sysml2-occurrences-4d.md | Occurrences and 4D modelling, where a part extends through time as well as through space |
+| SysML 2.0 Portions and Individuals | pages/sysml2/sysml2-portions-and-individuals.md | Portion vocabulary (snapshots, time slices, space slices) and the individual keyword |
+| SysML 2.0 Contextual References: self and that | pages/sysml2/sysml2-self-and-that.md | The two special features every type and every feature inherits, self and that |
+| SysML 2.0 Special Action Usages: Assign, Send, Accept, Terminate, If, Loop | pages/sysml2/sysml2-special-action-usages.md | The standard library defines built-in action usages with specific semantics for typical patterns |
+| SysML 2.0 State Machines: States, Transitions, and Behaviours | pages/sysml2/sysml2-state-machines.md | State machines model behaviour through persistent conditions (states) |
+| SysML 2.0 Successions and Control Nodes | pages/sysml2/sysml2-successions.md | Successions are a special kind of connection usage defined by the KerML library type HappensBefore |
+| SysML 2.0 Temporal and Spatial Relations | pages/sysml2/sysml2-temporal-spatial-relations.md | Occurrence equality operators, Allen's interval algebra, and the spatial relation vocabulary |
+<!-- wiki-routing:end -->

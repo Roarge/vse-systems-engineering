@@ -425,3 +425,20 @@ WARN the engineer if:
 | Allocations across architecture layers | `@sysml2-allocations` |
 | Project layout, tooling, CI validation | `@sysml2-modelling` |
 | Change Request workflow | `@iteration-orchestrator` |
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Base Architecture Reuse and Federation in AMBSE Models | pages/sysml2/sysml2-base-architecture-and-federation.md | Reusing a Base Architecture and federating models when a project is not greenfield |
+| AMBSE Canonical Model Layout for VSE Projects | pages/sysml2/sysml2-canonical-model-layout.md | The recommended top-level package layout for a VSE SysML 2.0 model, with the rationale that drives it |
+| Model-Level Configuration Management and Risks in AMBSE Models | pages/sysml2/sysml2-model-cm-and-risks.md | Model-level configuration management and risk modelling inside the canonical package layout |
+| SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules | pages/sysml2/sysml2-namespace-hygiene.md | Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules |
+| Variant Modelling Organisation in AMBSE Models (VAMOS adapted) | pages/sysml2/sysml2-variant-organisation.md | Organising a model into Core, Variations, and Configurations, with variation-point discipline |
+<!-- wiki-routing:end -->

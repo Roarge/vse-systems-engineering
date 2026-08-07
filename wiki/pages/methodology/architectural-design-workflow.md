@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, architecture-design, story-orchestrator]
+referenced_by: [architecture-design, story-orchestrator]
 ---
 
 # Architectural Design workflow (§7)

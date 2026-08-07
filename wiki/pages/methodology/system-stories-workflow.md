@@ -17,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, needs-and-requirements, story-orchestrator, architecture-design]
+referenced_by: [needs-and-requirements, story-orchestrator, architecture-design]
 ---
 
 # System Requirements Definition and Analysis workflow (§5)

@@ -193,3 +193,36 @@ WARN the engineer immediately if you observe:
 - **Silent baseline edit.** Modification of a baselined Plan element, baselined story, or baselined architecture inside a release branch without a referenced Change Request Issue.
 
 - **Orphaned release scope.** A story in the proposed scope whose `derive` chain does not resolve upward to a stakeholder concern. Releases ship intent, not orphaned constructs.
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| AMBSE Workflow Mapping to ISO/IEC 29110 | pages/ambse/ambse-iso29110-mapping.md | Cross-reference table from AMBSE activities to ISO 29110 process activities |
+| AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
+| AMBSE Risk Management and SE Metrics | pages/ambse/ambse-risk-and-metrics.md | AMBSE risk management practice and the systems engineering metrics worth tracking in a VSE |
+| INCOSE Architecture and V&V for VSEs | pages/incose-vse/incose-vse-architecture-and-vv.md | INCOSE architecture definition and verification and validation processes scaled to VSE scope |
+| INCOSE CM, Risk Management, and VSE Scaling Guidance | pages/incose-vse/incose-vse-cm-risk-and-scaling.md | Configuration management, risk management, and how INCOSE practice scales down to VSE size |
+| INCOSE Lifecycle Models Scaled for VSEs | pages/incose-vse/incose-vse-lifecycle-models.md | The six generic lifecycle stages from Concept to Retirement, scaled for VSE projects |
+| INCOSE Requirements Engineering for VSEs | pages/incose-vse/incose-vse-requirements-engineering.md | Transforming stakeholder needs into system requirements and allocating them to system elements |
+| INCOSE Stakeholder Needs Definition for VSEs | pages/incose-vse/incose-vse-stakeholder-needs.md | The INCOSE stakeholder needs process: from concerns to validated stakeholder requirements, VSE-scaled |
+| ISO/IEC 29110 VSE Systems Engineering Profile Overview | pages/iso29110/iso29110-overview.md | What ISO/IEC TR 29110-5-6-2 covers and how the Basic Profile applies to a VSE |
+| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO 29110 process gates |
+| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
+| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO 29110 Project Management activity |
+| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO 29110 roles and the PM and SR work products each role produces |
+| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO 29110 System Definition and Realization activities SR.1 to SR.6 |
+| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO 29110 System Definition and Realization activity |
+| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO 29110 phase to the markdown template file it produces |
+| ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
+| Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
+| Project Management workflow (§10) | pages/methodology/project-management-workflow.md | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests |
+| Story branch, draft PR, and final review workflow | pages/methodology/story-branch-pr-workflow.md | The methodology operationalises every model change through a single git pattern |
+| StoryMeta status lifecycle and branch alignment | pages/methodology/storymeta-lifecycle.md | The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle |
+<!-- wiki-routing:end -->
