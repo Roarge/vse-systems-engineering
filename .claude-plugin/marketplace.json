@@ -14,14 +14,10 @@
       "source": "./",
       "homepage": "https://github.com/Roarge/vse-systems-engineering",
       "license": "MIT",
-      "categories": [
-        "Systems Engineering",
-        "Model-Based Systems Engineering",
-        "Requirements Engineering",
-        "Documentation"
-      ],
+      "category": "Systems Engineering",
       "keywords": [
         "systems-engineering",
+        "documentation",
         "vse",
         "iso29110",
         "sysml",
