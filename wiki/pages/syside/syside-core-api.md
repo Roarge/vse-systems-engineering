@@ -44,13 +44,9 @@ model-driven scripting. The surface below is verified against the
 Two properties of the parser matter when a VSE drives Syside from an
 agent rather than by hand.
 
-- The parser is optimised for agent-driven editing. Repeated small
-  edits to a loaded model reparse incrementally rather than reloading
-  the whole document set, which is what makes a tight edit-and-check
-  loop affordable.
-- Connection type checking runs in real time. A connection whose ends
-  do not conform is reported as the edit lands, not only at the next
-  full `syside check`.
+The 0.10.3 parser is optimised for large models edited rapidly by
+agents or scripts, which is exactly the shape of an automated
+modelling session.
 
 Syside is in a breaking-change window before v1.0 (see
 [[syside-tooling-overview]]). Pin the version a script depends on.

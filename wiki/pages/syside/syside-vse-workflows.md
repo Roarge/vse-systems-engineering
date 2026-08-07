@@ -54,7 +54,7 @@ severities that file sets.
 # Fail the build on any diagnostic, not only errors
 syside check --warnings-as-errors
 
-# Report per-phase counts and timings alongside the diagnostics
+# Report run statistics alongside the diagnostics
 syside check --warnings-as-errors --stats
 
 # Check formatting without rewriting files
@@ -71,7 +71,7 @@ secret store, exposed as `SYSIDE_LICENSE_KEY`.
 
 ## Standard library version
 
-Releases from 0.10.x ship the SysML v2 standard library at the 2026-03
+Releases from 0.9.0 ship the SysML v2 standard library at the 2026-03
 specification release, so a model authored against an older library may
 report new diagnostics after an upgrade, usually around quantities and
 units. Pin the Syside version, and point `std` in `syside.toml` at a
@@ -105,10 +105,9 @@ matrix view crosses two element sets and shows the relationship at each
 intersection, which is the interactive form of the traceability matrix
 that [[ambse-dependability-and-traceability]] describes.
 
-Grid views are editable. A cell change writes back to the underlying
-`.sysml` file, so a requirements review can be run in the grid and the
-result committed as an ordinary textual diff. That keeps the model, not
-a spreadsheet, as the single source of truth.
+Grid views are editable, with the textual model remaining the master
+representation. Verify the write-back behaviour for your Syside version
+against the release notes before relying on it in a review workflow.
 
 ## Extract requirements to Excel
 

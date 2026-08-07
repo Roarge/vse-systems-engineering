@@ -65,9 +65,10 @@ Sysand reads two manifest shapes, and the difference matters.
   produced by Sysand can be consumed by any conforming tool rather
   than only by the Sensmetry toolchain.
 
-Sysand generates and maintains the interchange manifests from the
-project manifest. Edit `sysand.toml`, and let the tool write the JSON
-pair.
+`sysand init` creates the project together with its manifests, metadata
+the tool manages for you. Treat `sysand.toml` as the surface you edit
+and consult the Sysand reference for how the interchange pair is kept
+in step.
 
 ## The lock file
 
@@ -135,5 +136,7 @@ workflow.
 Sysand is pre-v1.0, and v1.0 is planned alongside Syside v1.0 in Q3
 2026 (see [[syside-tooling-overview]] for the roadmap and its caveat).
 Command names and manifest keys may still change. Pin the Sysand
-version the CI workflow installs, and treat an upgrade as a change that
-needs the lock file regenerated and reviewed.
+Dependencies can also come from a privately hosted index, which the
+Sysand documentation covers as a first-class setup. A VSE working on
+confidential material does not have to publish anything to the public
+index.

@@ -145,6 +145,10 @@ personal setting produces diff churn on every save.
 | `quantity-operator-expression` | An operator expression over quantities that the evaluator cannot check |
 | `related-feature-conformance` | A related feature that does not conform to its declared relationship |
 
+The descriptions summarise each rule from its name. The versioned
+Syside settings reference is authoritative for exact semantics and
+default severities.
+
 The AMBSE canonical model layout depends on namespace hygiene, so a VSE
 raises `standard-library-package` and
 `global-namespace-distinguishability` to at least `warning` and treats

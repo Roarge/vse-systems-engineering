@@ -468,7 +468,7 @@ The chunk below turns the §0.10.4 dispositions into running code.
   Suite (Modeler plus Automator plus the `syside` CLI), with Syside
   Cloud as the browser-hosted Pro Suite and Syside Derisker as the
   ISO 26262, ISO/SAE 21434, and FMEA beta. The old four-product table
-  in `sysml2-modelling` is rewritten accordingly. `SySiDE` is
+  in `sysml2-modelling` is rewritten accordingly. `Syside` is
   normalised to `Syside` across skills, agents, templates, and wiki
   prose. The archived open-source `sysml-2ls` is recorded as a legacy
   note in `syside-tooling-overview` and is not recommended.

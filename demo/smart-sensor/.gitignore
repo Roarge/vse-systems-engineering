@@ -26,3 +26,4 @@ node_modules/
 
 # Sensmetry Syside build cache
 .syside/
+syside.user.toml
