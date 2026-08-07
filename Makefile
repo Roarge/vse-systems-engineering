@@ -10,9 +10,9 @@
 CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
-        check-refs check-skills check-config
+        check-refs check-skills check-config check-routing
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-config
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config
 	@echo "All checks passed."
 
 validate:
@@ -120,6 +120,62 @@ check-refs:
 	   done; \
 	 done; \
 	 echo "  Checked $$CHECKED plugin-root references."; \
+	 exit $$EXIT_CODE
+
+# Runtime knowledge reaches a skill through a generated wiki-routing
+# block, never through a concatenated bundle. Four rules keep that
+# true. The wiki/bundles directory was deleted at 3.0.0, so any
+# surviving reference is stale, except inside vse-wiki-lint, which has
+# to name the retired surface in order to detect it. Markers inside
+# fenced code blocks are documentation examples and are skipped, per
+# the fenced-marker exclusion in wiki/CLAUDE.md.
+check-routing:
+	@echo "Checking wiki routing integrity..."
+	@EXIT_CODE=0; \
+	 for src_file in skills/*/SKILL.md commands/*.md agents/*.md wiki/CLAUDE.md; do \
+	   [ -f "$$src_file" ] || continue; \
+	   [ "$$src_file" = "skills/vse-wiki-lint/SKILL.md" ] && continue; \
+	   if grep -qF 'wiki/bundles' "$$src_file"; then \
+	     echo "ERROR: $$src_file references the retired wiki/bundles surface"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	 done; \
+	 for skill_file in skills/*/SKILL.md; do \
+	   if grep -qE '^[[:space:]]*(`!cat|!`cat)[[:space:]]' "$$skill_file"; then \
+	     echo "ERROR: $$skill_file carries a bundle embed line"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	 done; \
+	 CHECKED=0; \
+	 for skill_file in skills/*/SKILL.md; do \
+	   for page_path in $$(awk '\
+	     /^[[:space:]]*```/ { fenced = !fenced; next } \
+	     fenced { next } \
+	     /^[[:space:]]*<!-- wiki-routing:begin -->[[:space:]]*$$/ { inblock = 1; next } \
+	     /^[[:space:]]*<!-- wiki-routing:end -->[[:space:]]*$$/ { inblock = 0; next } \
+	     inblock && /^\|/ { \
+	       n = split($$0, cells, "|"); \
+	       if (n < 4) next; \
+	       p = cells[3]; \
+	       gsub(/^[ \t]+|[ \t]+$$/, "", p); \
+	       if (p == "Path" || p ~ /^-+$$/) next; \
+	       print p; \
+	     }' "$$skill_file"); do \
+	     CHECKED=$$((CHECKED + 1)); \
+	     if [ ! -f "wiki/$$page_path" ]; then \
+	       echo "ERROR: $$skill_file routes to wiki/$$page_path which does not exist"; \
+	       EXIT_CODE=1; \
+	     fi; \
+	   done; \
+	 done; \
+	 for page_file in wiki/pages/*/*.md; do \
+	   [ -f "$$page_file" ] || continue; \
+	   grep -q '^summary:' "$$page_file" || { \
+	     echo "ERROR: $$page_file has no summary: in its frontmatter"; EXIT_CODE=1; }; \
+	   grep -q '^referenced_by:' "$$page_file" || { \
+	     echo "ERROR: $$page_file has no referenced_by: in its frontmatter"; EXIT_CODE=1; }; \
+	 done; \
+	 echo "  Checked $$CHECKED routing rows."; \
 	 exit $$EXIT_CODE
 
 # The placeholder check is an error from the pre-overhaul hygiene
