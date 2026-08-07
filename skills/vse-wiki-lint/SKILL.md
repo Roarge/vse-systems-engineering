@@ -117,11 +117,12 @@ For each skill under `skills/`:
 - **WARN** if the skill's `SKILL.md` references a retired reference
   surface, that is a path under `wiki/bundles/` or a path beginning with
   the legacy `knowledge/` directory name, in either a `!cat` block or a
-  prose pointer. Both were deleted, and any remaining reference is
-  stale. Exempt the `vse-wiki-*` skills from this check. They name the
-  retired surfaces in order to detect them, so matching on their own
-  text produces a finding against the detector rather than against a
-  consumer.
+  prose pointer. The `knowledge/` directory was deleted and
+  `wiki/bundles/` is retired at the runtime flip, so any remaining
+  reference is stale. Exempt only this skill (`vse-wiki-lint`) from the
+  check. It names the retired surfaces in order to detect them, so
+  matching on its own text produces a finding against the detector
+  rather than against a consumer.
 
 ## Step 5: Orphan Detection
 

@@ -10,6 +10,11 @@ for a distributed Claude Code plugin. Atomic markdown pages are authored
 from raw sources in `sources/` (gitignored) and stay atomic all the way to
 runtime. Nothing is concatenated and nothing is front-loaded.
 
+> **Transition note (3.0.0-rc train).** This schema describes the end
+> state. Until the runtime flip lands, `wiki/bundles/` remains on disk
+> as a retired artefact and the consumer skills still carry their old
+> embed tails. The flip removes both and this note with them.
+
 ## The navigable-wiki contract
 
 The runtime surface is the wiki itself. A skill does not receive a
@@ -306,7 +311,10 @@ Checks, grouped by what they protect:
 - Bidirectional consistency. For every skill routing block, each row's
   page must list that skill in `referenced_by:`. For every page, each
   skill in `referenced_by:` must carry a row for that page. **ERROR** on
-  either direction.
+  either direction. Exception during the 3.0.0-rc transition: a skill
+  named in `referenced_by:` that carries no marker block at all is
+  **INFO**, not ERROR. The runtime flip installs the blocks and retires
+  this exception.
 - Path resolution. Every `pages/...` path inside a routing block resolves
   to a file on disk. **ERROR** otherwise.
 - Sorted order. Rows within a block are ordered by layer, then slug.

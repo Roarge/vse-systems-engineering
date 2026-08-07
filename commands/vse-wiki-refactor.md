@@ -17,7 +17,8 @@ $ARGUMENTS
 The skill dispatches the `vse-wiki-curator` subagent in an isolated
 context for the walk and proposal work, then surfaces each proposed
 change to the contributor for approval. After approved changes are
-applied, the skill regenerates every bundle via `/vse-wiki-bundle`,
+applied, the skill syncs the INDEX and routing tables via
+`/vse-wiki-index`,
 appends a `refactor` entry to `wiki/LOG.md`, and produces a commit
 plan. Heavy operation, not routine; use lint for day-to-day health
 checks.

@@ -3,7 +3,7 @@ title: "HSI in Architecture"
 slug: hsi-in-architecture
 type: process
 layer: hsi
-summary: Architecture is not only about technical component breakdown
+summary: Where human-systems concerns enter architectural decisions and allocations
 tags: [hsi, architecture, function-allocation, vhcd, lifecycle]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI in Architecture."

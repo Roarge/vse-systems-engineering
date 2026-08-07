@@ -3,7 +3,7 @@ title: "AMBSE Architectural Analysis and Five Architecture Views"
 slug: ambse-architecture-analysis
 type: process
 layer: ambse
-summary: Architecture in AMBSE has two distinct activities
+summary: The two AMBSE architecture activities and the five architecture views that structure them
 tags: [architecture, analysis, views, subsystem, deployment, dependability, distribution, concurrency]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 6."

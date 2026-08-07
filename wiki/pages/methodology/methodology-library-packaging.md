@@ -3,7 +3,7 @@ title: "Methodology library packaging (forthcoming work)"
 slug: methodology-library-packaging
 type: concept
 layer: methodology
-summary: Section 0.8 of the methodology specification announces a planned, but not yet realised, packaging step
+summary: The planned section 0.8 packaging of the methodology as a SysML v2 library, not yet realised
 tags: [library-package, semantic-metadata, user-defined-keywords, sysml2-ch41, deferred]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §0.8 (Forthcoming Work — Methodology Library Packaging)."

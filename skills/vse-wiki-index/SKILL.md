@@ -19,7 +19,9 @@ schema requires.
 
 Nothing here invents content. Every generated cell comes from a page's
 own frontmatter, which is what keeps the derived surfaces honest and
-makes regeneration safe to run at any time.
+makes regeneration safe to run at any time. Idempotence comparisons
+exclude the generated-on timestamp line in each header: two runs over
+identical frontmatter must produce identical output below that line.
 
 **This skill writes to `wiki/INDEX.md` and to the marked region of
 consuming skills' `SKILL.md` files.** It never writes to `wiki/pages/`,

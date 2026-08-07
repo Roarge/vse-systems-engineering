@@ -3,7 +3,7 @@ title: "INCOSE Architecture and V&V for VSEs"
 slug: incose-vse-architecture-and-vv
 type: concept
 layer: incose-vse
-summary: Architecture defines what the system does and how it is organised (abstract, conceptualisation-oriented)
+summary: INCOSE architecture definition and verification and validation processes scaled to VSE scope
 tags: [incose, architecture, verification, validation, interfaces, vee, vse]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapters 4.4 and 4.5."

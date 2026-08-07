@@ -21,14 +21,14 @@ anything a routing table does not name.
 | Slug | Title | Type | Summary | Referenced by |
 |---|---|---|---|---|
 | `ambse-architectural-design` | AMBSE Architectural Design and Use Case Allocation | process | Decomposing a selected architecture into subsystems, allocating requirements, and defining interfaces | architecture-design |
-| `ambse-architecture-analysis` | AMBSE Architectural Analysis and Five Architecture Views | process | Architecture in AMBSE has two distinct activities | architecture-design |
+| `ambse-architecture-analysis` | AMBSE Architectural Analysis and Five Architecture Views | process | The two AMBSE architecture activities and the five architecture views that structure them | architecture-design |
 | `ambse-architecture-vv-and-iso29110` | AMBSE Architecture-Level V&V and ISO 29110 Mapping | reference | Architecture-level V&V across the three verification timeframes, and its mapping to ISO 29110 | architecture-design |
 | `ambse-dependability-and-traceability` | AMBSE Dependability Requirements and Traceability Matrix | reference | Dependability requirements and the engineering data trace behind the AMBSE traceability matrix | needs-and-requirements |
 | `ambse-interfaces-and-handoff` | AMBSE Interface Specification and Handoff to Downstream Engineering | process | Interfaces are the most critical architectural artefact for system integration | architecture-design |
 | `ambse-iso29110-mapping` | AMBSE Workflow Mapping to ISO/IEC 29110 | reference | Cross-reference table from AMBSE activities to ISO 29110 process activities | release-orchestrator |
-| `ambse-principles` | AMBSE Principles and Modelling Rules | concept | The fundamental distinction between systems engineering and software development drives how agile methods apply | release-orchestrator, verification-validation |
-| `ambse-requirements-as-models` | AMBSE Requirements as Model Elements; Stakeholder Identification | concept | In agile model-based SE, requirements are not standalone text documents | needs-and-requirements |
-| `ambse-risk-and-metrics` | AMBSE Risk Management and SE Metrics | reference | Risk is the product of an event's likelihood of occurrence and its severity | release-orchestrator |
+| `ambse-principles` | AMBSE Principles and Modelling Rules | concept | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow | release-orchestrator, verification-validation |
+| `ambse-requirements-as-models` | AMBSE Requirements as Model Elements; Stakeholder Identification | concept | Requirements as model elements rather than text, and how stakeholders are identified in AMBSE | needs-and-requirements |
+| `ambse-risk-and-metrics` | AMBSE Risk Management and SE Metrics | reference | AMBSE risk management practice and the systems engineering metrics worth tracking in a VSE | release-orchestrator |
 | `ambse-system-requirements-derivation` | AMBSE System Requirements Derivation | process | Deriving system requirements from stakeholder needs, one per thing the system must do or be | needs-and-requirements |
 | `ambse-trade-studies` | AMBSE Trade Study Methodology | process | Trade studies are the primary mechanism for making defensible architectural decisions | architecture-design |
 | `ambse-use-case-driven-elicitation` | AMBSE Use Case Driven Elicitation | process | Use cases as the structuring mechanism for stakeholder requirements in AMBSE | needs-and-requirements |
@@ -37,21 +37,21 @@ anything a routing table does not name.
 
 | Slug | Title | Type | Summary | Referenced by |
 |---|---|---|---|---|
-| `hsi-domains` | HSI Domains: 13 Perspectives | reference | The INCOSE HSI Primer identifies 13 perspectives | needs-and-requirements |
+| `hsi-domains` | HSI Domains: 13 Perspectives | reference | The thirteen HSI domains (manpower, training, safety and the rest) and what each asks of a design | needs-and-requirements |
 | `hsi-foundations` | Human-Systems Integration Foundations: TOP in Environment | concept | Human-Systems Integration as a transdisciplinary approach, and the technology, organisation, and people frame | needs-and-requirements |
-| `hsi-in-architecture` | HSI in Architecture | process | Architecture is not only about technical component breakdown | needs-and-requirements |
-| `hsi-in-requirements` | HSI in Requirements | process | HSI requirements are not a separate category bolted on after technical requirements are written | needs-and-requirements |
+| `hsi-in-architecture` | HSI in Architecture | process | Where human-systems concerns enter architectural decisions and allocations | needs-and-requirements |
+| `hsi-in-requirements` | HSI in Requirements | process | How HSI concerns become requirements alongside technical ones from the start | needs-and-requirements |
 | `hsi-vse-tiered-approach` | Lightweight HSI for VSEs: Tiered Approach | pattern | Tiered HSI practice for a VSE with no dedicated human factors team or simulation facilities | needs-and-requirements |
 
 ## incose-vse
 
 | Slug | Title | Type | Summary | Referenced by |
 |---|---|---|---|---|
-| `incose-vse-architecture-and-vv` | INCOSE Architecture and V&V for VSEs | concept | Architecture defines what the system does and how it is organised (abstract, conceptualisation-oriented) | release-orchestrator |
+| `incose-vse-architecture-and-vv` | INCOSE Architecture and V&V for VSEs | concept | INCOSE architecture definition and verification and validation processes scaled to VSE scope | release-orchestrator |
 | `incose-vse-cm-risk-and-scaling` | INCOSE CM, Risk Management, and VSE Scaling Guidance | concept | Configuration management, risk management, and how INCOSE practice scales down to VSE size | release-orchestrator |
 | `incose-vse-lifecycle-models` | INCOSE Lifecycle Models Scaled for VSEs | concept | The six generic lifecycle stages from Concept to Retirement, scaled for VSE projects | release-orchestrator |
 | `incose-vse-requirements-engineering` | INCOSE Requirements Engineering for VSEs | concept | Transforming stakeholder needs into system requirements and allocating them to system elements | release-orchestrator |
-| `incose-vse-stakeholder-needs` | INCOSE Stakeholder Needs Definition for VSEs | concept | Transform stakeholder concerns into a structured set of stakeholder requirements that can be validated | release-orchestrator |
+| `incose-vse-stakeholder-needs` | INCOSE Stakeholder Needs Definition for VSEs | concept | The INCOSE stakeholder needs process: from concerns to validated stakeholder requirements, VSE-scaled | release-orchestrator |
 
 ## iso29110
 
@@ -76,11 +76,11 @@ anything a routing table does not name.
 | `benefit-as-criterion` | Benefit constraint as trade-study criterion | concept | Using the benefit constraint of a user story as an assessment criterion in architectural trade studies | vse-companion-overview, architecture-design, needs-and-requirements |
 | `frame-concern-pattern` | frame concern: linking stories to stakeholder concerns | pattern | The frame concern member that ties a User Story to persistent stakeholder concerns in the model | vse-companion-overview, story-orchestrator, needs-and-requirements |
 | `iso-29110-compliance-mapping` | ISO/IEC TR 29110-5-6-2 compliance mapping | reference | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 | vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan |
-| `methodology-library-packaging` | Methodology library packaging (forthcoming work) | concept | Section 0.8 of the methodology specification announces a planned, but not yet realised, packaging step | vse-companion-overview |
+| `methodology-library-packaging` | Methodology library packaging (forthcoming work) | concept | The planned section 0.8 packaging of the methodology as a SysML v2 library, not yet realised | vse-companion-overview |
 | `methodology-overview` | Story-driven AMBSE Methodology Overview | concept | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 | vse-companion-overview, story-orchestrator, release-orchestrator, project-setup, project-audit |
 | `project-management-workflow` | Project Management workflow (§10) | process | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests | vse-companion-overview, project-plan, release-orchestrator, change-request, project-setup |
 | `role-actor-coupling` | Coupling story role to use-case actor via objective | pattern | Coupling a story role to a use-case actor through the shared objective | vse-companion-overview, story-orchestrator, needs-and-requirements |
-| `stakeholder-stories-workflow` | Stakeholder Requirements Engineering workflow (§4) | process | Section 4 of the methodology is the first user-story-driven workflow stage | vse-companion-overview, needs-and-requirements, story-orchestrator |
+| `stakeholder-stories-workflow` | Stakeholder Requirements Engineering workflow (§4) | process | The section 4 stakeholder requirements stage: eliciting concerns and authoring stakeholder stories | vse-companion-overview, needs-and-requirements, story-orchestrator |
 | `story-branch-pr-workflow` | Story branch, draft PR, and final review workflow | process | The methodology operationalises every model change through a single git pattern | vse-companion-overview, story-orchestrator, release-orchestrator, change-request, project-audit |
 | `storymeta-lifecycle` | StoryMeta status lifecycle and branch alignment | process | The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle | vse-companion-overview, story-orchestrator, release-orchestrator |
 | `system-context-completeness` | System Context: actor categories, interfaces, and completeness checks | process | System boundary, actor categories, crossing item flows, and the context completeness checks | vse-companion-overview, needs-and-requirements, architecture-design |
@@ -119,7 +119,7 @@ anything a routing table does not name.
 | `syside-core-api` | SySiDE Automator Core API | reference | The Automator is a Python library for programmatic analysis of SysML 2.0 models | sysml2-modelling, sysml2-metadata |
 | `syside-expression-evaluation` | SySiDE Expression Evaluation and Compiler | reference | The Compiler class evaluates SysML expressions, attribute values, and metadata filters | sysml2-modelling, sysml2-metadata |
 | `syside-model-modification` | SySiDE Model Modification and Element Reference | reference | Adding, removing, and exporting model elements through the SySiDE API, with an element type reference | sysml2-modelling, sysml2-metadata |
-| `syside-project-configuration` | SySiDE Project Configuration: syside.toml and .lsp.json | reference | A VSE project bootstrapped through project-setup carries two distinct SySiDE-related configuration files in its root | sysml2-modelling, project-setup |
+| `syside-project-configuration` | SySiDE Project Configuration: syside.toml and .lsp.json | reference | The two SySiDE config files a project carries: syside.toml and .lsp.json, and what belongs in each | sysml2-modelling, project-setup |
 | `syside-tooling-overview` | SySiDE Tooling Overview and Installation | reference | SySiDE offers four complementary tools for SysML v2 | sysml2-modelling, sysml2-metadata, project-setup |
 | `syside-vse-workflows` | SySiDE VSE Workflows and Report Generation | pattern | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation | sysml2-modelling, sysml2-metadata, project-setup |
 
@@ -127,7 +127,7 @@ anything a routing table does not name.
 
 | Slug | Title | Type | Summary | Referenced by |
 |---|---|---|---|---|
-| `sysml2-actions` | SysML 2.0 Actions, Parameters, and Perform Actions | reference | SysML 2.0 draws a sharp line between structure (what the system has) and behaviour (what the system does) | sysml2-behaviour |
+| `sysml2-actions` | SysML 2.0 Actions, Parameters, and Perform Actions | reference | Action definitions and usages, parameters, and perform actions for modelling behaviour | sysml2-behaviour |
 | `sysml2-advanced-quantities-units` | SysML 2.0 Advanced Quantities and Units Concepts | reference | Unit definitions, derived units, conversions, and scalar and vector quantity values | sysml2-expressions |
 | `sysml2-allocation-definitions` | SysML 2.0 Allocation Definitions and Usages | reference | Declaring allocation definitions and applying them through allocation usages | sysml2-allocations |
 | `sysml2-allocation-patterns` | SysML 2.0 Allocation Patterns and Gotchas | pattern | Standard allocation mapping patterns and the recurring mistakes that show up in review | sysml2-allocations |
@@ -138,10 +138,10 @@ anything a routing table does not name.
 | `sysml2-canonical-model-layout` | AMBSE Canonical Model Layout for VSE Projects | concept | The recommended top-level package layout for a VSE SysML 2.0 model, with the rationale that drives it | sysml2-model-structure |
 | `sysml2-case-kinds` | SysML 2.0 Case Kinds: Use, Analysis, Verification | reference | Syntax for the three standard case kinds, that is use case, analysis case, and verification case | sysml2-cases |
 | `sysml2-case-patterns` | SysML 2.0 Case Patterns and Gotchas | pattern | Practical case patterns and the recurring mistakes that show up in review | sysml2-cases |
-| `sysml2-cases-overview` | SysML 2.0 Cases Overview | concept | Cases are one of the most important new concepts in SysML 2.0 | sysml2-cases |
+| `sysml2-cases-overview` | SysML 2.0 Cases Overview | concept | The case construct family: use, analysis, verification, and validation cases share one structure | sysml2-cases |
 | `sysml2-domain-libraries-causation-geometry` | SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | reference | The Cause and Effect, Requirement Derivation, and Geometry domain libraries | sysml2-modelling |
 | `sysml2-domain-libraries-metadata-analysis` | SysML 2.0 Domain Libraries: Metadata and Analysis | reference | The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies | sysml2-modelling |
-| `sysml2-domain-model-libraries` | SysML 2.0 Domain Model Libraries | reference | The first strategy for extending SysML 2.0 is to model the new concepts with the existing ones | sysml2-extension |
+| `sysml2-domain-model-libraries` | SysML 2.0 Domain Model Libraries | reference | Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs | sysml2-extension |
 | `sysml2-expression-patterns` | SysML 2.0 Expression Patterns and Gotchas | pattern | Practical patterns and recurring mistakes for expressions, calculations, and constraints | sysml2-expressions |
 | `sysml2-expressions-constraints` | SysML 2.0 Calculations and Constraints | reference | Calculations and constraints are the two main expression-bearing constructs in SysML 2.0 | sysml2-expressions |
 | `sysml2-expressions-overview` | SysML 2.0 Expressions Overview and Scalar Values | reference | The native expression language and scalar values, usable in feature values, constraints, and guards | sysml2-expressions |
@@ -155,7 +155,7 @@ anything a routing table does not name.
 | `sysml2-libraries-architecture` | SysML 2.0 Library Architecture: Systems Model Library and Domain Libraries | concept | The implicit Systems Model Library and the Domain Libraries a project imports explicitly | sysml2-modelling |
 | `sysml2-library-import-patterns` | SysML 2.0 Library Import Patterns and VSE Selection Guide | pattern | Import patterns for the domain libraries, organised by use case and ISO 29110 phase | sysml2-modelling |
 | `sysml2-metadata-definitions` | SysML 2.0 Metadata Definitions and Annotations | reference | Declaring metadata definitions and applying them as annotations | sysml2-metadata |
-| `sysml2-metadata-overview` | SysML 2.0 Metadata, Reflection, and Annotations Overview | concept | Reflection in programming and modelling languages is the ability of the language to refer to its own structure | sysml2-metadata |
+| `sysml2-metadata-overview` | SysML 2.0 Metadata, Reflection, and Annotations Overview | concept | Metadata definitions, annotations, and reflection: how models describe and query their own structure | sysml2-metadata |
 | `sysml2-model-cm-and-risks` | Model-Level Configuration Management and Risks in AMBSE Models | pattern | Model-level configuration management and risk modelling inside the canonical package layout | sysml2-model-structure |
 | `sysml2-model-execution` | SysML 2.0 Model Execution | concept | Executing or simulating a model so that its specified behaviour can be observed | sysml2-behaviour |
 | `sysml2-namespace-hygiene` | SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules | reference | Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules | sysml2-model-structure |
@@ -166,7 +166,7 @@ anything a routing table does not name.
 | `sysml2-reflection-and-classification` | SysML 2.0 Reflection: Metaclassification and Meta Operators | reference | Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism | sysml2-metadata |
 | `sysml2-requirements-semantics` | SysML 2.0 Requirements Semantics: Subject, Assume/Require, Satisfaction, Verification | reference | Semantic rules for the requirement family, covering subject, assume, require, satisfaction, verification | sysml2-modelling |
 | `sysml2-self-and-that` | SysML 2.0 Contextual References: self and that | reference | The two special features every type and every feature inherits, self and that | sysml2-behaviour |
-| `sysml2-sequences-and-structures` | SysML 2.0 Sequences and Complex Structures | reference | When a feature has multiplicity other than [1], it holds a sequence of values | sysml2-expressions |
+| `sysml2-sequences-and-structures` | SysML 2.0 Sequences and Complex Structures | reference | Multiplicity as sequences, ordering and uniqueness, and modelling complex structured values | sysml2-expressions |
 | `sysml2-special-action-usages` | SysML 2.0 Special Action Usages: Assign, Send, Accept, Terminate, If, Loop | reference | The standard library defines built-in action usages with specific semantics for typical patterns | sysml2-behaviour |
 | `sysml2-specialisation-and-typing` | SysML 2.0 Specialisation, Typing, Composition, and Feature Values | reference | Semantic rules for how types relate to each other and how usages bind values | sysml2-modelling |
 | `sysml2-standard-views` | SysML 2.0 Standard Views Catalogue | reference | SysML 2.0 defines eight standard views in the StandardViewDefinitions package | sysml2-views |
@@ -180,7 +180,7 @@ anything a routing table does not name.
 | `sysml2-syntax-structure` | SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations | reference | Cheat sheet for the structural modelling vocabulary | sysml2-modelling |
 | `sysml2-systems-model-library` | SysML 2.0 Systems Model Library: Base Types and Specialisations | reference | The Systems Model Library provides the base types that every SysML 2.0 keyword implicitly specialises | sysml2-modelling |
 | `sysml2-temporal-spatial-relations` | SysML 2.0 Temporal and Spatial Relations | reference | Occurrence equality operators, Allen's interval algebra, and the spatial relation vocabulary | sysml2-behaviour |
-| `sysml2-type-hierarchy` | SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches | reference | The SysML 2.0 type system has two fundamental branches that cannot overlap | sysml2-modelling |
+| `sysml2-type-hierarchy` | SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches | reference | The two disjoint root branches of the type system: DataValue and Occurrence, and what each carries | sysml2-modelling |
 | `sysml2-user-defined-keywords` | SysML 2.0 User-Defined Keywords | reference | Extending the language itself with user-defined keywords, beyond domain-library modelling | sysml2-extension |
 | `sysml2-variant-configuration` | SysML 2.0 Variant Configuration and Constraints | reference | Cross-variation constraints, materialising a configuration, and binding to an external feature model | sysml2-variants |
 | `sysml2-variant-organisation` | Variant Modelling Organisation in AMBSE Models (VAMOS adapted) | pattern | Organising a model into Core, Variations, and Configurations, with variation-point discipline | sysml2-model-structure |

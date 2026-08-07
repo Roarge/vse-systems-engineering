@@ -3,7 +3,7 @@ title: "AMBSE Requirements as Model Elements; Stakeholder Identification"
 slug: ambse-requirements-as-models
 type: concept
 layer: ambse
-summary: In agile model-based SE, requirements are not standalone text documents
+summary: Requirements as model elements rather than text, and how stakeholders are identified in AMBSE
 tags: [ambse, requirements, model-elements, stakeholders, sixteen-types]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapters 2, 4-5."
