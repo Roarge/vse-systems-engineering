@@ -64,9 +64,21 @@ if [ -f "wiki/CLAUDE.md" ]; then
         echo "  LOG.md missing (wiki not initialised)."
     fi
     if [ -f "wiki/LINT_REPORT.md" ]; then
-        ERRORS=$(grep -cE '^- .*ERROR' "wiki/LINT_REPORT.md" 2>/dev/null || true)
-        WARNS=$(grep -cE '^- .*WARN' "wiki/LINT_REPORT.md" 2>/dev/null || true)
-        echo "  Last /vse-wiki-lint report: ${ERRORS} ERROR, ${WARNS} WARN findings."
+        # Read the values from the report's own summary block, which is
+        # written as "- ERROR: <n>" / "- WARN: <n>" by /vse-wiki-lint.
+        # Counting matching lines instead would count the summary lines
+        # themselves and announce findings on a clean report.
+        ERRORS=$(sed -n 's/^- ERROR: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" | head -1)
+        WARNS=$(sed -n 's/^- WARN: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" | head -1)
+        LINT_GENERATED=$(sed -n 's/^Generated: \(.*\)$/\1/p' "wiki/LINT_REPORT.md" | head -1)
+        if [ -n "$ERRORS" ] && [ -n "$WARNS" ]; then
+            echo "  Last /vse-wiki-lint report: ${ERRORS} ERROR, ${WARNS} WARN findings."
+        else
+            echo "  /vse-wiki-lint report present but has no readable summary block."
+        fi
+        if [ -n "$LINT_GENERATED" ]; then
+            echo "  Report generated: ${LINT_GENERATED}."
+        fi
     else
         echo "  No /vse-wiki-lint report on disk. Run /vse-wiki-lint for a health check."
     fi
