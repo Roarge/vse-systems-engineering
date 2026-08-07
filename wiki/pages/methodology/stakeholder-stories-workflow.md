@@ -3,7 +3,7 @@ title: "Stakeholder Requirements Engineering workflow (§4)"
 slug: stakeholder-stories-workflow
 type: process
 layer: methodology
-summary: The section 4 stakeholder requirements stage: eliciting concerns and authoring stakeholder stories
+summary: "The section 4 stakeholder requirements stage: eliciting concerns and authoring stakeholder stories"
 tags: [stakeholder, concern, user-story, validation, workflow, elicitation, methodology, sr-2]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §4 (Stakeholder Requirements Engineering)."
@@ -18,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, needs-and-requirements, story-orchestrator]
+referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
 # Stakeholder Requirements Engineering workflow (§4)

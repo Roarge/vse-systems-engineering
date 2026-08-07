@@ -15,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview]
+referenced_by: []
 ---
 
 # Methodology library packaging (forthcoming work)

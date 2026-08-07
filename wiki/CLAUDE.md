@@ -10,11 +10,6 @@ for a distributed Claude Code plugin. Atomic markdown pages are authored
 from raw sources in `sources/` (gitignored) and stay atomic all the way to
 runtime. Nothing is concatenated and nothing is front-loaded.
 
-> **Transition note (3.0.0-rc train).** This schema describes the end
-> state. Until the runtime flip lands, `wiki/bundles/` remains on disk
-> as a retired artefact and the consumer skills still carry their old
-> embed tails. The flip removes both and this note with them.
-
 ## The navigable-wiki contract
 
 The runtime surface is the wiki itself. A skill does not receive a
@@ -311,10 +306,9 @@ Checks, grouped by what they protect:
 - Bidirectional consistency. For every skill routing block, each row's
   page must list that skill in `referenced_by:`. For every page, each
   skill in `referenced_by:` must carry a row for that page. **ERROR** on
-  either direction. Exception during the 3.0.0-rc transition: a skill
-  named in `referenced_by:` that carries no marker block at all is
-  **INFO**, not ERROR. The runtime flip installs the blocks and retires
-  this exception.
+  either direction. A skill named in `referenced_by:` that carries no
+  marker block at all is the same error seen from the other side, and it
+  is reported as one.
 - Path resolution. Every `pages/...` path inside a routing block resolves
   to a file on disk. **ERROR** otherwise.
 - Sorted order. Rows within a block are ordered by layer, then slug.
@@ -436,7 +430,7 @@ Confidence lowered on: sysml2-quick-ref-connections (medium, reason: OMG
 specification §12 clarified connector binding).
 
 ## [2026-04-16] index | routing resync
-Pages indexed: 130. Routing blocks regenerated: 21. ToC drift: 0.
+Pages indexed: 130. Routing blocks regenerated: 20. ToC drift: 0.
 
 ## [2026-04-16] lint | post-refactor
 Orphans: 0. Broken wikilinks: 0. Stale pages: 2 flagged.
@@ -459,7 +453,7 @@ Pages over 300 lines are candidates for splitting. When a page grows past
 300 lines during authoring, stop and propose a split before continuing.
 
 The full reference base (130 atomic pages across 11 layers, routed to by
-21 skills) is atomised as of plugin version 3.0.0. New material lands
+20 skills) is atomised as of plugin version 3.0.0. New material lands
 directly under `pages/<layer>/` via `/vse-wiki-ingest`, not in any other
 directory.
 

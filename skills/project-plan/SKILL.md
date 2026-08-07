@@ -1,6 +1,7 @@
 ---
 name: project-plan
-description: Use when authoring or revising the Project Plan, SEMP, Risk Register, CM Strategy, or Disposal Approach (§10.3). Triggers on /vse-plan, "draft project plan", "update SEMP", "revise risk register", "CM strategy", "disposal approach", "PM.O1", "plan-baseline-vN.M".
+description: 'Author or revise the Project Plan and its companion artefacts: SEMP, Risk Register, CM Strategy, and Disposal Approach (§10.3).'
+when_to_use: Use on /vse-plan, "draft project plan", "update SEMP", "revise risk register", "CM strategy", "disposal approach", "PM.O1", or "plan-baseline-vN.M".
 user-invocable: true
 ---
 
@@ -106,4 +107,16 @@ Refuse and explain the reason if any of the following hold:
 - `docs/cm-strategy.md`, scaffolded from the §10.8 YAML.
 - An annotated tag `plan-baseline-vN.M` placed on the merge commit after Acquirer acceptance per §10.3.4. The skill surfaces the tag command for the engineer to run, the skill itself does not push tags.
 
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-plan.md`
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
+| Project Management workflow (§10) | pages/methodology/project-management-workflow.md | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests |
+<!-- wiki-routing:end -->

@@ -18,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, architecture-design, needs-and-requirements]
+referenced_by: [architecture-design, needs-and-requirements]
 ---
 
 # Benefit constraint as trade-study criterion

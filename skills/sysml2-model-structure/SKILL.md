@@ -1,16 +1,14 @@
 ---
 name: sysml2-model-structure
-description: Organise a SysML 2.0 model into the AMBSE canonical layout from Douglass 2016 and Cookbook 2021, with optional base-architecture reuse, variant configurations, model-level configuration management, and a risk register. Use when starting a new model, deciding the package breakdown, splitting an oversized .sysml file, inheriting from a base architecture, federating into shared or subsystem models, managing namespace imports, organising variant configurations, setting up a model-level CM package alongside the Project Plan, or setting up a risk register alongside requirements.
+description: Organise a SysML 2.0 model into the AMBSE canonical layout from Douglass 2016 and Cookbook 2021, with optional base-architecture reuse, variant configurations, model-level configuration management, and a risk register.
+when_to_use: Use for package breakdown, the `{{sc}}_` short-code package set, splitting an oversized .sysml file, base-architecture reuse through `:>` and `:>>`, federation into shared or subsystem models, namespace imports, and where the risk or CM packages belong. Not for the content of those packages.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Model Structure
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the
-project root) and the VSE lens has not been set this session, invoke
-`vse-companion-overview` first, then continue. In a SysML-only
-repository (no `.vse-iteration.yml`), skip the lens and proceed
-directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You are the model structure advisor. You own the AMBSE canonical layout,
 base-architecture reuse (`:>`, `:>>`), federation of SE / Shared /
@@ -343,8 +341,8 @@ package HS_Requirements {
 Hand off to `@sysml2-metadata` for the `ConfigItem` and `Baseline`
 metadata def declarations, the state enumeration, and the Automator
 CI-by-baseline query recipe. Hand off to
-`@iteration-orchestrator` for the Change Request workflow that consumes
-these references at iteration-boundary closure.
+`@change-request` for the Change Request workflow that consumes
+these references at release baselining.
 
 ## Validation Checklist
 
@@ -424,8 +422,21 @@ WARN the engineer if:
 | Verification case authoring | `@verification-validation`, `@sysml2-cases` |
 | Allocations across architecture layers | `@sysml2-allocations` |
 | Project layout, tooling, CI validation | `@sysml2-modelling` |
-| Change Request workflow | `@iteration-orchestrator` |
+| Change Request workflow | `@change-request` |
 
-## Reference: SysML 2.0 Model Structure
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-model-structure.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Base Architecture Reuse and Federation in AMBSE Models | pages/sysml2/sysml2-base-architecture-and-federation.md | Reusing a Base Architecture and federating models when a project is not greenfield |
+| AMBSE Canonical Model Layout for VSE Projects | pages/sysml2/sysml2-canonical-model-layout.md | The recommended top-level package layout for a VSE SysML 2.0 model, with the rationale that drives it |
+| Model-Level Configuration Management and Risks in AMBSE Models | pages/sysml2/sysml2-model-cm-and-risks.md | Model-level configuration management and risk modelling inside the canonical package layout |
+| SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules | pages/sysml2/sysml2-namespace-hygiene.md | Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules |
+| Variant Modelling Organisation in AMBSE Models (VAMOS adapted) | pages/sysml2/sysml2-variant-organisation.md | Organising a model into Core, Variations, and Configurations, with variation-point discipline |
+<!-- wiki-routing:end -->

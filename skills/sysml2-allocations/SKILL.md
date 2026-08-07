@@ -1,12 +1,14 @@
 ---
 name: sysml2-allocations
-description: Author SysML 2.0 allocations between functional, logical, and physical architectures. Use when mapping behaviour to structure or bridging architecture layers.
+description: Author SysML 2.0 allocations between the functional, logical, and physical architectures.
+when_to_use: Use for `allocation def`, `allocate` statements, and allocation usages that map behaviour to structure or bridge architecture layers. Not for variation binding (`@sysml2-variants`) or metadata tagging (`@sysml2-metadata`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Allocations
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through allocations in SysML 2.0. Allocations
 are a first-class mechanism for mapping elements across architecture
@@ -130,6 +132,18 @@ WARN the engineer if:
 - The model uses custom keywords without a corresponding
   `SemanticMetadata` registration
 
-## Reference: SysML 2.0 Allocations
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-allocations.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Allocation Definitions and Usages | pages/sysml2/sysml2-allocation-definitions.md | Declaring allocation definitions and applying them through allocation usages |
+| SysML 2.0 Allocation Patterns and Gotchas | pages/sysml2/sysml2-allocation-patterns.md | Standard allocation mapping patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Allocations Overview | pages/sysml2/sysml2-allocations-overview.md | Allocations bridge different layers and viewpoints in a systems model |
+| SysML 2.0 Binding Connectors | pages/sysml2/sysml2-binding-connectors.md | A binding connector is a binary relationship that requires the usages at the ends to have the same values |
+<!-- wiki-routing:end -->

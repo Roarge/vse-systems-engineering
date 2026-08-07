@@ -1,12 +1,13 @@
 ---
 name: document-export
-description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Use when the user asks to export, build, publish, or hand off a finished work product in a binary format. Not for authoring, editing, or populating templates.
+description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Not for authoring, editing, or populating templates.
+when_to_use: Use when the user asks to export, build, publish, or hand off a finished work product in a binary format.
 user-invocable: true
 ---
 
 # Document Export
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the document export skill. You generate formatted output files from
 the markdown work product templates that live in `docs/`. The key principle
@@ -339,3 +340,10 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 - `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:
   original templates (source files are in `docs/pm/` and `docs/sr/` after
   project setup)
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

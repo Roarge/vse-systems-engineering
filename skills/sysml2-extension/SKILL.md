@@ -1,12 +1,14 @@
 ---
 name: sysml2-extension
-description: Author SysML 2.0 domain extensions with model libraries and user-defined keywords. Use when introducing a domain library (Function/Platform style), declaring a `library package` for reuse, defining a `#keyword` via SemanticMetadata, building a methodology vocabulary on top of SysML, or hitting the kind-keyword, baseType, or annotatedElement pitfalls of the keyword mechanism.
+description: Author SysML 2.0 domain extensions with model libraries and user-defined keywords.
+when_to_use: Use for `library package`, domain libraries in the Function and Platform style, `SemanticMetadata` registration, `#keyword` declaration, `baseType`, and `annotatedElement`. For applying metadata that already exists, route to `@sysml2-metadata`.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Extension: Domain Libraries and User-Defined Keywords
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through extending and customising SysML 2.0
 to fit a domain or methodology. Two strategies are supported and
@@ -207,6 +209,18 @@ WARN the engineer if:
   the Systems Model Library or one of the standard domain
   libraries (see `[[sysml2-libraries-architecture]]`)
 
-## Reference: SysML 2.0 Extension
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-extension.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Domain Model Libraries | pages/sysml2/sysml2-domain-model-libraries.md | Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs |
+| SysML 2.0 Extension Gotchas | pages/sysml2/sysml2-extension-gotchas.md | Three pitfalls that accompany the user-defined-keyword extension mechanism |
+| SysML 2.0 Extension: Overview | pages/sysml2/sysml2-language-extension.md | Choosing between model libraries and user-defined keywords when extending SysML 2.0 |
+| SysML 2.0 User-Defined Keywords | pages/sysml2/sysml2-user-defined-keywords.md | Extending the language itself with user-defined keywords, beyond domain-library modelling |
+<!-- wiki-routing:end -->

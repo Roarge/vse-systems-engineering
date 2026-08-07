@@ -1,12 +1,13 @@
 ---
 name: verification-validation
-description: Author and execute verification cases (against the system model, §5.4.6) and validation cases (against stakeholder intent, §4.3.6). Use when writing a verification def, binding acceptance criteria to a verify clause, choosing between verification and validation, rendering the IVV Plan or IVV Procedures, or running a V&V coverage check before release.
+description: Author and execute verification cases (against the system model, §5.4.6) and validation cases (against stakeholder intent, §4.3.6).
+when_to_use: Use when writing a verification def, binding acceptance criteria to a verify clause, choosing between verification and validation, rendering the IVV Plan or IVV Procedures, or running a V&V coverage check before release.
 user-invocable: true
 ---
 
 # Verification and Validation
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 This skill owns the discipline of binding acceptance criteria to executable cases and turning the resulting `verification def` set into the IVV Plan, the IVV Procedures, and the Verification and Validation Reports specified by ISO 29110.
 
@@ -169,6 +170,19 @@ In each case, the skill states the rule, points to the methodology section, and 
 - `docs/verification-reports/<name>-<date>.md`. Execution-time, per §10.10.
 - `docs/validation-reports/<name>-<date>.md`. Execution-time, per §10.10.
 
-## Reference
+## Knowledge base
 
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
+| Verification and Validation Definitions | pages/vv/vv-definitions.md | What verification and validation each mean, how they differ, and the levels they apply at |
+| Verification and Validation Methods, Test Case Design | pages/vv/vv-methods.md | The four standard methods apply to both verification and validation |
+| V&V Planning, Success Criteria, and the VCRM | pages/vv/vv-planning.md | V&V planning, success criteria, and the verification cross-reference matrix |
+| V&V Reporting, VSE Guidance, and AMBSE Continuous Verification | pages/vv/vv-reporting-and-vse-guidance.md | V&V records, the SVCM, approval packages, and continuous verification scaled for a VSE |
+<!-- wiki-routing:end -->

@@ -1,12 +1,13 @@
 ---
 name: architecture-design
-description: Author Base Architecture (§2), run trade studies (§6) with benefit-as-criterion, and decompose into subsystems (§7). Use when modelling Base Architecture, opening a trade study with variation/variant candidates, allocating capability to subsystems, or working on an architecture branch.
+description: Author Base Architecture (§2), run trade studies (§6) with benefit-as-criterion, and decompose into subsystems (§7).
+when_to_use: Use when modelling Base Architecture, opening a trade study with variation/variant candidates, allocating capability to subsystems, or working on an architecture branch.
 user-invocable: true
 ---
 
 # Architecture Design
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 This skill owns three methodology stages that share a single discipline. You guide the engineer through:
 
@@ -242,6 +243,25 @@ The skill produces or updates the following artefacts. File names are project-de
 - `model/variations/trade-studies/<name>.sysml`. `analysis def` per decision point.
 - `model/variations/resolved/<name>.sysml`. Specialisations that redefine variations.
 
-The wiki bundle below provides the supporting reference material on trade-study mechanics, AMBSE architecture analysis, and recursive component nesting.
+## Knowledge base
 
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| AMBSE Architectural Design and Use Case Allocation | pages/ambse/ambse-architectural-design.md | Decomposing a selected architecture into subsystems, allocating requirements, and defining interfaces |
+| AMBSE Architectural Analysis and Five Architecture Views | pages/ambse/ambse-architecture-analysis.md | The two AMBSE architecture activities and the five architecture views that structure them |
+| AMBSE Architecture-Level V&V and ISO 29110 Mapping | pages/ambse/ambse-architecture-vv-and-iso29110.md | Architecture-level V&V across the three verification timeframes, and its mapping to ISO 29110 |
+| AMBSE Interface Specification and Handoff to Downstream Engineering | pages/ambse/ambse-interfaces-and-handoff.md | Interfaces are the most critical architectural artefact for system integration |
+| AMBSE Trade Study Methodology | pages/ambse/ambse-trade-studies.md | Trade studies are the primary mechanism for making defensible architectural decisions |
+| Architectural Analysis and Trade Studies workflow (§6) | pages/methodology/architectural-analysis-workflow.md | Turning a System User Story set into a resolved architecture through trade studies, per §6 |
+| Architectural Design workflow (§7) | pages/methodology/architectural-design-workflow.md | Decomposing the resolved architecture into subsystems and allocating the specification down, per §7 |
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| Benefit constraint as trade-study criterion | pages/methodology/benefit-as-criterion.md | Using the benefit constraint of a user story as an assessment criterion in architectural trade studies |
+| System Context: actor categories, interfaces, and completeness checks | pages/methodology/system-context-completeness.md | System boundary, actor categories, crossing item flows, and the context completeness checks |
+| System Requirements Definition and Analysis workflow (§5) | pages/methodology/system-stories-workflow.md | Translating stakeholder intent into a verifiable system-level specification, per §5 |
+<!-- wiki-routing:end -->

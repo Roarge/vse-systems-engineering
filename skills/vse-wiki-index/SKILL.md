@@ -1,12 +1,8 @@
 ---
 name: vse-wiki-index
-description: >-
-  Regenerate the wiki INDEX and every skill's wiki-routing block from
-  page frontmatter, and verify page contents blocks. Use after a page is
-  added, updated, or retired, or when a contributor wants the derived
-  surfaces back in step with the pages. Mechanical operation, with no
-  dialogue needed when arguments are explicit.
+description: Regenerate the wiki INDEX and every skill's wiki-routing block from page frontmatter, and verify page contents blocks. Use after a page is added, updated, or retired, or when a contributor wants the derived surfaces back in step with the pages. Mechanical operation, with no dialogue needed when arguments are explicit.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # VSE Wiki Index
@@ -33,14 +29,6 @@ a skill body.
 
 Before any action on `wiki/`, read `wiki/CLAUDE.md`. That file is the
 binding schema and it defines every format this skill emits.
-
-> Status note for the 3.0.0 release train. Operation B below is
-> authored and correct, but the consumer skills do not carry routing
-> marker blocks yet. They receive them in the runtime-flip change that
-> follows this one. Until then, running this skill regenerates
-> `INDEX.md` (operation A) and reports contents-block drift (operation
-> C), and operation B finds no marker blocks to rewrite. That is the
-> expected result, not a failure.
 
 ## When This Skill Triggers
 

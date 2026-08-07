@@ -1,12 +1,14 @@
 ---
 name: traceability-guard
-description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
+description: Check SysML requirement traceability (satisfy and verify links) across the model.
+when_to_use: Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # Traceability Guard
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are an environmental guard that enforces machine-readable traceability
 (R3). You check trace completeness, detect gaps, and flag them as story
@@ -367,3 +369,10 @@ WARN the engineer if:
 - The Traceability Matrix has not been updated after model changes
 - Orphan risks, orphan mitigations, orphan variations, or orphan
   ConfigItems appear in the advisory surfaces above
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

@@ -3,7 +3,7 @@ title: "SysML 2.0 Metadata, Reflection, and Annotations Overview"
 slug: sysml2-metadata-overview
 type: concept
 layer: sysml2
-summary: Metadata definitions, annotations, and reflection: how models describe and query their own structure
+summary: "Metadata definitions, annotations, and reflection: how models describe and query their own structure"
 tags: [metadata, reflection, annotations, m1, m2]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 252 to 254."

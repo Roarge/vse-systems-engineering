@@ -1,19 +1,20 @@
 ---
 name: sysml2-modelling
-description: Author and validate SysML 2.0 textual models (.sysml files). Use when creating or editing SysML models, checking syntax, or navigating model elements.
+description: The SysML 2.0 workbench and umbrella router. Owns project layout, SySiDE tooling, CI validation, and the top-level syntax quick reference, and routes topic authoring to the eight focused siblings.
+when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when configuring SySiDE and `syside.toml`. Route to the sibling that owns the topic once it is clear.
+paths: ["**/*.sysml", "**/syside.toml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Modelling
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. The full SysML 2.0 reference set
-plus the SySiDE Python API reference is bundled into this skill via
-`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md` (atomic pages from
-the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers).
+plus the SySiDE Python API reference lives in the plugin wiki, as atomic pages
+under the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers.
 
 ## When This Skill Triggers
 
@@ -406,10 +407,9 @@ python -m syside interactive models/system-requirements.sysml
 | State machine simulation | Simulate SysML state machines in Python | `@verification-validation` |
 | Constraint checking | Evaluate requirement bounds against model values | `@verification-validation` |
 
-For full API details, see the `syside-tooling-overview`, `syside-core-api`,
+For full API details, read the `syside-tooling-overview`, `syside-core-api`,
 `syside-expression-evaluation`, `syside-model-modification`, and
-`syside-vse-workflows` atomic pages bundled into
-`${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md`.
+`syside-vse-workflows` atomic pages under `wiki/pages/syside/`.
 
 ## Red Flags
 
@@ -420,6 +420,37 @@ WARN the engineer if:
 - Verification cases exist without verify links
 - The model structure does not follow the project template
 
-## Reference: SysML 2.0 and SySiDE (atomic pages bundled per skill)
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-modelling.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SySiDE Automator Core API | pages/syside/syside-core-api.md | The Automator is a Python library for programmatic analysis of SysML 2.0 models |
+| SySiDE Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | The Compiler class evaluates SysML expressions, attribute values, and metadata filters |
+| SySiDE Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the SySiDE API, with an element type reference |
+| SySiDE Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | The two SySiDE config files a project carries: syside.toml and .lsp.json, and what belongs in each |
+| SySiDE Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | SySiDE offers four complementary tools for SysML v2 |
+| SySiDE VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation |
+| SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | pages/sysml2/sysml2-domain-libraries-causation-geometry.md | The Cause and Effect, Requirement Derivation, and Geometry domain libraries |
+| SysML 2.0 Domain Libraries: Metadata and Analysis | pages/sysml2/sysml2-domain-libraries-metadata-analysis.md | The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies |
+| SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist | pages/sysml2/sysml2-grammar-and-validation.md | SysML 2.0 grammar excerpts, well-formedness rules, and a model validation checklist |
+| SysML 2.0 Language Architecture: KerML, Definition/Usage, Implicit Specialisation | pages/sysml2/sysml2-language-architecture.md | The two-layer KerML and SysML architecture, the definition and usage pattern, and implicit specialisation |
+| SysML 2.0 Library Architecture: Systems Model Library and Domain Libraries | pages/sysml2/sysml2-libraries-architecture.md | The implicit Systems Model Library and the Domain Libraries a project imports explicitly |
+| SysML 2.0 Library Import Patterns and VSE Selection Guide | pages/sysml2/sysml2-library-import-patterns.md | Import patterns for the domain libraries, organised by use case and ISO 29110 phase |
+| SysML 2.0 Quantities and Units (ISQ and SI) | pages/sysml2/sysml2-quantities-and-units.md | A quantity is an attribute whose value carries physical meaning |
+| SysML 2.0 Requirements Semantics: Subject, Assume/Require, Satisfaction, Verification | pages/sysml2/sysml2-requirements-semantics.md | Semantic rules for the requirement family, covering subject, assume, require, satisfaction, verification |
+| SysML 2.0 Specialisation, Typing, Composition, and Feature Values | pages/sysml2/sysml2-specialisation-and-typing.md | Semantic rules for how types relate to each other and how usages bind values |
+| SysML 2.0 Structural and Behavioural Semantics | pages/sysml2/sysml2-structural-and-behavioural-semantics.md | Semantic rules for the structural and behavioural element families |
+| SysML 2.0 Syntax: Actions and States | pages/sysml2/sysml2-syntax-behaviour.md | Cheat sheet for behavioural modelling syntax, covering actions and states |
+| SysML 2.0 Syntax: Multiplicity, Attributes, and Enumerations | pages/sysml2/sysml2-syntax-features-and-attributes.md | Cheat sheet for feature multiplicity, attribute values, and enumeration declarations |
+| SysML 2.0 Syntax: Packages, Definitions, and Common Relationships | pages/sysml2/sysml2-syntax-packages-and-definitions.md | Cheat sheet for top-level model organisation, the def/usage pattern, and the common relationship operators |
+| SysML 2.0 Syntax: Calc, Constraint, Requirement, Verification, Cases, Views | pages/sysml2/sysml2-syntax-requirements-and-cases.md | Cheat sheet for the analytical and specification vocabulary |
+| SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations | pages/sysml2/sysml2-syntax-structure.md | Cheat sheet for the structural modelling vocabulary |
+| SysML 2.0 Systems Model Library: Base Types and Specialisations | pages/sysml2/sysml2-systems-model-library.md | The Systems Model Library provides the base types that every SysML 2.0 keyword implicitly specialises |
+| SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches | pages/sysml2/sysml2-type-hierarchy.md | The two disjoint root branches of the type system: DataValue and Occurrence, and what each carries |
+<!-- wiki-routing:end -->

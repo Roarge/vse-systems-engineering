@@ -1,12 +1,14 @@
 ---
 name: sysml2-views
-description: Author SysML 2.0 views, viewpoints, expose statements, and standard view definitions. Use when generating documentation views, specifying viewpoints, or configuring rendering.
+description: Author SysML 2.0 views, viewpoints, expose statements, and standard view definitions.
+when_to_use: Use for `view def`, `viewpoint def`, `expose`, `render`, `frame`, the standard view catalogue, and rendering configuration. Not for the metadata a view filter tests (`@sysml2-metadata`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Views and Viewpoints
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through views and viewpoints in SysML 2.0.
 Views and viewpoints follow ISO/IEC 42010: a viewpoint frames
@@ -134,6 +136,18 @@ WARN the engineer if:
   library without declaring its own
 - A viewpoint frames no concerns (an empty viewpoint is a code smell)
 
-## Reference: SysML 2.0 Views and Viewpoints
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-views.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Standard Views Catalogue | pages/sysml2/sysml2-standard-views.md | SysML 2.0 defines eight standard views in the StandardViewDefinitions package |
+| SysML 2.0 View Definitions, Expose, Filters, and Render | pages/sysml2/sysml2-view-definitions.md | View definitions and the three content mechanisms, that is expose statements, filters, and render usages |
+| SysML 2.0 View Patterns and Gotchas | pages/sysml2/sysml2-view-patterns.md | Practical view patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Viewpoints, Views, and Concerns | pages/sysml2/sysml2-viewpoints-and-concerns.md | Viewpoints, views, and stakeholder concerns, grounded in ISO/IEC/IEEE 42010 |
+<!-- wiki-routing:end -->

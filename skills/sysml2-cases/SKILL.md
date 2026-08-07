@@ -1,12 +1,14 @@
 ---
 name: sysml2-cases
-description: Author SysML 2.0 use cases, analysis cases, and verification cases. Use when defining test cases, trade studies, what-if analyses, or use-case flows.
+description: Author SysML 2.0 use cases, analysis cases, verification cases, and validation cases.
+when_to_use: Use for `use case def`, `analysis case def`, `verification case def`, `validation case def`, `subject`, `objective`, `actor`, and verdict handling. Not for the behaviour bodies a case invokes (`@sysml2-behaviour`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Cases
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through the SysML 2.0 case family. Cases
 generalise SysML v1 use cases and cover three kinds: use cases,
@@ -148,6 +150,17 @@ WARN the engineer if:
 - An analysis case has no `return` feature
 - Verdict handling is missing in a verification body that expects one
 
-## Reference: SysML 2.0 Cases
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-cases.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Case Kinds: Use, Analysis, Verification | pages/sysml2/sysml2-case-kinds.md | Syntax for the three standard case kinds, that is use case, analysis case, and verification case |
+| SysML 2.0 Case Patterns and Gotchas | pages/sysml2/sysml2-case-patterns.md | Practical case patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Cases Overview | pages/sysml2/sysml2-cases-overview.md | The case construct family: use, analysis, verification, and validation cases share one structure |
+<!-- wiki-routing:end -->

@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.1`. Entries accumulate here until the 3.0.0 release heading
-is cut.
+`3.0.0-rc.2`. Entries accumulate here until the 3.0.0 release heading
+is cut. The release-candidate numbering runs one ahead of the
+provisional overhaul plan, which reserved `3.0.0-rc.1` for the runtime
+flip. The pre-overhaul hygiene work took `rc.1` first, so the flip is
+`rc.2` and every later candidate shifts by one.
 
 ### Changed
 
@@ -69,10 +72,79 @@ is cut.
   rather than deleted. The `bundle` LOG tag is marked historical and
   retired at 3.0.0.
 
-Installed behaviour is unchanged by this step. `wiki/bundles/` remains
-on disk with all 21 bundles, and the 21 consumer skills are untouched,
-including their embed tails. Both are retired in the runtime flip that
-follows.
+The data-layer step above left installed behaviour unchanged.
+`wiki/bundles/` stayed on disk and the consumer skills kept their embed
+tails. The runtime flip below retires both.
+
+### Changed (runtime flip)
+
+- **Skills no longer front-load knowledge.** All 21 embed tail lines are
+  removed from the consumer skills, 11 of them inert (backtick first, so
+  the harness never executed them) and 10 genuinely loading a whole
+  layer of reference material before the skill knew what the task was.
+  In their place, 20 skills carry a generated `wiki-routing` block under
+  a Knowledge base heading, naming each page the skill is expected to
+  need with the page path and a one-line trigger. From this release on,
+  a skill reads a wiki page with the Read tool at the moment the task
+  calls for it, and reads nothing otherwise.
+- `vse-companion-overview` receives no routing table. Its former
+  sixteen-page bundle duplicated the methodology specification the lens
+  already routes to. It carries a short Plugin Knowledge Base section
+  instead: what the wiki is, `INDEX.md` as the discovery surface, the
+  wikilink and grep conventions, and the standing rule to read pages on
+  demand, never bulk-load, and cite page titles when quoting. The lens is
+  removed from every page's `referenced_by`, so the referencing-skill
+  count drops from 21 to 20.
+- `document-export`, `session-journal`, and `traceability-guard` carry
+  the knowledge-base preamble with no table, because no page routes to
+  them. They still need to know where `INDEX.md` is.
+- Activation frontmatter is tuned across all 28 skills. Every skill that
+  mixed what it is with when to reach for it now splits the trigger
+  clauses into `when_to_use`. The nine SysML 2.0 specialists and
+  `traceability-guard` gain `paths: ["**/*.sysml"]`, and
+  `sysml2-modelling` adds `**/syside.toml` and is described as the
+  umbrella router. Each specialist's `when_to_use` names the keywords it
+  owns and points at the sibling that owns the neighbouring ones.
+- The four wiki skills take `disable-model-invocation: true`. They are
+  contributor tooling, so the model has no reason to reach for them
+  unasked. They stay `user-invocable`, so the slash commands and
+  explicit inter-skill dispatch continue to work. `vse-wiki-lint`
+  additionally takes `context: fork`, being a read-only report-producing
+  pass with no dialogue.
+- The eleven remaining slash commands are stripped to a single
+  delegation line each, from seventeen to forty-six lines of prose that
+  restated the skill they delegate to. Descriptions and argument hints
+  are unchanged, so the slash menu is unaffected.
+- The lens-load preamble becomes one soft line in every skill that
+  carried it: load the lens first if it is not loaded yet.
+- CI and the Makefile gain a routing-integrity check: no reference to
+  the retired bundle surface, no embed line in any `SKILL.md`, every
+  `pages/` path inside a routing block resolves on disk, and every page
+  carries `summary:` and `referenced_by:`.
+
+### Fixed (runtime flip)
+
+- The ten SysML 2.0 skill preambles gated the methodology lens on a
+  `.vse-iteration.yml` file at the project root. Nothing in the plugin
+  has ever created that file, so the gate never opened and those skills
+  always took the SysML-only branch. Detection now uses the convention
+  `hooks/session-start.sh` already applies: a `methodology/` folder at
+  the project root or under `engineering/`.
+- Six wiki pages carried a summary value containing a colon followed by
+  a space, which YAML reads as a nested mapping key. Strict frontmatter
+  parsing failed on those pages. The values are quoted, with no change
+  to the summary text.
+
+### Removed (runtime flip)
+
+- `wiki/bundles/`, 21 generated bundle files plus the `.gitkeep`,
+  1.1 MB of concatenated page prose with no remaining consumer.
+- The three transition carve-outs that said in their own text that they
+  died at the flip: the transition note and the routing-exception
+  sentence in `wiki/CLAUDE.md`, and the status note in
+  `skills/vse-wiki-index/SKILL.md`. A skill named in a page's
+  `referenced_by` that carries no marker block is now a plain lint
+  ERROR.
 
 ## [2.1.3] - 2026-08-07
 

@@ -24,7 +24,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, story-orchestrator, release-orchestrator, project-setup, project-audit]
+referenced_by: [story-orchestrator, release-orchestrator, project-setup, project-audit]
 ---
 
 # Story-driven AMBSE Methodology Overview

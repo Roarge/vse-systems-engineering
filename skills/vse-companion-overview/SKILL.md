@@ -1,6 +1,7 @@
 ---
 name: vse-companion-overview
-description: Story-driven AMBSE methodology lens for VSE projects, ISO 29110 compliant. Load this skill first in every VSE project session before responding, before invoking any other VSE skill, and whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, or how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
+description: Story-driven AMBSE methodology lens for VSE projects, ISO 29110 compliant. Load this skill first in every VSE project session, before responding and before invoking any other VSE skill. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
+when_to_use: Use whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, or how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together.
 user-invocable: true
 ---
 
@@ -120,8 +121,29 @@ When resolving any methodology question, consult sources in this priority. Lower
 
 The methodology spec wins over its sources because the methodology explicitly adapts the source arc (see §0.4). Do not import a Harmony practice or a SYSMOD detail that the methodology has overridden.
 
+## Plugin Knowledge Base
+
+The plugin ships a wiki of atomic reference pages at
+`${CLAUDE_SKILL_DIR}/../../wiki`. One page covers one concept, drawn from the
+sources in the order above. The wiki is reference material, not the
+methodology. Where the two differ, the methodology spec wins.
+
+- **`INDEX.md` at the wiki root is the discovery surface.** It catalogues
+  every page by layer, with a slug, a title, a one-line summary, and the
+  skills that route to it. Start there when you need material this lens does
+  not carry.
+- **Each specialist skill carries its own routing table.** A skill names the
+  pages it is expected to need, so routing to the skill is usually enough.
+  This lens carries no table of its own, because the methodology spec is
+  where it reads from.
+- **Resolving a wikilink.** A `[[slug]]` inside a page body resolves to the
+  file `pages/**/<slug>.md` under the wiki root. Slugs are unique.
+- **Searching.** For a term `INDEX.md` does not surface, run
+  `grep -ril "<term>" <wiki-root>/pages`.
+
+The standing rule: read pages on demand, never bulk-load a layer, and cite
+the page title when quoting one.
+
 ## What This Skill Does Not Do
 
 This skill is the lens. It does not author models, run trace checks, configure hooks, or export documents. If the user asks for any of those, hand off to the named skill above and let it do the work.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/vse-companion-overview.md`

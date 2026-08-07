@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-referenced_by: [vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan]
+referenced_by: [project-setup, project-audit, release-orchestrator, project-plan]
 ---
 
 # ISO/IEC TR 29110-5-6-2 compliance mapping

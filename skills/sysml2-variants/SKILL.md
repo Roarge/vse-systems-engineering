@@ -1,12 +1,14 @@
 ---
 name: sysml2-variants
-description: Author SysML 2.0 variation points, variant usages, and configuration selection. Use when modelling product lines, alternatives, or configuration trade spaces.
+description: Author SysML 2.0 variation points, variant usages, and configuration selection.
+when_to_use: Use for `variation`, `variation part`, `variant`, configuration binding through `:>>`, product lines, alternatives, and configuration trade spaces. Not for the trade study that chooses between them (`@sysml2-cases`, `@architecture-design`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Variations and Variants
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through variation and variant modelling in
 SysML 2.0. SysML 2.0 treats product variation as a core language feature,
@@ -144,6 +146,18 @@ WARN the engineer if:
   is lost. Declare the target as `variation part` in the owning
   definition first
 
-## Reference: SysML 2.0 Variations and Variants
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-variants.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Variant Configuration and Constraints | pages/sysml2/sysml2-variant-configuration.md | Cross-variation constraints, materialising a configuration, and binding to an external feature model |
+| SysML 2.0 Variant Patterns and Gotchas | pages/sysml2/sysml2-variant-patterns.md | Practical variation patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Variation Definitions and Variant Usages | pages/sysml2/sysml2-variation-definitions.md | The two declaration forms for variations and the variant usages they own |
+| SysML 2.0 Variations and Variants Overview | pages/sysml2/sysml2-variations-overview.md | SysML 2.0 treats product variation as a first-class language feature |
+<!-- wiki-routing:end -->

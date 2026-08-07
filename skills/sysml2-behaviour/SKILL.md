@@ -1,12 +1,14 @@
 ---
 name: sysml2-behaviour
-description: "Model SysML 2.0 behaviour: actions, successions, flows, messages, state machines, and model execution. Use when adding behavioural elements, succession graphs, or state machines to a model."
+description: 'Model SysML 2.0 behaviour: actions, successions, flows, messages, state machines, and model execution.'
+when_to_use: Use for `action def`, `state def`, `transition`, `succession`, `flow`, `message`, `send`, `accept`, entry, do and exit behaviours, and model execution. Not for verification or analysis case bodies (`@sysml2-cases`) or calculation bodies (`@sysml2-expressions`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Behaviour
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through behavioural modelling in SysML 2.0.
 This skill covers actions, parameters, successions and control nodes,
@@ -155,6 +157,26 @@ WARN the engineer if:
 - A `stream flow` connects endpoints of mismatched item types
 - A `send` action has no matching `accept` anywhere in the model
 
-## Reference: SysML 2.0 Behaviour
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-behaviour.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Actions, Parameters, and Perform Actions | pages/sysml2/sysml2-actions.md | Action definitions and usages, parameters, and perform actions for modelling behaviour |
+| SysML 2.0 Behaviour Patterns and Gotchas | pages/sysml2/sysml2-behaviour-patterns.md | Practical behaviour-modelling patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Flows and Messages | pages/sysml2/sysml2-flows-and-messages.md | Transferring items, signals, and values between behavioural elements with flows and messages |
+| SysML 2.0 Model Execution | pages/sysml2/sysml2-model-execution.md | Executing or simulating a model so that its specified behaviour can be observed |
+| SysML 2.0 Occurrence Context (this), Suboccurrence vs Portion, and Time-Functions | pages/sysml2/sysml2-occurrence-context-and-variables.md | Suboccurrence versus portion, the context occurrence this, and variable features as time-functions |
+| SysML 2.0 Occurrences and 4D Modelling | pages/sysml2/sysml2-occurrences-4d.md | Occurrences and 4D modelling, where a part extends through time as well as through space |
+| SysML 2.0 Portions and Individuals | pages/sysml2/sysml2-portions-and-individuals.md | Portion vocabulary (snapshots, time slices, space slices) and the individual keyword |
+| SysML 2.0 Contextual References: self and that | pages/sysml2/sysml2-self-and-that.md | The two special features every type and every feature inherits, self and that |
+| SysML 2.0 Special Action Usages: Assign, Send, Accept, Terminate, If, Loop | pages/sysml2/sysml2-special-action-usages.md | The standard library defines built-in action usages with specific semantics for typical patterns |
+| SysML 2.0 State Machines: States, Transitions, and Behaviours | pages/sysml2/sysml2-state-machines.md | State machines model behaviour through persistent conditions (states) |
+| SysML 2.0 Successions and Control Nodes | pages/sysml2/sysml2-successions.md | Successions are a special kind of connection usage defined by the KerML library type HappensBefore |
+| SysML 2.0 Temporal and Spatial Relations | pages/sysml2/sysml2-temporal-spatial-relations.md | Occurrence equality operators, Allen's interval algebra, and the spatial relation vocabulary |
+<!-- wiki-routing:end -->

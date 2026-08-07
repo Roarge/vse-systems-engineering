@@ -1,12 +1,14 @@
 ---
 name: sysml2-expressions
-description: Author and evaluate SysML 2.0 expressions, calc definitions, and constraint bodies. Use when adding formulas, value bindings, derived attributes, parametric calculations, or constraint checks.
+description: Author and evaluate SysML 2.0 expressions, calculation definitions, and constraint bodies.
+when_to_use: Use for `calc def`, `constraint def`, `assert constraint`, derived attributes, value bindings, parametric calculations, sequence and classification operators. Not for state or action bodies (`@sysml2-behaviour`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Expressions, Calculations, and Constraints
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through the expression language of SysML 2.0.
 This skill covers scalar and sequence expressions, calculation definitions,
@@ -146,6 +148,20 @@ WARN the engineer if:
   versus classifier confusion)
 - An `assert constraint` binding leaves an `in` parameter unset
 
-## Reference: SysML 2.0 Expressions
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-expressions.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML 2.0 Advanced Quantities and Units Concepts | pages/sysml2/sysml2-advanced-quantities-units.md | Unit definitions, derived units, conversions, and scalar and vector quantity values |
+| SysML 2.0 Expression Patterns and Gotchas | pages/sysml2/sysml2-expression-patterns.md | Practical patterns and recurring mistakes for expressions, calculations, and constraints |
+| SysML 2.0 Calculations and Constraints | pages/sysml2/sysml2-expressions-constraints.md | Calculations and constraints are the two main expression-bearing constructs in SysML 2.0 |
+| SysML 2.0 Expressions Overview and Scalar Values | pages/sysml2/sysml2-expressions-overview.md | The native expression language and scalar values, usable in feature values, constraints, and guards |
+| SysML 2.0 Functions, Invocations, and Higher-Order Operations | pages/sysml2/sysml2-functions-and-higher-order.md | Calling functions and calculations, the higher-order function library, and runtime type tests |
+| SysML 2.0 Sequences and Complex Structures | pages/sysml2/sysml2-sequences-and-structures.md | Multiplicity as sequences, ordering and uniqueness, and modelling complex structured values |
+<!-- wiki-routing:end -->

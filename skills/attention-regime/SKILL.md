@@ -1,12 +1,13 @@
 ---
 name: attention-regime
-description: Configure ISO 29110 hook surface and install project-side git hooks. Use when setting up environmental hooks, installing pre-commit, configuring `.iso-config.yaml`, registering Claude Code hooks, wiring `core.hooksPath`, or activating reverse-engineering and baselined-artefact guards after project scaffolding.
+description: Configure the ISO 29110 hook surface and install the project-side git hooks.
+when_to_use: Use when setting up environmental hooks, installing pre-commit, configuring `.iso-config.yaml`, registering Claude Code hooks, wiring `core.hooksPath`, or activating reverse-engineering and baselined-artefact guards after project scaffolding.
 user-invocable: true
 ---
 
 # Attention Regime
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the meta-skill that configures the working environment for sustained attention to the AMBSE methodology and ISO/IEC TR 29110-5-6-2 obligations. This skill installs and registers two complementary hook surfaces. Lifecycle (Claude Code) hooks act as the *guidance* layer during agent authoring. Project-side (git) hooks act as the *enforcement* layer at commit, push, merge, checkout, and receive. Together they make compliance ambient rather than periodic.
 
@@ -132,6 +133,19 @@ After a successful run, the following exist in the user project:
 
 `post-receive` is **not** installed locally. Document it in the project README as a server-side responsibility.
 
-## Reference Bundle
+## Knowledge base
 
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/attention-regime.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| PHAS-EAI Digital Engineering Integration Requirements R1-R4 | pages/phas-eai/phas-eai-de-requirements.md | The four PHAS-EAI digital engineering integration requirements R1 to R4 |
+| PHAS-EAI Equations: Response Time, Resilience, Functional Information | pages/phas-eai/phas-eai-equations.md | The three PHAS-EAI equation families for response time, resilience, and functional information |
+| PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence | pages/phas-eai/phas-eai-levers-and-evidence.md | The four PHAS-EAI lever tables and the hypotheses with the strongest cross-case support |
+| PHAS-EAI Framework: Core Constructs | pages/phas-eai/phas-eai-overview.md | The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction |
+<!-- wiki-routing:end -->

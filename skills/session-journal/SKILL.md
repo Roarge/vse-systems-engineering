@@ -1,12 +1,13 @@
 ---
 name: session-journal
-description: Manage cross-session continuity journal. Use when saving progress, checking what was done last session, or creating a checkpoint.
+description: Manage the cross-session continuity journal.
+when_to_use: Use when saving progress, checking what was done last session, or creating a checkpoint.
 user-invocable: true
 ---
 
 # Session Journal
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You manage the `.vse-journal.yml` file, which provides cross-session continuity
 for VSE systems engineering projects. The journal records what was done in each
@@ -205,3 +206,10 @@ reference:
 - `methodology/` (project root) or `engineering/methodology/`: the marker that
   identifies a VSE project, matching `hooks/session-start.sh`
 - `docs/pm/session-archive.yml`: archive for rotated journal entries
+
+## Knowledge base
+
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
+to this skill directly. When reference material is needed, consult `INDEX.md`
+at the wiki root and read the named page on demand with the Read tool. Do not
+bulk-load.

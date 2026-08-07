@@ -1,12 +1,14 @@
 ---
 name: sysml2-metadata
-description: Apply SysML 2.0 metadata and reflection through the VSE_Library catalogue (RiskInfo, ConfigItem, Baseline, VariantScope, VerificationScope). Use when tagging elements with risk, configuration item state, priority, or status metadata, when declaring baselines, when filtering imports or views by metadata, or when querying model elements by applied metadata. For authoring domain libraries or registering user-defined `#keywords`, route to `@sysml2-extension`.
+description: Apply SysML 2.0 metadata and reflection through the VSE_Library catalogue (RiskInfo, ConfigItem, Baseline, VariantScope, VerificationScope).
+when_to_use: Use for applying `metadata def` types with `@Type` annotations, `@` and `@@` metaclassification, bracketed import filters, risk tagging, configuration items, and baselines. For authoring a new domain library or registering a `#keyword`, route to `@sysml2-extension`.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
 # SysML 2.0 Metadata, Reflection, and Language Extension
 
-If you are inside a VSE project (`.vse-iteration.yml` present at the project root) and the VSE lens has not been set this session, invoke `vse-companion-overview` first, then continue. In a SysML-only repository (no `.vse-iteration.yml`), skip the lens and proceed directly with this skill.
+A `methodology/` folder at the project root, or under `engineering/`, marks a VSE project. If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first. In a SysML-only repository with no `methodology/` folder, skip the lens and proceed directly with this skill.
 
 You guide the engineer through metadata, reflection, and user-defined
 keywords in SysML 2.0. Metadata is the official extension mechanism
@@ -227,16 +229,15 @@ for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
 The query is advisory. A full risk-management workflow skill covering
 the identify-assess-mitigate-monitor loop is flagged as a follow-up.
 See the `syside-core-api` and `syside-expression-evaluation` atomic pages
-bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md` for the
-Automator API.
+under `wiki/pages/syside/` for the Automator API.
 
 ### ISO 29110 Framing
 
 PM.O5 (Risk identified and monitored) becomes a model query rather
 than a spreadsheet update. PM.1.11 writes the Risk Management
 Approach into the Project Plan. PM.2.3 re-runs the Automator query
-at each revision meeting. PM.3.1 uses the same query at iteration-
-boundary closure inside `@iteration-orchestrator`.
+at each revision meeting. PM.3.1 uses the same query at release
+baselining inside `@release-orchestrator`.
 
 ## Configuration Management Library (ConfigItem, Baseline)
 
@@ -517,6 +518,24 @@ WARN the engineer if:
   which leaves `@traceability-guard` unable to check CI coverage at
   iteration-boundary closure
 
-## Reference: SysML 2.0 Metadata
+## Knowledge base
 
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SySiDE Automator Core API | pages/syside/syside-core-api.md | The Automator is a Python library for programmatic analysis of SysML 2.0 models |
+| SySiDE Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | The Compiler class evaluates SysML expressions, attribute values, and metadata filters |
+| SySiDE Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the SySiDE API, with an element type reference |
+| SySiDE Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | SySiDE offers four complementary tools for SysML v2 |
+| SySiDE VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation |
+| SysML 2.0 Filter Conditions on Imports and Views | pages/sysml2/sysml2-filter-conditions.md | Imports can be restricted with filter conditions that impact which elements are brought into a namespace |
+| SysML 2.0 Metadata Definitions and Annotations | pages/sysml2/sysml2-metadata-definitions.md | Declaring metadata definitions and applying them as annotations |
+| SysML 2.0 Metadata, Reflection, and Annotations Overview | pages/sysml2/sysml2-metadata-overview.md | Metadata definitions, annotations, and reflection: how models describe and query their own structure |
+| SysML 2.0 Reflection: Metaclassification and Meta Operators | pages/sysml2/sysml2-reflection-and-classification.md | Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism |
+| VSE_Library Metadata: Risks, Configurations, Variants, Verification | pages/sysml2/sysml2-vse-library-metadata.md | The VSE_Library package of shared metadata definitions and enumerations used across the skills |
+<!-- wiki-routing:end -->

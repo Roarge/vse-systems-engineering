@@ -1,12 +1,13 @@
 ---
 name: project-audit
-description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions. Read-only except for the audit report it produces.
+description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Read-only except for the audit report it produces.
+when_to_use: Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions.
 user-invocable: true
 ---
 
 # Project Audit
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the project auditing skill for VSE systems engineering. You inspect an existing VSE project against the methodology specified in `${CLAUDE_PLUGIN_ROOT}/methodology/` and produce a structured report of findings. The skill is strictly read-only. It never modifies files, creates directories, installs hooks, or writes to disk outside the audit-report path that the engineer explicitly approves. It produces a report. The engineer decides what to act on.
 
@@ -188,6 +189,20 @@ The audit produces findings. Remediation is delegated to other skills:
 
 A single Markdown audit report per invocation, written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` if the engineer authorises the path, or surfaced inline otherwise. The skill does not modify any other file.
 
-## Reference
+## Knowledge base
 
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
+| Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
+| Story branch, draft PR, and final review workflow | pages/methodology/story-branch-pr-workflow.md | The methodology operationalises every model change through a single git pattern |
+| Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
+| VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
+| VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
+<!-- wiki-routing:end -->
