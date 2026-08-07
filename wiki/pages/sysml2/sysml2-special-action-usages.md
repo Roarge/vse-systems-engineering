@@ -20,6 +20,14 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Special Action Usages
 
+## Contents
+
+- Assignment action
+- Send and accept actions
+- Terminate action
+- If and loop actions
+- See also
+
 The standard library defines built-in action usages with specific
 semantics for typical patterns. They are primitives for defining
 custom behaviour or capturing control patterns such as decisions and

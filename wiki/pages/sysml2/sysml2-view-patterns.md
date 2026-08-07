@@ -20,6 +20,18 @@ referenced_by: [sysml2-views]
 
 # SysML 2.0 View Patterns and Gotchas
 
+## Contents
+
+- Pattern: basic viewpoint and view pair
+- Pattern: stakeholder-driven view
+- Pattern: concern-based filtering
+- Pattern: rendering selection
+- Pattern: view composition
+- Pattern: standard view reuse
+- Pattern: view library integration
+- Gotchas and red flags
+- Pending material in the source
+
 This page collects practical patterns for VSE-scale authors who use
 SysML 2.0 views, plus the recurring mistakes that show up in review.
 For the syntactic and conceptual surface, see

@@ -20,6 +20,13 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Successions and Control Nodes
 
+## Contents
+
+- End multiplicities
+- Control nodes
+- Conditional successions
+- See also
+
 Successions are a special kind of connection usage defined by the
 KerML library type `HappensBefore`. They model the partial ordering
 of steps in a behaviour. A succession asserts that one action is

@@ -21,6 +21,18 @@ referenced_by: [vse-companion-overview, project-plan, release-orchestrator, chan
 
 # Project Management workflow (§10)
 
+## Contents
+
+- Process structure (§10.2)
+- PM.1 Planning (§10.3)
+- PM.2 Execution (§10.4)
+- PM.3 Assessment and Control (§10.5)
+- PM.4 Closure (§10.6)
+- Risk Management Approach (§10.7)
+- Configuration Management Strategy (§10.8)
+- Disposal Management Approach (§10.9)
+- Roles in the PM process (§10.11)
+
 The Project Management (PM) process is the ISO/IEC TR 29110-5-6-2:2014 §7 backbone of the methodology, adapted so that the Project Plan is a living artefact under git version control, the Progress Status Record advances at iteration cadence rather than at fixed phase gates, and Change Requests take the shape of pull requests. The activities themselves match ISO 29110 PM.1 to PM.4 in name and purpose, and produce the artefact set required by PM.O1 to PM.O8. See [[methodology-overview]] for how PM sits alongside the technical activities, [[story-branch-pr-workflow]] for the git-execution discipline that PM.2 rides on, and [[iso-29110-compliance-mapping]] for the per-task evidence trail.
 
 ## Process structure (§10.2)

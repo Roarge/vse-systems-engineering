@@ -20,6 +20,15 @@ referenced_by: [attention-regime]
 
 # PHAS-EAI Framework: Core Constructs
 
+## Contents
+
+- Configuration space
+- Designed cognitive reserve
+- Regimes of attention
+- Patterned practices
+- Niche construction
+- See also
+
 The PHAS-EAI framework grounds the plugin's design rationale in
 five core constructs: a configuration space, designed cognitive
 reserve, regimes of attention, patterned practices, and niche

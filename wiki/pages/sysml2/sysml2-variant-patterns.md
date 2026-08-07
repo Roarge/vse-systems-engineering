@@ -20,6 +20,16 @@ referenced_by: [sysml2-variants]
 
 # SysML 2.0 Variant Patterns and Gotchas
 
+## Contents
+
+- Pattern: part variation with two variants
+- Pattern: variation as definition
+- Pattern: cross-variation constraint
+- Pattern: configured product from specialisation
+- Pattern: feature-driven variation selection
+- Gotchas and red flags
+- Pending material in the source
+
 This page collects practical patterns for VSE-scale authors who use
 SysML 2.0 variations, plus the recurring mistakes that show up in
 review. For declaration syntax and configuration mechanics, see

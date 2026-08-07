@@ -23,6 +23,13 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Expressions Overview and Scalar Values
 
+## Contents
+
+- Expression categories
+- Operator groups
+- Scalar values
+- See also
+
 SysML 2.0 introduces a native expression language usable inside
 feature values, constraints, calculations, guard conditions, and
 any context where a value is needed. Expressions parse into

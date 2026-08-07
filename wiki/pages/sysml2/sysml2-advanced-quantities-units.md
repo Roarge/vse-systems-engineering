@@ -21,6 +21,17 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Advanced Quantities and Units Concepts
 
+## Contents
+
+- When advanced concepts matter
+- Quantities and units are attributes
+- Unit definitions: SimpleUnit
+- Derived units: SpeedUnit example
+- Unit conversion: ConversionByPrefix
+- Quantity values: ScalarQuantityValue and VectorQuantityValue
+- Where to find more
+- See also
+
 This page captures the concepts behind quantities and units in
 SysML 2.0. Applying quantities and units in everyday models is
 simple: declare an attribute, give it a quantity type, attach a

@@ -22,6 +22,14 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Quantities and Units (ISQ and SI)
 
+## Contents
+
+- Quantity library positioning (Ch 24.1)
+- Units attach to values, not types (Ch 24.2)
+- ISQ library catalogue (Ch 113)
+- VSE selection guidance
+- See also
+
 A quantity is an attribute whose value carries physical meaning.
 Rather than defining a quantity type from scratch, use the
 predefined SysML 2.0 domain libraries that ship ISO/IEC 80000

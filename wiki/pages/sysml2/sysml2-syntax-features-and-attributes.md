@@ -20,6 +20,13 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Syntax: Multiplicity, Attributes, and Enumerations
 
+## Contents
+
+- Multiplicity and feature values (7.6, 7.13)
+- Attributes (7.7)
+- Enumerations (7.8)
+- See also
+
 Cheat sheet for feature multiplicity, attribute values, and
 enumeration declarations.
 

@@ -19,6 +19,14 @@ referenced_by: [sysml2-allocations]
 
 # SysML 2.0 Allocation Definitions and Usages
 
+## Contents
+
+- Allocation definitions
+- Allocation usages
+- User-defined allocation keywords
+- Library design guidance
+- See also
+
 This page captures the syntax for declaring allocation definitions
 and applying them through allocation usages. For background and
 directionality semantics, see [[sysml2-allocations-overview]].

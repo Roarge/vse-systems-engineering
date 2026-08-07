@@ -25,6 +25,14 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Occurrences and 4D Modelling
 
+## Contents
+
+- A concrete payoff
+- Endurantism versus perdurantism
+- What an occurrence is
+- Occurrence definition and usage
+- See also
+
 Most engineers think about systems the way they think about
 everyday objects: a part is a thing, it has a position, and the
 properties may change over time. The drone has a position, a

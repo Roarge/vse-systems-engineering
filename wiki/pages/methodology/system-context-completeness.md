@@ -21,6 +21,16 @@ referenced_by: [vse-companion-overview, needs-and-requirements, architecture-des
 
 # System Context: actor categories, interfaces, and completeness checks
 
+## Contents
+
+- Purpose
+- What the artefact owns
+- Actor categories
+- Workflow
+- SysML 2.0 example
+- Well-formedness rules
+- Out of scope
+
 ## Purpose
 
 The System Context establishes the system boundary, identifies the external entities the system interacts with, and types the item flows that cross the boundary. It is the shared reference for every story's `subject`, for any `actor` typing in elaborated use cases, and for the interface set that downstream architectural work refines. The concept adapts SYSMOD §5.11 (Weilkiens, 2020) to native SysML 2.0 constructs: `part def` for the system and its actors, `interface def` for the connections, and `item def` together with item flows for what crosses the boundary. See [[methodology-overview]] for how System Context sits between Base Architecture and stakeholder stories.

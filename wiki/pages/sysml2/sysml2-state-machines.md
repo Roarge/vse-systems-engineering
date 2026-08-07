@@ -21,6 +21,15 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 State Machines
 
+## Contents
+
+- States and state definitions
+- Transitions
+- Entry, do, and exit behaviours
+- Parallel states
+- Exhibit states
+- See also
+
 State machines model behaviour through persistent conditions
 (states) and the rules that move the system from one state to
 another (transitions). Unlike actions, which are transient events,

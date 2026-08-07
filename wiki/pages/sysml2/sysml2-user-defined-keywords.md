@@ -21,6 +21,15 @@ referenced_by: [sysml2-extension]
 
 # SysML 2.0 User-Defined Keywords
 
+## Contents
+
+- How the mechanism works
+- The pattern
+- Applying the keywords
+- Stacking keywords
+- Definitions and usages
+- See also
+
 Domain libraries already enable a domain-specific vocabulary
 through ordinary modelling (see
 [[sysml2-domain-model-libraries]]), but the language goes a step

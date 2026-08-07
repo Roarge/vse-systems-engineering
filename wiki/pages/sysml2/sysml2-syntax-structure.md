@@ -22,6 +22,16 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations
 
+## Contents
+
+- Items (7.10)
+- Parts (7.11)
+- Ports (7.12)
+- Connections (7.13)
+- Interfaces (7.14)
+- Allocations (7.15)
+- See also
+
 Cheat sheet for the structural modelling vocabulary.
 
 ## Items (7.10)

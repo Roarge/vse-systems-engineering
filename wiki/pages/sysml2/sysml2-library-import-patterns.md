@@ -23,6 +23,12 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Library Import Patterns and VSE Selection Guide
 
+## Contents
+
+- Common import patterns
+- VSE library selection by lifecycle phase
+- See also
+
 This page collects practical import patterns for the SysML 2.0
 domain libraries, organised by use case and ISO 29110 phase.
 

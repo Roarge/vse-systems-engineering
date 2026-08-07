@@ -22,6 +22,15 @@ referenced_by: [sysml2-metadata]
 
 # VSE_Library Metadata: Risks, Configurations, Variants, Verification
 
+## Contents
+
+- Library contents
+- Variant-aware metadata
+- Variant-scoping rule for 29110 products
+- Authoring patterns
+- Pending material
+- See also
+
 The vse-systems-engineering plugin ships a reusable library
 package (`VSE_Library`) that centralises all metadata definitions
 and enumerations used across AMBSE workflow skills. The library

@@ -20,6 +20,14 @@ referenced_by: [sysml2-metadata]
 
 # SysML 2.0 Metadata Definitions and Annotations
 
+## Contents
+
+- Metadata definitions
+- Annotating elements
+- Implicit meta-type metadata
+- Risks as metadata: a worked example
+- See also
+
 This page captures the syntax for declaring metadata definitions
 and applying them as annotations. For background see
 [[sysml2-metadata-overview]].

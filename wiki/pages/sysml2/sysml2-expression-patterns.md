@@ -21,6 +21,12 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Expression Patterns and Gotchas
 
+## Contents
+
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending chapters
+
 This page collects practical patterns and recurring mistakes for
 expressions, calculations, and constraints. For declaration syntax
 see [[sysml2-expressions-overview]],

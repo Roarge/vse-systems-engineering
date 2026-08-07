@@ -19,6 +19,12 @@ referenced_by: [sysml2-cases]
 
 # SysML 2.0 Case Patterns and Gotchas
 
+## Contents
+
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending material in the source
+
 This page collects practical patterns and recurring mistakes for
 SysML 2.0 cases. For the conceptual frame, see
 [[sysml2-cases-overview]]. For declaration syntax, see

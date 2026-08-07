@@ -26,6 +26,13 @@ referenced_by: [architecture-design]
 
 # AMBSE Architectural Design and Use Case Allocation
 
+## Contents
+
+- Workflow steps
+- Two approaches to use case allocation
+- SysML 2.0 architecture modelling
+- See also
+
 Once an architecture is selected (via
 [[ambse-trade-studies]]), the design activity implements it by
 decomposing the system into subsystems, allocating

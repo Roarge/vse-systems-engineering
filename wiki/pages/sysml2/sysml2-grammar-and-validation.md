@@ -21,6 +21,17 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist
 
+## Contents
+
+- Notation conventions (8.2)
+- Special lexical terminals
+- Reserved keywords
+- Key grammar productions (simplified)
+- Well-formedness summary
+- VSE validation checklist
+- Common modelling mistakes
+- See also
+
 ## Notation conventions (8.2)
 
 The OMG SysML 2.0 specification EBNF uses:

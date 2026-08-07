@@ -21,6 +21,13 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Actions, Parameters, and Perform Actions
 
+## Contents
+
+- Action definitions and usages
+- Action parameters
+- Perform actions
+- See also
+
 SysML 2.0 draws a sharp line between **structure** (what the system
 has) and **behaviour** (what the system does). The language models
 behaviour through actions, which are a special kind of occurrence

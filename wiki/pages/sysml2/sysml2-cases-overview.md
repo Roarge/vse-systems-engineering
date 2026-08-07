@@ -20,6 +20,13 @@ referenced_by: [sysml2-cases]
 
 # SysML 2.0 Cases Overview
 
+## Contents
+
+- What a case is
+- The three standard kinds
+- Shared case features
+- Where cases sit in VSE practice
+
 Cases are one of the most important new concepts in SysML 2.0. They
 generalise the use cases of SysML v1 and capture the abstract notion
 of considering a system or a component, called the **subject** of

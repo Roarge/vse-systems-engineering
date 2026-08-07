@@ -22,6 +22,13 @@ referenced_by: [sysml2-modelling, sysml2-metadata]
 
 # SySiDE Expression Evaluation and Compiler
 
+## Contents
+
+- Evaluate expressions
+- Evaluate features (value rollup with units)
+- Evaluate filters (metadata-based)
+- Supported operations
+
 The `Compiler` class evaluates SysML expressions, attribute
 values, and metadata filters. This is the surface a VSE script
 uses to roll up calculated values (mass budgets, cost

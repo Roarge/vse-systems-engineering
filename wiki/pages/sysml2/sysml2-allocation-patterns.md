@@ -20,6 +20,13 @@ referenced_by: [sysml2-allocations]
 
 # SysML 2.0 Allocation Patterns and Gotchas
 
+## Contents
+
+- Cross-architecture mapping patterns
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending material in the source
+
 This page collects the standard mapping patterns and recurring
 mistakes for SysML 2.0 allocations. For declaration syntax, see
 [[sysml2-allocation-definitions]]. For background, see

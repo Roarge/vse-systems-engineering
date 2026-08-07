@@ -20,6 +20,13 @@ referenced_by: [attention-regime]
 
 # PHAS-EAI Equations: Response Time, Resilience, Functional Information
 
+## Contents
+
+- Response time
+- Resilience score
+- Functional information
+- See also
+
 This page collects the three formal equation families that
 underpin PHAS-EAI. For the conceptual frame see
 [[phas-eai-overview]]. For the requirements that connect these

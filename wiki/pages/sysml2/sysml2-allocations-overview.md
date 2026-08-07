@@ -20,6 +20,14 @@ referenced_by: [sysml2-allocations]
 
 # SysML 2.0 Allocations Overview
 
+## Contents
+
+- What an allocation is
+- Why allocations matter for VSE practice
+- Directionality
+- Derived bidirectional relationships
+- Status of Chapter 75 in the source
+
 Allocations bridge different layers and viewpoints in a systems
 model. Mapping a logical architecture element to a physical
 architecture element, mapping a function to the platform that

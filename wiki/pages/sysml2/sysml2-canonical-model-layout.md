@@ -23,6 +23,17 @@ referenced_by: [sysml2-model-structure]
 
 # AMBSE Canonical Model Layout for VSE Projects
 
+## Contents
+
+- Why a canonical structure
+- Mandatory top-level packages
+- Root model overview file
+- Optional top-level packages
+- Why workflow-centric rather than phase-sequential
+- Architecture 0 and iteration mapping
+- Structural gotchas
+- See also
+
 > **Canonical for this plugin: methodology §8.3.1.** The
 > templated SysML 2.0 package names used on this page (for
 > example `{{sc}}_ArchDesign`, `{{sc}}_Verification`) describe

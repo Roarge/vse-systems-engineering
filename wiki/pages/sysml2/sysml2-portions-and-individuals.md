@@ -20,6 +20,18 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Portions and Individuals
 
+## Contents
+
+- What a portion is
+- A cinema analogy
+- The portion kinds
+- Spacetime-enclosed points
+- Key invariant: portions share the same Life
+- Declaring portions in a model
+- When to declare custom portions
+- Individuals
+- See also
+
 This page captures the portion vocabulary (snapshots, time slices,
 space slices, space shots, spacetime-enclosed points) and the
 `individual` keyword, both new in the 2026-04 release of the SysML

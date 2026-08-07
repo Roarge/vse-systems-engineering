@@ -21,6 +21,12 @@ referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 
 # SySiDE Tooling Overview and Installation
 
+## Contents
+
+- Tool selection guide
+- Installation
+- VSE workflow positioning
+
 ## Tool selection guide
 
 SySiDE offers four complementary tools for SysML v2. Choose

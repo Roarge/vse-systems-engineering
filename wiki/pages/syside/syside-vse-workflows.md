@@ -24,6 +24,18 @@ referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 
 # SySiDE VSE Workflows and Report Generation
 
+## Contents
+
+- Interactive mode
+- Extract requirements to Excel
+- Import requirements from Excel
+- Walk part hierarchy
+- Check trace links programmatically
+- Value rollup with unit conversion
+- Extract documentation
+- Report generation pipeline
+- API reference
+
 ## Interactive mode
 
 Launch an interactive Python REPL with a loaded model:

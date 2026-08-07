@@ -20,6 +20,14 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Specialisation, Typing, Composition, and Feature Values
 
+## Contents
+
+- Specialisation
+- Ownership and composition
+- Typing
+- Feature values
+- See also
+
 This page captures the core semantic rules that govern how types
 relate to each other and how usages bind values.
 

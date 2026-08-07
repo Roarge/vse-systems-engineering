@@ -20,6 +20,15 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Sequences and Complex Structures
 
+## Contents
+
+- Sequence terms
+- Sequence functions
+- Constructor expressions
+- Feature chain expressions
+- Occurrence equality operators
+- See also
+
 When a feature has multiplicity other than `[1]`, it holds a
 **sequence** of values. SysML 2.0 treats every value as a sequence,
 so a scalar is a sequence of length one. The scalar operators

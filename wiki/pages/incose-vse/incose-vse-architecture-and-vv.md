@@ -26,6 +26,19 @@ referenced_by: [release-orchestrator]
 
 # INCOSE Architecture and V&V for VSEs
 
+## Contents
+
+- Architecture versus design
+- Logical and physical architecture models
+- Architecture process scaled for VSEs
+- Emergent properties
+- Interface management
+- Verification versus validation
+- Vee model verification strategy
+- Two nested loops (Galinier et al.)
+- Integration approaches for VSEs
+- SE return on investment in IVV
+
 ## Architecture versus design
 
 Architecture defines what the system does and how it is organised

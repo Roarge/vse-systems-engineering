@@ -21,6 +21,13 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Systems Model Library: Base Types and Specialisations
 
+## Contents
+
+- Keyword to library type mapping
+- Specialised requirement types
+- Verification types
+- See also
+
 The Systems Model Library provides the base types that every
 SysML 2.0 keyword implicitly specialises. For the architecture
 behind these libraries, see [[sysml2-libraries-architecture]].

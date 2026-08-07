@@ -20,6 +20,23 @@ referenced_by: [needs-and-requirements]
 
 # HSI Domains: 13 Perspectives
 
+## Contents
+
+- 2.1 Human Factors Engineering (HFE)
+- 2.2 Social, cultural and organisational factors
+- 2.3 HSI planning
+- 2.4 Integrated logistics support (ILS) and maintenance
+- 2.5 Workforce planning (manpower)
+- 2.6 Competences and professionalism (personnel)
+- 2.7 Training
+- 2.8 Safety
+- 2.9 Occupational health
+- 2.10 Sustainability (environment)
+- 2.11 Habitability
+- 2.12 Usability
+- 2.13 Comfort and user experience (UX)
+- See also
+
 The INCOSE HSI Primer identifies 13 perspectives. Each is a lens
 through which human considerations enter requirements, design,
 evaluation, and risk management. Not all apply equally to every

@@ -21,6 +21,12 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Domain Libraries: Metadata and Analysis
 
+## Contents
+
+- Metadata domain library (9.3)
+- Analysis domain library (9.4)
+- See also
+
 This page covers the two most-used domain libraries: the Metadata
 library (status, risk, parameters of interest, image metadata) and
 the Analysis library (tool execution, sampled functions, state

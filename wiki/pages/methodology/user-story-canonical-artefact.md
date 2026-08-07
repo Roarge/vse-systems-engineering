@@ -25,6 +25,17 @@ referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requiremen
 
 # User Story as Canonical Artefact (§1)
 
+## Contents
+
+- Definition
+- Type hierarchy
+- The five members
+- Connective mechanism: formalised benefit
+- StoryMeta metadata
+- Identifier convention
+- Authoring patterns
+- Well-formedness rules
+
 The User Story is the elementary unit of stakeholder intent in the VSE methodology. It is both an agile artefact, readable as a sentence on a card, and a model element, typed and queryable inside the SysML 2.0 model. Every requirement chain in the system specification ultimately traces upward to one or more User Stories. See [[methodology-overview]] for the surrounding artefact taxonomy.
 
 ## Definition

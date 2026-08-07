@@ -21,6 +21,15 @@ referenced_by: [needs-and-requirements]
 
 # Needs vs Requirements: Core Distinction and Categorisation
 
+## Contents
+
+- Core distinction
+- Stakeholder identification
+- Organising needs: the F-F-F-Q-C framework
+- Requirement types
+- Needs-to-requirements transformation
+- See also
+
 ## Core distinction
 
 A **need** expresses what stakeholders expect from the System

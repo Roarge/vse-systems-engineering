@@ -21,6 +21,16 @@ referenced_by: [sysml2-metadata]
 
 # SysML 2.0 Filter Conditions on Imports and Views
 
+## Contents
+
+- What filters are good for
+- Smart package example
+- Combining reflective and project metadata
+- Filter scope: package versus single import
+- Use in views
+- Open issue on filter expression syntax
+- See also
+
 Imports can be restricted with filter conditions that impact which
 elements are brought into a namespace. A filter condition is a
 Boolean expression about model elements. An imported element is

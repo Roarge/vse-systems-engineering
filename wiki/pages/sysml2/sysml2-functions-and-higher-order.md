@@ -20,6 +20,13 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Functions, Invocations, and Higher-Order Operations
 
+## Contents
+
+- Invocation expressions
+- Higher-order functions
+- Classification expressions
+- See also
+
 This page covers calling functions and calculations, the
 higher-order function library, and the classification expressions
 for runtime type tests. For literal and operator expressions see

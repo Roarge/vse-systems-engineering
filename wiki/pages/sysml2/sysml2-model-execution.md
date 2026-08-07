@@ -23,6 +23,14 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Model Execution
 
+## Contents
+
+- Is SysML an executable modelling language?
+- What does it mean to execute a SysML model?
+- How to execute SysML models?
+- When to execute and what
+- See also
+
 Model execution, also known as simulation, is the use of a
 machine to step or evolve a model so that its specified behaviour
 can be observed. Executable models direct a simulator to perform

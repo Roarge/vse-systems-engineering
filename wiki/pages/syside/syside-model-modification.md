@@ -22,6 +22,16 @@ referenced_by: [sysml2-modelling, sysml2-metadata]
 
 # SySiDE Model Modification and Element Reference
 
+## Contents
+
+- Adding elements
+- Removing elements
+- Creating documents in memory
+- Exporting to text
+- Debugging model structure
+- Constraints
+- Element types quick reference
+
 ## Adding elements
 
 ```python

@@ -20,6 +20,14 @@ referenced_by: [sysml2-variants]
 
 # SysML 2.0 Variation Definitions and Variant Usages
 
+## Contents
+
+- Variation as a usage
+- Variation as a definition
+- Variant membership relationship
+- Constraints on variation contents
+- See also
+
 This page captures the two declaration forms for variations and the
 variant usages they own. For background and product line context, see
 [[sysml2-variations-overview]].

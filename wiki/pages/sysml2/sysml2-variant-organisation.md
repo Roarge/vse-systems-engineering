@@ -26,6 +26,17 @@ referenced_by: [sysml2-model-structure]
 
 # Variant Modelling Organisation in AMBSE Models
 
+## Contents
+
+- Core, Variations, Configurations
+- Variation point discipline
+- Feature tree reading
+- Cross-variation constraints
+- Minimum viable variant organisation for a VSE
+- The PLEML extension
+- Red flags
+- See also
+
 > **Canonical for this plugin: methodology §8.3.3.** Templated
 > package names (`{{sc}}_Variations`, and similar) used below
 > describe the AMBSE convention at the SysML 2.0 language

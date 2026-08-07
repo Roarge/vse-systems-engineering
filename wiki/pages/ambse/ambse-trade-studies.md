@@ -22,6 +22,14 @@ referenced_by: [architecture-design]
 
 # AMBSE Trade Study Methodology
 
+## Contents
+
+- Workflow steps
+- VSE trade study guidance
+- SysML 2.0 trade study documentation
+- Subagent dispatch
+- See also
+
 Trade studies are the primary mechanism for making defensible
 architectural decisions. The method ensures decisions are
 **traceable, reproducible, and based on stakeholder-weighted

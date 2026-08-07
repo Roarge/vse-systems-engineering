@@ -21,6 +21,16 @@ referenced_by: [vse-companion-overview, architecture-design, story-orchestrator]
 
 # Architectural Design workflow (§7)
 
+## Contents
+
+- Inputs
+- Activities
+- Outputs
+- Recursion termination
+- Well-formedness
+- Out of scope
+- See also
+
 The §7 stage decomposes the resolved logical architecture into subsystems, allocates the system-level specification down to those subsystems, and propagates the user-story-driven specification recursively to the subsystem scope. The stage adapts Harmony aMBSE Chapter 7 (Douglass, 2016), with three substantive shifts: subsystem requirements are authored as recursive subsystem user stories, allocations use SysML v2 native `allocation` rather than stereotypes, and subsystem stories live inside the component folder per [[methodology-overview]] §8.3.2.
 
 ## Inputs

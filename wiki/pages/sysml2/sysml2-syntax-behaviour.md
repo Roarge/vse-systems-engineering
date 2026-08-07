@@ -22,6 +22,16 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Syntax: Actions and States
 
+## Contents
+
+- Actions (7.16)
+- Control nodes
+- Send, accept, perform
+- Assignment
+- Conditional and loop actions
+- States (7.17)
+- See also
+
 Cheat sheet for behavioural modelling syntax. For the conceptual
 material, see [[sysml2-actions]], [[sysml2-state-machines]], and
 [[sysml2-special-action-usages]].

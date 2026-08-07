@@ -19,6 +19,14 @@ referenced_by: [sysml2-extension]
 
 # SysML 2.0 Extension Gotchas
 
+## Contents
+
+- Pitfall 1: kind-keyword optionality changes the resulting type
+- Pitfall 2: SysML::Type versus SysML::Usage in the meta-cast
+- Pitfall 3: definition-only keywords need an annotatedElement guard
+- When user-defined keywords are not enough
+- See also
+
 Three pitfalls accompany the user-defined-keyword mechanism
 described in [[sysml2-user-defined-keywords]]. Each can fail
 silently and is worth recognising before adopting the mechanism

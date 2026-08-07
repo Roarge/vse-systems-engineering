@@ -20,6 +20,15 @@ referenced_by: [sysml2-allocations]
 
 # SysML 2.0 Binding Connectors
 
+## Contents
+
+- Connector versus connection
+- Two declaration forms
+- What the connector means
+- Graphical notation
+- When to use a binding connector
+- See also
+
 A **binding connector** is a binary relationship that requires the
 usages at the ends to have the **same values**. Binding connectors
 are only available as a usage element, and unlike regular

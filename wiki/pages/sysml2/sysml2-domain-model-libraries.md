@@ -21,6 +21,14 @@ referenced_by: [sysml2-extension]
 
 # SysML 2.0 Domain Model Libraries
 
+## Contents
+
+- Library packages
+- The PBSE canonical example
+- Avoid abstract definitions in libraries
+- Applying the library
+- See also
+
 The first strategy for extending SysML 2.0 is to **model the new
 concepts with the existing ones**. This is no different from
 everyday modelling, except that the author defines more abstract

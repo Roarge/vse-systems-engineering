@@ -21,6 +21,14 @@ referenced_by: [sysml2-expressions]
 
 # SysML 2.0 Calculations and Constraints
 
+## Contents
+
+- Calculations (Chapter 27)
+- Constraints
+- Where constraints meet other surfaces
+- Pending material in the source
+- See also
+
 Calculations and constraints are the two main expression-bearing
 constructs in SysML 2.0. Calculations evaluate to a value;
 constraints evaluate to a Boolean and govern model validity.

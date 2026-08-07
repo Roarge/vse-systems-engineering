@@ -24,6 +24,18 @@ referenced_by: [sysml2-model-structure]
 
 # Base Architecture Reuse and Federation in AMBSE Models
 
+## Contents
+
+- Base architecture as a top-level peer package
+- Specialisation operators for reuse
+- System context is methodological
+- Growing the base
+- Federation for scale
+- The three model types
+- Copy versus reference for subsystem specification
+- Plugin scope
+- See also
+
 > **Canonical for this plugin: methodology §2 and §8.3.1.**
 > Templated SysML 2.0 package names below describe the AMBSE
 > convention at the language level. The plugin's canonical

@@ -20,6 +20,15 @@ referenced_by: [sysml2-views]
 
 # SysML 2.0 View Definitions, Expose, Filters, and Render
 
+## Contents
+
+- View definitions
+- Expose statements
+- Filters
+- Render
+- View composition
+- See also
+
 This page covers the textual notation for view definitions and the
 three mechanisms that determine view content: expose statements,
 filters, and render usages. For the conceptual frame and ISO 42010

@@ -26,6 +26,17 @@ referenced_by: [release-orchestrator]
 
 # INCOSE CM, Risk Management, and VSE Scaling Guidance
 
+## Contents
+
+- Configuration management purpose
+- Three baselines
+- CM activities scaled for VSEs
+- Risk management
+- VSE scaling guidance (INCOSE Section 8.6)
+- Maturity levels (Galinier et al.)
+- Practical scaling rules for VSEs
+- Common VSE pitfalls
+
 ## Configuration management purpose
 
 Manage and control system elements and their configurations

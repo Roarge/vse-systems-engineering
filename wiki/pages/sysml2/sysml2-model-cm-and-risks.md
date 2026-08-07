@@ -22,6 +22,14 @@ referenced_by: [sysml2-model-structure]
 
 # Model-Level Configuration Management and Risks in AMBSE Models
 
+## Contents
+
+- Model-level configuration management
+- Model-level risk modelling
+- Red flags
+- Pending material
+- See also
+
 This page introduces **model-level** configuration management and
 **model-level** risk modelling as first-class patterns in the
 canonical layout. Both complement (rather than replace)

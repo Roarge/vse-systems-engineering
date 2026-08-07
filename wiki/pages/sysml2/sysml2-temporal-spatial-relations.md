@@ -24,6 +24,14 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Temporal and Spatial Relations
 
+## Contents
+
+- 4D Identity: == and ===
+- Allen's interval algebra
+- Spatial and combined relations
+- Composable temporal-spatial relations
+- See also
+
 This page captures the equality operators for occurrences, Allen's
 interval algebra in the KerML library, and the spatial relation
 vocabulary. All material is new in the 2026-04 release of the

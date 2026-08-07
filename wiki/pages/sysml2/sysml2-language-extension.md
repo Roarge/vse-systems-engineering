@@ -22,6 +22,14 @@ referenced_by: [sysml2-extension]
 
 # SysML 2.0 Extension: Overview
 
+## Contents
+
+- Strategy 1: model libraries
+- Strategy 2: user-defined keywords
+- Choosing between them, or stacking them
+- Limits and pitfalls
+- See also
+
 SysML 2.0 is a general purpose modelling language. Domain-specific
 languages that have all the important concepts built in tend to be
 more efficient in a concrete domain. SysML 2.0 can be extended to

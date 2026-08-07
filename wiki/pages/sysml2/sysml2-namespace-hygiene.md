@@ -20,6 +20,15 @@ referenced_by: [sysml2-model-structure]
 
 # SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules
 
+## Contents
+
+- Short-code prefixes
+- Imports
+- One top-level package per file
+- Reuse boundary check
+- Import resolution order
+- See also
+
 > **Canonical for this plugin: methodology §8.3.4.** The
 > short-code prefix and SysML 2.0 package-naming guidance below
 > describes the language-level convention. Project file and

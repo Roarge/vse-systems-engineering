@@ -22,6 +22,16 @@ referenced_by: [needs-and-requirements]
 
 # Lightweight HSI for VSEs: Tiered Approach
 
+## Contents
+
+- Tier 1: always do (every VSE project with human users)
+- Tier 2: do when relevant (depends on system type)
+- Tier 3: consider if resources allow
+- Embed HSI into existing SE activities
+- HSI activities across lifecycle phases
+- Key principle for VSEs
+- See also
+
 A VSE (fewer than 25 people) will not have a dedicated HSI team,
 formal HITL simulation facilities, or the budget for full-scale
 human factors evaluation programmes. This page scales the 13

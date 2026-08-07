@@ -20,6 +20,13 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Contextual References: self and that
 
+## Contents
+
+- The self feature
+- The that feature
+- Self versus that versus this
+- See also
+
 KerML defines two special features that every type and every feature
 inherits: `self` and `that`. They are the most fundamental
 navigation capabilities in the language. This material was added to

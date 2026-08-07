@@ -23,6 +23,14 @@ referenced_by: [architecture-design]
 
 # AMBSE Interface Specification and Handoff to Downstream Engineering
 
+## Contents
+
+- Logical vs physical interfaces
+- SysML 2.0 interface modelling
+- VSE interface guidance
+- Handoff to downstream engineering
+- See also
+
 Interfaces are the most critical architectural artefact for
 system integration. Douglass emphasises that interface defects
 are among the most expensive to fix because they affect

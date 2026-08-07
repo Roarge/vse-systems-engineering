@@ -20,6 +20,13 @@ referenced_by: [sysml2-variants]
 
 # SysML 2.0 Variant Configuration and Constraints
 
+## Contents
+
+- Cross-variation constraints
+- Setting a variant through specialisation
+- Binding to an external feature model
+- See also
+
 This page captures the three operations that drive a variation model
 from declaration to a concrete configured product: writing
 cross-variation constraints, materialising a configuration through

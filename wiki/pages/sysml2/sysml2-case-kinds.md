@@ -22,6 +22,15 @@ referenced_by: [sysml2-cases]
 
 # SysML 2.0 Case Kinds: Use, Analysis, Verification
 
+## Contents
+
+- Use cases
+- Analysis cases
+- Verification cases
+- Verdict semantics
+- Include relationships
+- See also
+
 This page captures the syntax for the three standard case kinds. For
 the conceptual frame and shared features, see
 [[sysml2-cases-overview]].

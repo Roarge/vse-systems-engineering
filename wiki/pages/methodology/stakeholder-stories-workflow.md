@@ -23,6 +23,15 @@ referenced_by: [vse-companion-overview, needs-and-requirements, story-orchestrat
 
 # Stakeholder Requirements Engineering workflow (§4)
 
+## Contents
+
+- Inputs and outputs
+- Workflow steps
+- Well-formedness rules
+- Iteration discipline
+- Recursive application at subsystem level
+- Out of scope
+
 Section 4 of the methodology is the first user-story-driven workflow stage. It captures stakeholder intent and produces the *stakeholder story register*, the set of `UserStory` specialisations that anchors every downstream requirement chain, together with the supporting concern and validation artefacts. The stage adapts the activities of Harmony aMBSE Chapter 4 (Douglass, 2016) to a user-story-first approach in which stakeholder use cases are demoted to optional elaborations introduced via the `objective` link of [[user-story-canonical-artefact]]. See [[methodology-overview]] for how §4 sits inside the overall arc.
 
 ## Inputs and outputs

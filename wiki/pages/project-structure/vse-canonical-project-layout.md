@@ -20,6 +20,19 @@ referenced_by: [project-setup, project-audit]
 
 # VSE Canonical Project Layout
 
+## Contents
+
+- Layouts
+- Root files (both layouts)
+- Greenfield-only root files
+- CLAUDE.md marker block
+- .vse-iteration.yml schema (version 1)
+- SySiDE configuration
+- Gitignore entries
+- Hooks
+- GitHub Actions (optional)
+- See also
+
 This page defines the authoritative layout for a VSE project set
 up by `@project-setup`. Both `@project-setup` and `@project-audit`
 embed this content to ensure a single source of truth for

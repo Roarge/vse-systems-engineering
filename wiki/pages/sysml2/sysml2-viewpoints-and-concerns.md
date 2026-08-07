@@ -22,6 +22,14 @@ referenced_by: [sysml2-views]
 
 # SysML 2.0 Viewpoints, Views, and Concerns
 
+## Contents
+
+- What viewpoints and views are
+- Viewpoint definitions
+- Concerns and stakeholders
+- Two satisfaction mechanisms
+- Where this fits in VSE practice
+
 Views and viewpoints in SysML 2.0 are grounded in ISO/IEC/IEEE 42010,
 which addresses stakeholder concerns through a structured
 visualisation mechanism. The SysML v2 book offers a memorable

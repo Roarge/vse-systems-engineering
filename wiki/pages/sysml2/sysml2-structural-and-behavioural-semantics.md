@@ -22,6 +22,12 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Structural and Behavioural Semantics
 
+## Contents
+
+- Structural semantics
+- Behavioural semantics
+- See also
+
 This page captures the formal semantic rules for the structural
 and behavioural element families. Code-level cheat sheets live in
 [[sysml2-syntax-structure]] and [[sysml2-syntax-behaviour]].

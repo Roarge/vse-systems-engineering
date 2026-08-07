@@ -21,6 +21,13 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches
 
+## Contents
+
+- The two disjoint branches
+- Hierarchy tree
+- Summary table
+- See also
+
 ## The two disjoint branches
 
 The SysML 2.0 type system has two fundamental branches that

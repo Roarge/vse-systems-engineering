@@ -22,6 +22,16 @@ referenced_by: [sysml2-modelling]
 
 # SysML 2.0 Syntax: Packages, Definitions, and Common Relationships
 
+## Contents
+
+- Packages and imports (7.5)
+- Definitions and usages (7.6)
+- Comments and documentation (7.2, 7.3)
+- Metadata and annotations (7.4)
+- Common relationship keywords
+- Contextual references
+- See also
+
 Cheat sheet for top-level model organisation, the `def`/usage
 pattern, and the common relationship operators. Every example is
 verified against the OMG SysML v2.0 specification

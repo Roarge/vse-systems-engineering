@@ -20,6 +20,13 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Flows and Messages
 
+## Contents
+
+- Flow kinds
+- Messages
+- Choosing between flows and send/accept
+- See also
+
 Flows and messages are the SysML 2.0 mechanisms for transferring
 items, signals, and values between behavioural elements. Flows
 attach to actions, parts, and ports. Messages flow through ports

@@ -22,6 +22,14 @@ referenced_by: [needs-and-requirements]
 
 # HSI in Architecture
 
+## Contents
+
+- Key architectural considerations
+- The concept phase sets the HSI architecture baseline
+- The development phase refines HSI in architecture
+- Where this lands in the AMBSE model
+- See also
+
 Architecture is not only about technical component breakdown.
 It must also reflect how humans interact with, operate, and
 maintain the system. For the HSI conceptual frame see

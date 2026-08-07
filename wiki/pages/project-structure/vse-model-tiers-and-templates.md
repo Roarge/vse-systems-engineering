@@ -21,6 +21,12 @@ referenced_by: [project-setup, project-audit]
 
 # VSE Model Tiers and Document Templates
 
+## Contents
+
+- Model tiers
+- Document templates
+- See also
+
 This page defines the three SysML model tiers (Flat, Minimal
 AMBSE, Canonical AMBSE) used by `@project-setup` and the document
 templates scaffolded under `docs/pm/` and `docs/sr/`. For root

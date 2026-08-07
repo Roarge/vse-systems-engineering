@@ -21,6 +21,12 @@ referenced_by: [release-orchestrator]
 
 # AMBSE Risk Management and SE Metrics
 
+## Contents
+
+- Risk management in agile SE
+- SE metrics
+- See also
+
 ## Risk management in agile SE
 
 Risk is the product of an event's likelihood of occurrence and

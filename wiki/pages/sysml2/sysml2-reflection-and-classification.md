@@ -21,6 +21,15 @@ referenced_by: [sysml2-metadata]
 
 # SysML 2.0 Reflection: Metaclassification and Meta Operators
 
+## Contents
+
+- The three reflection mechanisms
+- Worked example
+- `@` versus `@@`
+- `meta` returns null on type mismatch
+- Common reflective patterns
+- See also
+
 Metaclassification expressions form the foundation of the SysML
 2.0 reflection mechanism. They enable access to both explicit and
 implicit metadata annotations associated with an element. The

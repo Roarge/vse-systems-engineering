@@ -25,6 +25,12 @@ referenced_by: [architecture-design]
 
 # AMBSE Architectural Analysis and Five Architecture Views
 
+## Contents
+
+- Architectural analysis workflow
+- The five architecture views
+- See also
+
 Architecture in AMBSE has two distinct activities:
 
 - **Architectural analysis**: evaluate candidate architectures

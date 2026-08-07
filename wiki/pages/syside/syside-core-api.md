@@ -23,6 +23,14 @@ referenced_by: [sysml2-modelling, sysml2-metadata]
 
 # SySiDE Automator Core API
 
+## Contents
+
+- Loading models
+- Querying elements
+- Element properties
+- Traversing relationships
+- Document locking (thread safety)
+
 The Automator is a Python library for programmatic analysis of
 SysML 2.0 models. The functions below are the minimum surface a
 VSE workflow needs for trace checks, report generation, and

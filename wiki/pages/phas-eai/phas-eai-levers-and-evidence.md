@@ -20,6 +20,16 @@ referenced_by: [attention-regime]
 
 # PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence
 
+## Contents
+
+- Table 17: Configuration-space levers
+- Table 18: Mobilisation-time levers
+- Table 19: Information and inference levers
+- Table 20: Coordination and governance levers
+- Hypotheses with strongest cross-case support
+- Quick-reference summary
+- See also
+
 This page collects the four lever tables (Tables 17 to 20 in the
 thesis), the four hypotheses with strongest cross-case support,
 and a quick-reference summary linking constructs to plugin

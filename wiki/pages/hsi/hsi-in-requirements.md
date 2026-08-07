@@ -22,6 +22,13 @@ referenced_by: [needs-and-requirements]
 
 # HSI in Requirements
 
+## Contents
+
+- Practical steps for a VSE
+- Requirement types with HSI content
+- Connecting HSI requirements to the SysML 2.0 model
+- See also
+
 HSI requirements are not a separate category bolted on after
 technical requirements are written. They emerge from
 understanding who the users are, what tasks they perform, in

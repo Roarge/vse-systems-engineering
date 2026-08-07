@@ -21,6 +21,15 @@ referenced_by: [needs-and-requirements]
 
 # Human-Systems Integration Foundations: TOP in Environment
 
+## Contents
+
+- Core model: TOP in Environment
+- Why HSI matters
+- HSI is not an add-on
+- The "human" in HSI
+- Where this fits in the plugin
+- See also
+
 Human Systems Integration (HSI) is a transdisciplinary
 sociotechnical and management approach within systems
 engineering. It ensures that a system's technical,

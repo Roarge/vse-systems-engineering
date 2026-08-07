@@ -23,6 +23,15 @@ referenced_by: [attention-regime]
 
 # PHAS-EAI Digital Engineering Integration Requirements R1-R4
 
+## Contents
+
+- R1: Reduce functional information burden
+- R2: Build designed cognitive reserve
+- R3: Provide machine-readable traceability
+- R4: Sustain attention through environmental design
+- Complementarity with ISO/IEC 29110
+- See also
+
 The PHAS-EAI framework distils four integration requirements
 that link the formal model (see [[phas-eai-equations]]) to
 digital engineering tool design. Together they constitute the

@@ -25,6 +25,12 @@ referenced_by: [needs-and-requirements]
 
 # AMBSE Requirements as Model Elements; Stakeholder Identification
 
+## Contents
+
+- Requirements in agile MBSE
+- Stakeholder identification
+- See also
+
 ## Requirements in agile MBSE
 
 In agile model-based SE, requirements are not standalone text

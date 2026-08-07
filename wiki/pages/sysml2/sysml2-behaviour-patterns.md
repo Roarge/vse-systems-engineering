@@ -22,6 +22,12 @@ referenced_by: [sysml2-behaviour]
 
 # SysML 2.0 Behaviour Patterns and Gotchas
 
+## Contents
+
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending material in the source
+
 This page collects practical patterns for VSE-scale authors who
 model behaviour in SysML 2.0, plus the recurring mistakes that show
 up in review. For declaration syntax see [[sysml2-actions]],
