@@ -104,6 +104,12 @@ Each entry names a rule and the section it comes from, states the concrete risk 
 
 Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
 
+0. **No project-local methodology copy.** The resolution convention
+   falls back to the plugin-shipped spec, so nothing is broken, but the
+   project has not pinned its process. Recommend running
+   `@project-setup` to install the project-local copy, and proceed on
+   the plugin fallback when the engineer confirms.
+
 1. **Non-main base for a story branch.** A story branch is created from `main` per §8.4.2. Cutting one from another story branch couples the two histories, so the merge order becomes load bearing and a review of the second branch shows the first branch's diff as well. Recommend rebasing onto `main`. Proceed once the engineer confirms they accept the merge complexity. The disposition is the same at every profile, because the cost is a merge cost rather than a compliance cost.
 
 2. **Advancing to `ready` without §1.9 well-formedness.** Name the failing rule (untyped role, missing subject, no acceptance criterion, or a removed narrative `capability` or `benefit` string) and recommend authoring the missing element first. The status change is reversible through git. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.

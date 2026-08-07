@@ -76,7 +76,7 @@ When in doubt, ask which story is open and what the engineer is trying to advanc
 
 Every project runs at a recorded **rigour profile** that scales the artefact set, the ceremony, and how firmly the tooling presses. The profile is normatively defined in methodology §0.10. This lens is where the operational convention lives, and individual skills do not restate the mechanism.
 
-**How to read it.** Read `project_profile` from `.iso-config.yaml` at the engineering root. An absent key, an absent file, or an unrecognised value means `standard`.
+**How to read it.** Read `project_profile` from `.iso-config.yaml` at the engineering root, meaning the project root, or `engineering/` in the nested brownfield layout. These are also the two locations the hook tooling resolves. An absent key, an absent file, or an unrecognised value means `standard`.
 
 | Profile | What it means for your advice |
 |---|---|
