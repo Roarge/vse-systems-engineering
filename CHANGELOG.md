@@ -14,7 +14,7 @@ is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
-rigour skills chunk took `rc.5`, and the SySiDE refresh takes `rc.6`,
+rigour skills chunk took `rc.5`, and the Syside refresh takes `rc.6`,
 with every later candidate shifting by one.
 
 ### Changed

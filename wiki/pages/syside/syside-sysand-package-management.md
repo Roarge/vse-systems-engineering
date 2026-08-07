@@ -119,6 +119,11 @@ anything. Dependencies may be resolved from a local path or from a
 private location, and only a package intended for reuse outside the
 organisation goes to the public index.
 
+Dependencies can also come from a privately hosted index, which the
+Sysand documentation covers as a first-class setup. A VSE working on
+confidential material does not have to publish anything to the public
+index.
+
 ## Publishing from CI
 
 Sysand ships a GitHub Action for publishing from a workflow, which is
@@ -136,7 +141,5 @@ workflow.
 Sysand is pre-v1.0, and v1.0 is planned alongside Syside v1.0 in Q3
 2026 (see [[syside-tooling-overview]] for the roadmap and its caveat).
 Command names and manifest keys may still change. Pin the Sysand
-Dependencies can also come from a privately hosted index, which the
-Sysand documentation covers as a first-class setup. A VSE working on
-confidential material does not have to publish anything to the public
-index.
+version in continuous integration and read the release notes before
+upgrading.

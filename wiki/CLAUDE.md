@@ -452,9 +452,10 @@ Atomic means one concept per file. A page typically runs 50 to 200 lines.
 Pages over 300 lines are candidates for splitting. When a page grows past
 300 lines during authoring, stop and propose a split before continuing.
 
-The full reference base spans the layers listed above. `INDEX.md` carries the authoritative page, layer, and routing totals, regenerated on every change.0.0. New material lands
-directly under `pages/<layer>/` via `/vse-wiki-ingest`, not in any other
-directory.
+The full reference base spans the layers listed above. `INDEX.md`
+carries the authoritative page, layer, and routing totals, regenerated
+on every change. New material lands directly under `pages/<layer>/` via
+`/vse-wiki-ingest`, not in any other directory.
 
 ### Contents blocks
 
