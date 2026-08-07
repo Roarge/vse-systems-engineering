@@ -53,7 +53,7 @@ The actual hook scripts referenced above (session-start.sh, user-prompt-submit.s
 Run from the project root, after `@project-setup` has scaffolded the repository.
 
 1. **Confirm the lifecycle hooks are registered.** Check that the plugin's `hooks.json` lists SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, SubagentStop, PreCompact, and Notification entries. The harness loads these automatically when the plugin is installed. No per-project action is required for the lifecycle layer to fire, except the optional project-local override below.
-2. **Install the project-side hooks.** Copy every script from `${CLAUDE_PLUGIN_ROOT}/hooks/githooks/` into `<project>/.githooks/`, preserving the `lib/` subdirectory of shared helpers. Set scripts executable with `chmod +x .githooks/*`. Activate with:
+2. **Install the project-side hooks.** Copy the seven project-side scripts from `${CLAUDE_PLUGIN_ROOT}/hooks/` into `<project>/.githooks/`, dropping the `.sh` suffix on the six git entry points because git invokes hooks by exact filename. The canonical copy list is the installation example in `${CLAUDE_PLUGIN_ROOT}/hooks/README.md`. Set scripts executable with `chmod +x .githooks/*`. Activate with:
 
    ```bash
    git config core.hooksPath .githooks
@@ -61,7 +61,7 @@ Run from the project root, after `@project-setup` has scaffolded the repository.
 
    The `core.hooksPath` value shall be a path inside the project root.
 3. **Install `.iso-config.yaml`.** Copy `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` to the project root. The engineer fills in baselined paths, protected branches, storymeta fields, the Risk Register location, the Change Request issue label, and the renderer paths. The schema is reproduced below.
-4. **Install project-local Claude Code overrides if needed.** If the project requires hook behaviour beyond the plugin defaults, copy `${CLAUDE_PLUGIN_ROOT}/templates/.claude/settings.json` to `<project>/.claude/settings.json`. Project-local settings take precedence over user-level settings per §5 of the hooks guide.
+4. **Install project-local Claude Code overrides if needed.** If the project requires hook behaviour beyond the plugin defaults, author `<project>/.claude/settings.json` directly against the Claude Code settings schema. The plugin ships no settings template, so there is nothing to copy. Project-local settings take precedence over user-level settings per §5 of the hooks guide.
 5. **Update `.gitignore`.** Append `.iso-config.local.yaml` so engineers may keep machine-local overrides without committing them.
 6. **Verify.** Run a no-op commit on a non-baselined file and confirm `pre-commit` and `commit-msg` fire. Open a Claude Code session in the project root and confirm the SessionStart output appears.
 

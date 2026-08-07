@@ -116,9 +116,9 @@ pandoc docs/pm/project-plan.md \
   --metadata title="Project Plan"
 ```
 
-If a reference template exists at `${CLAUDE_PLUGIN_ROOT}/templates/reference.docx`, add:
+The plugin ships no reference document. If the project provides its own house style at `templates/reference.docx`, add:
 ```bash
-  --reference-doc=${CLAUDE_PLUGIN_ROOT}/templates/reference.docx
+  --reference-doc=templates/reference.docx
 ```
 
 **PPTX:**
