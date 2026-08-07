@@ -1,6 +1,7 @@
 ---
 name: release-orchestrator
-description: Plan, baseline, or report on a release (a group of stories tagged release-vN.M) per §8.4.3 release branches and §10 Project Management. Use when the user says "plan a release", "baseline a release", "tag the release", "release status", "what is in the next release", or invokes /vse-release. Anchored on Project Plan, baseline tag, and ISO 29110 PM.4 closure.
+description: Plan, baseline, or report on a release (a group of stories tagged release-vN.M) per §8.4.3 release branches and §10 Project Management. Anchored on the Project Plan, the baseline tag, and ISO 29110 PM.4 closure.
+when_to_use: Use when the user says "plan a release", "baseline a release", "tag the release", "release status", or "what is in the next release", or invokes /vse-release.
 user-invocable: true
 ---
 

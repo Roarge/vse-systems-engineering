@@ -1,6 +1,8 @@
 ---
 name: sysml2-variants
-description: Author SysML 2.0 variation points, variant usages, and configuration selection. Use when modelling product lines, alternatives, or configuration trade spaces.
+description: Author SysML 2.0 variation points, variant usages, and configuration selection.
+when_to_use: Use for `variation`, `variation part`, `variant`, configuration binding through `:>>`, product lines, alternatives, and configuration trade spaces. Not for the trade study that chooses between them (`@sysml2-cases`, `@architecture-design`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

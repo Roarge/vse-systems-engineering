@@ -1,6 +1,8 @@
 ---
 name: sysml2-allocations
-description: Author SysML 2.0 allocations between functional, logical, and physical architectures. Use when mapping behaviour to structure or bridging architecture layers.
+description: Author SysML 2.0 allocations between the functional, logical, and physical architectures.
+when_to_use: Use for `allocation def`, `allocate` statements, and allocation usages that map behaviour to structure or bridge architecture layers. Not for variation binding (`@sysml2-variants`) or metadata tagging (`@sysml2-metadata`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

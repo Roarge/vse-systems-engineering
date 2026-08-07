@@ -1,6 +1,7 @@
 ---
 name: attention-regime
-description: Configure ISO 29110 hook surface and install project-side git hooks. Use when setting up environmental hooks, installing pre-commit, configuring `.iso-config.yaml`, registering Claude Code hooks, wiring `core.hooksPath`, or activating reverse-engineering and baselined-artefact guards after project scaffolding.
+description: Configure the ISO 29110 hook surface and install the project-side git hooks.
+when_to_use: Use when setting up environmental hooks, installing pre-commit, configuring `.iso-config.yaml`, registering Claude Code hooks, wiring `core.hooksPath`, or activating reverse-engineering and baselined-artefact guards after project scaffolding.
 user-invocable: true
 ---
 

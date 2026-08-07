@@ -1,6 +1,8 @@
 ---
 name: sysml2-modelling
-description: Author and validate SysML 2.0 textual models (.sysml files). Use when creating or editing SysML models, checking syntax, or navigating model elements.
+description: The SysML 2.0 workbench and umbrella router. Owns project layout, SySiDE tooling, CI validation, and the top-level syntax quick reference, and routes topic authoring to the eight focused siblings.
+when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when configuring SySiDE and `syside.toml`. Route to the sibling that owns the topic once it is clear.
+paths: ["**/*.sysml", "**/syside.toml"]
 user-invocable: true
 ---
 

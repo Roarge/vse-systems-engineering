@@ -1,6 +1,7 @@
 ---
 name: document-export
-description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Use when the user asks to export, build, publish, or hand off a finished work product in a binary format. Not for authoring, editing, or populating templates.
+description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Not for authoring, editing, or populating templates.
+when_to_use: Use when the user asks to export, build, publish, or hand off a finished work product in a binary format.
 user-invocable: true
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: verification-validation
-description: Author and execute verification cases (against the system model, §5.4.6) and validation cases (against stakeholder intent, §4.3.6). Use when writing a verification def, binding acceptance criteria to a verify clause, choosing between verification and validation, rendering the IVV Plan or IVV Procedures, or running a V&V coverage check before release.
+description: Author and execute verification cases (against the system model, §5.4.6) and validation cases (against stakeholder intent, §4.3.6).
+when_to_use: Use when writing a verification def, binding acceptance criteria to a verify clause, choosing between verification and validation, rendering the IVV Plan or IVV Procedures, or running a V&V coverage check before release.
 user-invocable: true
 ---
 

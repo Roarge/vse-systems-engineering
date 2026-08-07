@@ -1,6 +1,8 @@
 ---
 name: traceability-guard
-description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
+description: Check SysML requirement traceability (satisfy and verify links) across the model.
+when_to_use: Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

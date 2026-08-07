@@ -1,6 +1,8 @@
 ---
 name: sysml2-views
-description: Author SysML 2.0 views, viewpoints, expose statements, and standard view definitions. Use when generating documentation views, specifying viewpoints, or configuring rendering.
+description: Author SysML 2.0 views, viewpoints, expose statements, and standard view definitions.
+when_to_use: Use for `view def`, `viewpoint def`, `expose`, `render`, `frame`, the standard view catalogue, and rendering configuration. Not for the metadata a view filter tests (`@sysml2-metadata`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

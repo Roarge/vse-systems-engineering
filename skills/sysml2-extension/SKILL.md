@@ -1,6 +1,8 @@
 ---
 name: sysml2-extension
-description: Author SysML 2.0 domain extensions with model libraries and user-defined keywords. Use when introducing a domain library (Function/Platform style), declaring a `library package` for reuse, defining a `#keyword` via SemanticMetadata, building a methodology vocabulary on top of SysML, or hitting the kind-keyword, baseType, or annotatedElement pitfalls of the keyword mechanism.
+description: Author SysML 2.0 domain extensions with model libraries and user-defined keywords.
+when_to_use: Use for `library package`, domain libraries in the Function and Platform style, `SemanticMetadata` registration, `#keyword` declaration, `baseType`, and `annotatedElement`. For applying metadata that already exists, route to `@sysml2-metadata`.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

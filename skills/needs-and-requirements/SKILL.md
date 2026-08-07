@@ -1,6 +1,7 @@
 ---
 name: needs-and-requirements
-description: Elicit stakeholder needs and derive system requirements as `UserStory` specialisations linked through `derive` and `frame concern`. Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
+description: Elicit stakeholder needs and derive system requirements as `UserStory` specialisations linked through `derive` and `frame concern`.
+when_to_use: Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
 user-invocable: true
 ---
 

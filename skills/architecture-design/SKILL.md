@@ -1,6 +1,7 @@
 ---
 name: architecture-design
-description: Author Base Architecture (§2), run trade studies (§6) with benefit-as-criterion, and decompose into subsystems (§7). Use when modelling Base Architecture, opening a trade study with variation/variant candidates, allocating capability to subsystems, or working on an architecture branch.
+description: Author Base Architecture (§2), run trade studies (§6) with benefit-as-criterion, and decompose into subsystems (§7).
+when_to_use: Use when modelling Base Architecture, opening a trade study with variation/variant candidates, allocating capability to subsystems, or working on an architecture branch.
 user-invocable: true
 ---
 

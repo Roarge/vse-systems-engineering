@@ -1,6 +1,7 @@
 ---
 name: project-setup
-description: Bootstrap a new VSE systems engineering project per the methodology §8 layout. Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding, placing work under an engineering/ subdirectory, or producing an ISO 29110 compliant layout. Enters Plan Mode before any file system change.
+description: Bootstrap a new VSE systems engineering project per the methodology §8 layout. Enters Plan Mode before any file system change.
+when_to_use: Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding, placing work under an engineering/ subdirectory, or producing an ISO 29110 compliant layout.
 user-invocable: true
 ---
 

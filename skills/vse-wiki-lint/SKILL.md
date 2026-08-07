@@ -1,12 +1,10 @@
 ---
 name: vse-wiki-lint
-description: >-
-  Health-check the VSE wiki. Reports frontmatter violations, routing
-  table drift, broken wikilinks, missing contents blocks, unresolvable
-  raw source paths, stale pages, contradiction candidates, and schema
-  drift. Read-only. Use when the contributor asks to lint, audit, or
-  validate the wiki, or after an ingest or refactor as a sanity check.
+description: Health-check the VSE wiki. Reports frontmatter violations, routing table drift, broken wikilinks, missing contents blocks, unresolvable raw source paths, stale pages, contradiction candidates, and schema drift. Read-only. Use when the contributor asks to lint, audit, or validate the wiki, or after an ingest or refactor as a sanity check.
 user-invocable: true
+disable-model-invocation: true
+context: fork
+agent: general-purpose
 ---
 
 # VSE Wiki Lint

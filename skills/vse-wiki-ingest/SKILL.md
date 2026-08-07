@@ -1,12 +1,8 @@
 ---
 name: vse-wiki-ingest
-description: >-
-  Process a new source file into atomic wiki pages. Use when a PDF or
-  markdown source has been dropped into the contributor's sources/ folder
-  and the wiki needs to absorb it, or when the user asks to ingest,
-  process, or distil a source into the wiki. Contributor-facing only;
-  end-user projects have no sources/ folder to ingest.
+description: Process a new source file into atomic wiki pages. Use when a PDF or markdown source has been dropped into the contributor's sources/ folder and the wiki needs to absorb it, or when the user asks to ingest, process, or distil a source into the wiki. Contributor-facing only; end-user projects have no sources/ folder to ingest.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # VSE Wiki Ingest

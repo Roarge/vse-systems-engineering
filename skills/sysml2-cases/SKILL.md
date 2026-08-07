@@ -1,6 +1,8 @@
 ---
 name: sysml2-cases
-description: Author SysML 2.0 use cases, analysis cases, and verification cases. Use when defining test cases, trade studies, what-if analyses, or use-case flows.
+description: Author SysML 2.0 use cases, analysis cases, verification cases, and validation cases.
+when_to_use: Use for `use case def`, `analysis case def`, `verification case def`, `validation case def`, `subject`, `objective`, `actor`, and verdict handling. Not for the behaviour bodies a case invokes (`@sysml2-behaviour`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

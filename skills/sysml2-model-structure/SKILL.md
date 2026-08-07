@@ -1,6 +1,8 @@
 ---
 name: sysml2-model-structure
-description: Organise a SysML 2.0 model into the AMBSE canonical layout from Douglass 2016 and Cookbook 2021, with optional base-architecture reuse, variant configurations, model-level configuration management, and a risk register. Use when starting a new model, deciding the package breakdown, splitting an oversized .sysml file, inheriting from a base architecture, federating into shared or subsystem models, managing namespace imports, organising variant configurations, setting up a model-level CM package alongside the Project Plan, or setting up a risk register alongside requirements.
+description: Organise a SysML 2.0 model into the AMBSE canonical layout from Douglass 2016 and Cookbook 2021, with optional base-architecture reuse, variant configurations, model-level configuration management, and a risk register.
+when_to_use: Use for package breakdown, the `{{sc}}_` short-code package set, splitting an oversized .sysml file, base-architecture reuse through `:>` and `:>>`, federation into shared or subsystem models, namespace imports, and where the risk or CM packages belong. Not for the content of those packages.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

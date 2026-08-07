@@ -1,12 +1,8 @@
 ---
 name: vse-wiki-index
-description: >-
-  Regenerate the wiki INDEX and every skill's wiki-routing block from
-  page frontmatter, and verify page contents blocks. Use after a page is
-  added, updated, or retired, or when a contributor wants the derived
-  surfaces back in step with the pages. Mechanical operation, with no
-  dialogue needed when arguments are explicit.
+description: Regenerate the wiki INDEX and every skill's wiki-routing block from page frontmatter, and verify page contents blocks. Use after a page is added, updated, or retired, or when a contributor wants the derived surfaces back in step with the pages. Mechanical operation, with no dialogue needed when arguments are explicit.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # VSE Wiki Index

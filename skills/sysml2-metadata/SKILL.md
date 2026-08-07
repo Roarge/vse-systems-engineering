@@ -1,6 +1,8 @@
 ---
 name: sysml2-metadata
-description: Apply SysML 2.0 metadata and reflection through the VSE_Library catalogue (RiskInfo, ConfigItem, Baseline, VariantScope, VerificationScope). Use when tagging elements with risk, configuration item state, priority, or status metadata, when declaring baselines, when filtering imports or views by metadata, or when querying model elements by applied metadata. For authoring domain libraries or registering user-defined `#keywords`, route to `@sysml2-extension`.
+description: Apply SysML 2.0 metadata and reflection through the VSE_Library catalogue (RiskInfo, ConfigItem, Baseline, VariantScope, VerificationScope).
+when_to_use: Use for applying `metadata def` types with `@Type` annotations, `@` and `@@` metaclassification, bracketed import filters, risk tagging, configuration items, and baselines. For authoring a new domain library or registering a `#keyword`, route to `@sysml2-extension`.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

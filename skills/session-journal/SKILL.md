@@ -1,6 +1,7 @@
 ---
 name: session-journal
-description: Manage cross-session continuity journal. Use when saving progress, checking what was done last session, or creating a checkpoint.
+description: Manage the cross-session continuity journal.
+when_to_use: Use when saving progress, checking what was done last session, or creating a checkpoint.
 user-invocable: true
 ---
 

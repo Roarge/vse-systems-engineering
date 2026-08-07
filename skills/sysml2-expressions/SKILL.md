@@ -1,6 +1,8 @@
 ---
 name: sysml2-expressions
-description: Author and evaluate SysML 2.0 expressions, calc definitions, and constraint bodies. Use when adding formulas, value bindings, derived attributes, parametric calculations, or constraint checks.
+description: Author and evaluate SysML 2.0 expressions, calculation definitions, and constraint bodies.
+when_to_use: Use for `calc def`, `constraint def`, `assert constraint`, derived attributes, value bindings, parametric calculations, sequence and classification operators. Not for state or action bodies (`@sysml2-behaviour`).
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 

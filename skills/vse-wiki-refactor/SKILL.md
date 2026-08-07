@@ -1,12 +1,8 @@
 ---
 name: vse-wiki-refactor
-description: >-
-  Run a full-wiki editorial sweep: re-read sources, propose merges and
-  splits, repair cross-links, revise confidence, resync the index and
-  routing tables. Use when the contributor asks to go over everything,
-  fact-check the wiki, or perform a periodic audit. Heavy operation,
-  not routine.
+description: 'Run a full-wiki editorial sweep: re-read sources, propose merges and splits, repair cross-links, revise confidence, resync the index and routing tables. Use when the contributor asks to go over everything, fact-check the wiki, or perform a periodic audit. Heavy operation, not routine.'
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # VSE Wiki Refactor
