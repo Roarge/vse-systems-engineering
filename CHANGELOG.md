@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.5`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.6`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
-chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, and the
-rigour skills chunk takes `rc.5`, with every later candidate shifting
-by one.
+chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
+rigour skills chunk took `rc.5`, and the SySiDE refresh takes `rc.6`,
+with every later candidate shifting by one.
 
 ### Changed
 
@@ -428,6 +428,68 @@ The chunk below turns the §0.10.4 dispositions into running code.
   user to change model before the skill would work, which is neither a
   prerequisite the skill can enforce nor a question the user should
   have to answer to scaffold a project.
+
+### Added (syside refresh)
+
+- New wiki page `syside-sysand-package-management` covering Sysand
+  v0.2.0, the open-source SysML v2 package manager: the `sysand.toml`
+  project manifest and the KerML 10.3 `.project.json` and `.meta.json`
+  interchange manifests, the committed `sysand-lock.toml`, the command
+  surface (`init`, `add`, `lock`, `sync`, `env`, `build`, `publish`),
+  KPAR interchange packages, the publisher-namespaced public index at
+  sysand.com, and the GitHub Action for publishing from CI. Routed to
+  `project-setup` and `sysml2-modelling`. The wiki moves from 130 to
+  131 pages.
+- `syside-tooling-overview` gains a dated roadmap section (Syside and
+  Sysand reach v1.0 together in Q3 2026, MCP servers planned for both,
+  a high-level Python API planned) and a breaking-change warning for
+  the pre-v1.0 window. The page drops to `confidence: medium` with a
+  Confidence note, because the roadmap and the Derisker beta are the
+  two forward-looking sections.
+- `syside-project-configuration` gains the three-level discovery order
+  (global `$XDG_CONFIG_HOME/syside/syside.toml`, project
+  `syside.toml`, personal `syside.user.toml`), the merge semantics
+  including the `exclude` concatenation exception, the `.git` and
+  `sysand-lock.toml` root markers, and all six `[lint]` per-rule
+  severities.
+- `syside-core-api` records the agent-optimised parser and real-time
+  connection type checking. `syside-expression-evaluation` gains
+  requirement evaluation from 0.9.0. `syside-vse-workflows` gains
+  `syside check --stats` CI guidance, editable table and matrix grid
+  views, the ReqIF round-trip, and the 2026-03 standard library.
+- `templates/common/gitignore` ignores `syside.user.toml`, so the
+  personal-override file the template header describes is genuinely
+  untracked in a scaffolded project.
+
+### Changed (syside refresh)
+
+- **The Syside product lineup is renamed throughout.** The free tier is
+  Syside Editor: SysML v2 Essential, the paid tier is the Syside Pro
+  Suite (Modeler plus Automator plus the `syside` CLI), with Syside
+  Cloud as the browser-hosted Pro Suite and Syside Derisker as the
+  ISO 26262, ISO/SAE 21434, and FMEA beta. The old four-product table
+  in `sysml2-modelling` is rewritten accordingly. `SySiDE` is
+  normalised to `Syside` across skills, agents, templates, and wiki
+  prose. The archived open-source `sysml-2ls` is recorded as a legacy
+  note in `syside-tooling-overview` and is not recommended.
+- All six existing `syside/` pages carry an August 2026 access date in
+  their citations, a bumped `updated:`, and a reference to release
+  0.10.3 of 23 July 2026 where a version claim is made.
+  `syside-model-modification` flags the 0.9.0 breaking changes
+  (Automator CLI, scalar handling, validation diagnostics).
+- `templates/common/syside.toml` header documents the three-level
+  discovery order and the merge semantics, and the `[lint]` section
+  carries commented severity lines for the five per-rule keys the
+  template did not previously name. Every existing option verifies
+  clean against the 0.10.x schema, so none is removed.
+
+### Fixed (syside refresh)
+
+- `demo/smart-sensor/syside.toml` declared `[project] name` and
+  `[paths] sources`, neither of which exists in the documented schema.
+  The loader ignored both, so the demo model was never scoped by its
+  own configuration. It now uses the documented top-level `include`
+  glob over `model/`.
 
 ## [2.1.3] - 2026-08-07
 
