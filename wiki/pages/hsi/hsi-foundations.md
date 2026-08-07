@@ -6,7 +6,7 @@ layer: hsi
 tags: [hsi, top-environment, sociotechnical, lifecycle, vse]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2. Boy and Kennedy (Eds.). ISBN 978-1-937076-12-2."
-    raw: HSI_Primer_Vol1.pdf
+    raw: "HSI Primer Vol. 1 v4.pdf"
 related:
   - hsi-domains
   - hsi-in-requirements

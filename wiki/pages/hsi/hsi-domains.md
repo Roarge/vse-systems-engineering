@@ -6,7 +6,7 @@ layer: hsi
 tags: [hsi, domains, hfe, safety, usability, training, manpower]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI Domains."
-    raw: HSI_Primer_Vol1.pdf
+    raw: "HSI Primer Vol. 1 v4.pdf"
 related:
   - hsi-foundations
   - hsi-in-requirements

@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, automator, model-modification, element-types, pretty-print]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: textual notation and JSON. https://docs.sensmetry.com/python/latest/textual.html, https://docs.sensmetry.com/python/latest/json.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-core-api
   - syside-expression-evaluation

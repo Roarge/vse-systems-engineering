@@ -6,7 +6,7 @@ layer: vv
 tags: [vv, methods, inspection, demonstration, test, analysis, test-case]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Sections on Verification Methods, Validation Methods, and Test Case Design."
-    raw: INCOSE_VV_Guide_v1.pdf
+    raw: Guide_to_V-and-V_v1.pdf
 related:
   - vv-definitions
   - vv-planning

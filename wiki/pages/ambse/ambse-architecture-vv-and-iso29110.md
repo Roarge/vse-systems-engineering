@@ -6,7 +6,7 @@ layer: ambse
 tags: [verification, validation, definition-of-done, iso29110, mapping]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 8."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
 related:
   - ambse-architecture-analysis
   - ambse-trade-studies

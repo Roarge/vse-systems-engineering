@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, tooling, installation, vscode, ci, licence]
 sources:
   - citation: "Sensmetry. SySiDE documentation: which tool, install, and licence pages. https://docs.sensmetry.com/about/which-tool.html, https://docs.sensmetry.com/automator/install.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-project-configuration
   - syside-core-api

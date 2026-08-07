@@ -6,7 +6,7 @@ layer: ambse
 tags: [risk-management, spikes, metrics, velocity, defect-density, vse]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapters 1-2 (risk and metrics sections)."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
 related:
   - ambse-principles
   - ambse-iso29110-mapping

@@ -6,9 +6,9 @@ layer: vv
 tags: [vv, svcm, reporting, ambse, nanocycle, microcycle, macrocycle, vse]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Sections on Reporting and VSE Guidance."
-    raw: INCOSE_VV_Guide_v1.pdf
+    raw: Guide_to_V-and-V_v1.pdf
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Continuous-verification timeframe definitions."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
 related:
   - vv-definitions
   - vv-planning

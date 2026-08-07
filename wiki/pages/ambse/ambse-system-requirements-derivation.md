@@ -6,7 +6,7 @@ layer: ambse
 tags: [requirements, derivation, satisfy, verify, smart, sysml2]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 4."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
 related:
   - ambse-requirements-as-models
   - ambse-use-case-driven-elicitation

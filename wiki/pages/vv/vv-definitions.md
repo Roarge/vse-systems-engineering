@@ -6,7 +6,7 @@ layer: vv
 tags: [verification, validation, soi, success-criteria, levels-of-application]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. INCOSE-TP-2021-004-01."
-    raw: INCOSE_VV_Guide_v1.pdf
+    raw: Guide_to_V-and-V_v1.pdf
 related:
   - vv-planning
   - vv-methods

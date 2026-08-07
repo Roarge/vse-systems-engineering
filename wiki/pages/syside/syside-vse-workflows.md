@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, automator, vse, workflows, report-generation, traceability, excel]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: examples and report generation. https://docs.sensmetry.com/examples/index.html, https://docs.sensmetry.com/examples/report_generation.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-core-api
   - syside-expression-evaluation

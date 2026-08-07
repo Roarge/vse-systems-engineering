@@ -6,7 +6,7 @@ layer: needs-and-reqs
 tags: [needs, requirements, stakeholders, categorisation, ffq-c, vested-influence-participate]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements (Needs and Requirements), v1.0. INCOSE-TP-2021-003-01."
-    raw: INCOSE_NeedsAndReqs_v1.pdf
+    raw: Guide_to_Needs_and_Reqts_v1.pdf
 related:
   - requirements-elicitation-and-writing
   - requirements-traceability-and-attributes

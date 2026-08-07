@@ -6,9 +6,9 @@ layer: incose-vse
 tags: [incose, stakeholder-needs, conops, vse, strs]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapter 4.2."
-    raw: incose_handbook_4e.pdf
+    raw: "INCOSE Systems Engineering Handbook 4e 2015 07.pdf"
   - citation: "Galinier, M., et al. (2021). Systems Engineering Practices for Small and Medium Enterprises. INCOSE-TP-2021-005-01."
-    raw: galinier_sme_practices.pdf
+    raw: "Galinier et al. - Systems Engineering Practices for Smal and Medium .pdf"
 related:
   - needs-vs-requirements
   - requirements-elicitation-and-writing

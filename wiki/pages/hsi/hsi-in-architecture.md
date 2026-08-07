@@ -6,7 +6,7 @@ layer: hsi
 tags: [hsi, architecture, function-allocation, vhcd, lifecycle]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI in Architecture."
-    raw: HSI_Primer_Vol1.pdf
+    raw: "HSI Primer Vol. 1 v4.pdf"
 related:
   - hsi-foundations
   - hsi-domains

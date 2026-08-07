@@ -6,9 +6,9 @@ layer: sysml2
 tags: [configuration-management, baselines, configitem, risks, riskinfo, iso29110]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014. PM.1.11, PM.1.13, PM.1.18, PM.2.3, PM.2.5, PM.O5, PM.O6, SR.O6."
-    raw: ISO_IEC_29110_System_Software_Engineering.pdf
+    raw: "ISOIEC TR 29110-5-6-22014.pdf"
   - citation: "Galinier, A. et al. (2024). Systems Engineering Practices for Small and Medium Enterprises."
-    raw: Galinier_SME_Practices_2023.pdf
+    raw: "Galinier et al. - Systems Engineering Practices for Smal and Medium .pdf"
 related:
   - sysml2-canonical-model-layout
   - sysml2-vse-library-metadata

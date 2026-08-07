@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, configuration, toml, lsp, vscode, project-setup]
 sources:
   - citation: "Sensmetry. SySiDE Modeler CLI configuration. https://docs.sensmetry.com/modeler/cli/configuration.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-tooling-overview
   - syside-core-api

@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, automator, compiler, expressions, units, filters]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: expression evaluation. https://docs.sensmetry.com/python/latest/evaluation.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-core-api
   - syside-model-modification

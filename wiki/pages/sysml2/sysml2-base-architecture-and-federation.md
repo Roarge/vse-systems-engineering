@@ -8,9 +8,9 @@ sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 14, pages 56 to 58."
     raw: sysmlv2.pdf
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Chapter 8.3 and Figures 3.12, 3.14, 8.2, 8.4."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
   - citation: "Douglass, B.P. (2021). Agile MBSE Cookbook. Packt. Chapter 1."
-    raw: Douglass_2021_Agile_MBSE_Cookbook.pdf
+    raw: "Agile Model-Based Systems Engineering Cookbook_ Improve system development by applying proven recipes for effective agile systems engineering.pdf"
 related:
   - sysml2-canonical-model-layout
   - sysml2-namespace-hygiene
