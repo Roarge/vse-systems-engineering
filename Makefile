@@ -141,7 +141,7 @@ check-routing:
 	   fi; \
 	 done; \
 	 for skill_file in skills/*/SKILL.md; do \
-	   if grep -qE '^[[:space:]]*(`!cat|!`cat)[[:space:]]' "$$skill_file"; then \
+	   if grep -qE '^[[:space:]]*(`!cat|!`cat|!cat)[[:space:]]' "$$skill_file"; then \
 	     echo "ERROR: $$skill_file carries a bundle embed line"; \
 	     EXIT_CODE=1; \
 	   fi; \
