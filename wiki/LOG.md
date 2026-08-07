@@ -610,3 +610,83 @@ project-bootstrap-prerequisites) across 11 layers, 21 bundles.
 The full experiment report and per-case scoring lives at
 `dev_docs/stress-test-2026-05-05/round3/results/summary.md`
 (gitignored; not shipped to installers).
+
+## [2026-08-07] refactor | raw source filename normalisation
+
+Sixty-two `raw:` values across forty-seven pages named files that do
+not exist under `sources/`. They were tidied-up labels rather than
+filenames, so the source-freshness rule in `/vse-wiki-lint` step 6
+could never compare a raw file's mtime to a page's `updated:` date and
+reported "raw source not present locally" instead. No page bodies were
+touched, only frontmatter.
+
+Mapping applied (count in parentheses):
+
+- `Douglass_2016_Agile_Systems_Engineering.pdf` (14) to
+  "Agile Systems Engineering.pdf"
+- `ISO_IEC_TR_29110-5-6-2_2014.pdf` (10) to
+  "ISOIEC TR 29110-5-6-22014.pdf"
+- `Douglass_2021_Agile_MBSE_Cookbook.pdf` (8) to
+  "Agile Model-Based Systems Engineering Cookbook_ Improve system
+  development by applying proven recipes for effective agile systems
+  engineering.pdf"
+- `sensmetry_docs_2026-04` (6) to `null`. Web source, and the
+  citations already carry URLs.
+- `incose_handbook_4e.pdf` (5) to
+  "INCOSE Systems Engineering Handbook 4e 2015 07.pdf"
+- `galinier_sme_practices.pdf` (5) to
+  "Galinier et al. - Systems Engineering Practices for Smal and
+  Medium .pdf"
+- `Galinier_SME_Practices_2023.pdf` (1) to the same Galinier filename
+- `HSI_Primer_Vol1.pdf` (5) to "HSI Primer Vol. 1 v4.pdf"
+- `INCOSE_VV_Guide_v1.pdf` (4) to `Guide_to_V-and-V_v1.pdf`
+- `INCOSE_NeedsAndReqs_v1.pdf` (3) to `Guide_to_Needs_and_Reqts_v1.pdf`
+- `ISO_IEC_29110_System_Software_Engineering.pdf` (1) to
+  "ISOIEC TR 29110-5-6-22014.pdf". The page's own citation names
+  ISO/IEC TR 29110-5-6-2:2014, so the ISO TR file is the true source.
+
+Untouched because they were already exact: `sysmlv2.pdf` (46),
+`2-OMG_Systems_Modeling_Language.pdf` (18), `kappe.pdf` (4), the
+repo-relative `methodology/*.md` paths (23 across ten section files),
+and the existing `null` entries (17).
+
+Policy from here on: `raw:` is either an exact filename under
+`sources/` or `null`. Nothing else. A label that merely describes the
+source belongs in `citation:`, which is the field end users read.
+
+## [2026-08-07] lint | pre-overhaul baseline
+
+Full lint pass executed manually against `skills/vse-wiki-lint/SKILL.md`
+steps 1 to 9, as the baseline for the v3.0.0 overhaul train. Report
+written to `wiki/LINT_REPORT.md` (gitignored, not committed).
+
+Pages scanned: 130. Bundles scanned: 21.
+Summary: 0 ERROR, 136 WARN, 46 INFO.
+
+Clean checks: no missing or malformed frontmatter, no slug or layer
+mismatches, no unresolved wikilinks, no bundle without a consuming
+skill, no bundle sourcing a missing page, no page claiming a
+`bundled_by` entry absent from its bundle, no orphan pages, and no
+remaining references to the deleted `knowledge/` directory.
+
+WARN breakdown (136):
+- 86 wikilinks present in a body but absent from the page's `related:`
+  list. Metadata drift accumulated across ingest cycles. Repair belongs
+  in an editorial sweep, not here.
+- 50 schema-drift flags where a page's H2 headings do not match the
+  template shape for its `type` (23 `concept`, 16 `process`, 11
+  `pattern`). Detected by keyword heuristic, so this count is an upper
+  bound and some pages have deliberately evolved away from the
+  template.
+
+INFO breakdown (46): all 46 are source-freshness flags, and all 46 cite
+`sysmlv2.pdf`. These are **expected**. The 2026-06 release of the
+specification was placed under `sources/` on 2026-08-06, while the
+citing pages were last updated 2026-05-04 to 2026-05-06 against the
+2026-04 release. The repagination and content-delta work that clears
+them is scheduled separately. The flags are honest and should stay lit
+until that work lands.
+
+Zero "raw source not present locally" findings, down from 62 before
+the normalisation recorded in the entry above. The staleness rule now
+resolves for every page that names a raw file.
