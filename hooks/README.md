@@ -58,7 +58,7 @@ project under `<project>/.githooks/` and activated with
 | `pre-commit-traceability.sh` | called by `pre-commit`                   | Trace-integrity check (existing legacy script). Delegated by the orchestrator above.                                                                 |
 | `commit-msg.sh`              | `<project>/.githooks/commit-msg`         | Enforce conventional-commit pattern with story scope, CR reference, or meeting-record format per §4.2.                                               |
 | `prepare-commit-msg.sh`      | `<project>/.githooks/prepare-commit-msg` | Prepopulate the commit subject with the Story ID inferred from the branch name per §4.3.                                                             |
-| `post-merge.sh`              | `<project>/.githooks/post-merge`         | Regenerate model-derived artefacts when main advances per §4.5. Reports drift; does not auto-commit.                                                 |
+| `post-merge.sh`              | `<project>/.githooks/post-merge`         | Regenerate model-derived artefacts when main advances per §4.5. Reports drift. Does not auto-commit.                                                |
 | `post-checkout.sh`           | `<project>/.githooks/post-checkout`      | Print methodology / branch status when switching branches per §4.6.                                                                                  |
 | `lib/iso-profile.sh`         | `<project>/.githooks/lib/iso-profile.sh` | Shared library. Resolves the rigour profile and the per-gate dispositions from `.iso-config.yaml` per methodology §0.10.4. Sourced, never invoked.  |
 
