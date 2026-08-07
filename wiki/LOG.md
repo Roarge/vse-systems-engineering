@@ -650,8 +650,9 @@ Untouched because they were already exact: `sysmlv2.pdf` (46),
 repo-relative `methodology/*.md` paths (23 across ten section files),
 and the existing `null` entries (17).
 
-Policy from here on: `raw:` is either an exact filename under
-`sources/` or `null`. Nothing else. A label that merely describes the
+Policy from here on: `raw:` is an exact filename under `sources/`, a
+repo-relative path inside the plugin tree (the form the
+methodology-derived pages use), or `null`. Nothing else. A label that merely describes the
 source belongs in `citation:`, which is the field end users read.
 
 ## [2026-08-07] lint | pre-overhaul baseline

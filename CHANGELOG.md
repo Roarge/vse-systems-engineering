@@ -63,6 +63,21 @@ while the release-candidate series is in flight should pin `v2.1.3`.
   `null`, with descriptive labels belonging in `citation:`, the field
   end users read.
 - `README.md` claimed 129 atomic pages. There are 130.
+- Three further retired-concept references of the same class:
+  `document-export` routed document generation through the retired
+  `@iteration-orchestrator` at "macrocycle delivery", and
+  `vse-wiki-ingest` detected end-user projects via the abolished
+  `.vse-iteration.yml` file. Both now use the release-orchestrator
+  routing and the methodology-folder convention.
+- Review sweep: `traceability-guard` still carried iteration and
+  macrocycle vocabulary in its description, role statement, blocking
+  step, and orphan-surface section, plus a routing claim that
+  `@story-orchestrator` invokes it directly, which no routing table
+  backs. All reworded to story closure and release baseline terms.
+  The session-start lint parsing gained an unreadable-report guard so
+  the hook keeps its advisory exit-0 contract and uses `head -n 1`,
+  and the LOG `raw:` policy wording now names the repo-relative
+  exception it already preserves.
 
 ### Changed
 
