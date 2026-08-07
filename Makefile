@@ -9,9 +9,10 @@
 # contributor can see which CLI the CI result came from.
 CLAUDE_CODE_VERSION ?= 2.1.224
 
-.PHONY: all validate lint check-versions check-validate check-refs check-skills
+.PHONY: all validate lint check-versions check-validate check-hooks \
+        check-refs check-skills
 
-all: validate check-versions check-validate lint check-skills check-refs
+all: validate check-versions check-validate lint check-hooks check-skills check-refs
 	@echo "All checks passed."
 
 validate:
@@ -51,6 +52,28 @@ check-validate:
 	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/plugin.json" || exit 1; \
 	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/marketplace.json" || exit 1; \
 	 fi
+
+# Every script in hooks/ must be executable and carry the shebang and
+# failure mode the hook conventions require. A non-executable or
+# unguarded hook fails silently at runtime.
+check-hooks:
+	@echo "Checking hook script conventions..."
+	@EXIT_CODE=0; \
+	 for hook_file in hooks/*.sh; do \
+	   if [ ! -x "$$hook_file" ]; then \
+	     echo "ERROR: $$hook_file is not executable"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	   if [ "$$(head -1 "$$hook_file")" != '#!/usr/bin/env bash' ]; then \
+	     echo "ERROR: $$hook_file does not start with #!/usr/bin/env bash"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	   if ! grep -qF 'set -euo pipefail' "$$hook_file"; then \
+	     echo "ERROR: $$hook_file does not set -euo pipefail"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	 done; \
+	 exit $$EXIT_CODE
 
 check-skills:
 	@echo "Checking skill structure..."

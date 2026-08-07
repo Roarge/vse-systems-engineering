@@ -53,6 +53,28 @@ jobs:
             shellcheck hooks/*.sh
           fi
 
+      - name: Check hook script conventions
+        run: |
+          # Every script in hooks/ must be executable and carry the
+          # shebang and failure mode the hook conventions require. A
+          # non-executable or unguarded hook fails silently at runtime.
+          EXIT_CODE=0
+          for hook_file in hooks/*.sh; do
+            if [ ! -x "$hook_file" ]; then
+              echo "::error::$hook_file is not executable"
+              EXIT_CODE=1
+            fi
+            if [ "$(head -1 "$hook_file")" != '#!/usr/bin/env bash' ]; then
+              echo "::error::$hook_file does not start with #!/usr/bin/env bash"
+              EXIT_CODE=1
+            fi
+            if ! grep -qF 'set -euo pipefail' "$hook_file"; then
+              echo "::error::$hook_file does not set -euo pipefail"
+              EXIT_CODE=1
+            fi
+          done
+          exit $EXIT_CODE
+
       - name: Validate skill structure
         run: |
           EXIT_CODE=0
