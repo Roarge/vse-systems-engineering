@@ -1,10 +1,18 @@
 # vse-systems-engineering plugin validation
 #
 # Run 'make' or 'make all' before opening a PR.
+#
+# Kept in parity with .github/workflows/plugin-ci.yml. A check added
+# here must be added there, and the reverse.
 
-.PHONY: all validate lint check-versions check-refs check-skills
+# Claude Code CLI version pinned by the CI workflow. Kept here so a
+# contributor can see which CLI the CI result came from.
+CLAUDE_CODE_VERSION ?= 2.1.224
 
-all: validate lint check-versions check-skills check-refs
+.PHONY: all validate lint check-versions check-validate check-hooks \
+        check-refs check-skills check-config
+
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-config
 	@echo "All checks passed."
 
 validate:
@@ -27,6 +35,46 @@ check-versions:
 	   echo "  Versions match: $$PLUGIN_VERSION"; \
 	 fi
 
+# Validates the tracked tree only, which is what an installer receives.
+# Gitignored contributor files such as CLAUDE.local.md sit in the
+# working directory but never ship, and validating them in place would
+# report findings that CI (a fresh checkout) can never see. The tracked
+# files are staged into a temporary directory with their working-tree
+# contents, so uncommitted edits are still covered.
+check-validate:
+	@echo "Validating plugin manifests with the Claude Code CLI..."
+	@if ! command -v claude >/dev/null 2>&1; then \
+	   echo "  SKIPPED: claude CLI not on PATH (CI pins $(CLAUDE_CODE_VERSION))"; \
+	 else \
+	   TMPDIR_VALIDATE=$$(mktemp -d); \
+	   trap 'rm -rf "$$TMPDIR_VALIDATE"' EXIT; \
+	   git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$$TMPDIR_VALIDATE"; \
+	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/plugin.json" || exit 1; \
+	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/marketplace.json" || exit 1; \
+	 fi
+
+# Every script in hooks/ must be executable and carry the shebang and
+# failure mode the hook conventions require. A non-executable or
+# unguarded hook fails silently at runtime.
+check-hooks:
+	@echo "Checking hook script conventions..."
+	@EXIT_CODE=0; \
+	 for hook_file in hooks/*.sh; do \
+	   if [ ! -x "$$hook_file" ]; then \
+	     echo "ERROR: $$hook_file is not executable"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	   if [ "$$(head -1 "$$hook_file")" != '#!/usr/bin/env bash' ]; then \
+	     echo "ERROR: $$hook_file does not start with #!/usr/bin/env bash"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	   if ! grep -qF 'set -euo pipefail' "$$hook_file"; then \
+	     echo "ERROR: $$hook_file does not set -euo pipefail"; \
+	     EXIT_CODE=1; \
+	   fi; \
+	 done; \
+	 exit $$EXIT_CODE
+
 check-skills:
 	@echo "Checking skill structure..."
 	@EXIT_CODE=0; \
@@ -48,22 +96,48 @@ check-skills:
 	 done; \
 	 exit $$EXIT_CODE
 
+# Every ${CLAUDE_PLUGIN_ROOT}/<path> reference in a harness-loaded
+# component must resolve inside the plugin tree, because the whole
+# committed tree is what reaches an installer. A reference written as a
+# file path is an error when it does not resolve. A reference written
+# as a directory path (trailing slash) stays at warning level, which
+# preserves the tolerance the previous templates/ check provided for
+# conditional directory copies.
 check-refs:
 	@echo "Checking cross-references..."
 	@EXIT_CODE=0; \
-	 for skill_file in skills/*/SKILL.md; do \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/knowledge/[a-zA-Z0-9_./-]+' "$$skill_file" 2>/dev/null || true); do \
+	 CHECKED=0; \
+	 for src_file in skills/*/SKILL.md commands/*.md agents/*.md hooks.json; do \
+	   [ -f "$$src_file" ] || continue; \
+	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
 	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
-	     if [ ! -f "$$rel_path" ]; then \
-	       echo "ERROR: $$skill_file references $$rel_path which does not exist"; \
-	       EXIT_CODE=1; \
-	     fi; \
-	   done; \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/templates/[a-zA-Z0-9_./-]+' "$$skill_file" 2>/dev/null || true); do \
-	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
-	     if [ ! -f "$$rel_path" ] && [ ! -d "$$rel_path" ]; then \
-	       echo "WARNING: $$skill_file references $$rel_path which does not exist"; \
-	     fi; \
+	     CHECKED=$$((CHECKED + 1)); \
+	     [ -e "$$rel_path" ] && continue; \
+	     case "$$rel_path" in \
+	       */) echo "WARNING: $$src_file references directory $$rel_path which does not exist";; \
+	       *)  echo "ERROR: $$src_file references $$rel_path which does not exist"; EXIT_CODE=1;; \
+	     esac; \
 	   done; \
 	 done; \
+	 echo "  Checked $$CHECKED plugin-root references."; \
 	 exit $$EXIT_CODE
+
+# Both checks are warning level for now. The placeholder lands in the
+# pre-overhaul hygiene PR, and the demo pin is promoted to an error at
+# demo sync.
+check-config:
+	@echo "Checking ISO configuration files..."
+	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \
+	   echo "  templates/iso-config/.iso-config.yaml carries the {{PLUGIN_VERSION}} placeholder."; \
+	 else \
+	   echo "WARNING: templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"; \
+	 fi
+	@PLUGIN_VERSION=$$(jq -r '.version' .claude-plugin/plugin.json); \
+	 DEMO_VERSION=$$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$$/\1/p' demo/smart-sensor/.iso-config.yaml); \
+	 if [ -z "$$DEMO_VERSION" ]; then \
+	   echo "WARNING: demo/smart-sensor/.iso-config.yaml has no readable plugin_version"; \
+	 elif [ "$$DEMO_VERSION" != "$$PLUGIN_VERSION" ]; then \
+	   echo "WARNING: demo/smart-sensor/.iso-config.yaml plugin_version ($$DEMO_VERSION) does not match plugin.json ($$PLUGIN_VERSION)"; \
+	 else \
+	   echo "  Demo plugin_version pin matches plugin.json ($$PLUGIN_VERSION)."; \
+	 fi

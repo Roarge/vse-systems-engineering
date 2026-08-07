@@ -29,6 +29,20 @@ jobs:
             exit 1
           fi
 
+      - name: Validate plugin manifests with the Claude Code CLI
+        env:
+          CLAUDE_CODE_VERSION: 2.1.224
+        run: |
+          npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          # Fail loudly rather than silently skipping if the pinned CLI
+          # ever drops the subcommand.
+          if ! claude plugin validate --help >/dev/null 2>&1; then
+            echo "::error::claude plugin validate is unavailable in CLI ${CLAUDE_CODE_VERSION}"
+            exit 1
+          fi
+          claude plugin validate --strict .claude-plugin/plugin.json
+          claude plugin validate --strict .claude-plugin/marketplace.json
+
       - name: Lint hook scripts
         run: |
           if command -v shellcheck >/dev/null 2>&1; then
@@ -38,6 +52,28 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
             shellcheck hooks/*.sh
           fi
+
+      - name: Check hook script conventions
+        run: |
+          # Every script in hooks/ must be executable and carry the
+          # shebang and failure mode the hook conventions require. A
+          # non-executable or unguarded hook fails silently at runtime.
+          EXIT_CODE=0
+          for hook_file in hooks/*.sh; do
+            if [ ! -x "$hook_file" ]; then
+              echo "::error::$hook_file is not executable"
+              EXIT_CODE=1
+            fi
+            if [ "$(head -1 "$hook_file")" != '#!/usr/bin/env bash' ]; then
+              echo "::error::$hook_file does not start with #!/usr/bin/env bash"
+              EXIT_CODE=1
+            fi
+            if ! grep -qF 'set -euo pipefail' "$hook_file"; then
+              echo "::error::$hook_file does not set -euo pipefail"
+              EXIT_CODE=1
+            fi
+          done
+          exit $EXIT_CODE
 
       - name: Validate skill structure
         run: |
@@ -63,26 +99,52 @@ jobs:
 
       - name: Check cross-references
         run: |
+          # Every ${CLAUDE_PLUGIN_ROOT}/<path> reference in a
+          # harness-loaded component must resolve inside the plugin
+          # tree, because the whole committed tree is what reaches an
+          # installer. A reference written as a file path is an error
+          # when it does not resolve. A reference written as a
+          # directory path (trailing slash) stays at warning level,
+          # which preserves the tolerance the previous templates/
+          # check provided for conditional directory copies.
           EXIT_CODE=0
-          # Knowledge file references are errors (these are embedded
-          # at skill load time and must resolve)
-          for skill_file in skills/*/SKILL.md; do
-            while IFS= read -r ref_path; do
+          CHECKED=0
+          for src_file in skills/*/SKILL.md commands/*.md agents/*.md hooks.json; do
+            [ -f "$src_file" ] || continue
+            for ref_path in $(grep -oP '\$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$src_file" 2>/dev/null | sort -u || true); do
               rel_path=$(echo "$ref_path" | sed 's|\${CLAUDE_PLUGIN_ROOT}/||')
-              if [ ! -f "$rel_path" ]; then
-                echo "::error::$skill_file references $rel_path which does not exist"
-                EXIT_CODE=1
-              fi
-            done < <(grep -oP '\$\{CLAUDE_PLUGIN_ROOT\}/knowledge/[a-zA-Z0-9_./-]+' "$skill_file" || true)
+              CHECKED=$((CHECKED + 1))
+              [ -e "$rel_path" ] && continue
+              case "$rel_path" in
+                */)
+                  echo "::warning::$src_file references directory $rel_path which does not exist"
+                  ;;
+                *)
+                  echo "::error::$src_file references $rel_path which does not exist"
+                  EXIT_CODE=1
+                  ;;
+              esac
+            done
           done
-          # Template and other path references are warnings (some are
-          # conditional or refer to directories)
-          for skill_file in skills/*/SKILL.md; do
-            while IFS= read -r ref_path; do
-              rel_path=$(echo "$ref_path" | sed 's|\${CLAUDE_PLUGIN_ROOT}/||')
-              if [ ! -f "$rel_path" ] && [ ! -d "$rel_path" ]; then
-                echo "::warning::$skill_file references $rel_path which does not exist"
-              fi
-            done < <(grep -oP '\$\{CLAUDE_PLUGIN_ROOT\}/templates/[a-zA-Z0-9_./-]+' "$skill_file" || true)
-          done
+          echo "Checked $CHECKED plugin-root references."
           exit $EXIT_CODE
+
+      - name: Check ISO configuration files
+        run: |
+          # Both checks are warning level for now. The placeholder
+          # lands in the pre-overhaul hygiene PR, and the demo pin is
+          # promoted to an error at demo sync.
+          if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then
+            echo "templates/iso-config/.iso-config.yaml carries the {{PLUGIN_VERSION}} placeholder."
+          else
+            echo "::warning::templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"
+          fi
+          PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+          DEMO_VERSION=$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' demo/smart-sensor/.iso-config.yaml)
+          if [ -z "$DEMO_VERSION" ]; then
+            echo "::warning::demo/smart-sensor/.iso-config.yaml has no readable plugin_version"
+          elif [ "$DEMO_VERSION" != "$PLUGIN_VERSION" ]; then
+            echo "::warning::demo/smart-sensor/.iso-config.yaml plugin_version ($DEMO_VERSION) does not match plugin.json ($PLUGIN_VERSION)"
+          else
+            echo "Demo plugin_version pin matches plugin.json ($PLUGIN_VERSION)."
+          fi

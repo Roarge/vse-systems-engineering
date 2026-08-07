@@ -1,6 +1,6 @@
 ---
 name: sysml2-behaviour
-description: Model SysML 2.0 behaviour: actions, successions, flows, messages, state machines, and model execution. Use when adding behavioural elements, succession graphs, or state machines to a model.
+description: "Model SysML 2.0 behaviour: actions, successions, flows, messages, state machines, and model execution. Use when adding behavioural elements, succession graphs, or state machines to a model."
 user-invocable: true
 ---
 

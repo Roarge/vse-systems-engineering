@@ -2,7 +2,7 @@
   "name": "vse-systems-engineering",
   "metadata": {
     "description": "Systems engineering for Very Small Entities (VSEs). ISO/IEC 29110 compliant, model-based, SysML 2.0 native.",
-    "version": "2.1.1"
+    "version": "2.1.2"
   },
   "owner": {
     "name": "Roar Georgsen"
@@ -14,14 +14,10 @@
       "source": "./",
       "homepage": "https://github.com/Roarge/vse-systems-engineering",
       "license": "MIT",
-      "categories": [
-        "Systems Engineering",
-        "Model-Based Systems Engineering",
-        "Requirements Engineering",
-        "Documentation"
-      ],
+      "category": "Systems Engineering",
       "keywords": [
         "systems-engineering",
+        "documentation",
         "vse",
         "iso29110",
         "sysml",

@@ -39,7 +39,7 @@ Produce a §10.3.1 element coverage report. For each of the seventeen required e
 2. Open a methodology branch named `methodology/project-plan-initial` per §8.4.3 (or hand off to `@story-orchestrator` to open it if the engineer prefers that route).
 3. Copy `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` to `docs/project-plan.md` and substitute `{{PROJECT_NAME}}`, `{{DATE}}`, `{{AUTHOR}}` from project metadata.
 4. Walk the §10.3.1 element list with the engineer, populating one element at a time. Pull the SBS from `core/logical-architecture/` recursively per §10.3.1. Pull Tasks from §0 to §8 activity structure. Resolve Resources and Work Team from CODEOWNERS.
-5. Generate the SEMP content (§10.3.2) inline as a Plan section unless the engineer asks for a separate `docs/semp.md`. If separate, copy `${CLAUDE_PLUGIN_ROOT}/templates/pm/semp.md` and cross-reference from the Plan.
+5. Generate the SEMP content (§10.3.2) inline as a Plan section unless the engineer asks for a separate `docs/semp.md`. If separate, copy `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md` and cross-reference from the Plan.
 6. Scaffold `docs/risk-register.md` (per §10.7) and the Approach prose in §7 of the Plan.
 7. Scaffold `docs/cm-strategy.md` from the YAML excerpt in §10.8 and cross-reference from Plan §9.
 8. Populate the Disposal section (§10.9) inline with trigger, schedule, actions, resources, design constraints, and acceptable end-state.
