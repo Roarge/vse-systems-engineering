@@ -1,29 +1,32 @@
 ---
-title: "SySiDE Model Modification and Element Reference"
+title: "Syside Model Modification and Element Reference"
 slug: syside-model-modification
 type: reference
 layer: syside
-summary: Adding, removing, and exporting model elements through the SySiDE API, with an element type reference
+summary: Adding, removing, and exporting model elements through the Syside API, with an element type reference
 tags: [syside, automator, model-modification, element-types, pretty-print]
 sources:
-  - citation: "Sensmetry. SySiDE Automator Python API: textual notation and JSON. https://docs.sensmetry.com/python/latest/textual.html, https://docs.sensmetry.com/python/latest/json.html (accessed 2026-04)."
+  - citation: "Sensmetry. Syside Automator Python API: textual notation and JSON. https://docs.sensmetry.com/python/latest/textual.html, https://docs.sensmetry.com/python/latest/json.html (accessed 2026-08)."
     raw: null
 related:
   - syside-core-api
   - syside-expression-evaluation
+  - syside-tooling-overview
   - syside-vse-workflows
   - sysml2-syntax-packages-and-definitions
   - sysml2-canonical-model-layout
+  - vse-model-tiers-and-templates
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-modelling, sysml2-metadata]
 ---
 
-# SySiDE Model Modification and Element Reference
+# Syside Model Modification and Element Reference
 
 ## Contents
 
+- Version stability
 - Adding elements
 - Removing elements
 - Creating documents in memory
@@ -31,6 +34,23 @@ referenced_by: [sysml2-modelling, sysml2-metadata]
 - Debugging model structure
 - Constraints
 - Element types quick reference
+
+## Version stability
+
+The surface below is verified against the 0.10.x releases, current at
+August 2026. Syside is pre-v1.0, so a modification script is exposed to
+breaking changes across minor releases. Release 0.9.0 broke three
+things a modification workflow touches directly.
+
+- The Automator CLI entry points changed.
+- Scalar handling changed, so values read back from a model may arrive
+  in a different Python type than before.
+- Validation diagnostics changed shape, so code that inspects a
+  diagnostic rather than only its truthiness needs review.
+
+Pin the Syside version in the project's virtual environment and read
+the release notes before upgrading. [[syside-tooling-overview]] carries
+the roadmap and the v1.0 expectation.
 
 ## Adding elements
 
@@ -133,7 +153,7 @@ filter scripts.
 `InterfaceUsage`, `PerformActionUsage`, `RenderingUsage`,
 `SendActionUsage`, `UseCaseUsage`, `ViewUsage`
 
-The sysml2-syntax-packages-and-definitions page describes the
+[[sysml2-syntax-packages-and-definitions]] describes the
 language-level distinction between a `*Definition` and a
 `*Usage` and how the Automator API mirrors it.
 
@@ -156,7 +176,7 @@ language-level distinction between a `*Definition` and a
 - `DocumentTier.StandardLibrary`: built-in SysML/KerML elements
 - `DocumentTier.External`: third-party library elements
 
-The model-tier separation in `sysml2-canonical-model-layout` and
-`vse-model-tiers-and-templates` is enforced at this API level:
+The model-tier separation in [[sysml2-canonical-model-layout]] and
+[[vse-model-tiers-and-templates]] is enforced at this API level:
 filtering by `document_tier` is the canonical way to walk only
 the project's own elements.
