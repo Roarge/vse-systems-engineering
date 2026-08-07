@@ -86,7 +86,7 @@ is the modelling language, and domain guides cover specific concerns.
 | AMBSE | `pages/ambse/` | Douglass 2016 (Agile Systems Engineering), Douglass 2021 (Agile MBSE Cookbook). |
 | Methodology | `pages/methodology/` | The plugin's methodology specification at `<plugin>/methodology/`. Atomic-page summaries cross-linked to the spec. |
 | SysML 2.0 | `pages/sysml2/` | OMG SysML 2.0 specification and derived notes. |
-| SySiDE tooling | `pages/syside/` | Sensmetry SySiDE documentation and Python API. |
+| Syside tooling | `pages/syside/` | Sensmetry Syside documentation, Python API, and Sysand. |
 | Needs and Requirements | `pages/needs-and-reqs/` | INCOSE Guide to Needs and Requirements. |
 | Verification and Validation | `pages/vv/` | INCOSE Guide to V&V. |
 | Human-Systems Integration | `pages/hsi/` | HSI Primer Vol. 1. |
@@ -452,10 +452,10 @@ Atomic means one concept per file. A page typically runs 50 to 200 lines.
 Pages over 300 lines are candidates for splitting. When a page grows past
 300 lines during authoring, stop and propose a split before continuing.
 
-The full reference base (130 atomic pages across 11 layers, routed to by
-20 skills) is atomised as of plugin version 3.0.0. New material lands
-directly under `pages/<layer>/` via `/vse-wiki-ingest`, not in any other
-directory.
+The full reference base spans the layers listed above. `INDEX.md`
+carries the authoritative page, layer, and routing totals, regenerated
+on every change. New material lands directly under `pages/<layer>/` via
+`/vse-wiki-ingest`, not in any other directory.
 
 ### Contents blocks
 

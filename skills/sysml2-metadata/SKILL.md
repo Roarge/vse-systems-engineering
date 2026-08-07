@@ -528,11 +528,11 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
-| SySiDE Automator Core API | pages/syside/syside-core-api.md | The Automator is a Python library for programmatic analysis of SysML 2.0 models |
-| SySiDE Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | The Compiler class evaluates SysML expressions, attribute values, and metadata filters |
-| SySiDE Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the SySiDE API, with an element type reference |
-| SySiDE Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | SySiDE offers four complementary tools for SysML v2 |
-| SySiDE VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation |
+| Syside Automator Core API | pages/syside/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
+| Syside Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
+| Syside Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
+| Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
+| Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | SysML 2.0 Filter Conditions on Imports and Views | pages/sysml2/sysml2-filter-conditions.md | Imports can be restricted with filter conditions that impact which elements are brought into a namespace |
 | SysML 2.0 Metadata Definitions and Annotations | pages/sysml2/sysml2-metadata-definitions.md | Declaring metadata definitions and applying them as annotations |
 | SysML 2.0 Metadata, Reflection, and Annotations Overview | pages/sysml2/sysml2-metadata-overview.md | Metadata definitions, annotations, and reflection: how models describe and query their own structure |

@@ -153,7 +153,7 @@ The 2026-04 release leaves the following upstream material pending:
   natural, numerical, occurrence, rational, real, scalar, sequence,
   string, trigonometry, vector).
 
-Until then, authors should consult the SySiDE editor's completion
+Until then, authors should consult the Syside editor's completion
 and the OMG Systems Modeling Language v2.0 specification (March
 2023, formal/2025-01-01) for the library function surface. When
 these chapters publish, the relevant pages will be updated and

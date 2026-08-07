@@ -139,5 +139,5 @@ architecture-design, or verification-validation as appropriate.
 - Do not write any files. Do not propose to modify any model file.
   The parent skill is responsible for routing fixes.
 - If the model has syntax errors that prevent reliable parsing, report
-  the affected files and recommend running SySiDE validation before
+  the affected files and recommend running Syside validation before
   trusting the matrix.

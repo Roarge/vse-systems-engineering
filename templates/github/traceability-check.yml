@@ -36,7 +36,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install SySiDE CLI
+      - name: Install Syside CLI
         run: |
           # Download and extract syside CLI.
           # Adjust the URL and version for your installation.
@@ -44,14 +44,14 @@ jobs:
           # tar -xf syside-*.tar.xz -C ~/.local
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Validate models (SySiDE)
+      - name: Validate models (Syside)
         if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
         run: syside check --warnings-as-errors --stats
         continue-on-error: true
 
-      - name: Check formatting (SySiDE)
+      - name: Check formatting (Syside)
         if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}

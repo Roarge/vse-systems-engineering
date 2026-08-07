@@ -27,7 +27,7 @@ referenced_by: [project-setup, project-audit]
 - Greenfield-only root files
 - CLAUDE.md marker block
 - .vse-iteration.yml schema (version 1)
-- SySiDE configuration
+- Syside configuration
 - Gitignore entries
 - Hooks
 - GitHub Actions (optional)
@@ -64,8 +64,8 @@ directory.
 
 | File | Purpose |
 |---|---|
-| `.lsp.json` | SySiDE language server config |
-| `syside.toml` | SySiDE formatting and linting |
+| `.lsp.json` | Syside language server config |
+| `syside.toml` | Syside formatting and linting |
 | `TASKS.md` | ISO 29110 task checklist |
 
 In brownfield mode these live under `engineering/`.
@@ -101,7 +101,7 @@ Required fields under `current_iteration`:
 Optional fields: `closure_debt` (consumed by
 [[story-branch-pr-workflow]]), `notes`, `history`.
 
-## SySiDE configuration
+## Syside configuration
 
 | File | Greenfield location | Brownfield location |
 |---|---|---|

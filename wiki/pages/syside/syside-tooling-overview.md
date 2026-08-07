@@ -1,66 +1,83 @@
 ---
-title: "SySiDE Tooling Overview and Installation"
+title: "Syside Tooling Overview and Installation"
 slug: syside-tooling-overview
 type: reference
 layer: syside
-summary: SySiDE offers four complementary tools for SysML v2
-tags: [syside, tooling, installation, vscode, ci, licence]
+summary: Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup
+tags: [syside, tooling, installation, vscode, ci, licence, roadmap]
 sources:
-  - citation: "Sensmetry. SySiDE documentation: which tool, install, and licence pages. https://docs.sensmetry.com/about/which-tool.html, https://docs.sensmetry.com/automator/install.html (accessed 2026-04)."
+  - citation: "Sensmetry. Syside documentation: which tool, install, and licence pages. https://docs.sensmetry.com/about/which-tool.html, https://docs.sensmetry.com/automator/install.html (accessed 2026-08)."
+    raw: null
+  - citation: "Sensmetry. Syside product pages and release notes, release 0.10.3 of 23 July 2026. https://sensmetry.com (accessed 2026-08)."
     raw: null
 related:
   - syside-project-configuration
   - syside-core-api
+  - syside-sysand-package-management
   - vse-canonical-project-layout
   - sysml2-canonical-model-layout
-confidence: high
+confidence: medium
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
-# SySiDE Tooling Overview and Installation
+# Syside Tooling Overview and Installation
 
 ## Contents
 
-- Tool selection guide
+- Product lineup
+- Choosing a tool
 - Installation
 - VSE workflow positioning
+- Roadmap and version stability
 
-## Tool selection guide
+Confidence note: this page is `medium` rather than `high` because two
+of its sections describe material that is not yet settled. Syside
+Derisker is a beta product, and the Roadmap section describes plans
+that Sensmetry may revise. Every other section reflects the shipped
+0.10.3 release and is stable.
 
-SySiDE offers four complementary tools for SysML v2. Choose
-based on workflow:
+## Product lineup
 
-| Workflow | Tool | Licence |
-|----------|------|---------|
-| Learning, lightweight editing | **Editor** (VS Code extension) | Free |
-| Model writing, diagrams, interactive exploration | **Modeler** (VS Code extension) | Licensed |
-| CI/CD validation, headless diagrams | **Modeler CLI** (`syside check`, `syside format`, `syside viz`) | Licensed |
-| Programmatic analysis, scripting, report generation | **Automator** (Python library) | Licensed |
+The lineup was renamed during 2026. The current names are below, with
+release 0.10.3 (23 July 2026) as the reference version.
 
-Combined workflows: use Modeler for visual review and Automator
-for automated analysis. Both share the same licence key.
+| Product | What it is | Licence |
+|---|---|---|
+| **Syside Editor: SysML v2 Essential** | VS Code extension for editing, validation, navigation, and completion | Free |
+| **Syside Pro Suite** | Syside Modeler (diagrams, grid views, interactive exploration) plus Syside Automator (Python library and CLI) | Paid |
+| **Syside Cloud** | The Pro Suite in a browser, with Claude Code preinstalled | Paid |
+| **Syside Derisker** | Safety and security analysis (ISO 26262, ISO/SAE 21434, FMEA) | Beta |
 
-Decision matrix:
+Syside Derisker entered beta in Q1 2026. Treat its feature set as
+provisional and confirm availability with Sensmetry before planning a
+VSE workflow around it. Statement dated August 2026.
 
-- I need to write and visualise models -> Modeler
-- I need to run queries, extract data, or generate reports
-  from models -> Automator
-- I need to validate models in CI/CD or generate diagrams
-  headlessly -> Modeler CLI
-- I am learning SysML v2 or making quick edits -> Editor (free)
-- I need visual review with automated analysis -> Modeler +
-  Automator
+Legacy note: the earlier open-source language server, `sysml-2ls`, was
+archived in October 2025 and renamed "SysIDE Editor Legacy". It is no
+longer maintained and must not be recommended to a VSE. New projects
+use Syside Editor.
 
-If you have Modeler, you already have everything Editor offers.
-Disable the Editor extension when Modeler is active to avoid
-conflicts. Reference: https://docs.sensmetry.com/about/which-tool.html
+## Choosing a tool
+
+| Workflow | Product |
+|---|---|
+| Learning SysML v2, quick edits, syntax checking | Syside Editor |
+| Model writing with diagrams and grid views | Syside Pro Suite (Modeler) |
+| Scripted analysis, report generation, CI validation | Syside Pro Suite (Automator and the `syside` CLI) |
+| The Pro Suite without a local installation | Syside Cloud |
+| Safety and security analysis on top of the model | Syside Derisker (beta) |
+
+If a project holds a Pro Suite licence it already has everything the
+free Editor offers. Disable the Editor extension when the Modeler is
+active, because the two compete for the same file types. Reference:
+https://docs.sensmetry.com/about/which-tool.html
 
 ## Installation
 
-Requirements: Python 3.12 or later (64-bit), internet
-connectivity for licence validation.
+Requirements: Python 3.12 or later (64-bit), internet connectivity for
+licence validation.
 
 ```bash
 # Create virtual environment
@@ -88,7 +105,7 @@ sudo apt install graphviz            # Dependency graph rendering
 sudo apt install pandoc              # DOCX conversion
 ```
 
-Licence setup (the same key works for Modeler and Automator):
+Licence setup (one key covers the whole Pro Suite):
 
 ```bash
 # Option 1: Environment variable
@@ -101,20 +118,43 @@ echo "SYSIDE_LICENSE_KEY=your-licence-key" > .env
 python -c "import keyring; keyring.set_password('license-key.syside', 'license-key', 'your-key')"
 ```
 
-For CI/CD, use a Deployment Licence Key (prefix `CI-`) stored in
-the provider's secret management (GitHub secrets, GitLab CI/CD
-variables). Reference: https://docs.sensmetry.com/automator/install.html
+For CI/CD, use a Deployment Licence Key (prefix `CI-`) stored in the
+provider's secret management (GitHub secrets, GitLab CI/CD variables).
+Reference: https://docs.sensmetry.com/automator/install.html
 
 ## VSE workflow positioning
 
-A typical VSE bootstrapped through `project-setup` installs the
-Modeler VS Code extension for interactive editing and the
-Automator Python package for automation hooks (CI gates, report
-generation, traceability checks). The plugin's `traceability-guard`
-and `document-export` skills both depend on Automator being
-available in the project's virtual environment.
+A typical VSE bootstrapped through `project-setup` installs the Pro
+Suite VS Code extension for interactive editing and the Automator
+Python package for automation hooks (CI gates, report generation,
+traceability checks). The plugin's `traceability-guard` and
+`document-export` skills both depend on the Automator being available
+in the project's virtual environment.
 
-The vse-canonical-project-layout page describes where SySiDE
-tools sit in the canonical directory layout, and the
-sysml2-canonical-model-layout page describes the model directory
-structure SySiDE consumes.
+Package management is a separate concern handled by Sysand, the
+open-source SysML v2 package manager described in
+[[syside-sysand-package-management]].
+
+[[vse-canonical-project-layout]] describes where the Syside tools sit
+in the canonical directory layout, and
+[[sysml2-canonical-model-layout]] describes the model directory
+structure the tools consume. [[syside-project-configuration]] covers
+`syside.toml` and `.lsp.json`.
+
+## Roadmap and version stability
+
+Roadmap as of August 2026, from Sensmetry's published plans. Treat
+every item here as subject to change.
+
+- Syside and Sysand reach v1.0 together, planned for Q3 2026.
+- MCP servers are planned for both Syside and Sysand, so an agent can
+  query a model and a package index through a tool interface rather
+  than through shell commands.
+- A high-level Python API is planned, sitting above the current
+  Automator surface.
+
+Until v1.0 lands, both products remain in a breaking-change window.
+Release 0.9.0 already broke the Automator CLI, scalar handling, and
+validation diagnostics. Pin the Syside version a project depends on,
+read the release notes before upgrading, and expect scripted
+workflows to need adjustment across minor releases.

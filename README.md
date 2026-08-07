@@ -154,7 +154,7 @@ The Syside Automator (`pip install syside`, Python 3.12+) enables programmatic w
 - **State machine simulation**: simulate SysML state machines in Python.
 - **Interactive exploration**: REPL mode for ad hoc model queries.
 
-See the SySiDE pages under `wiki/pages/syside/` for the full API reference.
+See the Syside pages under `wiki/pages/syside/` for the full API reference.
 
 ## Getting started
 

@@ -98,7 +98,7 @@ and accurately capture the property of interest.
   adjust.
 - Start with SE velocity and defect density; add others as
   needed.
-- Automate metric collection where possible (SySiDE validation
+- Automate metric collection where possible (Syside validation
   counts, Git statistics).
 
 ## See also

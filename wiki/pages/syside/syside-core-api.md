@@ -1,12 +1,12 @@
 ---
-title: "SySiDE Automator Core API"
+title: "Syside Automator Core API"
 slug: syside-core-api
 type: reference
 layer: syside
-summary: The Automator is a Python library for programmatic analysis of SysML 2.0 models
+summary: Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library
 tags: [syside, automator, api, python, model-loading, traversal]
 sources:
-  - citation: "Sensmetry. SySiDE Automator Python API: model structure. https://docs.sensmetry.com/python/latest/structure.html (accessed 2026-04)."
+  - citation: "Sensmetry. Syside Automator Python API: model structure. https://docs.sensmetry.com/python/latest/structure.html (accessed 2026-08)."
     raw: null
 related:
   - syside-tooling-overview
@@ -15,16 +15,18 @@ related:
   - syside-vse-workflows
   - sysml2-syntax-packages-and-definitions
   - sysml2-canonical-model-layout
+  - vse-model-tiers-and-templates
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-modelling, sysml2-metadata]
 ---
 
-# SySiDE Automator Core API
+# Syside Automator Core API
 
 ## Contents
 
+- Parser characteristics
 - Loading models
 - Querying elements
 - Element properties
@@ -34,7 +36,20 @@ referenced_by: [sysml2-modelling, sysml2-metadata]
 The Automator is a Python library for programmatic analysis of
 SysML 2.0 models. The functions below are the minimum surface a
 VSE workflow needs for trace checks, report generation, and
-model-driven scripting.
+model-driven scripting. The surface below is verified against the
+0.10.x releases, current at August 2026.
+
+## Parser characteristics
+
+Two properties of the parser matter when a VSE drives Syside from an
+agent rather than by hand.
+
+The 0.10.3 parser is optimised for large models edited rapidly by
+agents or scripts, which is exactly the shape of an automated
+modelling session.
+
+Syside is in a breaking-change window before v1.0 (see
+[[syside-tooling-overview]]). Pin the version a script depends on.
 
 ## Loading models
 
@@ -62,7 +77,7 @@ assert not diagnostics.contains_errors(warnings_as_errors=True)
 ```
 
 The recursive collector matches the canonical project model
-directory described in sysml2-canonical-model-layout, so a
+directory described in [[sysml2-canonical-model-layout]], so a
 typical VSE script can load the entire model with a single line.
 
 ## Querying elements
@@ -89,7 +104,7 @@ for part in model.nodes(syside.PartUsage):
 ```
 
 The `DocumentTier` enumeration mirrors the model tier separation
-described in vse-model-tiers-and-templates: project elements,
+described in [[vse-model-tiers-and-templates]]: project elements,
 standard library elements, and external (third-party) library
 elements live in different tiers and are filtered separately
 when walking the model.
@@ -106,8 +121,8 @@ element.document            # Owning document
 element.parent              # Parent AST node
 ```
 
-These properties cover the common access patterns. The
-sysml2-syntax-packages-and-definitions page describes how the same
+These properties cover the common access patterns.
+[[sysml2-syntax-packages-and-definitions]] describes how the same
 distinctions appear at the language level (definition versus
 usage, declared name versus short name).
 

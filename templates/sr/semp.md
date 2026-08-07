@@ -43,7 +43,7 @@ iso_ref: "SR.1"
 
 - **Functional decomposition method:** (functional flow, use case analysis)
 - **Physical allocation method:** (trade study, morphological analysis)
-- **Modelling tool:** Sensmetry SySiDE (SysML 2.0)
+- **Modelling tool:** Sensmetry Syside (SysML 2.0)
 
 ### 2.3 Construction
 
@@ -89,7 +89,7 @@ iso_ref: "SR.1"
 
 | Tool | Purpose | Version |
 |------|---------|---------|
-| Sensmetry SySiDE | SysML 2.0 modelling | |
+| Sensmetry Syside | SysML 2.0 modelling | |
 | Git | Version control | |
 | Claude Code | SE companion (designed cognitive reserve) | |
 
