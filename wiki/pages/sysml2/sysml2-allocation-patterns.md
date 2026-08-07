@@ -6,7 +6,7 @@ layer: sysml2
 summary: Standard allocation mapping patterns and the recurring mistakes that show up in review
 tags: [allocations, patterns, gotchas, vse, mapping]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 271."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 328."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview
@@ -14,7 +14,7 @@ related:
   - sysml2-view-definitions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-allocations]
 ---
 
@@ -117,7 +117,7 @@ take responsibility for which intent as the design progresses
 ### Chapter 75 reference is stubbed
 
 Chapter 75 of the SysML v2 book (Allocations in Part V SysML
-Reference) is marked as pending in the 2026-04 release. The formal
+Reference) is marked as pending in the 2026-06 release. The formal
 reference documentation is therefore incomplete. Authors should
 rely on Chapter 34 conceptual material plus the Chapter 41 library
 example.
@@ -159,7 +159,7 @@ undermines reuse (Ch 41, p 266).
 
 ## Pending material in the source
 
-The 2026-04 release of the SysML v2 book leaves the following topics
+The 2026-06 release of the SysML v2 book leaves the following topics
 pending:
 
 - Chapter 75 Allocations in Part V SysML Reference (full formal

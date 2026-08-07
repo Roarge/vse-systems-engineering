@@ -9,15 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.6`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.7`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
-rigour skills chunk took `rc.5`, and the Syside refresh takes `rc.6`,
-with every later candidate shifting by one.
+rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, and
+the SysML v2 Book repagination takes `rc.7`, with every later candidate
+shifting by one.
 
 ### Changed
+
+- All 46 wiki pages that cite "The SysML v2 Book" move from the 2026-04
+  release to the 2026-06 release. The new printed page ranges come from
+  a section-anchored map built from the PDF bookmark tree, with every
+  section start re-verified against the printed heading text, because
+  the shift is not a constant offset and fifteen bookmark destinations
+  in the cited range point one page before the heading they name. Ten
+  of the rewritten citations were spot-checked against the PDF.
+- Page bodies that named the 2026-04 release are re-anchored. Claims
+  about material the release still leaves pending were re-checked
+  against the 2026-06 PDF and now name that release. Novelty flags of
+  the form "new in the 2026-04 release" are dropped, because the
+  material is no longer new relative to the edition the wiki cites.
+- The `updated:` field is bumped on the 28 pages whose cited chapters
+  the book changelog leaves untouched. Eighteen pages keep their old
+  date on purpose, so the lint source-freshness INFO keeps flagging the
+  gap between the wiki and the 2026-06 content until that delta lands.
+
+### Fixed
+
+- The occurrence page cited "Sections 25.8, 25.9, and 25.10" from the
+  2026-04 numbering. The 2026-06 release inserts a new Section 25.9
+  (Event Occurrences), which pushed the old 25.9 and 25.10 down to
+  25.10 and 25.11. Both the citation and the three in-text section
+  references in the body now use the current numbering.
+- Two pending-material claims were false against the 2026-06 release
+  and are corrected. Chapter 27 (Calculations) is published at pages
+  203 to 206 and Section 33.2.1 (Trade Studies) at page 288, so
+  `sysml2-expressions-constraints`, `sysml2-expression-patterns`,
+  `sysml2-variant-patterns`, and `sysml2-variations-overview` no longer
+  describe them as gaps in the source.
 
 - The wiki data layer moves to the on-demand model. `wiki/CLAUDE.md`,
   the binding schema, is rewritten around the navigable-wiki contract:

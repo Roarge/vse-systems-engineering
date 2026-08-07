@@ -6,7 +6,7 @@ layer: sysml2
 summary: Syntax for the three standard case kinds, that is use case, analysis case, and verification case
 tags: [cases, use-cases, analysis-cases, verification-cases, syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 233 to 242."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 279 to 290."
     raw: sysmlv2.pdf
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. VerdictKind enumeration."
     raw: 2-OMG_Systems_Modeling_Language.pdf
@@ -16,7 +16,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-cases]
 ---
 
@@ -118,7 +118,7 @@ subjects produce an invalid verification model (Ch 33, p 242).
 
 Verification cases return a verdict, typically drawn from the
 standard `VerdictKind` enumeration with values such as `pass`,
-`fail`, `inconclusive`, and `error`. The 2026-04 release of the SysML
+`fail`, `inconclusive`, and `error`. The 2026-06 release of the SysML
 v2 book does not provide a dedicated section on verdict semantics.
 The verdict kind definitions live in the standard domain library and
 are referenced from Chapter 33 without full elaboration.

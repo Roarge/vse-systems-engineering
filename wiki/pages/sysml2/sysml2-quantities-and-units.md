@@ -6,7 +6,7 @@ layer: sysml2
 summary: A quantity is an attribute whose value carries physical meaning
 tags: [quantities, units, isq, si, iso80000, dimensional-analysis]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 24, pages 135 to 143."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 24, pages 141 to 147."
     raw: sysmlv2.pdf
   - citation: "ISO 80000-1:2009. Quantities and units — Part 1: General."
     raw: null
@@ -16,7 +16,7 @@ related:
   - sysml2-library-import-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-modelling]
 ---
 
@@ -127,8 +127,7 @@ SI unit suffix.
 ## See also
 
 - [[sysml2-advanced-quantities-units]] for the underlying
-  SimpleUnit, DerivedUnit, and ConversionByPrefix mechanism (new
-  in the 2026-04 release).
+  SimpleUnit, DerivedUnit, and ConversionByPrefix mechanism.
 - [[sysml2-libraries-architecture]] for the library layering.
 - [[sysml2-library-import-patterns]] for VSE-scale import
   patterns.

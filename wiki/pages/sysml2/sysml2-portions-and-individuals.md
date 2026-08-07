@@ -6,7 +6,7 @@ layer: sysml2
 summary: Portion vocabulary (snapshots, time slices, space slices) and the individual keyword
 tags: [portions, snapshots, time-slice, space-slice, individuals, life]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.3 and 25.4, pages 147 to 152."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 25.3 and 25.4, pages 151 to 155."
     raw: sysmlv2.pdf
 related:
   - sysml2-occurrences-4d
@@ -34,9 +34,9 @@ referenced_by: [sysml2-behaviour]
 
 This page captures the portion vocabulary (snapshots, time slices,
 space slices, space shots, spacetime-enclosed points) and the
-`individual` keyword, both new in the 2026-04 release of the SysML
-v2 book (Chapter 25, pages 147 to 152). For the conceptual frame
-of 4D modelling, see [[sysml2-occurrences-4d]].
+`individual` keyword, both covered by the SysML v2 book (Chapter 25,
+pages 151 to 155). For the conceptual frame of 4D modelling, see
+[[sysml2-occurrences-4d]].
 
 ## What a portion is
 

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Calculations and constraints are the two main expression-bearing constructs in SysML 2.0
 tags: [calculations, constraints, assert-constraint, calc-def]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 27, page 168; Chapter 31, pages 208 to 210."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 27, pages 203 to 206; Chapter 31, pages 253 to 255."
     raw: sysmlv2.pdf
 related:
   - sysml2-expressions-overview
@@ -35,12 +35,12 @@ constraints evaluate to a Boolean and govern model validity.
 
 ## Calculations (Chapter 27)
 
-Chapter 27 of the SysML v2 book is **stubbed in the 2026-04
-release**. The chapter is named in the table of contents but the
-body has not yet been published. Until it lands, practical
-calculation authoring draws on the quick-reference syntax and on
-the invocation semantics covered in
-[[sysml2-functions-and-higher-order]].
+Chapter 27 of the SysML v2 book (pages 203 to 206) is published in
+the 2026-06 release and covers calculation definitions and
+calculation usages. **This page does not yet reflect that
+material.** Until it is worked in, practical calculation authoring
+draws on the quick-reference syntax below and on the invocation
+semantics covered in [[sysml2-functions-and-higher-order]].
 
 Key things to remember when authoring calculations now:
 
@@ -140,15 +140,15 @@ happen" rather than "this must always hold" (Ch 31, p 210).
 
 ## Pending material in the source
 
-Two upstream chapters remain pending in the 2026-04 release:
+One upstream chapter remains pending in the 2026-06 release:
 
-- **Chapter 27 Calculations**: authoring patterns, parametric
-  modelling, binding to parts.
 - **Chapter 86 Kernel Function Library**: function catalogue with
   signatures.
 
-When these publish, expect new pages or updates that add full
-calculation semantics and a function catalogue.
+When it publishes, expect new pages or updates that add a full
+function catalogue. Chapter 27 Calculations is no longer pending,
+and working its authoring patterns into this page is outstanding
+wiki work rather than an upstream gap.
 
 ## See also
 

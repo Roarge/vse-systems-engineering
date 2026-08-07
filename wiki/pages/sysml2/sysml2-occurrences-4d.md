@@ -6,7 +6,7 @@ layer: sysml2
 summary: Occurrences and 4D modelling, where a part extends through time as well as through space
 tags: [occurrences, 4d-modelling, perdurantism, spacetime, kerml]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.1 and 25.2, pages 144 to 146. New chapter in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 25.1 and 25.2, pages 148 to 150."
     raw: sysmlv2.pdf
   - citation: "McTaggart, J. M. E. (1908). The Unreality of Time. Mind, 17(68): 457-484."
     raw: null
@@ -48,8 +48,7 @@ the moment it ceases to exist. Properties that "change over time"
 are not values being reassigned. They are functions over the
 entity's temporal extent. This is what 4D modelling means, and it
 is the foundation of how SysML 2.0 talks about occurrences. This
-material was added as Chapter 25 in the 2026-04 release of the
-SysML v2 book.
+material is Chapter 25 of the SysML v2 book.
 
 ## A concrete payoff
 

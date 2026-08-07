@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical patterns and recurring mistakes for expressions, calculations, and constraints
 tags: [expressions, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 30, pages 189 to 206; Chapter 31, pages 208 to 210."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 30, pages 233 to 252; Chapter 31, pages 253 to 255."
     raw: sysmlv2.pdf
 related:
   - sysml2-expressions-overview
@@ -141,10 +141,8 @@ not visible from the current context. Use with care in large models
 
 ## Pending chapters
 
-The 2026-04 release leaves the following upstream material pending:
+The 2026-06 release leaves the following upstream material pending:
 
-- **Chapter 27 Calculations**: authoring patterns, parametric
-  modelling, binding to parts.
 - **Chapter 59 KerML Expressions**: formal layer semantics, the
   delta between SysML surface and KerML metamodel foundation.
 - **Chapter 86 Kernel Function Library**: full function catalogue

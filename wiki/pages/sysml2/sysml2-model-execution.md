@@ -6,7 +6,7 @@ layer: sysml2
 summary: Executing or simulating a model so that its specified behaviour can be observed
 tags: [model-execution, simulation, executable-modelling, traces, simulator]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 39, pages 284 to 289. New chapter in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 39, pages 310 to 315."
     raw: sysmlv2.pdf
   - citation: "OMG (2025). KerML 2.0 Annex A. Reference for the declarative execution semantics of KerML."
     raw: null
@@ -17,7 +17,7 @@ related:
   - sysml2-state-machines
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -39,7 +39,7 @@ can be solved or approximated, to obtain a sequence of simulated
 system states (an **execution trace**). These traces can be
 visualised in diagrams, replayed or observed in an interactive
 environment, or reconstructed from a log file. Chapter 39 of the
-SysML v2 book is new in the 2026-04 release (pages 284 to 289).
+SysML v2 book covers model execution (pages 310 to 315).
 
 ## Is SysML an executable modelling language?
 

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Unit definitions, derived units, conversions, and scalar and vector quantity values
 tags: [quantities, units, iso80000, simpleunit, derivedunit, mref]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 24.3, pages 140 to 143. New section in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 24.3, pages 144 to 147."
     raw: sysmlv2.pdf
   - citation: "ISO 80000-1:2009. Quantities and units — Part 1: General."
     raw: null
@@ -15,7 +15,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-expressions]
 ---
 
@@ -37,8 +37,8 @@ SysML 2.0. Applying quantities and units in everyday models is
 simple: declare an attribute, give it a quantity type, attach a
 unit. The advanced concepts cover what is happening behind the
 scenes in the domain libraries and how quantities and units are
-defined and related. The 2026-04 release of the SysML v2 book added
-this material as a new Section 24.3 (pages 140 to 143).
+defined and related. The SysML v2 book covers this material in
+Section 24.3 (pages 144 to 147).
 
 ## When advanced concepts matter
 
