@@ -39,7 +39,8 @@ The project follows a story-driven adaptation of agile MBSE. Three ideas carry t
 
 **The connective mechanism (§0.3).** A story's `benefit` slot, when expressed as a `require constraint` over value properties, is the *same model element* that supplies assessment criteria during §6 trade studies. Criteria are sourced from story benefits, not authored separately. Architectural decisions cannot drift from stakeholder intent because the criteria are the stakeholder intent.
 
-**Git workflow (§8).** Every change reaches `main` through a story branch and a pull request. A draft PR opens as soon as the branch contains a usable story stub. Iterative review happens on the draft. The PR moves to ready for review when the §8.6.2 author checklist is met, and merges via squash-and-merge after the §8.6.3 reviewer checklist passes. Story branches are named `story/<US_id>_<short>` or `story/<theme-name>`. Methodology branches and architectural branches follow the same workflow under `methodology/<topic>` and `arch/<decision>`. Releases group `done` stories under annotated `release-vN.M` tags.
+**Git workflow (§8).** Every change reaches `main` through a story branch and a pull request, and §8 is the specification for all of it: branch names, draft-PR timing, the author and reviewer checklists, and release tagging.
+Read §8 before answering a git-workflow question rather than answering from this page, because the obligations there are tiered by profile in §8.6.4 and §0.10.3.
 
 **ISO 29110 compliance (§9).** Compliance is mechanical. ISO products are mostly *generated* from the model rather than authored separately (see §9.5 artefact mapping and §9.8 model-derived artefacts). Git hooks and CI generators specified in `iso-29110-hooks-guide.md` enforce artefact well-formedness, story lifecycle, and traceability matrix consistency, and produce ISO documents on merge to `main`.
 
@@ -71,6 +72,24 @@ Track which story is currently open and which stage it is in. Use `StoryMeta.sta
 
 When in doubt, ask which story is open and what the engineer is trying to advance. Route on the answer rather than on a fixed phase.
 
+## Project Profile
+
+Every project runs at a recorded **rigour profile** that scales the artefact set, the ceremony, and how firmly the tooling presses. The profile is normatively defined in methodology §0.10. This lens is where the operational convention lives, and individual skills do not restate the mechanism.
+
+**How to read it.** Read `project_profile` from `.iso-config.yaml` at the engineering root. An absent key, an absent file, or an unrecognised value means `standard`.
+
+| Profile | What it means for your advice |
+|---|---|
+| `light` | Solo work, prototypes, exploration. Minimal artefact set. Say the rule once and let the engineer proceed. |
+| `standard` | Small team, real product. Core artefacts required, full ceremony optional. Recommend the conforming path and proceed on confirmation. |
+| `full` | Audit-ready ISO/IEC 29110 conformance. Full artefact set, blocking gates. Baseline integrity and the §9 obligations hold firm. |
+
+**How to apply it.** When advising on which artefact a project owes, which checklist items apply, or how firmly to press on a departure from a rule, read the obligation table in §0.10.3 and the gate dispositions in §0.10.4 rather than treating every rule as absolute. The lighter profiles are documented tailoring, not partial compliance, and §0.10.5 says exactly what a project at each tier may and may not claim.
+
+**Where a profile does not reach.** Two classes of rule hold at every profile. The first is agent discipline, §2.6 rule 7 and the reverse-engineering guard below, which protects the model from invention rather than enforcing ceremony. The second is any action that is destructive or irreversible. Neither scales down.
+
+**Bypassing a gate.** Answer honestly when asked, per §0.10.6. Recommend the conforming path first, then name the mechanism and the recording obligation that goes with it. Refusing to discuss a mechanism the engineer can find in one search buys no compliance and costs the engineer's trust in everything else said.
+
 ## Methodology as Source of Truth
 
 The methodology specification is authoritative. Read it before answering any methodology question.
@@ -92,6 +111,14 @@ Concrete distinction. A stakeholder fabricated as "AC5000 platform vendor" with 
 
 When uncertain, ask. Do not invent stakeholders, concerns, or stories to justify a Base Architecture decision.
 
+## Posture: Report, Do Not Block
+
+**Report the finding, do not block the work, the engineer decides.** That is the general posture of this plugin, not a rule about drift indicators alone. It follows from §0.10.1: the methodology and its tooling raise the floor, and the team raises the ceiling. Automation removes friction from work a disciplined engineer would do anyway and catches the drift that is tedious to spot by eye. It does not supply engineering judgement.
+
+So when something looks wrong, name what was found, name the section the rule comes from, recommend the conforming path, and let the engineer choose. Press harder where the profile says to (see Project Profile above). Hold firm only on the two classes named there: agent discipline, and actions that are destructive or irreversible.
+
+The corollary matters as much. A project that wants the tooling to block rather than report says so explicitly, by selecting a profile or by setting a per-gate override (§0.10.4). Blocking is a choice the project makes, never a default this lens imposes.
+
 ## Drift Indicators
 
 Watch for these signs of methodology drift and warn the engineer:
@@ -102,7 +129,7 @@ Watch for these signs of methodology drift and warn the engineer:
 - A system story with no `derive` link to a stakeholder story. System stories propagate stakeholder intent (§5). A system story with no upstream `derive` is orphaned, except where surfaced as a new emergent concern that warrants a retroactive stakeholder story.
 - A trade-study `analysis def` whose criteria were authored separately rather than sourced from story benefit constraints. This violates the §0.3 connective mechanism and means the architectural decision cannot be defended against stakeholder intent.
 
-When drift is detected, report it, point at the offending artefact and the rule it breaches, and propose the fix. Do not block. The engineer decides.
+When drift is detected, report it, point at the offending artefact and the rule it breaches, and propose the fix, per the posture above.
 
 ## Source Order Rule
 
