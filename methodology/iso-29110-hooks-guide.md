@@ -33,7 +33,7 @@ authoring.
 
 | ISO obligation | Hook(s) that cover it |
 |---|---|
-| PM.O1 — Plan reviewed and accepted | CI required status check on `main` (§4.4 contract 1); PR-required CI lint |
+| PM.O1 — Plan reviewed and accepted | Plan-revision PR review and the `plan-baseline-*` tag; PR-required CI lint |
 | PM.O2 — Progress monitored; corrections | `post-merge` regenerator; CC `Stop` hook prompts for Progress Status entry |
 | PM.O3 — Change Requests handled | `pre-commit` baselined-artefact check; CC `PreToolUse` on Edit |
 | PM.O4 — Review meetings recorded | `commit-msg` meeting commit format; CC `UserPromptSubmit` after sync review |
@@ -391,8 +391,8 @@ choice, and configuration-management scope.
 3. **IVV Plan** rendered to `docs/generated/ivv-plan.md`.
 4. **Justification Document** rendered (aggregating trade studies +
    ADRs).
-5. **Progress Status Record** entry stub appended for the iteration
-   if iteration boundary is crossed.
+5. **Progress Status Record** entry stub appended when the merge
+   closes a story or lands a release baseline.
 
 **Sample script (`.githooks/post-merge`):**
 
@@ -497,7 +497,6 @@ set -euo pipefail
 cat <<EOF
 === ISO 29110 Project Status ===
 
-Iteration:        $(cat docs/iteration.txt 2>/dev/null || echo "not set")
 Branch:           $(git branch --show-current)
 Project Plan:     $(git tag -l 'plan-baseline-*' | tail -1 || echo "not yet baselined")
 
@@ -1108,7 +1107,7 @@ For a new project adopting this methodology + ISO 29110 compliance:
       (PR through full review cycle).
 - [ ] Initial Risk Register, Correction Register, Disposal Approach
       sections in place.
-- [ ] First iteration boundary set; Progress Status Record created.
+- [ ] First Progress Status Record created.
 
 ## 10. Customisation guidance
 

@@ -42,14 +42,14 @@ For every story advanced by this PR:
 - [ ] `[full]` Framed `concern def`s exist in the appropriate concerns package.
 - [ ] `[full]` Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
 - [ ] `[standard]` The `StoryMeta` fields listed in `storymeta.required_fields` are set.
+- [ ] The model parses.
 - [ ] `[full]` CI lint and well-formedness checks pass on the latest commit.
 - [ ] `[full]` Cross-references resolve (no dangling type names, no orphan stories).
 
 At `light`, the two items above marked `[standard]` for `role` and
-`subject` are covered coarsely by these two instead:
+`subject` are covered coarsely by this one instead:
 
 - [ ] The story file sits in the package appropriate to its level.
-- [ ] The model parses.
 
 ## Reviewer checklist (§8.6.3)
 

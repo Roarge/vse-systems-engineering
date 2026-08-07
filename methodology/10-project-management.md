@@ -227,7 +227,7 @@ Change Requests against *baselined* artefacts (Plan, baselined
 stories, baselined architecture) require explicit Acquirer agreement
 recorded in the Issue before the implementing PR is merged. The hook
 guide (§10 in `iso-29110-hooks-guide.md`) specifies the automation
-that enforces this.
+that checks this, with dispositions per §0.10.4.
 
 **Tailoring note.** The lifecycle above applies to whatever the project
 has placed on the `baselined_paths` list in `.iso-config.yaml`. The

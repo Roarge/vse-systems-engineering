@@ -9,20 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.2`. Entries accumulate here until the 3.0.0 release heading
-is cut. The release-candidate numbering runs one ahead of the
-provisional overhaul plan, which reserved `3.0.0-rc.1` for the runtime
-flip. The pre-overhaul hygiene work took `rc.1` first, so the flip is
-`rc.2` and every later candidate shifts by one.
-
 `3.0.0-rc.3`. Entries accumulate here until the 3.0.0 release heading
-is cut.
-
-`3.0.0-rc.2` is reserved for the wiki runtime-flip change, which is in
-flight on its own branch and had not landed on `main` when this bump was
-authored. The rigour-profile work takes `rc.3` so the two branches do
-not both claim `rc.2`, and so the ordering in the manifest history
-matches the intended merge order.
+is cut. The release-candidate numbering runs one ahead of the
+provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
+the wiki runtime flip landed as `rc.2`, and the rigour-profile chunk
+takes `rc.3`, with every later candidate shifting by one.
 
 ### Changed
 

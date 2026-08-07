@@ -514,3 +514,9 @@ are project-determined:
 ---
 
 *End of Section 8.*
+The shipped pull request template keeps the intent re-check visible at
+every profile. It is the light set's core reviewer item, and re-asking
+whether the story still matches its intent costs nothing at the higher
+tiers.
+
+
