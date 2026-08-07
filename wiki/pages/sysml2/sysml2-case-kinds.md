@@ -3,6 +3,7 @@ title: "SysML 2.0 Case Kinds: Use, Analysis, Verification"
 slug: sysml2-case-kinds
 type: reference
 layer: sysml2
+summary: Syntax for the three standard case kinds, that is use case, analysis case, and verification case
 tags: [cases, use-cases, analysis-cases, verification-cases, syntax]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 233 to 242."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-cases]
+referenced_by: [sysml2-cases]
 ---
 
 # SysML 2.0 Case Kinds: Use, Analysis, Verification

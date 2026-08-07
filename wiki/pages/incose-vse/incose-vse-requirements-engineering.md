@@ -3,6 +3,7 @@ title: "INCOSE Requirements Engineering for VSEs"
 slug: incose-vse-requirements-engineering
 type: concept
 layer: incose-vse
+summary: Transforming stakeholder needs into system requirements and allocating them to system elements
 tags: [incose, requirements, smart, traceability, volatility, vse]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapters 4.2 and 4.3."
@@ -19,7 +20,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # INCOSE Requirements Engineering for VSEs

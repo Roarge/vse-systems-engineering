@@ -3,6 +3,7 @@ title: "Project Bootstrap Prerequisites"
 slug: project-bootstrap-prerequisites
 type: reference
 layer: project-structure
+summary: What must exist before stakeholder requirements engineering opens on a new VSE project
 tags: [project-setup, bootstrap, prerequisites, base-architecture, system-context, project-plan, sr-1, pm-1]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §4.2 (Stakeholder Requirements Engineering: Inputs and outputs)."
@@ -23,7 +24,7 @@ related:
 confidence: high
 created: 2026-05-06
 updated: 2026-05-06
-bundled_by: [project-setup, project-audit]
+referenced_by: [project-setup, project-audit]
 ---
 
 # Project Bootstrap Prerequisites

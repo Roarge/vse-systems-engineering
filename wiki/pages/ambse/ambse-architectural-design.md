@@ -3,6 +3,7 @@ title: "AMBSE Architectural Design and Use Case Allocation"
 slug: ambse-architectural-design
 type: process
 layer: ambse
+summary: Decomposing a selected architecture into subsystems, allocating requirements, and defining interfaces
 tags: [architectural-design, subsystems, allocation, bottom-up, top-down]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapters 6-7."
@@ -20,7 +21,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [architecture-design]
+referenced_by: [architecture-design]
 ---
 
 # AMBSE Architectural Design and Use Case Allocation

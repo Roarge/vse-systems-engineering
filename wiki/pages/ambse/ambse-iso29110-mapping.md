@@ -3,6 +3,7 @@ title: "AMBSE Workflow Mapping to ISO/IEC 29110"
 slug: ambse-iso29110-mapping
 type: reference
 layer: ambse
+summary: Cross-reference table from AMBSE activities to ISO 29110 process activities
 tags: [iso29110, mapping, workflow, lifecycle]
 sources:
   - citation: "Douglass, B.P. (2016) and Douglass, B.P. (2021), AMBSE workflow against ISO/IEC TR 29110-5-6-2:2014 process activities."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # AMBSE Workflow Mapping to ISO/IEC 29110

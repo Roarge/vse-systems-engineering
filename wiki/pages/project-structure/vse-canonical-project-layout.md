@@ -3,6 +3,7 @@ title: "VSE Canonical Project Layout"
 slug: vse-canonical-project-layout
 type: reference
 layer: project-structure
+summary: The authoritative directory layout for a VSE project scaffolded by project-setup
 tags: [project-setup, project-audit, layout, greenfield, brownfield, .vse-iteration]
 sources:
   - citation: "Plugin-internal model, the authoritative directory structure used by @project-setup and @project-audit."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [project-setup, project-audit]
+referenced_by: [project-setup, project-audit]
 ---
 
 # VSE Canonical Project Layout

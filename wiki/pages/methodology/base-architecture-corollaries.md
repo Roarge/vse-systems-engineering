@@ -3,6 +3,7 @@ title: "Base Architecture: Forward-Going Stories and the Reverse-Engineering Gua
 slug: base-architecture-corollaries
 type: concept
 layer: methodology
+summary: Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard
 tags: [base-architecture, methodology, agent-discipline, story-register, reverse-engineering-guard, forward-going, brownfield-discovery, as-is-survey]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §2 (Base Architecture)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
+referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
 ---
 
 # Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard

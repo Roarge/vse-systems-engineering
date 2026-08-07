@@ -3,6 +3,7 @@ title: "ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6)"
 slug: iso29110-sr-process
 type: reference
 layer: iso29110
+summary: The six ISO 29110 System Definition and Realization activities SR.1 to SR.6
 tags: [iso29110, sr, system-definition, realization, requirements, architecture, ivv, delivery]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Chapter on System Definition and Realization Process."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, release-orchestrator]
+referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6)

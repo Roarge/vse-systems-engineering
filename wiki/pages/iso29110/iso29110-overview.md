@@ -3,6 +3,7 @@ title: "ISO/IEC 29110 VSE Systems Engineering Profile Overview"
 slug: iso29110-overview
 type: concept
 layer: iso29110
+summary: What ISO/IEC TR 29110-5-6-2 covers and how the Basic Profile applies to a VSE
 tags: [iso29110, vse, lifecycle-neutral, basic-profile, generic-profile-group]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014. Systems Engineering — Lifecycle profiles for Very Small Entities (VSEs) — Part 5-6-2: Management and Engineering Guide for the Generic Profile Group: Basic Profile."
@@ -19,7 +20,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, release-orchestrator]
+referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 VSE Systems Engineering Profile Overview

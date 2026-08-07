@@ -3,6 +3,7 @@ title: "SysML 2.0 Syntax: Packages, Definitions, and Common Relationships"
 slug: sysml2-syntax-packages-and-definitions
 type: reference
 layer: sysml2
+summary: Cheat sheet for top-level model organisation, the def/usage pattern, and the common relationship operators
 tags: [syntax, packages, imports, def, usage, comments, metadata, relationships]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.5, 7.6, 7.2, 7.3, 7.4."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Syntax: Packages, Definitions, and Common Relationships

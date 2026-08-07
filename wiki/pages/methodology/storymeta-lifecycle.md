@@ -3,6 +3,7 @@ title: "StoryMeta status lifecycle and branch alignment"
 slug: storymeta-lifecycle
 type: process
 layer: methodology
+summary: The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle
 tags: [user-stories, lifecycle, story-meta, branch-workflow, ci]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §1.5 (Story Metadata)."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, release-orchestrator]
+referenced_by: [vse-companion-overview, story-orchestrator, release-orchestrator]
 ---
 
 # StoryMeta status lifecycle and branch alignment

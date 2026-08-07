@@ -3,6 +3,7 @@ title: "Story branch, draft PR, and final review workflow"
 slug: story-branch-pr-workflow
 type: process
 layer: methodology
+summary: The methodology operationalises every model change through a single git pattern
 tags: [git-workflow, pull-request, branch-model, review-checklist, iso-29110]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §8.4-§8.6 (Branch Model, PR Workflow, Review Checklists)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, release-orchestrator, change-request, project-audit]
+referenced_by: [vse-companion-overview, story-orchestrator, release-orchestrator, change-request, project-audit]
 ---
 
 # Story branch, draft PR, and final review workflow

@@ -3,6 +3,7 @@ title: "HSI in Requirements"
 slug: hsi-in-requirements
 type: process
 layer: hsi
+summary: HSI requirements are not a separate category bolted on after technical requirements are written
 tags: [hsi, requirements, function-allocation, fitts-list, smart, mabamabamaba]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI in Requirements."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # HSI in Requirements

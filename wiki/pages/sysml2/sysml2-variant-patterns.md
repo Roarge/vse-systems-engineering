@@ -3,6 +3,7 @@ title: "SysML 2.0 Variant Patterns and Gotchas"
 slug: sysml2-variant-patterns
 type: pattern
 layer: sysml2
+summary: Practical variation patterns and the recurring mistakes that show up in review
 tags: [variants, patterns, gotchas, vse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 247 to 250."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-variants]
+referenced_by: [sysml2-variants]
 ---
 
 # SysML 2.0 Variant Patterns and Gotchas

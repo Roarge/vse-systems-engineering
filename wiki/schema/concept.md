@@ -3,6 +3,7 @@ title: "[Concept Title]"
 slug: [kebab-case-slug]
 type: concept
 layer: [iso29110|phas-eai|incose-vse|ambse|sysml2|syside|needs-and-reqs|vv|hsi|project-structure]
+summary: [one line, under 120 characters, what the page covers and when to read it]
 tags: []
 sources:
   - citation: "[Primary source citation]"
@@ -13,7 +14,7 @@ related: []
 confidence: high
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
-bundled_by: []
+referenced_by: []
 ---
 
 # [Concept Title]

@@ -3,6 +3,7 @@ title: "Project Management workflow (§10)"
 slug: project-management-workflow
 type: process
 layer: methodology
+summary: The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests
 tags: [project-management, plan, change-request, risk-register, cm-strategy, disposal, pm-objectives]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §10 (Project Management)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-06
-bundled_by: [vse-companion-overview, project-plan, release-orchestrator, change-request, project-setup]
+referenced_by: [vse-companion-overview, project-plan, release-orchestrator, change-request, project-setup]
 ---
 
 # Project Management workflow (§10)

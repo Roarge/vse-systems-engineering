@@ -3,6 +3,7 @@ title: "Story-driven AMBSE Methodology Overview"
 slug: methodology-overview
 type: concept
 layer: methodology
+summary: The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2
 tags: [methodology, ambse, sysmlv2, user-stories, iteration]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §0 (Methodology Overview)."
@@ -23,7 +24,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, release-orchestrator, project-setup, project-audit]
+referenced_by: [vse-companion-overview, story-orchestrator, release-orchestrator, project-setup, project-audit]
 ---
 
 # Story-driven AMBSE Methodology Overview

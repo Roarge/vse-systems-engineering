@@ -3,6 +3,7 @@ title: "AMBSE Interface Specification and Handoff to Downstream Engineering"
 slug: ambse-interfaces-and-handoff
 type: process
 layer: ambse
+summary: Interfaces are the most critical architectural artefact for system integration
 tags: [interfaces, logical, physical, handoff, icd, iteration-boundary]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapters 7-8."
@@ -17,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [architecture-design]
+referenced_by: [architecture-design]
 ---
 
 # AMBSE Interface Specification and Handoff to Downstream Engineering

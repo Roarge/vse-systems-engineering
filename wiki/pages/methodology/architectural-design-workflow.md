@@ -3,6 +3,7 @@ title: "Architectural Design workflow (§7)"
 slug: architectural-design-workflow
 type: process
 layer: methodology
+summary: Decomposing the resolved architecture into subsystems and allocating the specification down, per §7
 tags: [subsystem-decomposition, allocation, control-law, dependability, recursive, sr-3]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §7 (Architectural Design)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, architecture-design, story-orchestrator]
+referenced_by: [vse-companion-overview, architecture-design, story-orchestrator]
 ---
 
 # Architectural Design workflow (§7)

@@ -3,6 +3,7 @@ title: "SySiDE Automator Core API"
 slug: syside-core-api
 type: reference
 layer: syside
+summary: The Automator is a Python library for programmatic analysis of SysML 2.0 models
 tags: [syside, automator, api, python, model-loading, traversal]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: model structure. https://docs.sensmetry.com/python/latest/structure.html (accessed 2026-04)."
@@ -17,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, sysml2-metadata]
+referenced_by: [sysml2-modelling, sysml2-metadata]
 ---
 
 # SySiDE Automator Core API

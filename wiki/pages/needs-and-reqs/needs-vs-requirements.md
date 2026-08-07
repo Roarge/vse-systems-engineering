@@ -3,6 +3,7 @@ title: "Needs vs Requirements: Core Distinction and Categorisation"
 slug: needs-vs-requirements
 type: concept
 layer: needs-and-reqs
+summary: A need expresses what stakeholders expect from the System of Interest (SOI)
 tags: [needs, requirements, stakeholders, categorisation, ffq-c, vested-influence-participate]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements (Needs and Requirements), v1.0. INCOSE-TP-2021-003-01."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Needs vs Requirements: Core Distinction and Categorisation

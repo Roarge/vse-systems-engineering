@@ -3,6 +3,7 @@ title: "SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches"
 slug: sysml2-type-hierarchy
 type: reference
 layer: sysml2
+summary: The SysML 2.0 type system has two fundamental branches that cannot overlap
 tags: [type-hierarchy, datavalue, occurrence, library-types]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 6."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches

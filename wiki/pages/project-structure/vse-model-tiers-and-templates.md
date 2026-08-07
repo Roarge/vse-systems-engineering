@@ -3,6 +3,7 @@ title: "VSE Model Tiers and Document Templates"
 slug: vse-model-tiers-and-templates
 type: reference
 layer: project-structure
+summary: The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds
 tags: [project-setup, model-tiers, ambse, package-per-directory, document-templates]
 sources:
   - citation: "Plugin-internal model, the model tiers used by @project-setup and audited by @project-audit."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, project-audit]
+referenced_by: [project-setup, project-audit]
 ---
 
 # VSE Model Tiers and Document Templates

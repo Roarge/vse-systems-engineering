@@ -3,6 +3,7 @@ title: "SysML 2.0 Domain Libraries: Metadata and Analysis"
 slug: sysml2-domain-libraries-metadata-analysis
 type: reference
 layer: sysml2
+summary: The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies
 tags: [metadata-library, analysis-library, status, risk, trade-study, moe, mop]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 9.3 and 9.4."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Domain Libraries: Metadata and Analysis

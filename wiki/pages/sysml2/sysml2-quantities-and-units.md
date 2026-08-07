@@ -3,6 +3,7 @@ title: "SysML 2.0 Quantities and Units (ISQ and SI)"
 slug: sysml2-quantities-and-units
 type: reference
 layer: sysml2
+summary: A quantity is an attribute whose value carries physical meaning
 tags: [quantities, units, isq, si, iso80000, dimensional-analysis]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 24, pages 135 to 143."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Quantities and Units (ISQ and SI)

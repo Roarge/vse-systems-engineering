@@ -3,6 +3,7 @@ title: "AMBSE Trade Study Methodology"
 slug: ambse-trade-studies
 type: process
 layer: ambse
+summary: Trade studies are the primary mechanism for making defensible architectural decisions
 tags: [trade-study, moe, weighted-criteria, sensitivity, justification-document]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 6 (architectural analysis)."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [architecture-design]
+referenced_by: [architecture-design]
 ---
 
 # AMBSE Trade Study Methodology

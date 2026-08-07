@@ -3,6 +3,7 @@ title: "AMBSE Dependability Requirements and Traceability Matrix"
 slug: ambse-dependability-and-traceability
 type: reference
 layer: ambse
+summary: Dependability requirements and the engineering data trace behind the AMBSE traceability matrix
 tags: [dependability, safety, reliability, security, traceability, vse-workflow]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 4 (dependability) and Table 1.1 (trace recommendations)."
@@ -18,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # AMBSE Dependability Requirements and Traceability Matrix

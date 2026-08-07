@@ -3,6 +3,7 @@ title: "User Story as Canonical Artefact (§1)"
 slug: user-story-canonical-artefact
 type: concept
 layer: methodology
+summary: The User Story is the elementary unit of stakeholder intent in the VSE methodology
 tags: [user-story, requirement, stakeholder-need, agile, sysml2]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §1 (User Stories)."
@@ -19,7 +20,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
+referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
 ---
 
 # User Story as Canonical Artefact (§1)

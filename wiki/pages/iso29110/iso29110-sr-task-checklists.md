@@ -3,6 +3,7 @@ title: "ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6)"
 slug: iso29110-sr-task-checklists
 type: process
 layer: iso29110
+summary: Actionable task checklists for every ISO 29110 System Definition and Realization activity
 tags: [iso29110, sr, task-checklist, work-products]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, System Definition and Realization task tables."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, release-orchestrator]
+referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6)

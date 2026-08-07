@@ -3,6 +3,7 @@ title: "SysML 2.0 User-Defined Keywords"
 slug: sysml2-user-defined-keywords
 type: reference
 layer: sysml2
+summary: Extending the language itself with user-defined keywords, beyond domain-library modelling
 tags: [language-extension, semantic-metadata, user-defined-keywords]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.2, pages 293 to 295."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [sysml2-extension]
+referenced_by: [sysml2-extension]
 ---
 
 # SysML 2.0 User-Defined Keywords

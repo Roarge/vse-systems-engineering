@@ -3,6 +3,7 @@ title: "SySiDE VSE Workflows and Report Generation"
 slug: syside-vse-workflows
 type: pattern
 layer: syside
+summary: SySiDE workflows for requirement export and import, hierarchy walks, trace checks, and report generation
 tags: [syside, automator, vse, workflows, report-generation, traceability, excel]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: examples and report generation. https://docs.sensmetry.com/examples/index.html, https://docs.sensmetry.com/examples/report_generation.html (accessed 2026-04)."
@@ -18,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, sysml2-metadata, project-setup]
+referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
 # SySiDE VSE Workflows and Report Generation

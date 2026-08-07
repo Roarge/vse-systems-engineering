@@ -3,6 +3,7 @@ title: "SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules"
 slug: sysml2-namespace-hygiene
 type: reference
 layer: sysml2
+summary: Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules
 tags: [namespace, imports, short-code, file-organisation, reuse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapters 15 and 16, pages 74 to 84."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [sysml2-model-structure]
+referenced_by: [sysml2-model-structure]
 ---
 
 # SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules

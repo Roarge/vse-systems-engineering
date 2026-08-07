@@ -3,6 +3,7 @@ title: "SysML 2.0 Cases Overview"
 slug: sysml2-cases-overview
 type: concept
 layer: sysml2
+summary: Cases are one of the most important new concepts in SysML 2.0
 tags: [cases, use-cases, analysis-cases, verification-cases]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 230 to 233."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-cases]
+referenced_by: [sysml2-cases]
 ---
 
 # SysML 2.0 Cases Overview

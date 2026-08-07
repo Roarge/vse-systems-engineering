@@ -3,6 +3,7 @@ title: "AMBSE Risk Management and SE Metrics"
 slug: ambse-risk-and-metrics
 type: reference
 layer: ambse
+summary: Risk is the product of an event's likelihood of occurrence and its severity
 tags: [risk-management, spikes, metrics, velocity, defect-density, vse]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapters 1-2 (risk and metrics sections)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # AMBSE Risk Management and SE Metrics

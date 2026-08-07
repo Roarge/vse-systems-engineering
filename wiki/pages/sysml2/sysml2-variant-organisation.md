@@ -3,6 +3,7 @@ title: "Variant Modelling Organisation in AMBSE Models (VAMOS adapted)"
 slug: sysml2-variant-organisation
 type: pattern
 layer: sysml2
+summary: Organising a model into Core, Variations, and Configurations, with variation-point discipline
 tags: [variants, vamos, configurations, pleml, organisation, ambse]
 sources:
   - citation: "Weilkiens, T. (2016). Variant Modeling with SysML. MBSE4U. Chapters 2 and 3 (VAMOS)."
@@ -20,7 +21,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [sysml2-model-structure]
+referenced_by: [sysml2-model-structure]
 ---
 
 # Variant Modelling Organisation in AMBSE Models

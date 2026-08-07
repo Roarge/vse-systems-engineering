@@ -3,6 +3,7 @@ title: "SysML 2.0 Expressions Overview and Scalar Values"
 slug: sysml2-expressions-overview
 type: reference
 layer: sysml2
+summary: The native expression language and scalar values, usable in feature values, constraints, and guards
 tags: [expressions, operators, scalars, literals]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 30, pages 189 to 193."
@@ -17,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-expressions]
+referenced_by: [sysml2-expressions]
 ---
 
 # SysML 2.0 Expressions Overview and Scalar Values

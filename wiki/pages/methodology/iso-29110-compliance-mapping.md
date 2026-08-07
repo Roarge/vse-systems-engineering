@@ -3,6 +3,7 @@ title: "ISO/IEC TR 29110-5-6-2 compliance mapping"
 slug: iso-29110-compliance-mapping
 type: reference
 layer: methodology
+summary: The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014
 tags: [iso29110, compliance, basic-profile, pm-objectives, sr-objectives, traceability, baselines]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §9 (ISO/IEC TR 29110-5-6-2 Compliance)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan]
+referenced_by: [vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan]
 ---
 
 # ISO/IEC TR 29110-5-6-2 compliance mapping

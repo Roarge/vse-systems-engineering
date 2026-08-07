@@ -3,6 +3,7 @@ title: "SysML 2.0 Extension Gotchas"
 slug: sysml2-extension-gotchas
 type: pattern
 layer: sysml2
+summary: Three pitfalls that accompany the user-defined-keyword extension mechanism
 tags: [language-extension, gotchas, semantic-metadata]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.2, pages 295 to 297."
@@ -13,7 +14,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [sysml2-extension]
+referenced_by: [sysml2-extension]
 ---
 
 # SysML 2.0 Extension Gotchas

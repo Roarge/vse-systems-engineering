@@ -3,6 +3,7 @@ title: "Requirements Elicitation Techniques and Writing Rules"
 slug: requirements-elicitation-and-writing
 type: process
 layer: needs-and-reqs
+summary: Elicitation techniques and the rules for writing well-formed requirement statements
 tags: [elicitation, writing-rules, smart, defects, tolerances, verification-methods]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements, v1.0. Sections on elicitation and writing, Appendices C and D."
@@ -18,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Requirements Elicitation Techniques and Writing Rules

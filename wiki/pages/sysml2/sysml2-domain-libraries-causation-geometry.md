@@ -3,6 +3,7 @@ title: "SysML 2.0 Domain Libraries: Causation, Derivation, Geometry"
 slug: sysml2-domain-libraries-causation-geometry
 type: reference
 layer: sysml2
+summary: The Cause and Effect, Requirement Derivation, and Geometry domain libraries
 tags: [cause-and-effect, derivation, geometry, fault-tree, traceability, shapes]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 9.5, 9.6, 9.7."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Domain Libraries: Causation, Derivation, Geometry

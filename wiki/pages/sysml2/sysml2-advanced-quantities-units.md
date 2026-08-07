@@ -3,6 +3,7 @@ title: "SysML 2.0 Advanced Quantities and Units Concepts"
 slug: sysml2-advanced-quantities-units
 type: reference
 layer: sysml2
+summary: Unit definitions, derived units, conversions, and scalar and vector quantity values
 tags: [quantities, units, iso80000, simpleunit, derivedunit, mref]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 24.3, pages 140 to 143. New section in the 2026-04 release."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-expressions]
+referenced_by: [sysml2-expressions]
 ---
 
 # SysML 2.0 Advanced Quantities and Units Concepts

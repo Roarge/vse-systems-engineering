@@ -3,6 +3,7 @@ title: "SySiDE Expression Evaluation and Compiler"
 slug: syside-expression-evaluation
 type: reference
 layer: syside
+summary: The Compiler class evaluates SysML expressions, attribute values, and metadata filters
 tags: [syside, automator, compiler, expressions, units, filters]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: expression evaluation. https://docs.sensmetry.com/python/latest/evaluation.html (accessed 2026-04)."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, sysml2-metadata]
+referenced_by: [sysml2-modelling, sysml2-metadata]
 ---
 
 # SySiDE Expression Evaluation and Compiler

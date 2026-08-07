@@ -3,6 +3,7 @@ title: "HSI Domains: 13 Perspectives"
 slug: hsi-domains
 type: reference
 layer: hsi
+summary: The INCOSE HSI Primer identifies 13 perspectives
 tags: [hsi, domains, hfe, safety, usability, training, manpower]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI Domains."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # HSI Domains: 13 Perspectives

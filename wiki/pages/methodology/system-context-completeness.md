@@ -3,6 +3,7 @@ title: "System Context: actor categories, interfaces, and completeness checks"
 slug: system-context-completeness
 type: process
 layer: methodology
+summary: System boundary, actor categories, crossing item flows, and the context completeness checks
 tags: [system-context, actors, interfaces, item-flows, boundary, completeness]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §3 (System Context)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, needs-and-requirements, architecture-design]
+referenced_by: [vse-companion-overview, needs-and-requirements, architecture-design]
 ---
 
 # System Context: actor categories, interfaces, and completeness checks

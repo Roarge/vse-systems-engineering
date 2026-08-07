@@ -3,6 +3,7 @@ title: "SysML 2.0 Flows and Messages"
 slug: sysml2-flows-and-messages
 type: reference
 layer: sysml2
+summary: Transferring items, signals, and values between behavioural elements with flows and messages
 tags: [flows, messages, ports, item-flow, succession-flow, streaming-flow]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 29, pages 179 to 187."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Flows and Messages

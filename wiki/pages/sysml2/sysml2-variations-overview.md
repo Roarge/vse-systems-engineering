@@ -3,6 +3,7 @@ title: "SysML 2.0 Variations and Variants Overview"
 slug: sysml2-variations-overview
 type: concept
 layer: sysml2
+summary: SysML 2.0 treats product variation as a first-class language feature
 tags: [variants, product-line-engineering, configuration]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 246 to 250."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-variants]
+referenced_by: [sysml2-variants]
 ---
 
 # SysML 2.0 Variations and Variants Overview

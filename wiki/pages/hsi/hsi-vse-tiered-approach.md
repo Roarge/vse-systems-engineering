@@ -3,6 +3,7 @@ title: "Lightweight HSI for VSEs: Tiered Approach"
 slug: hsi-vse-tiered-approach
 type: pattern
 layer: hsi
+summary: Tiered HSI practice for a VSE with no dedicated human factors team or simulation facilities
 tags: [hsi, vse, tiered, lightweight, lifecycle-integration]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, scaled per ISO/IEC 29110."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Lightweight HSI for VSEs: Tiered Approach

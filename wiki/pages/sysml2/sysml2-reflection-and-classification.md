@@ -3,6 +3,7 @@ title: "SysML 2.0 Reflection: Metaclassification and Meta Operators"
 slug: sysml2-reflection-and-classification
 type: reference
 layer: sysml2
+summary: Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism
 tags: [reflection, metaclassification, meta-operator, m2]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 254 to 255."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-metadata]
+referenced_by: [sysml2-metadata]
 ---
 
 # SysML 2.0 Reflection: Metaclassification and Meta Operators

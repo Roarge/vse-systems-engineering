@@ -3,6 +3,7 @@ title: "AMBSE Principles and Modelling Rules"
 slug: ambse-principles
 type: concept
 layer: ambse
+summary: The fundamental distinction between systems engineering and software development drives how agile methods apply
 tags: [ambse, principles, modelling-rules, vse, douglass]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Chapters 1-2."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator, verification-validation]
+referenced_by: [release-orchestrator, verification-validation]
 ---
 
 # AMBSE Principles and Modelling Rules

@@ -3,6 +3,7 @@ title: "Benefit constraint as trade-study criterion"
 slug: benefit-as-criterion
 type: concept
 layer: methodology
+summary: Using the benefit constraint of a user story as an assessment criterion in architectural trade studies
 tags: [trade-study, user-stories, criteria, traceability, variation, benefit]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §0.3 (The Connective Mechanism — `benefit` as Trade-Study Criterion)."
@@ -17,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, architecture-design, needs-and-requirements]
+referenced_by: [vse-companion-overview, architecture-design, needs-and-requirements]
 ---
 
 # Benefit constraint as trade-study criterion

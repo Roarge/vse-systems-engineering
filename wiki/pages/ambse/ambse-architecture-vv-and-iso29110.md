@@ -3,6 +3,7 @@ title: "AMBSE Architecture-Level V&V and ISO 29110 Mapping"
 slug: ambse-architecture-vv-and-iso29110
 type: reference
 layer: ambse
+summary: Architecture-level V&V across the three verification timeframes, and its mapping to ISO 29110
 tags: [verification, validation, definition-of-done, iso29110, mapping]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 8."
@@ -19,7 +20,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [architecture-design]
+referenced_by: [architecture-design]
 ---
 
 # AMBSE Architecture-Level V&V and ISO 29110 Mapping

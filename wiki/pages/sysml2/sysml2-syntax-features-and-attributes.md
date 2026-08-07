@@ -3,6 +3,7 @@ title: "SysML 2.0 Syntax: Multiplicity, Attributes, and Enumerations"
 slug: sysml2-syntax-features-and-attributes
 type: reference
 layer: sysml2
+summary: Cheat sheet for feature multiplicity, attribute values, and enumeration declarations
 tags: [syntax, multiplicity, attribute, enum, feature-values]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.6, 7.7, 7.8, 7.13."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Syntax: Multiplicity, Attributes, and Enumerations

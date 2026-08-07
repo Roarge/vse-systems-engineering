@@ -3,6 +3,7 @@ title: "ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4)"
 slug: iso29110-pm-task-checklists
 type: process
 layer: iso29110
+summary: Actionable task checklists for every ISO 29110 Project Management activity
 tags: [iso29110, pm, task-checklist, work-products]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Project Management task tables."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, release-orchestrator]
+referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4)

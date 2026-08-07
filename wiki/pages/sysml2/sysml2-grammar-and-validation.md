@@ -3,6 +3,7 @@ title: "SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist"
 slug: sysml2-grammar-and-validation
 type: reference
 layer: sysml2
+summary: SysML 2.0 grammar excerpts, well-formedness rules, and a model validation checklist
 tags: [ebnf, grammar, validation, well-formedness, vse-checklist]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 8.2 and 8.4."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist

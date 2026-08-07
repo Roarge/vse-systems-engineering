@@ -3,6 +3,7 @@ title: "SysML 2.0 Behaviour Patterns and Gotchas"
 slug: sysml2-behaviour-patterns
 type: pattern
 layer: sysml2
+summary: Practical behaviour-modelling patterns and the recurring mistakes that show up in review
 tags: [behaviour, patterns, gotchas, vse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 140 to 166; Chapter 28, pages 170 to 176; Chapter 29, pages 179 to 187."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Behaviour Patterns and Gotchas

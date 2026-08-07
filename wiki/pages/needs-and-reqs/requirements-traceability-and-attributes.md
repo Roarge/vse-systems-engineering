@@ -3,6 +3,7 @@ title: "Requirements Traceability, Attributes, TBX, and AMBSE Model-Based Requir
 slug: requirements-traceability-and-attributes
 type: reference
 layer: needs-and-reqs
+summary: Requirement traceability, attributes, TBX resolution, and model-based requirements in AMBSE
 tags: [traceability, attributes, tbx, ambse, model-based-requirements, vse]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements, v1.0. Sections on Traceability, Attributes, TBX, and Model-Based Requirements."
@@ -17,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Requirements Traceability, Attributes, TBX, and AMBSE Model-Based Requirements

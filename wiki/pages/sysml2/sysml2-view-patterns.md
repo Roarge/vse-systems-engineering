@@ -3,6 +3,7 @@ title: "SysML 2.0 View Patterns and Gotchas"
 slug: sysml2-view-patterns
 type: pattern
 layer: sysml2
+summary: Practical view patterns and the recurring mistakes that show up in review
 tags: [views, patterns, gotchas, vse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 258 to 260."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-views]
+referenced_by: [sysml2-views]
 ---
 
 # SysML 2.0 View Patterns and Gotchas

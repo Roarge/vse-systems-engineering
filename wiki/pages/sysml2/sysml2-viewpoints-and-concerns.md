@@ -3,6 +3,7 @@ title: "SysML 2.0 Viewpoints, Views, and Concerns"
 slug: sysml2-viewpoints-and-concerns
 type: concept
 layer: sysml2
+summary: Viewpoints, views, and stakeholder concerns, grounded in ISO/IEC/IEEE 42010
 tags: [views, viewpoints, concerns, stakeholders, iso42010]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 258 to 260."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-views]
+referenced_by: [sysml2-views]
 ---
 
 # SysML 2.0 Viewpoints, Views, and Concerns

@@ -3,6 +3,7 @@ title: "INCOSE Stakeholder Needs Definition for VSEs"
 slug: incose-vse-stakeholder-needs
 type: concept
 layer: incose-vse
+summary: Transform stakeholder concerns into a structured set of stakeholder requirements that can be validated
 tags: [incose, stakeholder-needs, conops, vse, strs]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapter 4.2."
@@ -18,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # INCOSE Stakeholder Needs Definition for VSEs
