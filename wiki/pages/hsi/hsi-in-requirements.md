@@ -4,7 +4,7 @@ slug: hsi-in-requirements
 type: process
 layer: hsi
 summary: How HSI concerns become requirements alongside technical ones from the start
-tags: [hsi, requirements, function-allocation, fitts-list, smart, mabamabamaba]
+tags: [hsi, requirements, function-allocation, fitts-list, smart]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI in Requirements."
     raw: "HSI Primer Vol. 1 v4.pdf"
