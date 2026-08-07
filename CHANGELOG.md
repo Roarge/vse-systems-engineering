@@ -9,11 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.3`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.4`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
-the wiki runtime flip landed as `rc.2`, and the rigour-profile chunk
-takes `rc.3`, with every later candidate shifting by one.
+the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
+chunk took `rc.3`, and the profile-aware hooks chunk takes `rc.4`, with
+every later candidate shifting by one.
 
 ### Changed
 
@@ -229,6 +230,99 @@ The rigour-profile work removes three further items:
 - The stale `iteration:` block from the hooks guide §8 schema. No
   shipped hook has read it since the methodology rejected fixed-length
   iteration containers.
+
+The chunk below turns the §0.10.4 dispositions into running code.
+
+### Added (profile-aware hooks)
+
+- `hooks/lib/iso-profile.sh`, the shared library the project-side hooks
+  source. It provides `iso_config_path`, `iso_profile`, and
+  `iso_gate_disposition <gate>`. The parser is the awk idiom the hooks
+  already used for `baselined_paths`, so no YAML dependency is added.
+  The configuration path and the profile resolve once at source time,
+  which keeps a malformed `project_profile` to one diagnostic line per
+  hook run instead of one per gate lookup. This makes the `lib/`
+  directory `attention-regime` has always promised real.
+- A Profile-aware install workflow in `attention-regime`: read
+  `project_profile`, install the hooks guide §3.4 tier set, report the
+  resulting disposition table so the first commit is not a surprise,
+  offer `gate_overrides` as the way to correct a single wrong gate, and
+  offer the phased-rollout upgrade path. A second workflow covers
+  changing profile mid-project.
+- The shellcheck step in CI and the Makefile now covers `hooks/lib/`
+  as well as `hooks/*.sh`.
+
+### Changed (profile-aware hooks)
+
+- **The five configurable gates read their disposition at run time.**
+  `commit-msg` wires its two gates to `commit_msg_pattern` and
+  `commit_msg_cr_reference`, and `pre-commit` wires its own to
+  `precommit_lint` and `precommit_story_wellformed` and delegates the
+  traceability gate. `block` reports and stops the operation, `warn`
+  reports the same finding under a warning prefix and lets it through,
+  `info` prints one summary line, `off` skips the gate silently. A
+  project changes any of the five by editing `.iso-config.yaml`, never
+  by editing a shipped script.
+- **The traceability gate is scoped to touched requirements.** It
+  collected every requirement in every staged file and checked each
+  against a repo-wide verify-link search, so editing a comment in a
+  file whose requirements were baselined long ago stopped the commit.
+  Names are now collected from the lines the commit adds
+  (`git diff --cached -U0`) plus the whole content of newly added
+  files. The repo-wide search for the verify links themselves is
+  unchanged, because a verification case may legitimately live in
+  another file. The report ends by pointing at `/vse-trace`, which is
+  where a full-repo answer belongs.
+- **The SessionStart VSE block is neutral context.** The MANDATORY
+  banner and the four shouted reminders are replaced by a short block:
+  what the project is, where the methodology copy lives, the profile,
+  the branch and baseline state, one soft lens line, and a one-line
+  §2.6 posture note. Mode 1, the contributor wiki block, is unchanged.
+- The baselined-artefact advisories in `pre-commit`, `pre-tool-use.sh`,
+  and `user-prompt-submit.sh` are trimmed, and `pre-commit` no longer
+  claims that `commit-msg` enforces the Change Request reference, since
+  at `standard` that hook warns. The advisory names the disposition
+  mechanism instead. All of them stay naturally silent when
+  `baselined_paths` is empty, which is what the `light` default relies
+  on.
+- `attention-regime` describes PreToolUse as advisory, matching what
+  `pre-tool-use.sh` does, and corrects the install to
+  `${CLAUDE_PLUGIN_ROOT}/hooks/*.sh` with an explicit rename map. Its
+  Refusals section is retitled Judgment calls: overwriting a customised
+  `.githooks/` and pointing `core.hooksPath` outside the root become
+  confirm-first, and the refusal to discuss bypassing a gate is
+  replaced by the §0.10.6 posture of answering honestly, naming the
+  recording obligation, and recommending the conforming path first.
+
+### Fixed (profile-aware hooks)
+
+- `session-start.sh` emitted `[: 0\n0: integer expression expected` on
+  stderr at every session start in a VSE project. `grep -c` prints `0`
+  and exits 1 when it matches nothing, so the two `|| echo "0"`
+  fallbacks appended a second zero to the capture and the following
+  integer test choked on it. The fallback is now `|| true`, which keeps
+  grep's own count, with an emptiness guard on the test.
+- The two git tag lookups in `session-start.sh` used the legacy
+  `head -1` form and now use `head -n 1`.
+- The dead satisfy-check block in `pre-commit-traceability.sh`. It
+  walked every `.sysml` file in the repository per staged requirement to
+  compute a `HAS_SATISFY` result that was never read.
+
+### Removed (profile-aware hooks)
+
+- `hooks/pre-push.sh`, four empty stub branches whose own closing
+  comment named a CI workflow the plugin does not ship. The four
+  obligations live on as continuous-integration contracts in hooks
+  guide §4.4. The install lists in `hooks/README.md` and the plugin
+  README follow.
+- The `--no-verify` advertisement from the `commit-msg` and
+  traceability failure messages. A blocking gate now names the rule,
+  names the section it comes from, and points at §0.10.6 for proceeding
+  with a recorded rationale.
+- The `templates/.claude/settings.json` copy step, the TODO PHASE 4
+  block, and the paragraph disowning the `iteration:` schema from
+  `attention-regime`. The first named a file that has never existed,
+  and the other two describe work that has since landed.
 
 ## [2.1.3] - 2026-08-07
 
