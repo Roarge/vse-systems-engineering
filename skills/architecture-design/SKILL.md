@@ -88,7 +88,7 @@ Both relationships at once are forbidden by §2.6 rule 3. Where the system genui
 Before proposing the change is ready for review:
 
 1. The Base Architecture resides in a `library package` and imports only from `library/`, `model/core/domain/`, or external libraries.
-2. No specialising part redefines an inherited `require constraint` with a weaker one. Do not author such a redefinition (hard stop at every profile, see Judgment calls).
+2. No specialising part redefines an inherited `require constraint` with a weaker one. Do not author such a redefinition (hard stop at every profile, see Judgement calls).
 3. The system has exactly one relationship to the Base Architecture (specialisation or allocation, not both).
 4. Base Architecture changes are flagged for elevated final review per §8.6.3.
 5. Forward-going stories declare their `subject` as a *specialisation* of a Base Architecture `part def`, not the Base Architecture part def itself. CI emits an informational warning when a story's `subject` resolves to a `library package` part def, which marks the story as optional context rather than required output.
@@ -144,7 +144,7 @@ Walk through the four sub-steps of §6.3.5:
 
 ### Step 6: Resolve variations (§6.3.6)
 
-The selected architecture is a *specialisation* of the configurable system `part def` that redefines every `variation` to its chosen `variant`. Place the resolution in `model/variations/resolved/`. A resolution that leaves a variation unresolved, or that violates an `assert constraint`, is not a final resolution. Where the engineer wants to record progress before every decision is settled, mark the resolution as explicitly partial: name each unresolved variation in a comment on the resolution part def and say which decision it waits on. See Judgment calls.
+The selected architecture is a *specialisation* of the configurable system `part def` that redefines every `variation` to its chosen `variant`. Place the resolution in `model/variations/resolved/`. A resolution that leaves a variation unresolved, or that violates an `assert constraint`, is not a final resolution. Where the engineer wants to record progress before every decision is settled, mark the resolution as explicitly partial: name each unresolved variation in a comment on the resolution part def and say which decision it waits on. See Judgement calls.
 
 ### Step 7: Merge across decisions (§6.3.7)
 
@@ -182,7 +182,7 @@ Two valid approaches:
 - **Top-down.** Decompose system stories using `derive` into subsystem-internal stories, each allocated to one subsystem.
 - **Bottom-up.** Allocate the action defs / use cases that elaborate the stories first, then extract subsystem-level stories from the allocated behaviour.
 
-A system-level story is *not* allocated to a single subsystem when its realisation requires subsystem collaboration. The default is collaboration. Forcing a collaborative story onto one subsystem is a design judgment rather than a rule violation, so see Judgment calls for the disposition.
+A system-level story is *not* allocated to a single subsystem when its realisation requires subsystem collaboration. The default is collaboration. Forcing a collaborative story onto one subsystem is a design judgement rather than a rule violation, so see Judgement calls for the disposition.
 
 ### Step 4: Update the logical data schema (§7.3.4)
 
@@ -209,7 +209,7 @@ Exercise the verification cases against the elaborated model where SysML v2 mode
 - Are inter-subsystem interfaces minimal? Each interface is a cost.
 - Does the decomposition match the team and procurement structure?
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. Two entries are hard stops at every profile and say so.
 

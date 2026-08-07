@@ -138,7 +138,7 @@ Copy the entire contents of `${CLAUDE_PLUGIN_ROOT}/methodology/` to `<ENG_ROOT>/
 
 The copy travels with the project so the methodology version is pinned to the repository state, the project's CI can validate against the local copy, and methodology amendments go through the same PR workflow as model changes per §8.4.3.
 
-If `<ENG_ROOT>/methodology/` already exists, the skill should already have refused in Step 3. Do not silently overwrite.
+If `<ENG_ROOT>/methodology/` already exists, a Step 3 safety check has already stopped execution before this point. Do not silently overwrite.
 
 ## Step 6: Scaffold the Model Tree
 

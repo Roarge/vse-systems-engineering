@@ -31,12 +31,12 @@ Before any operation, read these inputs from the project root:
 - The project layout per §8.3, in particular story files under `model/core/stories/stakeholder/`, `model/core/stories/system/`, and recursively under `model/core/logical-architecture/components/<component>/stories/`.
 - `StoryMeta` on each story file (status, points, priority).
 - `.iso-config.yaml` for baselined paths, protected branches, and renderer configuration.
-- `docs/project-plan.md` (the §10.3.1 Project Plan). If absent, route to `@project-plan` (or `/vse-plan`) with the disposition from Judgment calls.
+- `docs/project-plan.md` (the §10.3.1 Project Plan). If absent, route to `@project-plan` (or `/vse-plan`) with the disposition from Judgement calls.
 - `docs/risk-register.md` (§10.7), `docs/correction-register.md` (§10.5.2), `docs/cm-strategy.md` (§10.8).
 - Existing release tags via `git tag -l 'release-*'` to determine the next `vN.M` and to locate the previous baseline.
 - Open Change Requests via `gh issue list -l change-request -s open` (§10.4.2). The set of open CRs influences whether scope can be locked.
 
-If `docs/project-plan.md` is missing or its elements are not populated, say so and route to the `@project-plan` skill. The Project Plan is the authority for the release schedule and the deliverables list. The element set the Plan owes is itself tiered per §0.10.3, so check the populated set against the project profile rather than against all seventeen §10.3.1 elements. The disposition for proceeding without a Plan is in Judgment calls, and the `report` operation runs at every profile whether or not a Plan exists.
+If `docs/project-plan.md` is missing or its elements are not populated, say so and route to the `@project-plan` skill. The Project Plan is the authority for the release schedule and the deliverables list. The element set the Plan owes is itself tiered per §0.10.3, so check the populated set against the project profile rather than against all seventeen §10.3.1 elements. The disposition for proceeding without a Plan is in Judgement calls, and the `report` operation runs at every profile whether or not a Plan exists.
 
 ## Step 2: Present the Release Anchor
 
@@ -75,7 +75,7 @@ Walk the engineer through:
    - At least one `verification def` is bound to every acceptance criterion (per §8.6.3 item 6).
    - Framed `concern def`s exist and are addressed (per §8.6.3 item 2).
    - `derive` chains resolve upward (subsystem to system to stakeholder, per §8.6.3 item 3).
-   Report gaps as a checklist. Coverage is a precondition for scope lock at `full`, and a recommendation the engineer may accept or defer at `light` and `standard` (see Judgment calls).
+   Report gaps as a checklist. Coverage is a precondition for scope lock at `full`, and a recommendation the engineer may accept or defer at `light` and `standard` (see Judgement calls).
 
 4. **Roll up risks and corrections.** From `docs/risk-register.md`, list open risks priority-ordered, with treatment status. From `docs/correction-register.md`, list open corrections. If any high-priority risk has no treatment recorded, flag it as a release blocker candidate.
 
@@ -144,7 +144,7 @@ Render a release dashboard with:
 
 The report is read-only. It does not write to disk unless the engineer asks for a snapshot, in which case the snapshot is committed as a Progress Status Record entry per §10.4.1.
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. Several entries become hard stops at the `full` profile and say so, because a `full` project is claiming ISO/IEC 29110 conformance and a baseline is the artefact an assessor reads.
 
@@ -159,7 +159,8 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 - **Baseline history integrity.** Before applying a tag at `full`, check that the previous baseline tag is still reachable from `main`:
 
   ```bash
-  git merge-base --is-ancestor release-vN.(M-1) main
+  git merge-base --is-ancestor <previous-release-tag> main
+# example: git merge-base --is-ancestor release-v0.1 main
   ```
 
   A non-zero result means the previous baseline is no longer on the mainline history, which is what a force-push or a moved tag leaves behind. Report what the check found, name §10.8 access control and §9.11 audit trail, and wait for explicit confirmation before tagging. The check is cheap and deterministic. Reflog inspection is not a substitute, because the reflog is local to one clone, expires by default, and proves nothing about the shared history. The check is not run at `light` or `standard`.
@@ -199,7 +200,7 @@ WARN the engineer immediately if you observe:
 
 - **Closure debt accumulation.** Stories carried into the release without their `derive` upstream resolving, or with V&V coverage gaps that have lingered across review cycles. Closure debt that grows through the release window is a release-readiness defect.
 
-- **Baseline integrity break.** A previous `release-*` tag no longer reachable from `main` (the reachability check in Judgment calls is what detects this), a deleted `release-*` tag, or a retroactive edit of a `plan-baseline-*` tag. The audit trail of §9.11 cannot be reconstructed silently.
+- **Baseline integrity break.** A previous `release-*` tag no longer reachable from `main` (the reachability check in Judgement calls is what detects this), a deleted `release-*` tag, or a retroactive edit of a `plan-baseline-*` tag. The audit trail of §9.11 cannot be reconstructed silently.
 
 - **Silent baseline edit.** Modification of a baselined Plan element, baselined story, or baselined architecture inside a release branch without a referenced Change Request Issue.
 

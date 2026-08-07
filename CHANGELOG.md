@@ -327,7 +327,7 @@ The chunk below turns the §0.10.4 dispositions into running code.
 
 ### Changed (rigour profiles: skills, setup, lens)
 
-- **Skill refusals become judgment calls.** Seven skills
+- **Skill refusals become judgement calls.** Seven skills
   (`story-orchestrator`, `needs-and-requirements`,
   `release-orchestrator`, `change-request`, `verification-validation`,
   `architecture-design`, `project-plan`) carried roughly thirty hard

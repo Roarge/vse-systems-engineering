@@ -165,7 +165,7 @@ Where the profile is present, also check the one-line tailoring record (§0.10.2
 
 ### 15. Hook Installation (per `iso-29110-hooks-guide.md` §3.1)
 
-- `<project>/.githooks/` exists and contains `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`, and the `lib/` helpers.
+- `<project>/.githooks/` exists and contains `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, and the `lib/` helpers.
 - `git config core.hooksPath` returns `.githooks`.
 - `<project>/.claude/settings.json` exists with hook configuration.
 

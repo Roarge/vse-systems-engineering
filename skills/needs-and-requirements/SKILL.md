@@ -158,7 +158,7 @@ Run on entry to §4 and again before transitioning a system story out of `inProg
 
 Hand off structural changes to `@sysml2-modelling` (interface and item authoring) and `@sysml2-model-structure` (package layout adjustment).
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry is a hard stop and says so.
 

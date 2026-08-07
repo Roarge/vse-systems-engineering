@@ -44,7 +44,7 @@ Choose exactly one path:
 - **Open a new story** when the engineer wants to start work that is not yet on file.
 - **Advance an existing story** when a story file exists and the engineer wants to change its `StoryMeta.status` or push it through review.
 - **Report current story state** when the engineer asks where they are or what is in flight.
-- **Raise a judgment call** when a precondition fails (no methodology copy, a story branch cut from a non-main base, a status change ahead of the evidence for it). Read the disposition from Judgment calls below rather than stopping by reflex.
+- **Raise a judgement call** when a precondition fails (no methodology copy, a story branch cut from a non-main base, a status change ahead of the evidence for it). Read the disposition from Judgement calls below rather than stopping by reflex.
 
 ### Step 2a: Open a new story
 
@@ -72,7 +72,7 @@ Then:
    - `ready` to `inProgress` at story-branch creation (one open draft PR).
    - `inProgress` (draft) to `inProgress` (review) when §8.6.2 readiness criteria pass.
    - `inProgress` to `done` at PR merge.
-3. **Run the §8.6.2 readiness checklist** before transitioning to review. Surface each item as a checkbox. The checklist is tiered in §8.6.4, so the item set follows the project profile. If any item fails, name the gap and recommend closing it before the transition (see Judgment calls).
+3. **Run the §8.6.2 readiness checklist** before transitioning to review. Surface each item as a checkbox. The checklist is tiered in §8.6.4, so the item set follows the project profile. If any item fails, name the gap and recommend closing it before the transition (see Judgement calls).
 4. **Update `StoryMeta` on commit.** Do not commit on the engineer's behalf. Surface the diff.
 5. **At PR merge.** `StoryMeta.status` should already read `done` on the final commit. Confirm the branch is deleted and that downstream stories that derive from this one (per §5 or §7) may unblock.
 
@@ -98,7 +98,7 @@ PENDING CHANGE REQUESTS
 
 If `gh` is not configured, name the gap and skip the CR section.
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry is a hard stop and says so.
 

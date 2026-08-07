@@ -63,7 +63,7 @@ Recognised section keywords map as follows:
 
 For any section-targeted edit:
 
-1. Check whether the Plan is baselined by inspecting tags and the element's content history. If baselined and the engineer has not referenced an open Change Request, name the §10.4.2 obligation and hand off to `@change-request` (`/vse-cr`), with the per-profile disposition in Judgment calls.
+1. Check whether the Plan is baselined by inspecting tags and the element's content history. If baselined and the engineer has not referenced an open Change Request, name the §10.4.2 obligation and hand off to `@change-request` (`/vse-cr`), with the per-profile disposition in Judgement calls.
 2. If the change is permitted, ask `@story-orchestrator` to open a methodology branch named `methodology/project-plan-<section>` per §8.4.3.
 3. Load only the named section, propose changes, and wait for approval before writing.
 4. After write, surface the §10.3.4 acceptance flow with the next tag incremented (patch for fixes, minor for new content, major for structural rework).
@@ -84,7 +84,7 @@ Populate `docs/cm-strategy.md` from the YAML template in §10.8. Items under CM,
 
 Populate Plan §8 with: trigger, schedule, actions (hardware, data, software licence, IP handover, environmental), resources, constraints on design (propagated to stakeholder concerns per §4.3.2 if non-trivial), acceptable end-state.
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry becomes a hard stop at the `full` profile and says so.
 

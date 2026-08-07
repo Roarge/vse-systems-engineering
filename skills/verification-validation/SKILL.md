@@ -124,7 +124,7 @@ Per §9.8 model-derived artefacts, the IVV Plan and IVV Procedures are *generate
 
 - The IVV Plan is rendered from the `verification def` set: subjects, objectives, expected outcomes. It is the union of `model/core/verification-validation/` and every recursive component-scope equivalent.
 - The IVV Procedures are rendered from the action bodies of those cases.
-- Hand off to `@document-export` for the rendering itself. Where an acceptance criterion in the story register has no bound case, run Workflow D first and carry the result into the rendered Plan as an explicit coverage-gap section (see Judgment calls for the per-profile disposition).
+- Hand off to `@document-export` for the rendering itself. Where an acceptance criterion in the story register has no bound case, run Workflow D first and carry the result into the rendered Plan as an explicit coverage-gap section (see Judgement calls for the per-profile disposition).
 - The renderer writes to `docs/generated/ivv-plan.md` and `docs/generated/ivv-procedures.md`. CI regenerates these on merge to `main` per §9.10. Confirm that the rendered files are current before reporting completion.
 
 ## Workflow F: V&V execution and reporting
@@ -136,7 +136,7 @@ Authoring stops at the `verification def`. Execution produces a Verification Rep
 - The default storage location is `docs/verification-reports/<case>-<date>.md` and `docs/validation-reports/<case>-<date>.md`, subject to the project's CM Strategy (§10.8).
 - Failures are recorded in the Correction Register at `docs/correction-register.md` per §10.5.2, with each correction following the normal PR workflow.
 
-## Judgment calls
+## Judgement calls
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. Two entries become hard stops at the `full` profile and say so.
 

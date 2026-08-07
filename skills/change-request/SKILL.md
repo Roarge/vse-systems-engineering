@@ -80,7 +80,7 @@ Carry the CR through the §10.4.2 states by updating the issue labels and the li
 |---|---|---|
 | submitted | Issue opened | Label `change-request`, body line `Lifecycle: submitted`. |
 | evaluated | PJM (or designated reviewer) posts cost, schedule, technical assessment | Append the assessment as an issue comment. Update body line to `Lifecycle: evaluated`. |
-| agreed | Acquirer or PJM accepts (see Judgment calls) | Update body line to `Lifecycle: agreed`. Optionally route to `/vse-story` for the implementation branch. |
+| agreed | Acquirer or PJM accepts (see Judgement calls) | Update body line to `Lifecycle: agreed`. Optionally route to `/vse-story` for the implementation branch. |
 | in implementation | PR opened against the agreed scope | Update body line to `Lifecycle: in implementation`, link the PR. |
 | done | PR merged | Close the issue with a comment referencing the merge commit. Update body line to `Lifecycle: done`. |
 | rejected | Decision not to proceed | Close the issue with a rationale comment. Update body line to `Lifecycle: rejected`. |
@@ -92,7 +92,11 @@ The Issue thread, including all comments, is the audit trail. Never edit a previ
 
 Once the lifecycle reaches `agreed`, offer the engineer a handoff to `/vse-story` so the implementing story branch is opened with the CR number already in scope. Pass the issue number through so the new story commits inherit the `(CR #<n>)` suffix.
 
-## Judgment calls
+## Judgement calls
+
+Each entry names the rule and its section, states the risk, and
+recommends the conforming path. Proceed on the engineer's informed
+confirmation unless the entry itself says otherwise.
 
 Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
 
