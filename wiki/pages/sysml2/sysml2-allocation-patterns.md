@@ -117,7 +117,7 @@ take responsibility for which intent as the design progresses
 ### Chapter 75 reference is stubbed
 
 Chapter 75 of the SysML v2 book (Allocations in Part V SysML
-Reference) is marked as pending in the 2026-04 release. The formal
+Reference) is marked as pending in the 2026-06 release. The formal
 reference documentation is therefore incomplete. Authors should
 rely on Chapter 34 conceptual material plus the Chapter 41 library
 example.
@@ -159,7 +159,7 @@ undermines reuse (Ch 41, p 266).
 
 ## Pending material in the source
 
-The 2026-04 release of the SysML v2 book leaves the following topics
+The 2026-06 release of the SysML v2 book leaves the following topics
 pending:
 
 - Chapter 75 Allocations in Part V SysML Reference (full formal

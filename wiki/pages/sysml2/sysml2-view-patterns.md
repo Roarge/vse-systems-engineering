@@ -149,7 +149,7 @@ relationships to requirements (Ch 37, p 258).
 
 ## Pending material in the source
 
-The 2026-04 release of the SysML v2 book leaves the following topics
+The 2026-06 release of the SysML v2 book leaves the following topics
 pending:
 
 - Chapter 108 `StandardViewDefinitions` library chapter, with full

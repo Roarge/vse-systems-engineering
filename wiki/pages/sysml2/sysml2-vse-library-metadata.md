@@ -151,7 +151,7 @@ See [[sysml2-filter-conditions]].
 ## Pending material
 
 Chapter 84 (Metadata in Part V SysML Reference) is pending in the
-2026-04 release. Chapter 112.4 (Risk metadata domain library) is
+2026-06 release. Chapter 112.4 (Risk metadata domain library) is
 referenced as the canonical home of the risk language extension.
 The plugin will track upstream changes and refresh this page when
 those chapters publish.

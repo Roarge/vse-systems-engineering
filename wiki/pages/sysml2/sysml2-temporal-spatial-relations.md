@@ -34,9 +34,9 @@ referenced_by: [sysml2-behaviour]
 
 This page captures the equality operators for occurrences, Allen's
 interval algebra in the KerML library, and the spatial relation
-vocabulary. All material is new in the 2026-04 release of the
-SysML v2 book (Chapter 25, pages 152 to 155). For background on
-the 4D worldview, see [[sysml2-occurrences-4d]].
+vocabulary. All material comes from the SysML v2 book (Chapter 25,
+pages 156 to 159). For background on the 4D worldview, see
+[[sysml2-occurrences-4d]].
 
 ## 4D Identity: == and ===
 

@@ -102,7 +102,7 @@ across architectural layers (Ch 41, p 266).
 ## Status of Chapter 75 in the source
 
 Chapter 75 of the SysML v2 book (the formal Allocations Reference
-in Part V) is marked as pending in the 2026-04 release. The pages
+in Part V) is marked as pending in the 2026-06 release. The pages
 in this layer therefore draw on Chapter 34 (conceptual material)
 and Chapter 41 (the Platform-Based Systems Engineering library
 example) rather than the still-pending formal reference. When

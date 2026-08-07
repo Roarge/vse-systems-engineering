@@ -119,7 +119,7 @@ specifies the occurrence to terminate, which defaults to the action
 immediately containing the terminate action. The target may also be
 set via a flow to the `terminatedOccurrence` parameter. The
 semantics of termination are not yet formally specified in the
-2026-04 release (Ch 26, pp 158 to 159).
+2026-06 release (Ch 26, p 184).
 
 ## If and loop actions
 

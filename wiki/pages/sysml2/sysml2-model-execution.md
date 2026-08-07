@@ -39,7 +39,7 @@ can be solved or approximated, to obtain a sequence of simulated
 system states (an **execution trace**). These traces can be
 visualised in diagrams, replayed or observed in an interactive
 environment, or reconstructed from a log file. Chapter 39 of the
-SysML v2 book is new in the 2026-04 release (pages 284 to 289).
+SysML v2 book covers model execution (pages 310 to 315).
 
 ## Is SysML an executable modelling language?
 

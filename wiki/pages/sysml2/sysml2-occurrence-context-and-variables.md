@@ -28,13 +28,12 @@ referenced_by: [sysml2-behaviour]
 - Variable features as time-functions
 - See also
 
-This page covers three closely related new topics from the 2026-04
-release of the SysML v2 book Chapter 25: the distinction between a
-suboccurrence and a portion (Section 25.8), the context occurrence
-`this` (Section 25.9), and variable features as time-functions
-(Section 25.10). For the 4D worldview that frames all three, see
-[[sysml2-occurrences-4d]]. For the portion vocabulary, see
-[[sysml2-portions-and-individuals]].
+This page covers three closely related topics from Chapter 25 of the
+SysML v2 book: the distinction between a suboccurrence and a portion
+(Section 25.8), the context occurrence `this` (Section 25.10), and
+variable features as time-functions (Section 25.11). For the 4D
+worldview that frames all three, see [[sysml2-occurrences-4d]]. For
+the portion vocabulary, see [[sysml2-portions-and-individuals]].
 
 ## Suboccurrence versus portion
 

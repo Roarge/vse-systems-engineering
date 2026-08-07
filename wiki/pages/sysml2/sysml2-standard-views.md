@@ -48,10 +48,9 @@ the visual organisation of its existing diagrams by selecting the
 matching standard view.
 
 The Geometry View has no v1 predecessor. It supports the new 4D
-modelling concepts introduced in the 2026-04 release (Chapter 25 of
-the SysML v2 book). Projects that need spatial or temporal
-relationships should adopt the Geometry View even when migrating
-existing structural views.
+modelling concepts of Chapter 25 of the SysML v2 book. Projects
+that need spatial or temporal relationships should adopt the
+Geometry View even when migrating existing structural views.
 
 ## When to use each view
 
@@ -73,7 +72,7 @@ Projects with significant spatial or temporal modelling add
 
 Chapter 108 of the SysML v2 book (the `StandardViewDefinitions`
 library chapter) provides the full render style catalogue and
-per-view rendering conventions. As of the 2026-04 release, this
+per-view rendering conventions. As of the 2026-06 release, this
 chapter is pending. Authors should validate render output in their
 chosen modelling tool until the chapter publishes.
 

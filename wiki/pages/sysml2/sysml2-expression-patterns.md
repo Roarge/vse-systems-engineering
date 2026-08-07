@@ -141,10 +141,8 @@ not visible from the current context. Use with care in large models
 
 ## Pending chapters
 
-The 2026-04 release leaves the following upstream material pending:
+The 2026-06 release leaves the following upstream material pending:
 
-- **Chapter 27 Calculations**: authoring patterns, parametric
-  modelling, binding to parts.
 - **Chapter 59 KerML Expressions**: formal layer semantics, the
   delta between SysML surface and KerML metamodel foundation.
 - **Chapter 86 Kernel Function Library**: full function catalogue

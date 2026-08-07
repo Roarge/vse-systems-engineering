@@ -48,8 +48,7 @@ the moment it ceases to exist. Properties that "change over time"
 are not values being reassigned. They are functions over the
 entity's temporal extent. This is what 4D modelling means, and it
 is the foundation of how SysML 2.0 talks about occurrences. This
-material was added as Chapter 25 in the 2026-04 release of the
-SysML v2 book.
+material is Chapter 25 of the SysML v2 book.
 
 ## A concrete payoff
 

@@ -37,8 +37,8 @@ SysML 2.0. Applying quantities and units in everyday models is
 simple: declare an attribute, give it a quantity type, attach a
 unit. The advanced concepts cover what is happening behind the
 scenes in the domain libraries and how quantities and units are
-defined and related. The 2026-04 release of the SysML v2 book added
-this material as a new Section 24.3 (pages 140 to 143).
+defined and related. The SysML v2 book covers this material in
+Section 24.3 (pages 144 to 147).
 
 ## When advanced concepts matter
 

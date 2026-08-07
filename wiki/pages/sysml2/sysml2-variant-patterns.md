@@ -131,14 +131,14 @@ before adopting feature-driven selection.
 
 ## Pending material in the source
 
-The 2026-04 release of the SysML v2 book leaves the following topics
+The 2026-06 release of the SysML v2 book leaves the following topic
 pending:
 
 - Formal treatment of feature constraints and their relationship to
   SysML 2.0 variation constraints. Forlingieri et al. (2025) is
   cited as the planned reference.
-- Trade-off analysis to support variation selection. Section 33.2.1
-  is marked as pending in the 2026-04 release.
 
-When these become available, the relevant pages should be updated
-and `confidence` revisited.
+When it becomes available, the relevant pages should be updated and
+`confidence` revisited. Section 33.2.1 (Trade Studies), previously
+listed here as pending, is published at page 288 and is outstanding
+wiki work rather than an upstream gap.

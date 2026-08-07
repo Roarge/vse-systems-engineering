@@ -66,8 +66,9 @@ The SysML 2.0 specification does not cover:
 - Formal feature models or feature constraints in the PLE sense.
   These belong in an external feature model, integrated via the
   PLEML extension.
-- Trade-off analysis to support variant selection. The 2026-04
-  release marks Section 33.2.1 as pending for trade-off coverage.
+- Trade-off analysis to support variant selection. Section 33.2.1
+  (Trade Studies, page 288) covers this in the source, and the
+  material is not yet reflected in this layer.
 
 For deeper coverage of Model-Based Product Line Engineering (MBPLE),
 the SysML v2 book points to Forlingieri et al. (2025).

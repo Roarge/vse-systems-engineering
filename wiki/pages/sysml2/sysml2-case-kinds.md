@@ -118,7 +118,7 @@ subjects produce an invalid verification model (Ch 33, p 242).
 
 Verification cases return a verdict, typically drawn from the
 standard `VerdictKind` enumeration with values such as `pass`,
-`fail`, `inconclusive`, and `error`. The 2026-04 release of the SysML
+`fail`, `inconclusive`, and `error`. The 2026-06 release of the SysML
 v2 book does not provide a dedicated section on verdict semantics.
 The verdict kind definitions live in the standard domain library and
 are referenced from Chapter 33 without full elaboration.

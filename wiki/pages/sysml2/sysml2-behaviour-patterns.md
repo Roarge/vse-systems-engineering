@@ -161,12 +161,12 @@ sequence is evaluated only once at loop start (Ch 26, p 163).
 ### Termination semantics are not formally specified
 
 The terminate action ends an occurrence, but the precise semantics
-are not formally specified in the 2026-04 release (Ch 26, p 159).
+are not formally specified in the 2026-06 release (Ch 26, p 184).
 
 ## Pending material in the source
 
-The 2026-04 release publishes Chapter 25 (Occurrences and 4D
-Modelling) and Chapter 39 (Model Execution), which the previous
+The SysML v2 book publishes Chapter 25 (Occurrences and 4D
+Modelling) and Chapter 39 (Model Execution), which an earlier
 release left pending. New pages capture this material:
 [[sysml2-occurrences-4d]] and [[sysml2-model-execution]].
 Behaviour-patterns guidance may evolve once those chapters have

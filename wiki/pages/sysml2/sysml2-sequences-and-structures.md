@@ -115,8 +115,7 @@ life or instance), which is stronger than value equality. Standard
 `==` checks value equality. `===` checks identity across time.
 
 For full semantics of occurrences and lifelines, see
-[[sysml2-occurrences-4d]] (new in the 2026-04 release of the SysML
-v2 book).
+[[sysml2-occurrences-4d]].
 
 ## See also
 

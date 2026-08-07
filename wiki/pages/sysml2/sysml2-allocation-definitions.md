@@ -118,4 +118,4 @@ with typed ends are preferred.
 - [[sysml2-allocations-overview]] for the conceptual frame.
 - [[sysml2-allocation-patterns]] for VSE-scale patterns and gotchas.
 - [[sysml2-binding-connectors]] for the related binding connector
-  mechanism added in the 2026-04 release.
+  mechanism.

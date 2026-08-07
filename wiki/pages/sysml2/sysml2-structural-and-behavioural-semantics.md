@@ -69,7 +69,7 @@ marked `abstract`. Binary connections redefine `source` and
 Binding connectors assert that two features always have the same
 value. Based on `Links::selfLink`. Use them for identity
 constraints. For full coverage of binding-connector semantics see
-[[sysml2-binding-connectors]] (new in the 2026-04 release).
+[[sysml2-binding-connectors]].
 
 ### Interfaces
 

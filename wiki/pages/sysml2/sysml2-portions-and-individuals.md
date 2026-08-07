@@ -34,9 +34,9 @@ referenced_by: [sysml2-behaviour]
 
 This page captures the portion vocabulary (snapshots, time slices,
 space slices, space shots, spacetime-enclosed points) and the
-`individual` keyword, both new in the 2026-04 release of the SysML
-v2 book (Chapter 25, pages 147 to 152). For the conceptual frame
-of 4D modelling, see [[sysml2-occurrences-4d]].
+`individual` keyword, both covered by the SysML v2 book (Chapter 25,
+pages 151 to 155). For the conceptual frame of 4D modelling, see
+[[sysml2-occurrences-4d]].
 
 ## What a portion is
 

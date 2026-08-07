@@ -127,8 +127,7 @@ SI unit suffix.
 ## See also
 
 - [[sysml2-advanced-quantities-units]] for the underlying
-  SimpleUnit, DerivedUnit, and ConversionByPrefix mechanism (new
-  in the 2026-04 release).
+  SimpleUnit, DerivedUnit, and ConversionByPrefix mechanism.
 - [[sysml2-libraries-architecture]] for the library layering.
 - [[sysml2-library-import-patterns]] for VSE-scale import
   patterns.

@@ -140,7 +140,7 @@ subjects produce an invalid verification model (Ch 33, p 242).
 
 ## Pending material in the source
 
-The 2026-04 release of the SysML v2 book leaves the following topics
+The 2026-06 release of the SysML v2 book leaves the following topics
 pending:
 
 - Detailed verdict semantics, with the `VerdictKind` enumeration and
