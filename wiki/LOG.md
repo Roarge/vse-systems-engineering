@@ -789,3 +789,12 @@ INFO breakdown (90):
   block yet. Expected until the runtime flip.
 
 Zero orphans and zero contradiction candidates.
+
+## [2026-08-07] restructure | bundles retired
+
+`wiki/bundles/` deleted, 21 generated bundle files plus `.gitkeep`,
+1.1 MB. The directory was the runtime surface until the flip. Consumer
+skills now carry generated `wiki-routing` blocks and read pages on
+demand, so nothing concatenates pages any more and no artefact under
+`wiki/` holds page prose. The `bundle` LOG tag is historical from this
+point.
