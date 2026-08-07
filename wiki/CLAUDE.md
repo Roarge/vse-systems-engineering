@@ -86,7 +86,7 @@ is the modelling language, and domain guides cover specific concerns.
 | AMBSE | `pages/ambse/` | Douglass 2016 (Agile Systems Engineering), Douglass 2021 (Agile MBSE Cookbook). |
 | Methodology | `pages/methodology/` | The plugin's methodology specification at `<plugin>/methodology/`. Atomic-page summaries cross-linked to the spec. |
 | SysML 2.0 | `pages/sysml2/` | OMG SysML 2.0 specification and derived notes. |
-| SySiDE tooling | `pages/syside/` | Sensmetry SySiDE documentation and Python API. |
+| Syside tooling | `pages/syside/` | Sensmetry Syside documentation, Python API, and Sysand. |
 | Needs and Requirements | `pages/needs-and-reqs/` | INCOSE Guide to Needs and Requirements. |
 | Verification and Validation | `pages/vv/` | INCOSE Guide to V&V. |
 | Human-Systems Integration | `pages/hsi/` | HSI Primer Vol. 1. |

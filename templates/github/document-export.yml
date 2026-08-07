@@ -42,14 +42,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install SySiDE CLI
+      - name: Install Syside CLI
         run: |
           mkdir -p ~/.local/bin
           # tar -xf syside-*.tar.xz -C ~/.local
           echo "$HOME/.local/bin" >> $GITHUB_PATH
         continue-on-error: true
 
-      - name: Generate diagrams (SySiDE)
+      - name: Generate diagrams (Syside)
         if: hashFiles('syside.toml') != ''
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}

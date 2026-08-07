@@ -24,5 +24,5 @@ Thumbs.db
 # Node (if using sysand or other tooling)
 node_modules/
 
-# Sensmetry SySiDE build cache
+# Sensmetry Syside build cache
 .syside/

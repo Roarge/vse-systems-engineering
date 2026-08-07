@@ -143,7 +143,7 @@ When resolving any methodology question, consult sources in this priority. Lower
 6. **INCOSE SE Handbook** (best practices, scaled for VSEs).
 7. **Douglass 2016 and 2021** (the Harmony aMBSE process arc the methodology adapts), with the methodology's adaptations from §0.4 taking precedence.
 8. **SYSMOD (Weilkiens 2020)** (Base Architecture and System Context concepts adopted in §2 and §3).
-9. **SysML v2 specification** and **SySiDE** notes.
+9. **SysML v2 specification** and **Syside** notes.
 10. **Domain guides** (Needs and Requirements, V&V, HSI).
 
 The methodology spec wins over its sources because the methodology explicitly adapts the source arc (see §0.4). Do not import a Harmony practice or a SYSMOD detail that the methodology has overridden.

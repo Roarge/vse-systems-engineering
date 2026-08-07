@@ -1,7 +1,7 @@
 ---
 name: sysml2-modelling
-description: The SysML 2.0 workbench and umbrella router. Owns project layout, SySiDE tooling, CI validation, and the top-level syntax quick reference, and routes topic authoring to the eight focused siblings.
-when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when configuring SySiDE and `syside.toml`. Route to the sibling that owns the topic once it is clear.
+description: The SysML 2.0 workbench and umbrella router. Owns project layout, Syside tooling, CI validation, and the top-level syntax quick reference, and routes topic authoring to the eight focused siblings.
+when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when configuring Syside and `syside.toml`. Route to the sibling that owns the topic once it is clear.
 paths: ["**/*.sysml", "**/syside.toml"]
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ A `methodology/` folder at the project root, or under `engineering/`, marks a VS
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. The full SysML 2.0 reference set
-plus the SySiDE Python API reference lives in the plugin wiki, as atomic pages
+plus the Syside Python API reference lives in the plugin wiki, as atomic pages
 under the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers.
 
 ## When This Skill Triggers
@@ -21,7 +21,7 @@ under the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers.
 - The user asks to create or edit a SysML 2.0 model
 - The user asks about SysML 2.0 syntax at the project level
 - The user wants to navigate or query existing models
-- The user wants tooling integration (SySiDE, Automator, CI validation)
+- The user wants tooling integration (Syside, Automator, CI validation)
 - Any other skill needs to create model elements
 - The user has a SysML question but the topic is not yet clear
 
@@ -142,39 +142,39 @@ When the user asks to find something in the model:
 
 ## Tooling Integration
 
-### Sensmetry SySiDE Product Suite
+### Sensmetry Syside product lineup
 
-Four complementary tools for SysML v2:
-
-| Workflow | Tool | Licence |
+| Workflow | Product | Licence |
 | --- | --- | --- |
-| Learning, lightweight editing | **Syside Editor** (VS Code extension) | Free |
-| Model writing, diagrams, interactive exploration | **Syside Modeler** (VS Code extension) | Licensed |
-| CI/CD validation, headless diagrams | **Syside CLI** (included with Modeler) | Licensed |
-| Programmatic analysis, scripting, reports | **Syside Automator** (Python library) | Licensed |
+| Learning, lightweight editing | **Syside Editor: SysML v2 Essential** (VS Code extension) | Free |
+| Model writing, diagrams, grid views | **Syside Pro Suite** (Modeler) | Paid |
+| CI/CD validation, headless diagrams, scripting | **Syside Pro Suite** (Automator and the `syside` CLI) | Paid |
+| The Pro Suite without a local installation | **Syside Cloud** | Paid |
+| Safety and security analysis (ISO 26262, ISO/SAE 21434, FMEA) | **Syside Derisker** | Beta |
 
 **Syside Editor**: syntax highlighting, validation, auto-completion,
 go-to-definition for .sysml and .kerml files.
 
-**Syside Modeler**: everything Editor provides plus synchronised diagram
-visualisation. You MUST disable the Editor extension when Modeler is active
-to avoid conflicts.
-
-**Syside CLI**: standalone command-line tool for validation, formatting, and
-diagram generation. Requires Java 21. See the CLI Commands section below.
-
-**Syside Automator**: Python 3.12+ library for programmatic model access,
-querying, expression evaluation, requirements import/export, report generation,
-and custom automation. Install via `pip install syside`. See the Automator
-Python API section below.
+**Syside Pro Suite**: everything the Editor provides plus synchronised
+diagram visualisation and editable grid views (Modeler), the `syside`
+command-line tool for validation, formatting, and diagram generation,
+and the Automator, a Python 3.12+ library for programmatic model access,
+querying, expression evaluation, requirements import and export, report
+generation, and custom automation. Install the Automator with
+`pip install syside`. One licence key covers the whole suite. You MUST
+disable the Editor extension when the Modeler is active, to avoid
+conflicts.
 
 Additionally:
-- **Sysand**: open-source SysML v2 package manager for reusable libraries.
+- **Sysand**: open-source SysML v2 package manager for reusable
+  libraries. Read `pages/syside/syside-sysand-package-management.md`.
 
-**Combined workflows:** use Modeler for visual review and Automator for
-automated analysis. Both share the same licence key.
+Reference release: 0.10.3 (23 July 2026). Syside is pre-v1.0, so pin the
+version a project depends on. Read
+`pages/syside/syside-tooling-overview.md` for the lineup, the roadmap,
+and the breaking-change window.
 
-### SySiDE CLI Commands
+### Syside CLI Commands
 
 The CLI is the primary tool for terminal-based model operations. All commands
 operate on the current directory recursively unless paths are specified.

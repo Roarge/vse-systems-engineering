@@ -97,7 +97,7 @@ import VerificationCases::*;
 
 Prefer **selective imports** (`import Package::SpecificType`) over
 **recursive imports** (`import Package::**`) to reduce model
-loading time. This matters when using SySiDE or other tools that
+loading time. This matters when using Syside or other tools that
 resolve imports at edit time.
 
 ## VSE library selection by lifecycle phase

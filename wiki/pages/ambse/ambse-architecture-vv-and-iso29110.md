@@ -46,7 +46,7 @@ the architecture activities upstream see
 
 | Timeframe | Activity | Plugin mapping |
 |---|---|---|
-| Nanocycle | SySiDE syntax validation, constraint checking, trace completeness | Pre-commit hook, SySiDE on save |
+| Nanocycle | Syside syntax validation, constraint checking, trace completeness | Pre-commit hook, Syside on save |
 | Microcycle | Peer model review, use case walkthrough, iteration acceptance | Phase gate check, iteration review |
 | Macrocycle | System-level V&V, formal acceptance | SR.5 activities, PM.4 |
 

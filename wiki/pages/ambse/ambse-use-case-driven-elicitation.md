@@ -135,7 +135,7 @@ testing or formal analysis, not just semantic review.
 Requirements expressed as state machines or action sequences in
 SysML 2.0 can be:
 
-- **Syntax-checked** by SySiDE in real time (nanocycle).
+- **Syntax-checked** by Syside in real time (nanocycle).
 - **Trace-checked** by the `@traceability-guard` hook
   (nanocycle).
 - **Walked through** with stakeholders using scenario traces
