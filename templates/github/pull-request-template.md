@@ -1,5 +1,10 @@
 <!-- PR template per methodology §8.6.1. -->
 
+**Complete the items for your project profile (methodology §0.10 and §8.6.4).**
+Untagged items apply at every profile. `[standard]` items apply at
+`standard` and `full`. `[full]` items apply at `full` only. The profile
+is recorded as `project_profile` in `.iso-config.yaml`.
+
 ## Story or change summary
 
 <!-- For story branches: the story's narrative form (As a <role>, I want
@@ -30,36 +35,45 @@
 
 For every story advanced by this PR:
 
-- [ ] Story declares `role`, typed by a part def from the appropriate stakeholders package.
+- [ ] `[standard]` Story declares `role`, typed by a part def from the appropriate stakeholders package.
 - [ ] Story declares `capability` and `benefit` strings (narrative form retained per §1.7.2).
-- [ ] Story declares `subject` referencing a part def from the enclosing scope.
+- [ ] `[standard]` Story declares `subject` referencing a part def from the enclosing scope.
 - [ ] Story declares at least one `acceptance` criterion in Given/When/Then form (or as a `verification def` reference).
-- [ ] Framed `concern def`s exist in the appropriate concerns package.
-- [ ] Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
-- [ ] `StoryMeta.points`, `priority`, and `status` are set.
-- [ ] CI lint and well-formedness checks pass on the latest commit.
-- [ ] Cross-references resolve (no dangling type names, no orphan stories).
+- [ ] `[full]` Framed `concern def`s exist in the appropriate concerns package.
+- [ ] `[full]` Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
+- [ ] `[standard]` The `StoryMeta` fields listed in `storymeta.required_fields` are set.
+- [ ] The model parses.
+- [ ] `[full]` CI lint and well-formedness checks pass on the latest commit.
+- [ ] `[full]` Cross-references resolve (no dangling type names, no orphan stories).
+
+At `light`, the two items above marked `[standard]` for `role` and
+`subject` are covered coarsely by this one instead:
+
+- [ ] The story file sits in the package appropriate to its level.
 
 ## Reviewer checklist (§8.6.3)
 
-In addition to confirming the §8.6.2 items:
+In addition to confirming the author items:
 
-- [ ] **Methodology conformance**: §1.9 well-formedness rules and the level-specific rules of §4 / §5 / §7.
-- [ ] **Concern coverage**: no concern in the affected stakeholders' set is newly orphaned.
+- [ ] `[standard]` **Methodology conformance**: §1.9 well-formedness rules and the level-specific rules of §4 / §5 / §7.
+- [ ] `[full]` **Concern coverage**: no concern in the affected stakeholders' set is newly orphaned.
 - [ ] **Trace integrity**: `derive` from system stories to stakeholder stories, from subsystem stories to system stories. No dangling references.
-- [ ] **No methodology drift**: methodology amendments are not smuggled through a story PR.
-- [ ] **Variation hygiene** (§6 work only): variations declare all feasible variants, `assert constraint` covers cross-decision rules, the resolved architecture redefines every variation.
-- [ ] **Verification-case stubs exist** for each acceptance criterion, even if the case body is deferred.
+- [ ] `[full]` **No methodology drift**: methodology amendments are not smuggled through a story PR.
+- [ ] `[full]` **Variation hygiene** (§6 work only): variations declare all feasible variants, `assert constraint` covers cross-decision rules, the resolved architecture redefines every variation.
+- [ ] `[standard]` **Verification-case stubs exist** for each acceptance criterion, even if the case body is deferred.
 - [ ] **Self-contained**: no half-finished work in unrelated packages.
+- [ ] **Still the right change**: the story matches the intent that prompted it.
 
 For architectural branches, additionally:
 
-- [ ] Trade-study `analysis def` is reproducible.
-- [ ] Selected variant's score advantage is documented in the PR description.
+- [ ] `[full]` Trade-study `analysis def` is reproducible.
+- [ ] `[full]` Selected variant's score advantage is documented in the PR description.
 
 ## Change Request reference
 
 <!-- If this PR modifies any baselined artefact (per .iso-config.yaml
      baselined_paths), reference the open Change Request Issue:
        Refs: CR #<n>
-     The commit-msg hook enforces this. -->
+     The commit-msg hook enforces this at standard and full. At light
+     the default baselined_paths list is empty, so this section applies
+     only once the project has baselined something. -->

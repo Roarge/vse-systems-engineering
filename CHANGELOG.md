@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.2`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.3`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
-provisional overhaul plan, which reserved `3.0.0-rc.1` for the runtime
-flip. The pre-overhaul hygiene work took `rc.1` first, so the flip is
-`rc.2` and every later candidate shifts by one.
+provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
+the wiki runtime flip landed as `rc.2`, and the rigour-profile chunk
+takes `rc.3`, with every later candidate shifting by one.
 
 ### Changed
 
@@ -50,6 +50,50 @@ flip. The pre-overhaul hygiene work took `rc.1` first, so the flip is
   `summary` and `referenced_by` with the three legal `raw:` forms, and
   the curator proposes routing, cross-linking, retiring, or an explicit
   index-only decision instead of adding a page to a bundle.
+- **Obligations now scale with a recorded project profile.** Methodology
+  §8.4.1 (direct commits to `main`), §8.5.1 (draft-PR timing), §8.6.2
+  and §8.6.3 (checklists), §8.7 (status and branch consistency),
+  §10.3.1 (Project Plan element set), and §10.4.2 (Change Request
+  lifecycle) each keep their existing rule as the `full`-profile
+  obligation and name what `standard` and `light` do instead. The §9
+  ISO 29110 mapping is untouched, and the `full` column of every scaled
+  obligation is identical to the previous single rule.
+- **This loosens the shipped default for existing v2 projects.** A
+  project that upgrades and does not record a `project_profile` is
+  treated as `standard`, where the commit-message and traceability gates
+  warn rather than block. That is the intended change, not a
+  regression. A project that wants the previous behaviour records
+  `project_profile: full`, or raises the individual gate with a
+  `gate_overrides` entry.
+- Hooks guide §2 points at §0.10 as the normative owner of the
+  floor-and-ceiling principle it previously stated in passing. §4.1 and
+  §4.2 name the configuration key behind each check. §11 stops claiming
+  that CI is inherently unbypassable while the plugin ships a single CI
+  workflow, and now states where an unbypassable gate belongs, what the
+  plugin provides, and what the project authors itself. The bypass rows
+  point at §0.10.6 instead of treating a recorded bypass as a failure.
+- `templates/iso-config/.iso-config.yaml` records the standard-profile
+  defaults for `baselined_paths` and `storymeta.required_fields`, with
+  the `light` and `full` alternatives written as comments for
+  `project-setup` to select. The `renderers:` block is commented out,
+  because a configured path to a script the project has not authored
+  makes the post-merge hook report a failure nobody can act on.
+- `templates/common/CLAUDE.md` is cut from 187 lines to 50. It carried a
+  routing table, a directory tree, a source-order list, a per-turn
+  status ceremony, SysML naming rules, and a roles table, all derivable
+  from the methodology or the lens skill and all able to go stale
+  independently of it. What remains is the project facts (now including
+  the profile), the methodology-first rule, the lens invocation, four
+  pointers, and the writing style. The
+  `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and
+  `<!-- END VSE COMPANION -->` markers are unchanged.
+- `templates/CONTRIBUTING.md` is cut from 56 lines to 24, keeping the
+  facts a contributor needs at commit time and pointing at §8 and §0.10
+  for the rest.
+- `templates/github/pull-request-template.md` stays a single file and
+  tags its checklist items `[standard]` and `[full]`, which scales the
+  checklist to the project profile without maintaining three template
+  variants.
 
 ### Added
 
@@ -65,6 +109,31 @@ flip. The pre-overhaul hygiene work took `rc.1` first, so the flip is
   `vse-wiki-bundle`. The skill regenerates `INDEX.md`, regenerates each
   consumer skill's `wiki-routing` marker block from `referenced_by` and
   `summary`, and verifies contents blocks against the schema rule.
+- Methodology §0.10 Scaling and Tailoring, the normative home of project
+  rigour. §0.10.1 states the floor-and-ceiling posture. §0.10.2 defines
+  the three profiles (`light`, `standard`, `full`), the selection
+  heuristic, the recording convention, and mid-project profile change.
+  §0.10.3 is the obligation table, one row per artefact or ceremony,
+  each citing the section that specifies it in full. §0.10.4 fixes the
+  disposition of the five configurable gates per profile and the
+  per-gate override convention. §0.10.5 frames the lighter profiles as
+  documented tailoring rather than partial conformance. §0.10.6 is the
+  single home of the bypass-with-rationale rule, which replaces the
+  previous position where hooks advertised `--no-verify` in their own
+  failure messages while a skill refused to discuss it.
+- Methodology §8.6.4 Tiered checklists, selecting author and reviewer
+  checklist items by number for each profile so the item text stays
+  written once at full rigour and the lighter sets cannot drift.
+- Hooks guide §3.4 Profile-based installation, giving the per-profile
+  install matrix for the project-side hooks, the CI workflows, and
+  branch protection, and connecting it to the phased-rollout advice
+  already in §12.
+- `project_profile` and `gate_overrides` keys in
+  `templates/iso-config/.iso-config.yaml` and in the hooks guide §8
+  schema. Both stay flat and at most two levels deep so the shipped
+  hooks can parse them with the awk idiom they already use.
+- A "Profile and tailoring" section in `templates/pm/project-plan.md`
+  carrying the one-line tailoring record §0.10.2 requires.
 
 ### Removed
 
@@ -145,6 +214,21 @@ tails. The runtime flip below retires both.
   `skills/vse-wiki-index/SKILL.md`. A skill named in a page's
   `referenced_by` that carries no marker block is now a plain lint
   ERROR.
+
+The rigour-profile work removes three further items:
+
+- The local `pre-push` hook specification. Hooks guide §4.4 is rewritten
+  as four continuous-integration contracts. The four obligations remain
+  part of the methodology and are documented for a CI implementer. The
+  script itself is deleted in the hooks chunk that follows.
+- `methodology/` from the default `baselined_paths` at every profile,
+  including `full`. Change Request protection on the project-local
+  methodology copy contradicts the override convention that makes the
+  copy useful, and §8.4.3 methodology branches plus pull-request review
+  already control changes to it. §0.10.3 documents the opt-back-in.
+- The stale `iteration:` block from the hooks guide §8 schema. No
+  shipped hook has read it since the methodology rejected fixed-length
+  iteration containers.
 
 ## [2.1.3] - 2026-08-07
 

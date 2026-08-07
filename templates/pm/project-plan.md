@@ -16,6 +16,16 @@ iso_ref: "PM.1"
 |---------|------|--------|-------------|
 | 0.1 | {{DATE}} | {{AUTHOR}} | Initial draft |
 
+## Profile and tailoring
+
+<!-- One line per profile decision, newest last. Keep earlier entries so
+     the history stays readable. Name any deviation from the profile
+     defaults on the same line (a path added back to baselined_paths, a
+     gate_overrides entry, a plan element omitted or added). See
+     methodology §0.10.2. -->
+
+Profile: {{PROFILE}}. Tailoring per methodology §0.10 defaults.
+
 <!-- VSE-TASK: PM.1.15 -->
 
 ## 1. System Description

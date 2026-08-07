@@ -12,17 +12,45 @@
 # Plugin version recorded at /vse-setup time. Compared by the audit.
 plugin_version: "{{PLUGIN_VERSION}}"
 
+# Project rigour profile per methodology section 0.10.
+# One of: light | standard | full. Absent means standard.
+project_profile: standard
+
+# Optional per-gate overrides: block | warn | info | off.
+# Unset keys follow the profile default (section 0.10.4).
+# gate_overrides:
+#   commit_msg_pattern: warn
+#   commit_msg_cr_reference: block
+#   precommit_lint: warn
+#   precommit_story_wellformed: off
+#   precommit_traceability: warn
+
 # Paths under Change Request protection. Edits to any path on this
 # list (or any path beneath a directory entry) require an open
 # Change Request issue and a "(CR #<n>)" reference in the commit
 # message.
+#
+# The list below is the standard-profile default. The other two
+# profile defaults are:
+#
+#   light:  baselined_paths: []
+#           (empty, so the Change Request machinery stays dormant)
+#
+#   full:   baselined_paths:
+#             - docs/project-plan.md
+#             - docs/cm-strategy.md
+#             - docs/risk-register.md
+#             - docs/disposal-management-approach.md
+#             - model/library/
+#
+# methodology/ is deliberately absent at every profile. Change Request
+# protection on the project-local methodology copy contradicts the
+# override convention that makes the copy useful, and methodology
+# branches plus pull-request review already control changes to it. A
+# project under formal assessment may add it back explicitly and
+# record the addition on its tailoring line.
 baselined_paths:
   - docs/project-plan.md
-  - docs/cm-strategy.md
-  - docs/risk-register.md
-  - docs/disposal-management-approach.md
-  - methodology/
-  - model/library/
 
 # Branches that the plugin treats as protected. Force-push is
 # prohibited on these and additional review gates apply.
@@ -31,8 +59,13 @@ protected_branches:
   - release/*
 
 # StoryMeta fields that every story shall carry once it leaves backlog.
+# The list below is the standard-profile default. The other two
+# profile defaults are:
+#
+#   light:  required_fields: [status]
+#   full:   required_fields: [points, priority, status]
 storymeta:
-  required_fields: [points, priority, status]
+  required_fields: [status, priority]
   valid_statuses: [backlog, ready, inProgress, done]
 
 # Risk Register configuration.
@@ -45,13 +78,17 @@ change_request:
   issue_label: change-request
   required_for_paths: ${baselined_paths}
 
-# Renderers for §9.8 model-derived artefacts. Each path is an
+# Renderers for section 9.8 model-derived artefacts. Each path is an
 # executable script invoked by the post-merge hook on main.
-# Stub paths until the project authors them under tools/render/.
-renderers:
-  traceability_matrix: tools/render/traceability-matrix.py
-  stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
-  system_reqs:         tools/render/system-reqs-doc.py
-  ivv_plan:            tools/render/ivv-plan.py
-  ivv_procedures:      tools/render/ivv-procedures.py
-  justification:       tools/render/justification-doc.py
+#
+# Uncomment when the project authors these scripts under tools/render/.
+# Until then the block stays commented out, because a configured path
+# to a script that does not exist makes the post-merge hook report a
+# failure the project cannot act on.
+# renderers:
+#   traceability_matrix: tools/render/traceability-matrix.py
+#   stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
+#   system_reqs:         tools/render/system-reqs-doc.py
+#   ivv_plan:            tools/render/ivv-plan.py
+#   ivv_procedures:      tools/render/ivv-procedures.py
+#   justification:       tools/render/justification-doc.py
