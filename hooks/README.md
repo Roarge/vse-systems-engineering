@@ -58,9 +58,19 @@ project under `<project>/.githooks/` and activated with
 | `pre-commit-traceability.sh` | called by `pre-commit`                   | Trace-integrity check (existing legacy script). Delegated by the orchestrator above.                                                                 |
 | `commit-msg.sh`              | `<project>/.githooks/commit-msg`         | Enforce conventional-commit pattern with story scope, CR reference, or meeting-record format per §4.2.                                               |
 | `prepare-commit-msg.sh`      | `<project>/.githooks/prepare-commit-msg` | Prepopulate the commit subject with the Story ID inferred from the branch name per §4.3.                                                             |
-| `pre-push.sh`                | `<project>/.githooks/pre-push`           | Story-state-on-main, V&V coverage, traceability matrix freshness, baseline integrity on tags per §4.4. Stub passthrough until tools/lint/ matures.   |
 | `post-merge.sh`              | `<project>/.githooks/post-merge`         | Regenerate model-derived artefacts when main advances per §4.5. Reports drift; does not auto-commit.                                                 |
 | `post-checkout.sh`           | `<project>/.githooks/post-checkout`      | Print methodology / branch status when switching branches per §4.6.                                                                                  |
+| `lib/iso-profile.sh`         | `<project>/.githooks/lib/iso-profile.sh` | Shared library. Resolves the rigour profile and the per-gate dispositions from `.iso-config.yaml` per methodology §0.10.4. Sourced, never invoked.  |
+
+No local `pre-push` hook ships. The four pre-push obligations of hooks
+guide §4.4 (story state on main, V&V coverage on done stories,
+traceability matrix freshness, baseline integrity on release tags) are
+documented there as continuous-integration contracts, because a local
+hook cannot be the unbypassable gate those obligations need.
+
+Which of these scripts an install actually copies is a function of the
+project rigour profile. The per-tier install matrix is hooks guide
+§3.4, and the `attention-regime` skill executes it.
 
 The `post-receive` server-side hook (§4.7) is documented in the hooks
 guide but not shipped here. It is a server-side responsibility. See
@@ -73,15 +83,18 @@ not listed in `hooks.json`.
 **Installation example (user project, executed by `@attention-regime`):**
 
 ```bash
-mkdir -p .githooks
+mkdir -p .githooks/lib
+# Installed at every profile.
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"     .githooks/lib/iso-profile.sh
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/prepare-commit-msg.sh"  .githooks/prepare-commit-msg
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-checkout.sh"       .githooks/post-checkout
+# Added at standard and full.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit.sh"          .githooks/pre-commit
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" .githooks/pre-commit-traceability.sh
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/commit-msg.sh"          .githooks/commit-msg
-cp "${CLAUDE_PLUGIN_ROOT}/hooks/prepare-commit-msg.sh"  .githooks/prepare-commit-msg
-cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-push.sh"            .githooks/pre-push
+# Added at full.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-merge.sh"          .githooks/post-merge
-cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-checkout.sh"       .githooks/post-checkout
-chmod +x .githooks/*
+chmod +x .githooks/* .githooks/lib/*
 git config core.hooksPath .githooks
 ```
 
