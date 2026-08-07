@@ -15,7 +15,7 @@ related:
   - ambse-iso29110-mapping
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [release-orchestrator, verification-validation]
 ---
 
@@ -98,7 +98,7 @@ scope, language, accuracy, fidelity, and completeness
 appropriate to its role. Use a core subset of SysML 2.0 (the
 80/20 rule: 80% of work uses 20% of the language) and extend
 only when necessary. See the `sysml2-syntax-*` family of atomic
-pages (consumed via `wiki/bundles/sysml2-modelling.md`).
+pages under `pages/sysml2/`.
 
 ## Modelling rules (condensed)
 
