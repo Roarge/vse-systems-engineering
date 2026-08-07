@@ -69,6 +69,8 @@ Run from the project root, after `@project-setup` has scaffolded the repository.
 | `hooks/commit-msg.sh` | `.githooks/commit-msg` | no | yes | yes |
 | `hooks/post-merge.sh` | `.githooks/post-merge` | no | no | yes |
 | `templates/github/traceability-check.yml` | `.github/workflows/traceability-check.yml` | no | yes, advisory | yes, blocking |
+| `templates/github/document-export.yml` | `.github/workflows/document-export.yml` | no | no | yes (renders documents on release, never blocks) |
+| Branch protection on `main` | repository settings | not configured | recommended | required |
 
 `lib/` installs at every profile even where no installed hook reads it yet, so raising the profile later adds hook files only, with no second install step and no partial state.
 

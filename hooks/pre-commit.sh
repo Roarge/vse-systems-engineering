@@ -110,10 +110,19 @@ fi
 
 # 3. Traceability integrity (delegated). The delegate reads its own
 # disposition from precommit_traceability.
+TRACE_OUT=""
 if [ -x "$HOOK_DIR/pre-commit-traceability.sh" ]; then
-    "$HOOK_DIR/pre-commit-traceability.sh" || exit 1
+    TRACE_OUT=$("$HOOK_DIR/pre-commit-traceability.sh" 2>&1) || { printf '%s\n' "$TRACE_OUT"; exit 1; }
 elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -x "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" ]; then
-    "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" || exit 1
+    TRACE_OUT=$("${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" 2>&1) || { printf '%s\n' "$TRACE_OUT"; exit 1; }
+fi
+if [ -n "$TRACE_OUT" ]; then
+    printf '%s\n' "$TRACE_OUT"
+    # The delegate reports its own findings. Count its warnings so the
+    # summary line below cannot contradict what was just printed.
+    if printf '%s' "$TRACE_OUT" | grep -q 'warning:'; then
+        WARNINGS=$((WARNINGS + 1))
+    fi
 fi
 
 # Baselined-artefact awareness (advisory only, see header). Skipped

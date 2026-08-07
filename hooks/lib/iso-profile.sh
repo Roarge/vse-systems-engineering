@@ -157,7 +157,12 @@ case "${ISO_PROFILE}" in
         ISO_PROFILE="standard"
         ;;
     *)
-        echo "[iso-profile] Unrecognised project_profile '${ISO_PROFILE}', using standard (methodology §0.10.2)." >&2
+        # Child hooks re-source this library. The exported guard keeps
+        # the diagnostic to one line per hook run, not one per process.
+        if [ -z "${ISO_PROFILE_WARNED:-}" ]; then
+            echo "[iso-profile] Unrecognised project_profile '${ISO_PROFILE}', using standard (methodology §0.10.2)." >&2
+            export ISO_PROFILE_WARNED=1
+        fi
         ISO_PROFILE="standard"
         ;;
 esac
