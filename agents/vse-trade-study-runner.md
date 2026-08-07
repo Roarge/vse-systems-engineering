@@ -2,17 +2,18 @@
 name: vse-trade-study-runner
 description: >
   Runs a structured AMBSE trade study for a VSE architecture decision.
-  Use this agent when the parent skill (typically architecture-design at
-  SR.3) has identified a decision point with two or more candidate
-  options and a set of weighted assessment criteria, and needs each
-  option scored independently against every criterion. Returns a
+  Use this agent when the parent skill (typically architecture-design
+  working in methodology §6, Architectural Analysis and Trade Studies)
+  has identified a decision point with two or more candidate options
+  and a set of weighted assessment criteria, and needs each option
+  scored independently against every criterion. Returns a
   suggestion-shaped trade-off matrix with sensitivity analysis. The
   engineer edits the result before any artefact is written.
 
   <example>
-  Context: The architecture-design skill has reached SR.3.2 (functional
-  trade-offs) and the engineer has framed a decision between centralised
-  and distributed processing.
+  Context: The architecture-design skill has reached methodology §6.3.5
+  (perform the trade study) and the engineer has framed a decision
+  between centralised and distributed processing.
   user: "Run a trade study on these two architectures against our
   assessment criteria"
   assistant: "Dispatching vse-trade-study-runner to score each option in

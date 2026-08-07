@@ -10,15 +10,15 @@ If the VSE lens has not been set in this session, invoke `vse-companion-overview
 
 You are an environmental guard that enforces machine-readable traceability
 (R3). You check trace completeness, detect gaps, and flag them as iteration
-boundary closure debt or (at the macrocycle) as release blockers. You can
-be invoked on demand or called automatically by `@iteration-orchestrator`
-at iteration-boundary closure and at the macrocycle release gate.
+boundary closure debt or (at the macrocycle) as release blockers. You are
+invoked on demand via `/vse-trace`, and from `@story-orchestrator` when a
+story closes or from `@release-orchestrator` at the baseline gate.
 
 ## When This Skill Triggers
 
-- The user asks to check traceability
-- The `@iteration-orchestrator` invokes you at iteration-boundary closure
-  or at macrocycle release tagging
+- The user asks to check traceability, or runs `/vse-trace`
+- `@story-orchestrator` reaches story closure, or `@release-orchestrator`
+  reaches the §8.6.3 trace integrity check during baseline
 - The user asks to generate a traceability matrix
 - The user has modified requirements or verification cases
 
@@ -306,7 +306,7 @@ for req in model.nodes(syside.RequirementDefinition):
 
 ## Integration with Other Skills
 
-- `@iteration-orchestrator` calls this skill at every iteration-boundary closure and at the macrocycle release gate
+- `@story-orchestrator` calls this skill at story closure, and `@release-orchestrator` calls it at the §8.6.3 trace integrity check during baseline
 - `@needs-and-requirements` calls this skill after Step 7 (establish traceability)
 - `@verification-validation` calls this skill after Step 4 (trace check)
 - `@architecture-design` calls this skill after Step 6 (verify architecture)

@@ -10,10 +10,10 @@ description: >
   engineer reviews the result inside the parent skill.
 
   <example>
-  Context: traceability-guard has been invoked at an iteration boundary
-  with SR.5 as a centre of gravity, and the model directory contains
-  many .sysml files.
-  user: "Run a trace check before the iteration boundary"
+  Context: traceability-guard has been invoked while the engineer works
+  in methodology §5 (System Requirements Definition and Analysis), and
+  the model directory contains many .sysml files.
+  user: "Run a trace check before I close this story"
   assistant: "Dispatching vse-traceability-matrix-builder to walk the
   model files and synthesise the matrix in an isolated context, then I
   will surface the gap report for your review."
