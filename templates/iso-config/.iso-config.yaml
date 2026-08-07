@@ -16,7 +16,7 @@ plugin_version: "{{PLUGIN_VERSION}}"
 # One of: light | standard | full. Absent means standard.
 project_profile: standard
 
-# Optional per-gate overrides: block | warn | off.
+# Optional per-gate overrides: block | warn | info | off.
 # Unset keys follow the profile default (section 0.10.4).
 # gate_overrides:
 #   commit_msg_pattern: warn

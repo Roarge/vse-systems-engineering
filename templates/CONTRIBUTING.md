@@ -11,7 +11,9 @@ This project follows the story-driven AMBSE methodology shipped by the `vse-syst
 
 ## Commit messages
 
-Three forms are accepted, per §4.2 of `methodology/iso-29110-hooks-guide.md`:
+The common forms, per §4.2 of `methodology/iso-29110-hooks-guide.md`
+(the hook accepts the full conventional-commit type set, and a Change
+Request reference may accompany any type):
 
 - `feat(US_042): brief subject` for story work.
 - `plan: revise schedule (CR #17)` for work referencing a Change Request.

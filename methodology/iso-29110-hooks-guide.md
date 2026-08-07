@@ -149,7 +149,7 @@ bypass on the first day, which is the opposite of the intended effect.
 | `.githooks/pre-commit` | not installed | installed, warn dispositions | installed, blocking dispositions |
 | `.githooks/commit-msg` | not installed | installed, warn dispositions | installed, blocking dispositions |
 | `.githooks/post-merge` | not installed | not installed | installed |
-| `.github/workflows/` compliance workflows | not installed | traceability workflow, advisory | full set, blocking |
+| `.github/workflows/` compliance workflows | not installed | `traceability-check.yml`, advisory | `traceability-check.yml` blocking, plus `document-export.yml` (renders documents on release, never blocks) |
 | Branch protection on `main` | not configured | recommended | required |
 
 Three notes on the table.
@@ -1031,9 +1031,12 @@ A single project-level configuration file drives the hook behaviour:
 
 # Project rigour profile per methodology section 0.10.
 # One of: light | standard | full. Absent means standard.
-project_profile: standard
+# This sample shows the full-profile surface. The standard and light
+# defaults carry lighter baselined_paths and storymeta sets
+# (methodology section 0.10.3).
+project_profile: full
 
-# Optional per-gate overrides: block | warn | off.
+# Optional per-gate overrides: block | warn | info | off.
 # Unset keys follow the profile default (section 0.10.4).
 # gate_overrides:
 #   commit_msg_pattern: warn

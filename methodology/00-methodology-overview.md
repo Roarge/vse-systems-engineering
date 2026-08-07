@@ -600,6 +600,13 @@ At `light` the Change Request gate is `off` because the default
 check. A `light` project that baselines a path raises that one gate with
 an override.
 
+The disposition columns govern a gate wherever its hook is installed.
+The installation matrix in §3.4 of the hooks guide defines the per-tier
+install set, and at `light` the `pre-commit` and `commit-msg` hooks are
+not installed by default, so their rows take effect only when a light
+project adds those hooks through the §3.4 phased-rollout path. The
+light column then applies as written.
+
 The remaining automated surfaces are not per-gate configurable:
 
 - **Continuous integration traceability workflow**
