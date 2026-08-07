@@ -1,11 +1,34 @@
-# SySiDE project configuration for the Smart Sensor demo.
+# Syside configuration for the Smart Sensor demo.
+# Reference: https://docs.sensmetry.com/modeler/cli/configuration.html
 #
 # Per methodology §8.2 / §8.3, the project model lives under model/.
 # The vse-library.sysml shipped at model/library/ is loaded from this
 # project, alongside the SysML 2.0 standard library.
+#
+# Syside merges three configuration levels: the global file at
+# $XDG_CONFIG_HOME/syside/syside.toml, this committed project file, and
+# a gitignored syside.user.toml for personal overrides.
 
-[project]
-name = "smart-sensor"
+# Every model file in the project belongs to the build.
+include = ["model/**/*.sysml"]
 
-[paths]
-sources = ["model/"]
+# Files or directories to exclude
+exclude = [
+  "build/**",
+  "*.draft.sysml",
+]
+
+[format]
+line-width = 100
+tab-width = 4
+markdown = true
+
+[lint]
+# Namespace hygiene matters for the §8.3 canonical layout.
+standard-library-package = "warning"
+
+[lsp]
+edit = "project"
+
+[telemetry]
+crash-reports = "ignore"

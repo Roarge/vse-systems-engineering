@@ -1,5 +1,16 @@
-# SySiDE configuration for {{PROJECT_NAME}}
+# Syside configuration for {{PROJECT_NAME}}
 # Reference: https://docs.sensmetry.com/modeler/cli/configuration.html
+#
+# Syside reads three configuration levels, lowest precedence first:
+#   1. Global:   $XDG_CONFIG_HOME/syside/syside.toml
+#   2. Project:  this file, committed and shared by the whole team
+#   3. Personal: syside.user.toml beside this file, gitignored
+# Tables merge key by key, scalars and arrays overwrite, and `exclude`
+# concatenates across all three levels. Put project-wide rules here and
+# leave syside.user.toml for one engineer's local overrides.
+#
+# The project root is found by walking up to a `.git` directory or a
+# `sysand-lock.toml` file.
 
 # Standard library path (omit to use bundled version)
 # std = "/path/to/standard/library"
@@ -40,9 +51,19 @@ force-bodies = false
 operator = "after"
 
 [lint]
-# Standard library package diagnostic severity
+# Severity per diagnostic rule.
 # Options: "error", "warning", "information", "hint", "off"
+
+# Package name colliding with the standard library
 standard-library-package = "warning"
+
+# The remaining five rules keep the tool default until set here.
+# Uncomment a line to pin the severity for this project.
+# type-error = "error"
+# usage-feature-typing = "error"
+# global-namespace-distinguishability = "warning"
+# quantity-operator-expression = "warning"
+# related-feature-conformance = "warning"
 
 [lsp]
 # Maximum number of autocomplete suggestions (default: 256)
