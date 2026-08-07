@@ -13,7 +13,7 @@ related:
   - sysml2-allocation-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-allocations]
 ---
 

@@ -18,7 +18,7 @@ related:
   - sysml2-specialisation-and-typing
 confidence: high
 created: 2026-05-04
-updated: 2026-05-06
+updated: 2026-08-07
 referenced_by: [sysml2-model-structure]
 ---
 

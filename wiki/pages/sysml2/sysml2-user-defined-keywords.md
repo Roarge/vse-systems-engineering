@@ -15,7 +15,7 @@ related:
   - sysml2-metadata-definitions
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-07
 referenced_by: [sysml2-extension]
 ---
 
