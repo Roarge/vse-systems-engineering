@@ -691,3 +691,101 @@ until that work lands.
 Zero "raw source not present locally" findings, down from 62 before
 the normalisation recorded in the entry above. The staleness rule now
 resolves for every page that names a raw file.
+
+## [2026-08-07] restructure | wiki v3 data layer
+
+The first half of the v3.0.0 wiki restructure. The contributor surface
+migrates to the on-demand model. The runtime surface does not move in
+this change, so installed behaviour is unchanged.
+
+Schema. `wiki/CLAUDE.md` is rewritten around the navigable-wiki
+contract. The runtime surface is `INDEX.md` plus per-skill routing
+tables that name pages, and a skill reads a page on demand rather than
+receiving a concatenated document. `bundles/` leaves the directory
+layout. A new Routing tables section fixes the marker-block format, the
+generation rules, the prohibition on hand edits inside the markers, and
+the one-hop rule. The lint rule set, the ingest contract, and the
+refactor contract are restated against those surfaces. The `bundle`
+operation section becomes an `index` operation section.
+
+Frontmatter. All 130 pages migrate. `bundled_by` becomes
+`referenced_by` (required, may be empty). A required one-line `summary`
+is added to every page, under 120 characters, single-sourcing both the
+INDEX summary column and the routing-table "Read when" column. Drafts
+came from each page's first body sentence. Eighty-two were hand-written
+where the first sentence was a cross-reference, a fragment, a table
+row, or did not survive compression. The five page-type templates under
+`wiki/schema/` carry the same two changes.
+
+The full `raw:` policy is now written into the schema, closing the
+carry-over from the pre-overhaul hygiene work. `raw:` is optional per
+source entry, and when present it is an exact filename under
+`sources/`, a repo-relative path inside the plugin tree, or `null` for
+web-only sources whose citations carry URLs.
+
+Contents blocks. 106 of the 130 pages gain a `## Contents` list of
+their H2 headings, per the mechanical rule: over 100 lines and three or
+more H2 sections. The remaining 24 are all at or under 100 lines. Ten
+insertions were checked by hand across layers.
+
+Skills. `vse-wiki-bundle` becomes `vse-wiki-index`, with three
+operations: regenerate `INDEX.md`, regenerate each consumer skill's
+`wiki-routing` marker block from `referenced_by` and `summary`, and
+verify contents blocks. The other three wiki skills and the two wiki
+subagents drop their bundle vocabulary, and all four wiki skills drop
+the executing `wiki/CLAUDE.md` tail in favour of the prose instruction
+they already carried.
+
+INDEX. Regenerated in the new format, with a navigation preamble and
+per-layer tables carrying Slug, Title, Type, Summary, and Referenced
+by. Totals match disk: 130 pages, 11 layers, 21 referencing skills.
+Two consecutive runs with the generated-file timestamp pinned produce
+a zero diff.
+
+`wiki/bundles/` remains on disk with all 21 bundles, and the 21
+consumer skills are untouched, including their embed tails. Both are
+retired in the runtime flip that follows.
+
+## [2026-08-07] lint | post-data-layer
+
+Full lint pass executed manually against the rewritten rule set in
+`skills/vse-wiki-lint/SKILL.md`, steps 1 to 10. Report written to
+`wiki/LINT_REPORT.md` (gitignored, not committed).
+
+Pages scanned: 130. Routing blocks scanned: 0.
+Summary: 0 ERROR, 171 WARN, 90 INFO.
+
+Rules exercised and clean: required frontmatter on every page
+(including the new `summary` and `referenced_by`), slug and layer
+agreement with the filesystem, summary length and single-line shape,
+wikilink resolution, `raw:` resolution against the three legal forms,
+orphan detection, and contents-block presence and ordering.
+
+Rules not exercisable in this change, and why: the four routing
+consistency rules (bidirectional membership, path resolution, sorted
+order, and summary fidelity) evaluate over zero marker blocks, because
+the consumer skills receive their blocks in the runtime flip. They pass
+vacuously and prove nothing yet. They are exercised for the first time
+in the flip.
+
+WARN breakdown (171):
+- 86 wikilinks present in a body but absent from the page's `related:`
+  list. Unchanged from the pre-overhaul baseline. Repair belongs in an
+  editorial sweep.
+- 64 schema-drift flags where a page's H2 headings do not match the
+  template shape for its `type`. Detected by keyword heuristic, so this
+  is an upper bound.
+- 21 consumer skills still carrying a `wiki/bundles/` embed tail. This
+  is the intended state of this change. The tails and the bundles are
+  removed together in the runtime flip, and this count going to zero is
+  one of that change's acceptance conditions.
+
+INFO breakdown (90):
+- 46 source-freshness flags, all citing `sysmlv2.pdf`, unchanged from
+  the baseline and expected until the 2026-06 repagination work lands.
+- 23 `raw: null` entries, all web-only sources whose citations carry
+  URLs. Legal under the policy now written into the schema.
+- 21 skills named in some page's `referenced_by` that carry no routing
+  block yet. Expected until the runtime flip.
+
+Zero orphans and zero contradiction candidates.

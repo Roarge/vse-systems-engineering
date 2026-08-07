@@ -87,6 +87,11 @@ block is the text between `<!-- wiki-routing:begin -->` and
 `<!-- wiki-routing:end -->`, and its rows carry a page title, a path
 relative to the wiki root, and a "Read when" cell.
 
+Ignore any marker that sits inside a fenced code block or an inline code
+span. The wiki skills document the marker format, so those occurrences
+are examples, not blocks. Treating them as blocks produces phantom
+findings against skills that carry no routing at all.
+
 The block is generated from page frontmatter by `/vse-wiki-index`, so
 every check below asks the same question: does the generated surface
 still agree with the pages it was generated from?
@@ -113,7 +118,10 @@ For each skill under `skills/`:
   surface, that is a path under `wiki/bundles/` or a path beginning with
   the legacy `knowledge/` directory name, in either a `!cat` block or a
   prose pointer. Both were deleted, and any remaining reference is
-  stale.
+  stale. Exempt the `vse-wiki-*` skills from this check. They name the
+  retired surfaces in order to detect them, so matching on their own
+  text produces a finding against the detector rather than against a
+  consumer.
 
 ## Step 5: Orphan Detection
 

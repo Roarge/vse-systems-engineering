@@ -247,6 +247,12 @@ Rules:
   content is a pointer to a second page the skill must also read.
 - **A skill with no pages gets the preamble only**, with no marker block.
   It still needs to know where `INDEX.md` is.
+- **Markers inside code are not blocks.** The wiki skills and this file
+  document the marker format, so the marker text appears inside fenced
+  code blocks and inline code spans. A generator or a linter parsing for
+  routing blocks must ignore any marker that sits inside a fenced code
+  block or an inline code span, and treat only bare markers in the skill
+  body as a real block.
 
 ## Operations
 

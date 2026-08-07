@@ -154,10 +154,14 @@ Rules:
 4. Everything outside the markers, including the preamble paragraph
    above `<!-- wiki-routing:begin -->`, is left untouched. The preamble
    is ordinary skill prose that a skill author may reword.
-5. If a skill named in some page's `referenced_by` has no marker pair in
+5. Ignore any marker that sits inside a fenced code block or an inline
+   code span. This skill and `vse-wiki-lint` both document the marker
+   format, so those occurrences are examples and must never be rewritten
+   as if they were live blocks.
+6. If a skill named in some page's `referenced_by` has no marker pair in
    its `SKILL.md`, do not invent one and do not edit the file. Report it
    to the contributor as a skill awaiting its routing block.
-6. If a skill has a marker pair but no pages point at it, empty the
+7. If a skill has a marker pair but no pages point at it, empty the
    block down to the header row and report it. An empty table is honest.
    A stale table is not.
 
