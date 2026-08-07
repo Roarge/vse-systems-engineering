@@ -798,3 +798,37 @@ skills now carry generated `wiki-routing` blocks and read pages on
 demand, so nothing concatenates pages any more and no artefact under
 `wiki/` holds page prose. The `bundle` LOG tag is historical from this
 point.
+
+## [2026-08-07] lint | post-flip
+
+Full rule set, no vacuous rules left. Pages scanned: 130. Routing blocks
+scanned: 20, carrying 176 rows.
+
+- ERROR: 0.
+- WARN: 152. 86 wikilinks present in a body but absent from the page's
+  `related:` list, and 64 schema-drift flags where a page's H2 headings
+  do not match the template shape for its `type`. Both counts are
+  unchanged from the pre-flip baseline and both belong to an editorial
+  sweep. The remaining 2 are pages that qualify for a `## Contents`
+  block and carry none (benefit-as-criterion, storymeta-lifecycle),
+  carried over from the data-layer migration.
+- INFO: 69. 46 source-freshness flags, all citing `sysmlv2.pdf`, and 23
+  `raw: null` entries for web-only sources. Both legal and both
+  unchanged.
+
+Three finding classes that the pre-flip run reported have gone to zero:
+21 consumer skills carrying a `wiki/bundles/` embed tail, 21 skills
+named in a page's `referenced_by:` with no routing block, and every
+reference to the retired bundle surface outside the lint detector.
+Zero orphans and zero contradiction candidates, unchanged.
+
+## [2026-08-07] index | post-flip resync
+
+Pages indexed: 130 across 11 layers. Routing blocks regenerated: 20,
+176 rows. Referencing skills: 20, down from 21 because
+vse-companion-overview now carries a knowledge-base note rather than a
+table. Run twice end to end. The second run produced a zero diff in
+every skill body and a zero diff in `INDEX.md` below the generated-on
+timestamp line, which is the idempotence condition the skill states.
+ToC drift: 2 pages missing a qualifying `## Contents` block, reported
+and not repaired, because contents blocks are page content.
