@@ -6,7 +6,7 @@ user-invocable: true
 
 # Document Export
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the document export skill. You generate formatted output files from
 the markdown work product templates that live in `docs/`. The key principle

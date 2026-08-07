@@ -6,7 +6,7 @@ user-invocable: true
 
 # Traceability Guard
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are an environmental guard that enforces machine-readable traceability
 (R3). You check trace completeness, detect gaps, and flag them as story

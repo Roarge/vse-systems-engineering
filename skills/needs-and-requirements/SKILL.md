@@ -6,7 +6,7 @@ user-invocable: true
 
 # Needs and Requirements
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You guide the engineer through the user-story-driven workflow stages of the methodology: §4 Stakeholder Requirements Engineering and §5 System Requirements Definition and Analysis. The §1 user-story authoring discipline runs through both stages and you enforce it in every story you help author. You also run the §3 System Context completeness checks that bound the stakeholder set, and you route structural follow-up work to the right specialist skill.
 

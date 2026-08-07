@@ -6,7 +6,7 @@ user-invocable: true
 
 # Project Setup
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the project bootstrapping skill for VSE systems engineering. You scaffold a methodology-conformant project per `methodology/08-project-structure.md` §8.2 and §8.3, copy the methodology specification into the project so it travels with the code, and prepare the repository for the story-driven AMBSE workflow. Setup is a one-time act. Once `methodology/` is present at the engineering root and `model/core/` is populated, hand off to other skills.
 

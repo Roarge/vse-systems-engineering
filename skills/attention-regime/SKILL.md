@@ -6,7 +6,7 @@ user-invocable: true
 
 # Attention Regime
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 You are the meta-skill that configures the working environment for sustained attention to the AMBSE methodology and ISO/IEC TR 29110-5-6-2 obligations. This skill installs and registers two complementary hook surfaces. Lifecycle (Claude Code) hooks act as the *guidance* layer during agent authoring. Project-side (git) hooks act as the *enforcement* layer at commit, push, merge, checkout, and receive. Together they make compliance ambient rather than periodic.
 

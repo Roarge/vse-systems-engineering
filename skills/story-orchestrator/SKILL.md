@@ -6,7 +6,7 @@ user-invocable: true
 
 # Story Orchestrator
 
-If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
+If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
 ## Role
 
