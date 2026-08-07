@@ -33,22 +33,31 @@ authoring.
 
 | ISO obligation | Hook(s) that cover it |
 |---|---|
-| PM.O1 — Plan reviewed and accepted | `pre-push` to main; PR-required CI lint |
+| PM.O1 — Plan reviewed and accepted | CI required status check on `main` (§4.4 contract 1); PR-required CI lint |
 | PM.O2 — Progress monitored; corrections | `post-merge` regenerator; CC `Stop` hook prompts for Progress Status entry |
 | PM.O3 — Change Requests handled | `pre-commit` baselined-artefact check; CC `PreToolUse` on Edit |
 | PM.O4 — Review meetings recorded | `commit-msg` meeting commit format; CC `UserPromptSubmit` after sync review |
 | PM.O5 — Risk register monitored | CC `SessionStart` Risk summary; weekly CI cron job for stale risks |
-| PM.O6 — Configuration management | `pre-push` baseline integrity; mirror via `post-receive` |
-| PM.O7 — V&V performed | `pre-push` checks V&V cases for ready stories |
+| PM.O6 — Configuration management | CI baseline integrity on tags (§4.4 contract 4); mirror via `post-receive` |
+| PM.O7 — V&V performed | CI verification-coverage check (§4.4 contract 2) |
 | PM.O8 — Disposal Management Approach | CI lint for Plan completeness |
 | SR.O2 — Requirements analysed and baselined | `pre-commit` story well-formedness; CC `PreToolUse` story-file checks |
-| SR.O3 — Architectural design baselined; traceability | `pre-push` traceability integrity check (rejects dangling `derive`, `frame concern`, `verify` references; see §4.4); `post-merge` Traceability Matrix regeneration |
-| SR.O6 — System Configuration baselined | tag-protection; `pre-push` on tags |
+| SR.O3 — Architectural design baselined; traceability | `pre-commit` traceability check on touched requirements; CI traceability integrity check (§4.4 contract 3, rejects dangling `derive`, `frame concern`, `verify` references); `post-merge` Traceability Matrix regeneration |
+| SR.O6 — System Configuration baselined | tag-protection; CI baseline check on tags (§4.4 contract 4) |
 | SR.O7 — V&V tasks performed; reports stored | `post-merge` V&V report aggregator; CC `Stop` after V&V execution |
 
 Coverage is not exhaustive — hooks reduce friction but do not replace
 human judgement. The hooks raise the floor; the team raises the
 ceiling.
+
+That principle is now normative, and it lives in §0.10 of the
+methodology. §0.10.1 states the floor-and-ceiling posture, §0.10.2
+defines the three project profiles, §0.10.4 fixes the disposition of
+each configurable gate per profile together with the per-gate override
+convention, and §0.10.6 gives the bypass-with-rationale rule its single
+home. This guide implements that section. Where the two disagree, §0.10
+is right and this guide is wrong. The coverage table above describes the
+`full` profile, which is the only profile that installs the complete set.
 
 ## 3. Repository setup
 
@@ -61,7 +70,6 @@ ceiling.
 │   ├── pre-commit
 │   ├── commit-msg
 │   ├── prepare-commit-msg
-│   ├── pre-push
 │   ├── post-merge
 │   ├── post-checkout
 │   └── lib/                      # shared helpers
@@ -126,6 +134,48 @@ against the official documentation at
 Any changes since this guide was written should be applied to the
 example configurations below.
 
+### 3.4 Profile-based installation
+
+Which hooks are installed is a function of the project's rigour profile
+(methodology §0.10.2). Installing the whole set into a solo prototype
+produces gates nobody wants and teaches the engineer to reach for a
+bypass on the first day, which is the opposite of the intended effect.
+
+| Surface | light | standard | full |
+|---|---|---|---|
+| `.githooks/prepare-commit-msg` | installed | installed | installed |
+| `.githooks/post-checkout` | installed | installed | installed |
+| `.githooks/lib/` (shared helpers) | installed | installed | installed |
+| `.githooks/pre-commit` | not installed | installed, warn dispositions | installed, blocking dispositions |
+| `.githooks/commit-msg` | not installed | installed, warn dispositions | installed, blocking dispositions |
+| `.githooks/post-merge` | not installed | not installed | installed |
+| `.github/workflows/` compliance workflows | not installed | traceability workflow, advisory | full set, blocking |
+| Branch protection on `main` | not configured | recommended | required |
+
+Three notes on the table.
+
+The two hooks installed at every profile do not gate anything. They
+prepopulate a commit message from the branch name and report state after
+a checkout, so they cost nothing at any rigour level.
+
+`.githooks/lib/` installs at every profile even where no installed hook
+reads it yet. Raising a profile later then adds hook files only, with no
+second install step and no partial state.
+
+The dispositions in the `standard` and `full` columns are defaults, not
+fixtures. A project sets any individual gate to `block`, `warn`, or
+`off` through `gate_overrides` in `.iso-config.yaml`, per methodology
+§0.10.4. That is the mechanism to reach for when one gate is wrong for a
+project, rather than declining to install the hook that carries it.
+
+This subsection operationalises the phased-rollout advice in §12. A
+project adopting the methodology on an existing repository starts at
+`light`, raises to `standard` once the model parses cleanly and the
+commit conventions are habitual, and raises to `full` when an acquirer
+or an assessment makes the complete artefact set worth its cost. Each
+step is a one-line change to `project_profile` followed by a re-run of
+the install.
+
 ## 4. Git hooks
 
 ### 4.1 `pre-commit`
@@ -145,6 +195,16 @@ example configurations below.
    the commit message to reference an open Change Request issue.
 4. **Traceability integrity.** Reject commits that introduce dangling
    `derive`, `frame concern`, or `verify` references.
+
+**Disposition per profile.** "Block" above describes the `full` profile.
+Checks 1, 2, and 4 carry the configuration keys `precommit_lint`,
+`precommit_story_wellformed`, and `precommit_traceability`, whose
+disposition per profile and override mechanism are fixed by methodology
+§0.10.4. Check 3 is governed by the `commit_msg_cr_reference` gate in
+§4.2, because the Change Request reference it looks for lives in the
+commit message. Where the disposition is `warn` the check prints the
+same finding and the commit proceeds. Where it is `off` the check does
+not run.
 
 **Sample script (`.githooks/pre-commit`):**
 
@@ -203,6 +263,18 @@ queryable.
    (`plan: ... (CR #17)` or `feat: ... (CR #23)`).
 3. **Conventional types** are enforced: `feat`, `fix`, `docs`,
    `refactor`, `test`, `chore`, `plan`, `meeting`.
+
+**Disposition per profile.** Checks 1 and 3 are the single
+`commit_msg_pattern` gate. Check 2, together with the Change Request
+reference required for any staged path on `baselined_paths`, is the
+`commit_msg_cr_reference` gate. Both dispositions per profile and the
+override mechanism are fixed by methodology §0.10.4. The sample script
+below shows the `full` behaviour, which exits non-zero. At `standard`
+the same finding prints with a warning prefix and the hook exits zero.
+At `light` neither gate runs.
+
+A blocking message names the rule and points at methodology §0.10.6. It
+does not name a bypass flag, for the reason given in that section.
 
 **Sample script (`.githooks/commit-msg`):**
 
@@ -265,46 +337,47 @@ if [[ "$branch" =~ ^story/([A-Z]+_[0-9]+) ]]; then
 fi
 ```
 
-### 4.4 `pre-push`
+### 4.4 Pre-push obligations as CI contracts
 
-**Purpose.** Final compliance gate before changes leave the local
-repository. More expensive checks live here than in `pre-commit`.
+**No local `pre-push` hook ships.** The four obligations below are
+continuous-integration contracts, not workstation checks. Two reasons.
+They are expensive, and a check that adds seconds to every push is a
+check the engineer learns to skip. And they are exactly the class of
+obligation that must not be bypassable from a workstation, which a local
+hook can never guarantee and a required status check on a protected
+branch can (see §11 and methodology §0.10.6).
 
-**Checks performed:**
+The four contracts remain part of the methodology. A `full`-profile
+project implements them in CI, gated as required status checks on `main`
+and on release tags. A `standard` project implements as many as it finds
+useful, advisory. The contracts are stated here so a CI implementer has
+the specification without reading the deleted script.
 
-1. **Story state on `main`.** Reject pushes that would land stories
-   in `inProgress` state on `main`. (Story status is in `StoryMeta`
-   metadata.)
-2. **V&V coverage.** Reject pushes where `done` stories lack a
-   referenced verification case.
-3. **Traceability matrix freshness.** Regenerate and compare against
-   the committed copy; reject if out of sync.
-4. **Baseline integrity on tags.** When pushing an annotated tag,
-   verify all artefacts under CM are in `baselined` state.
+**Contract 1: story state on protected references.** No commit reaching
+`main` carries a story whose `StoryMeta.status` is `inProgress`. Story
+status is read from the `StoryMeta` metadata of each story file in the
+pushed tree. This is the check methodology §8.7 names.
 
-**Sample script (`.githooks/pre-push`):**
+**Contract 2: verification coverage.** Every story at `status = done` in
+the pushed tree references at least one verification case. This is the
+SR.O7 obligation of §9.4.
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-source "$(dirname "$0")/lib/iso-checks.sh"
+**Contract 3: traceability matrix freshness.** The Traceability Matrix
+regenerated from the pushed tree matches the committed copy at
+`docs/generated/traceability-matrix.md`. A mismatch means the committed
+matrix is stale, per §9.8.
 
-while read local_ref local_sha remote_ref remote_sha; do
-    # Only enforce on protected branches and tags
-    case "$remote_ref" in
-        refs/heads/main|refs/heads/release/*)
-            iso::check_no_inprogress_stories "$local_sha" || exit 1
-            iso::check_vv_coverage "$local_sha" || exit 1
-            iso::check_traceability_fresh "$local_sha" || exit 1
-            ;;
-        refs/tags/release-*)
-            iso::check_baseline_integrity "$local_sha" || exit 1
-            ;;
-    esac
-done
+**Contract 4: baseline integrity on tags.** When an annotated tag
+matching the project's baseline pattern is pushed, every artefact under
+configuration management in the tagged tree is in `baselined` state,
+per §10.8 of the methodology.
 
-echo "✅ pre-push ISO 29110 checks passed."
-```
+The plugin ships one implementation of contract 3 as
+`templates/github/traceability-check.yml`, installed advisory at
+`standard` and blocking at `full` per §3.4. Contracts 1, 2, and 4 are
+documented specifications that the project implements against its own CI
+platform, because each depends on the project's tag pattern, renderer
+choice, and configuration-management scope.
 
 ### 4.5 `post-merge`
 
@@ -940,7 +1013,7 @@ hooks perspective:
    → CI render job commits regenerated artefacts on main
 
 9. Release tag pushed
-   → pre-push fires; checks baseline integrity
+   → CI baseline-integrity check runs (§4.4 contract 4)
    → CI baseline-check job validates
    → CI backup-mirror job mirrors to backup remote
 ```
@@ -957,19 +1030,27 @@ A single project-level configuration file drives the hook behaviour:
 ```yaml
 # .iso-config.yaml — ISO 29110 hook configuration
 
+# Project rigour profile per methodology section 0.10.
+# One of: light | standard | full. Absent means standard.
+project_profile: standard
+
+# Optional per-gate overrides: block | warn | off.
+# Unset keys follow the profile default (section 0.10.4).
+# gate_overrides:
+#   commit_msg_pattern: warn
+#   commit_msg_cr_reference: block
+#   precommit_lint: warn
+#   precommit_story_wellformed: off
+#   precommit_traceability: warn
+
 baselined_paths:
   - docs/project-plan.md
   - docs/cm-strategy.md
-  - methodology/
   - model/library/
 
 protected_branches:
   - main
   - release/*
-
-iteration:
-  cadence_days: 14
-  current: "2026-Q2-iter-3"
 
 storymeta:
   required_fields: [points, priority, status]
@@ -991,7 +1072,20 @@ renderers:
   justification:          tools/render/justification-doc.py
 ```
 
-The hook scripts read this file to determine what to enforce.
+The hook scripts read this file to determine what to enforce. Two
+conventions govern the schema. It stays flat and at most two levels
+deep, so the shipped hooks can parse it with the same awk idiom they
+already use rather than taking a YAML library dependency. And every
+project-specific behaviour belongs here rather than in a script, per
+§10, so an upgrade replaces the scripts without touching the project's
+intent.
+
+The `baselined_paths` list shown above is the `standard`-and-above
+default. The per-profile defaults are in methodology §0.10.3. Note that
+`methodology/` is deliberately absent at every profile, including
+`full`, because Change Request protection on the project-local
+methodology copy contradicts the override convention that makes the copy
+useful. A project under formal assessment adds it back explicitly.
 
 ## 9. Setup checklist
 
@@ -1046,15 +1140,26 @@ Two patterns work well for customisation:
 |---|---|---|
 | Hook script not executable | Commits or pushes succeed without checks running | `chmod +x .githooks/*` |
 | `core.hooksPath` not set | Same as above | `git config core.hooksPath .githooks` |
-| Renderer slow at scale | `pre-commit` takes >5 s | Move heavy checks to `pre-push` or CI; keep `pre-commit` to fast lint only |
+| Renderer slow at scale | `pre-commit` takes >5 s | Move heavy checks to CI (§4.4); keep `pre-commit` to fast lint only |
 | Claude Code hooks not firing | No status injected at session start | Verify `.claude/settings.json` schema matches current docs; check shell scripts are executable |
-| False positives blocking valid work | `pre-commit` blocks legitimate edits | Tighten the `is-baselined.py` heuristics; allow operator override via `--no-verify` (with audit log entry); review `.iso-config.yaml` |
-| Hook bypass via `--no-verify` | Operator workaround that hides non-compliance | Mirror enforcement in CI — local hooks for fast feedback, CI hooks as the unbypassable gate |
+| False positives blocking valid work | `pre-commit` blocks legitimate edits | Review `.iso-config.yaml` first, since the finding is usually a configuration problem. Lower the gate with a `gate_overrides` entry (methodology §0.10.4) rather than editing the script. For the single occurrence, bypass with a recorded rationale per methodology §0.10.6 |
+| Local gate bypassed | A commit lands without the gate having run | This is a supported act, not a failure, provided the rationale is recorded per methodology §0.10.6 (Correction Register at `full`, commit body otherwise). An unrecorded bypass is the actual failure mode. Put any gate that must not be bypassable in CI instead |
 
-The key principle: **local hooks are advisory speed-ups; CI is the
-unbypassable gate.** A determined operator can bypass `pre-commit`
-with `--no-verify`; they cannot bypass GitHub Actions blocking a PR
-merge. Design the hook set with this in mind.
+The key principle: **local hooks are fast feedback, and CI is where an
+unbypassable gate belongs.** A local hook runs on a workstation the
+engineer controls, so its authority is the engineer's cooperation plus
+the recording obligation of §0.10.6. A required status check on a
+protected branch does not depend on cooperation. Design the gate set
+with that division in mind, and put the checks that protect the audit
+trail on the CI side.
+
+Doing so is project work, not plugin work. The plugin ships one CI
+implementation, `templates/github/traceability-check.yml`, installed
+advisory at `standard` and blocking at `full` (§3.4). The remaining
+pre-push contracts in §4.4 are documented specifications that the
+project implements against its own CI platform, because each depends on
+the project's tag pattern, renderer choice, and configuration-management
+scope.
 
 ## 12. Out of scope of this guide
 
