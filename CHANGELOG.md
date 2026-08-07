@@ -8,6 +8,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-08-07
+
+CI guardrails that gate the v3.0.0 overhaul train, plus the three
+defects the new checks found in the current tree.
+
+### Added
+
+- Generalised cross-reference validation in
+  `.github/workflows/plugin-ci.yml` and the `Makefile`. Every
+  `${CLAUDE_PLUGIN_ROOT}/<path>` reference in `skills/*/SKILL.md`,
+  `commands/*.md`, `agents/*.md`, and `hooks.json` must now resolve
+  inside the plugin tree. A file-shaped reference that does not
+  resolve fails the build. A directory-shaped reference (trailing
+  slash) stays at warning level. The previous check inspected only
+  skill files, and only for `knowledge/` and `templates/` paths, so
+  commands, agents, and hook registrations were never covered.
+- A `claude plugin validate --strict` step running the harness's own
+  manifest and component validator against both manifests, on a
+  Claude Code CLI pinned to 2.1.224. The matching `make check-validate`
+  target validates a copy of the tracked tree so that gitignored
+  contributor files, which never reach an installer, cannot produce
+  findings a fresh CI checkout would not see.
+- Hook script convention checks. Every `hooks/*.sh` must be
+  executable and must carry `#!/usr/bin/env bash` on the first line
+  and `set -euo pipefail`. All sixteen current scripts already
+  comply.
+- ISO configuration checks at warning level. The scaffolding template
+  `templates/iso-config/.iso-config.yaml` is checked for the
+  `{{PLUGIN_VERSION}}` placeholder, and the demo project pin in
+  `demo/smart-sensor/.iso-config.yaml` is compared against the
+  plugin version.
+
+### Fixed
+
+- `skills/sysml2-behaviour/SKILL.md` frontmatter failed to parse. The
+  unquoted description contained a colon followed by a space, which
+  is not valid in a plain YAML scalar, so the skill loaded with no
+  metadata at all and could not be selected by its activation hint.
+  The description is now quoted.
+- Four `${CLAUDE_PLUGIN_ROOT}` references pointed at files the plugin
+  does not ship. `project-plan` cited `templates/pm/semp.md` instead
+  of `templates/sr/semp.md`. `attention-regime` cited a
+  `hooks/githooks/` directory with a `lib/` subdirectory, neither of
+  which exists, and a `templates/.claude/settings.json` that is not
+  shipped. `document-export` cited a `templates/reference.docx` that
+  is not shipped.
+- `.claude-plugin/marketplace.json` used a `categories` array, which
+  the manifest schema does not recognise, so the marketplace listing
+  published no category at all. Replaced with the recognised singular
+  `category` field, with `documentation` added to `keywords` so none
+  of the original four labels is lost.
+
 ## [2.1.1] - 2026-05-06
 
 Wiki and methodology repairs surfaced by a navigation stress test of
