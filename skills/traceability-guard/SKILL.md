@@ -1,6 +1,6 @@
 ---
 name: traceability-guard
-description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, at iteration-boundary closure, or before a macrocycle release tag.
+description: Check SysML requirement traceability (satisfy/verify links). Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
 user-invocable: true
 ---
 
@@ -9,16 +9,18 @@ user-invocable: true
 If the VSE lens has not been set in this session, invoke `vse-companion-overview` first, then continue.
 
 You are an environmental guard that enforces machine-readable traceability
-(R3). You check trace completeness, detect gaps, and flag them as iteration
-boundary closure debt or (at the macrocycle) as release blockers. You can
-be invoked on demand or called automatically by `@iteration-orchestrator`
-at iteration-boundary closure and at the macrocycle release gate.
+(R3). You check trace completeness, detect gaps, and flag them as story
+closure debt or as release blockers at the baseline gate. You are invoked
+on demand via `/vse-trace`, and from `@release-orchestrator` at the
+baseline gate. The §8.6.2 author checklist calls for the same check when
+a story approaches ready.
 
 ## When This Skill Triggers
 
-- The user asks to check traceability
-- The `@iteration-orchestrator` invokes you at iteration-boundary closure
-  or at macrocycle release tagging
+- The user asks to check traceability, or runs `/vse-trace`
+- A story approaches ready and its §8.6.2 author checklist reaches the
+  trace items, or `@release-orchestrator` reaches the §8.6.3 trace
+  integrity check during baseline
 - The user asks to generate a traceability matrix
 - The user has modified requirements or verification cases
 
@@ -130,11 +132,11 @@ GAPS FOUND: [n]
 
 - **If no gaps**: report "Traceability check passed. All traces complete."
 - **If gaps exist**: report each gap. If the check was invoked at
-  iteration-boundary closure, record the gaps as iteration-boundary
-  closure debt and let the engineer decide whether to close the iteration
-  with debt carried forward or to rework inside the current iteration. If
-  the check was invoked at the macrocycle release gate, state
-  "Traceability check FAILED. Macrocycle release blocked until gaps are
+  story closure, record the gaps as story closure debt and let the
+  engineer decide whether to mark the story done with debt carried
+  forward or to rework inside the story. If the check was invoked at
+  the release baseline gate, state
+  "Traceability check FAILED. Release baseline blocked until gaps are
   resolved."
 
 ## Traceability Matrix Generation
@@ -306,7 +308,7 @@ for req in model.nodes(syside.RequirementDefinition):
 
 ## Integration with Other Skills
 
-- `@iteration-orchestrator` calls this skill at every iteration-boundary closure and at the macrocycle release gate
+- `@story-orchestrator` calls this skill at story closure, and `@release-orchestrator` calls it at the §8.6.3 trace integrity check during baseline
 - `@needs-and-requirements` calls this skill after Step 7 (establish traceability)
 - `@verification-validation` calls this skill after Step 4 (trace check)
 - `@architecture-design` calls this skill after Step 6 (verify architecture)
@@ -330,8 +332,8 @@ following siblings:
 
 In addition to the satisfy/verify backbone, surface these advisory
 orphan categories in the trace matrix. They do not block at
-iteration-boundary closure but they are the debt that has to be
-cleared before the macrocycle release gate:
+story closure but they are the debt that has to be
+cleared before the release baseline gate:
 
 - **Orphan risks.** Item defs in `{{sc}}_Risks` with no `mitigatedBy`
   reference and no closed status. Every open high-severity risk must

@@ -6,7 +6,7 @@ layer: ambse
 tags: [dependability, safety, reliability, security, traceability, vse-workflow]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 4 (dependability) and Table 1.1 (trace recommendations)."
-    raw: Douglass_2016_Agile_Systems_Engineering.pdf
+    raw: "Agile Systems Engineering.pdf"
 related:
   - ambse-requirements-as-models
   - ambse-use-case-driven-elicitation

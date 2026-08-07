@@ -6,9 +6,9 @@ layer: incose-vse
 tags: [incose, requirements, smart, traceability, volatility, vse]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapters 4.2 and 4.3."
-    raw: incose_handbook_4e.pdf
+    raw: "INCOSE Systems Engineering Handbook 4e 2015 07.pdf"
   - citation: "Galinier, M., et al. (2021). Systems Engineering Practices for Small and Medium Enterprises. INCOSE-TP-2021-005-01."
-    raw: galinier_sme_practices.pdf
+    raw: "Galinier et al. - Systems Engineering Practices for Smal and Medium .pdf"
 related:
   - requirements-elicitation-and-writing
   - ambse-requirements-as-models

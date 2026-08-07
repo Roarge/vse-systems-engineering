@@ -106,7 +106,7 @@ The plugin's reference content sits in three surfaces:
 - **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`, concatenated into per-skill bundles under `wiki/bundles/` that skills embed at load time. Eleven layers, including a `methodology` layer that summarises the spec and cross-links to it.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 129 atomic pages across 11 layers, consumed via 21 skill bundles.
+See `wiki/INDEX.md` for the page catalogue and `wiki/CLAUDE.md` for the authoring schema. The current totals are 130 atomic pages across 11 layers, consumed via 21 skill bundles.
 
 ## Sources
 

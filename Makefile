@@ -122,15 +122,16 @@ check-refs:
 	 echo "  Checked $$CHECKED plugin-root references."; \
 	 exit $$EXIT_CODE
 
-# Both checks are warning level for now. The placeholder lands in the
-# pre-overhaul hygiene PR, and the demo pin is promoted to an error at
-# demo sync.
+# The placeholder check is an error from the pre-overhaul hygiene
+# release onwards, because the placeholder now exists. The demo pin
+# stays a warning until demo sync promotes it.
 check-config:
 	@echo "Checking ISO configuration files..."
 	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \
 	   echo "  templates/iso-config/.iso-config.yaml carries the {{PLUGIN_VERSION}} placeholder."; \
 	 else \
-	   echo "WARNING: templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"; \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"; \
+	   exit 1; \
 	 fi
 	@PLUGIN_VERSION=$$(jq -r '.version' .claude-plugin/plugin.json); \
 	 DEMO_VERSION=$$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$$/\1/p' demo/smart-sensor/.iso-config.yaml); \

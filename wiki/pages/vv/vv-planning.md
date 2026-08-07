@@ -6,7 +6,7 @@ layer: vv
 tags: [vv, planning, vcrm, success-criteria, risk-driven, mivv]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Section on V and V Planning."
-    raw: INCOSE_VV_Guide_v1.pdf
+    raw: Guide_to_V-and-V_v1.pdf
 related:
   - vv-definitions
   - vv-methods

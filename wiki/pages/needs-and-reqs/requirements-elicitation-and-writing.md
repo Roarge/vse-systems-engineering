@@ -6,7 +6,7 @@ layer: needs-and-reqs
 tags: [elicitation, writing-rules, smart, defects, tolerances, verification-methods]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements, v1.0. Sections on elicitation and writing, Appendices C and D."
-    raw: INCOSE_NeedsAndReqs_v1.pdf
+    raw: Guide_to_Needs_and_Reqts_v1.pdf
 related:
   - needs-vs-requirements
   - requirements-traceability-and-attributes

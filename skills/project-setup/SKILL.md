@@ -96,7 +96,7 @@ Create or extend the following at `<PROJECT_ROOT>`:
 - `CHANGELOG.md`. Greenfield writes a fresh empty Keep-a-Changelog skeleton. Brownfield leaves any existing file alone.
 - `.github/pull_request_template.md`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`. Embeds the §8.6 review checklists.
 - `.github/CODEOWNERS`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/CODEOWNERS` (created in Phase 7) as a placeholder. The user customises it later.
-- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` (created in Phase 7). Drives baselined-path enforcement and ISO 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
+- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` (created in Phase 7). Substitute the `{{PLUGIN_VERSION}}` placeholder with the installed plugin version read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, so `@project-audit` can detect version drift later. Drives baselined-path enforcement and ISO 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
 - `.githooks/`. Create the directory empty for now. Population is deferred to `@attention-regime`. Add a placeholder `README.md` that points to `methodology/iso-29110-hooks-guide.md` §3.
 
 Append to `.gitignore` (create if absent):

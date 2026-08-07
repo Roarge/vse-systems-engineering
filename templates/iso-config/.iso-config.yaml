@@ -10,7 +10,7 @@
 # configuration varies.
 
 # Plugin version recorded at /vse-setup time. Compared by the audit.
-plugin_version: "2.0.0-rc.x"
+plugin_version: "{{PLUGIN_VERSION}}"
 
 # Paths under Change Request protection. Edits to any path on this
 # list (or any path beneath a directory entry) require an open

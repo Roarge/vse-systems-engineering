@@ -14,10 +14,19 @@ session, what decisions were made, and what the engineer should work on next.
 
 ## When This Skill Triggers
 
-- The `@iteration-orchestrator` invokes you at session start (resume mode)
-- The `@iteration-orchestrator` invokes you at session end (close mode)
-- The engineer explicitly invokes `@session-journal` (checkpoint mode)
+- The engineer runs `/vse-journal` or invokes `@session-journal` directly
+  (checkpoint mode)
 - The engineer says "checkpoint", "save progress", or "what did I do?"
+- Work driven from `@story-orchestrator` or `@release-orchestrator` reaches a
+  natural pause and a continuity record is worth writing (resume or close mode)
+
+## Detecting a VSE Project
+
+This skill only operates inside a VSE project. Detect one the same way
+`hooks/session-start.sh` does: a `methodology/` folder at the project root
+(the greenfield default), or an `engineering/methodology/` folder (the
+brownfield default). When neither is present, say so and stop rather than
+writing a journal into a repository that is not under the methodology.
 
 ## Journal File Format
 
@@ -27,8 +36,7 @@ window (default 15 entries, newest first). Each entry has this structure:
 ```yaml
 sessions:
   - date: "YYYY-MM-DDTHH:MM:SS"
-    iteration: 3
-    centre_of_gravity: [SR.2, SR.3]
+    story: "US-014"
     activities: [SR.2.2, SR.2.3, SR.3.1]
     summary: >
       Brief description of what was accomplished.
@@ -43,8 +51,9 @@ sessions:
 
 ## Mode 1: Resume (Read)
 
-Triggered at session start by the iteration-orchestrator. Read `.vse-journal.yml`
-and present the SESSION CONTINUITY block.
+Triggered when the engineer asks what happened last session, or when work
+resumes inside a story or release context. Read `.vse-journal.yml` and present
+the SESSION CONTINUITY block.
 
 ### Procedure
 
@@ -76,9 +85,9 @@ Triggered when the engineer explicitly requests a progress save.
 ### Procedure
 
 1. Review the current conversation to identify:
-   - **Iteration**: read `current_iteration.number` from `.vse-iteration.yml`
-   - **Centre of gravity**: read `current_iteration.centre_of_gravity` from
-     `.vse-iteration.yml` (one or more ISO/IEC 29110 task identifiers)
+   - **Story**: the open story, taken from the current
+     `story/<US_id>_<short>` branch name and confirmed against the matching
+     story file. Record `(none)` when the work is not on a story branch
    - **Activities**: which ISO 29110 sub-activities were worked on (use codes
      like SR.2.3, PM.1.5, etc.)
    - **Summary**: 1-3 sentences describing what was accomplished
@@ -107,12 +116,12 @@ Triggered when the engineer explicitly requests a progress save.
 
 ## Mode 3: Close (Automatic Write)
 
-Triggered at the end of an SE session by the lifecycle orchestrator.
+Triggered at the end of an SE session, when the conversation is wrapping up.
 
 ### Procedure
 
-1. The lifecycle orchestrator detects the conversation is wrapping up (the
-   engineer says "thanks", "that is all", "done for now", or similar)
+1. Detect that the conversation is wrapping up (the engineer says "thanks",
+   "that is all", "done for now", or similar)
 
 2. Prompt the engineer: "Shall I save a session checkpoint before we finish?"
 
@@ -122,10 +131,10 @@ Triggered at the end of an SE session by the lifecycle orchestrator.
 
 ### Wrap-Up Detection
 
-The lifecycle orchestrator should watch for these signals:
+Watch for these signals:
 - Explicit farewells: "thanks", "that is all", "done for now", "bye"
 - Task completion: all items in the current work plan are done
-- Phase transition: the engineer has just completed a phase gate
+- Story transition: the engineer has just closed or baselined a story
 
 ## Archive Rotation
 
@@ -189,7 +198,10 @@ reference:
 
 ## Cross-References
 
-- `@iteration-orchestrator`: invokes this skill at session start and end
+- `/vse-journal`: the slash command that invokes this skill directly
+- `@story-orchestrator` and `@release-orchestrator`: the work contexts a
+  continuity record is usually written from
 - `@project-setup`: creates the initial empty `.vse-journal.yml`
-- `.vse-iteration.yml`: the current iteration state, read for context in journal entries
+- `methodology/` (project root) or `engineering/methodology/`: the marker that
+  identifies a VSE project, matching `hooks/session-start.sh`
 - `docs/pm/session-archive.yml`: archive for rotated journal entries

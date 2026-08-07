@@ -35,8 +35,9 @@ hand the raw source to `markitdown` for conversion.
   "distil this source into the wiki".
 
 If the user is operating inside an end-user VSE project (a project with
-`.vse-iteration.yml` but no `sources/` folder containing PDFs), this
-skill does not apply. Route to `vse-companion-overview` instead.
+a `methodology/` folder at the project root or under `engineering/`,
+but no `sources/` folder containing PDFs), this skill does not apply.
+Route to `vse-companion-overview` instead.
 
 ## Step 0: Confirm Contributor Context
 

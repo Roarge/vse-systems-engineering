@@ -8,7 +8,7 @@ sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Sections 6.5 and 7.4. Table 24."
     raw: kappe.pdf
   - citation: "ISO/IEC TR 29110-5-6-2:2014 (paired with the PHAS-EAI complementarity argument)."
-    raw: ISO_IEC_TR_29110-5-6-2_2014.pdf
+    raw: "ISOIEC TR 29110-5-6-22014.pdf"
 related:
   - phas-eai-overview
   - phas-eai-equations

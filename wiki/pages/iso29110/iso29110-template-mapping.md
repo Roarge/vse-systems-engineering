@@ -6,7 +6,7 @@ layer: iso29110
 tags: [iso29110, templates, work-products, project-setup]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, work-product catalogue, plus the plugin's templates/common/ scaffolding."
-    raw: ISO_IEC_TR_29110-5-6-2_2014.pdf
+    raw: "ISOIEC TR 29110-5-6-22014.pdf"
 related:
   - iso29110-pm-task-checklists
   - iso29110-sr-task-checklists

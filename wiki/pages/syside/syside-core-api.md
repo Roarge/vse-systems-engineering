@@ -6,7 +6,7 @@ layer: syside
 tags: [syside, automator, api, python, model-loading, traversal]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: model structure. https://docs.sensmetry.com/python/latest/structure.html (accessed 2026-04)."
-    raw: sensmetry_docs_2026-04
+    raw: null
 related:
   - syside-tooling-overview
   - syside-expression-evaluation

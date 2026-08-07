@@ -6,7 +6,7 @@ layer: needs-and-reqs
 tags: [traceability, attributes, tbx, ambse, model-based-requirements, vse]
 sources:
   - citation: "INCOSE (2022). Guide for Writing Requirements, v1.0. Sections on Traceability, Attributes, TBX, and Model-Based Requirements."
-    raw: INCOSE_NeedsAndReqs_v1.pdf
+    raw: Guide_to_Needs_and_Reqts_v1.pdf
 related:
   - needs-vs-requirements
   - requirements-elicitation-and-writing

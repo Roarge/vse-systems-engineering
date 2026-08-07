@@ -6,7 +6,7 @@ layer: hsi
 tags: [hsi, vse, tiered, lightweight, lifecycle-integration]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, scaled per ISO/IEC 29110."
-    raw: HSI_Primer_Vol1.pdf
+    raw: "HSI Primer Vol. 1 v4.pdf"
 related:
   - hsi-foundations
   - hsi-domains

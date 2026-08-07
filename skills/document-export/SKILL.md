@@ -1,6 +1,6 @@
 ---
 name: document-export
-description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Use when the user asks to export, build, publish, or hand off a finished work product in a binary format (typically SR.6). Not for authoring, editing, or populating templates.
+description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Use when the user asks to export, build, publish, or hand off a finished work product in a binary format. Not for authoring, editing, or populating templates.
 user-invocable: true
 ---
 
@@ -18,7 +18,7 @@ ephemeral build artefacts.
 - The user asks to export, generate, or produce a document (docx, pptx, pdf)
 - The user asks to "build" or "publish" work products
 - The user asks for a deliverable-ready version of a work product
-- The `@iteration-orchestrator` routes here for document generation at macrocycle delivery
+- The `@release-orchestrator` routes here for document generation at release delivery
 
 ## Principle: Source of Truth
 
@@ -333,7 +333,7 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 ## Cross-References
 
 - `@project-setup`: creates the directory structure including `build/`
-- `@iteration-orchestrator`: may trigger export at macrocycle delivery (SR.6)
+- `@release-orchestrator`: may trigger export at release delivery
 - `document-skills:docx`, `document-skills:pptx`, `document-skills:pdf`:
   preferred export tools when available
 - `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:
