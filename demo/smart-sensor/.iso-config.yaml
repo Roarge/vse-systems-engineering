@@ -5,7 +5,7 @@
 # what to enforce.
 
 # Plugin version recorded at /vse-setup time.
-plugin_version: "2.0.0-rc.9"
+plugin_version: "2.1.3"
 
 # Baselined paths require an open Change Request and a
 # "(CR #<n>)" reference in the commit message.
