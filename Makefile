@@ -10,9 +10,9 @@
 CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
-        check-refs check-skills
+        check-refs check-skills check-config
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-config
 	@echo "All checks passed."
 
 validate:
@@ -121,3 +121,23 @@ check-refs:
 	 done; \
 	 echo "  Checked $$CHECKED plugin-root references."; \
 	 exit $$EXIT_CODE
+
+# Both checks are warning level for now. The placeholder lands in the
+# pre-overhaul hygiene PR, and the demo pin is promoted to an error at
+# demo sync.
+check-config:
+	@echo "Checking ISO configuration files..."
+	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \
+	   echo "  templates/iso-config/.iso-config.yaml carries the {{PLUGIN_VERSION}} placeholder."; \
+	 else \
+	   echo "WARNING: templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"; \
+	 fi
+	@PLUGIN_VERSION=$$(jq -r '.version' .claude-plugin/plugin.json); \
+	 DEMO_VERSION=$$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$$/\1/p' demo/smart-sensor/.iso-config.yaml); \
+	 if [ -z "$$DEMO_VERSION" ]; then \
+	   echo "WARNING: demo/smart-sensor/.iso-config.yaml has no readable plugin_version"; \
+	 elif [ "$$DEMO_VERSION" != "$$PLUGIN_VERSION" ]; then \
+	   echo "WARNING: demo/smart-sensor/.iso-config.yaml plugin_version ($$DEMO_VERSION) does not match plugin.json ($$PLUGIN_VERSION)"; \
+	 else \
+	   echo "  Demo plugin_version pin matches plugin.json ($$PLUGIN_VERSION)."; \
+	 fi

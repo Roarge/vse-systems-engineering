@@ -128,3 +128,23 @@ jobs:
           done
           echo "Checked $CHECKED plugin-root references."
           exit $EXIT_CODE
+
+      - name: Check ISO configuration files
+        run: |
+          # Both checks are warning level for now. The placeholder
+          # lands in the pre-overhaul hygiene PR, and the demo pin is
+          # promoted to an error at demo sync.
+          if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then
+            echo "templates/iso-config/.iso-config.yaml carries the {{PLUGIN_VERSION}} placeholder."
+          else
+            echo "::warning::templates/iso-config/.iso-config.yaml does not carry the {{PLUGIN_VERSION}} placeholder"
+          fi
+          PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+          DEMO_VERSION=$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' demo/smart-sensor/.iso-config.yaml)
+          if [ -z "$DEMO_VERSION" ]; then
+            echo "::warning::demo/smart-sensor/.iso-config.yaml has no readable plugin_version"
+          elif [ "$DEMO_VERSION" != "$PLUGIN_VERSION" ]; then
+            echo "::warning::demo/smart-sensor/.iso-config.yaml plugin_version ($DEMO_VERSION) does not match plugin.json ($PLUGIN_VERSION)"
+          else
+            echo "Demo plugin_version pin matches plugin.json ($PLUGIN_VERSION)."
+          fi
