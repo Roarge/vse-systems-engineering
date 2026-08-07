@@ -8,6 +8,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-08-07
+
+Pre-overhaul hygiene. This tag is the stable rollback anchor for the
+v3.0.0 overhaul train. Installers who need to pin a known-good version
+while the release-candidate series is in flight should pin `v2.1.3`.
+
+### Fixed
+
+- `skills/session-journal/SKILL.md` and
+  `skills/traceability-guard/SKILL.md` described an
+  `@iteration-orchestrator` skill and a `.vse-iteration.yml` state file,
+  both removed in the 2.0.0 restructuring. A skill that claims to be
+  invoked by a skill that does not exist misroutes the model, and an
+  instruction to read a file no project carries produces a failed read
+  on every checkpoint. Both now state the real invocation surface (on
+  demand via the slash command, or from a story or release context),
+  and the journal detects a VSE project the way `hooks/session-start.sh`
+  does, by the presence of `methodology/` at the project root or under
+  `engineering/`. The journal records the open story instead of an
+  iteration number.
+- `agents/vse-traceability-matrix-builder.md` and
+  `agents/vse-trade-study-runner.md` framed their worked examples on
+  retired workflow-stage identifiers. The examples now cite methodology
+  section numbers (§5 for trace checking, §6 and §6.3.5 for trade
+  studies).
+- `hooks/session-start.sh` counted lines matching `ERROR` and `WARN` in
+  `wiki/LINT_REPORT.md`. Those patterns matched the report's own
+  summary lines, so a clean report was announced as carrying one error
+  and one warning at every contributor session start, and a dirty
+  report was under-reported. The hook now reads the summary values
+  themselves and prints the report's generation timestamp so staleness
+  is visible alongside the counts.
+- `templates/iso-config/.iso-config.yaml` recorded the literal string
+  `2.0.0-rc.x` as `plugin_version`, so every project scaffolded since
+  the 2.0.0 release carried a version that never existed and
+  `@project-audit` could not detect genuine drift. The template now
+  carries the `{{PLUGIN_VERSION}}` placeholder, and
+  `skills/project-setup/SKILL.md` instructs the substitution at copy
+  time.
+- `demo/smart-sensor/.iso-config.yaml` was pinned five releases behind
+  at `2.0.0-rc.9`.
+- The v1.2.0 note in `methodology/README.md` described the
+  project-local methodology copy and the `/vse-setup` copy step as
+  future work. Both shipped in 2.0.0, and the paragraph directly above
+  the note documented them as live, so a reader met a contradiction.
+  The note is rewritten as history.
+- Sixty-two `raw:` values across forty-seven wiki pages named files
+  absent from `sources/`. The source-freshness rule in
+  `/vse-wiki-lint` could therefore never fire, and reported "raw
+  source not present locally" for every affected page instead. Every
+  value now names the exact file on disk or is `null`. The policy from
+  here on is that `raw:` is an exact filename under `sources/` or
+  `null`, with descriptive labels belonging in `citation:`, the field
+  end users read.
+- `README.md` claimed 129 atomic pages. There are 130.
+
+### Changed
+
+- The `{{PLUGIN_VERSION}}` placeholder check in
+  `.github/workflows/plugin-ci.yml` and the `Makefile` is promoted from
+  warning to error, now that the placeholder exists. The demo version
+  pin check stays at warning level so that the pin does not have to be
+  touched on every release-candidate bump during the overhaul train.
+
+### Chore
+
+- `wiki/LINT_REPORT.md` is untracked. The file is gitignored and the
+  lint skill treats it as scratch, but it was tracked from before the
+  ignore rule landed, so every lint run produced a spurious working-tree
+  modification.
+- Two append-only entries in `wiki/LOG.md`: the `raw:` mapping with the
+  policy that follows from it, and a fresh pre-overhaul lint baseline
+  of 130 pages, 21 bundles, 0 ERROR, 136 WARN, 46 INFO. The 46 INFO
+  findings are all source-freshness flags on pages citing the SysML 2.0
+  specification, and are expected until the repagination work lands.
+
 ## [2.1.2] - 2026-08-07
 
 CI guardrails that gate the v3.0.0 overhaul train, plus the three
