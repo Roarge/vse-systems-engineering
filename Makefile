@@ -5,9 +5,13 @@
 # Kept in parity with .github/workflows/plugin-ci.yml. A check added
 # here must be added there, and the reverse.
 
-.PHONY: all validate lint check-versions check-refs check-skills
+# Claude Code CLI version pinned by the CI workflow. Kept here so a
+# contributor can see which CLI the CI result came from.
+CLAUDE_CODE_VERSION ?= 2.1.224
 
-all: validate lint check-versions check-skills check-refs
+.PHONY: all validate lint check-versions check-validate check-refs check-skills
+
+all: validate check-versions check-validate lint check-skills check-refs
 	@echo "All checks passed."
 
 validate:
@@ -28,6 +32,24 @@ check-versions:
 	   exit 1; \
 	 else \
 	   echo "  Versions match: $$PLUGIN_VERSION"; \
+	 fi
+
+# Validates the tracked tree only, which is what an installer receives.
+# Gitignored contributor files such as CLAUDE.local.md sit in the
+# working directory but never ship, and validating them in place would
+# report findings that CI (a fresh checkout) can never see. The tracked
+# files are staged into a temporary directory with their working-tree
+# contents, so uncommitted edits are still covered.
+check-validate:
+	@echo "Validating plugin manifests with the Claude Code CLI..."
+	@if ! command -v claude >/dev/null 2>&1; then \
+	   echo "  SKIPPED: claude CLI not on PATH (CI pins $(CLAUDE_CODE_VERSION))"; \
+	 else \
+	   TMPDIR_VALIDATE=$$(mktemp -d); \
+	   trap 'rm -rf "$$TMPDIR_VALIDATE"' EXIT; \
+	   git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$$TMPDIR_VALIDATE"; \
+	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/plugin.json" || exit 1; \
+	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/marketplace.json" || exit 1; \
 	 fi
 
 check-skills:

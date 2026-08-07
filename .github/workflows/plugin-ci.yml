@@ -29,6 +29,20 @@ jobs:
             exit 1
           fi
 
+      - name: Validate plugin manifests with the Claude Code CLI
+        env:
+          CLAUDE_CODE_VERSION: 2.1.224
+        run: |
+          npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          # Fail loudly rather than silently skipping if the pinned CLI
+          # ever drops the subcommand.
+          if ! claude plugin validate --help >/dev/null 2>&1; then
+            echo "::error::claude plugin validate is unavailable in CLI ${CLAUDE_CODE_VERSION}"
+            exit 1
+          fi
+          claude plugin validate --strict .claude-plugin/plugin.json
+          claude plugin validate --strict .claude-plugin/marketplace.json
+
       - name: Lint hook scripts
         run: |
           if command -v shellcheck >/dev/null 2>&1; then
