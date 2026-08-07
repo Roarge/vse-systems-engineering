@@ -1,107 +1,144 @@
 #!/usr/bin/env bash
-# Pre-commit hook: verify requirement-to-verification traceability
-# Implements niche construction (R4) by blocking commits with broken traces.
+# Project-side traceability gate, delegated by the pre-commit hook.
 #
-# Install: cp hooks/pre-commit-traceability.sh .git/hooks/pre-commit
+# Per methodology/iso-29110-hooks-guide.md §4.1 concern 4. Checks the
+# requirements and verification cases this commit actually touches, and
+# reports the ones that carry no verify link anywhere in the model.
 #
-# This hook checks staged .sysml files for requirements that lack
-# satisfy (upward) or verify (downward) trace links.
+# The gate is deliberately scoped to touched content. A commit that
+# edits a file whose pre-existing requirements were never verified is
+# not the commit that introduced the gap, and stopping it teaches the
+# engineer to reach for a bypass. /vse-trace reports the whole model.
+#
+# The disposition comes from the precommit_traceability gate, per
+# methodology §0.10.4: block reports and stops the commit, warn reports
+# and lets it through, info prints one summary line, off skips.
+#
+# Install as <project>/.githooks/pre-commit-traceability.sh.
 set -euo pipefail
 
-# Find staged .sysml files
-STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.sysml$' || true)
+# Load the shared profile helpers. The project-side copy wins, the
+# plugin copy is the fallback for a partial install.
+HOOK_DIR="$(dirname "$0")"
+ISO_PROFILE_LIB=""
+if [ -r "${HOOK_DIR}/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="${HOOK_DIR}/lib/iso-profile.sh"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"
+fi
 
-if [ -z "$STAGED_SYSML" ]; then
-    echo "pre-commit-traceability: no .sysml files staged, skipping check."
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$ISO_PROFILE_LIB"
+else
+    # An install without the library reports rather than blocks, which
+    # is the standard-profile disposition for this gate.
+    iso_gate_disposition() { printf 'warn\n'; }
+fi
+
+DISPOSITION="$(iso_gate_disposition precommit_traceability)"
+if [ "$DISPOSITION" = "off" ]; then
     exit 0
 fi
 
-# Detect VSE engineering root: prefer engineering/ if present (brownfield
-# layout, where VSE work products live under engineering/ to keep an
-# existing host project's root clean), else . (greenfield layout). The
-# trace search uses 'find .' below, which covers both layouts already.
-# This detection is reported in the diagnostic line so users can confirm
-# which layout the hook is running against.
+STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.sysml$' || true)
+if [ -z "$STAGED_SYSML" ]; then
+    exit 0
+fi
+
+ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' || true)
+
+# Detect the VSE engineering root: prefer engineering/ if present
+# (brownfield layout, where work products live under engineering/ to
+# keep an existing host project's root clean), else . (greenfield). The
+# repo-wide search below uses 'find .', which covers both layouts. The
+# detected root is reported so the engineer can confirm the layout.
 if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
     ENG_ROOT="engineering"
 else
     ENG_ROOT="."
 fi
 
-echo "pre-commit-traceability: checking staged .sysml files for trace gaps (engineering root: $ENG_ROOT)..."
+# Names this commit touches, as tab-separated "<file>\t<name>" records.
+# For a modified file only the names on added lines count, which is
+# what keeps the gate off pre-existing content. For a newly added file
+# every name in it counts.
+collect_touched() {
+    local pattern="$1" file added names
+    for file in $STAGED_SYSML; do
+        added=$(git diff --cached -U0 -- "$file" | grep '^+' | grep -v '^+++' | cut -c2- || true)
+        names=$(printf '%s\n' "$added" | grep -oP "$pattern" || true)
+        for name in $names; do
+            printf '%s\t%s\n' "$file" "$name"
+        done
+    done
+    for file in $ADDED_SYSML; do
+        names=$(grep -oP "$pattern" "$file" 2>/dev/null || true)
+        for name in $names; do
+            printf '%s\t%s\n' "$file" "$name"
+        done
+    done
+}
 
+TOUCHED_REQS=$(collect_touched 'requirement\s+def\s+\K\w+' | sort -u)
+TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
+
+# Does any .sysml file in the repository carry a verify link to $1?
+has_verify_link() {
+    local req="$1" sysml
+    while IFS= read -r -d '' sysml; do
+        if grep -qP "verify\s+requirement\s+.*${req}" "$sysml" 2>/dev/null; then
+            return 0
+        fi
+    done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
+    return 1
+}
+
+FINDINGS=""
 GAPS=0
-REQS_CHECKED=0
+CHECKED=0
 
-for file in $STAGED_SYSML; do
-    # Extract requirement definitions from this file
-    REQ_NAMES=$(grep -oP 'requirement\s+def\s+\K\w+' "$file" 2>/dev/null || true)
+while IFS=$'\t' read -r file req; do
+    [ -z "${req:-}" ] && continue
+    CHECKED=$((CHECKED + 1))
+    if ! has_verify_link "$req"; then
+        FINDINGS="${FINDINGS}  ${file}: requirement '${req}' has no verification case"$'\n'
+        GAPS=$((GAPS + 1))
+    fi
+done <<< "$TOUCHED_REQS"
 
-    for req in $REQ_NAMES; do
-        REQS_CHECKED=$((REQS_CHECKED + 1))
+while IFS=$'\t' read -r file ver; do
+    [ -z "${ver:-}" ] && continue
+    CHECKED=$((CHECKED + 1))
+    if ! grep -qP "verify\s+requirement\s+" "$file" 2>/dev/null; then
+        FINDINGS="${FINDINGS}  ${file}: verification case '${ver}' has no verify link"$'\n'
+        GAPS=$((GAPS + 1))
+    fi
+done <<< "$TOUCHED_VERS"
 
-        # Check for satisfy link (upward trace) within the same file
-        # The satisfy link may be inside the requirement block
-        if ! grep -qP "satisfy\s+requirement\s+" "$file" 2>/dev/null; then
-            # Check if any staged file has a satisfy reference to this req
-            HAS_SATISFY=false
-            for other in $STAGED_SYSML; do
-                if grep -qP "satisfy\s+requirement\s+.*${req}" "$other" 2>/dev/null; then
-                    HAS_SATISFY=true
-                    break
-                fi
-            done
-            # Also check all .sysml files in the repo (not just staged)
-            if [ "$HAS_SATISFY" = false ]; then
-                while IFS= read -r -d '' existing; do
-                    if grep -qP "satisfy\s+requirement\s+.*${req}" "$existing" 2>/dev/null; then
-                        HAS_SATISFY=true
-                        break
-                    fi
-                done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
-            fi
-        fi
-    done
+if [ "$GAPS" -eq 0 ]; then
+    if [ "$DISPOSITION" != "info" ] && [ "$CHECKED" -gt 0 ]; then
+        echo "pre-commit-traceability: ${CHECKED} touched element(s) checked, no trace gaps (engineering root: ${ENG_ROOT})."
+    fi
+    exit 0
+fi
 
-    # Check for verification cases without verify links
-    VER_NAMES=$(grep -oP 'verification\s+def\s+\K\w+' "$file" 2>/dev/null || true)
+if [ "$DISPOSITION" = "info" ]; then
+    echo "pre-commit-traceability: ${GAPS} trace gap(s) on touched requirements. Run /vse-trace for the full-repo report."
+    exit 0
+fi
 
-    for ver in $VER_NAMES; do
-        if ! grep -qP "verify\s+requirement\s+" "$file" 2>/dev/null; then
-            echo "  WARNING: $file: verification case '$ver' has no verify link"
-            GAPS=$((GAPS + 1))
-        fi
-    done
-done
+if [ "$DISPOSITION" = "block" ]; then
+    echo "pre-commit-traceability: ${GAPS} trace gap(s) on touched requirements (engineering root: ${ENG_ROOT})."
+else
+    echo "pre-commit-traceability: warning: ${GAPS} trace gap(s) on touched requirements (engineering root: ${ENG_ROOT})."
+fi
+printf '%s' "$FINDINGS"
+echo "  Run /vse-trace for the full-repo traceability report."
 
-# Check that all requirements across staged files have verify links somewhere
-for file in $STAGED_SYSML; do
-    REQ_NAMES=$(grep -oP 'requirement\s+def\s+\K\w+' "$file" 2>/dev/null || true)
-
-    for req in $REQ_NAMES; do
-        HAS_VERIFY=false
-        # Search all .sysml files for a verify link to this requirement
-        while IFS= read -r -d '' sysml; do
-            if grep -qP "verify\s+requirement\s+.*${req}" "$sysml" 2>/dev/null; then
-                HAS_VERIFY=true
-                break
-            fi
-        done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
-
-        if [ "$HAS_VERIFY" = false ]; then
-            echo "  WARNING: $file: requirement '$req' has no verification case"
-            GAPS=$((GAPS + 1))
-        fi
-    done
-done
-
-echo "pre-commit-traceability: checked $REQS_CHECKED requirements."
-
-if [ "$GAPS" -gt 0 ]; then
-    echo "pre-commit-traceability: FAILED - $GAPS trace gap(s) found."
-    echo "  Fix the gaps or use 'git commit --no-verify' to bypass (not recommended)."
+if [ "$DISPOSITION" = "block" ]; then
+    echo "  To proceed anyway, record a one-line rationale per methodology §0.10.6."
     exit 1
 fi
 
-echo "pre-commit-traceability: PASSED - all traces complete."
 exit 0
