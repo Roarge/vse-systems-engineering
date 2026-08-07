@@ -46,11 +46,11 @@ jobs:
       - name: Lint hook scripts
         run: |
           if command -v shellcheck >/dev/null 2>&1; then
-            shellcheck hooks/*.sh
+            shellcheck hooks/*.sh hooks/lib/*.sh
           else
             echo "shellcheck not found, installing..."
             sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
-            shellcheck hooks/*.sh
+            shellcheck hooks/*.sh hooks/lib/*.sh
           fi
 
       - name: Check hook script conventions
