@@ -236,8 +236,8 @@ under `wiki/pages/syside/` for the Automator API.
 PM.O5 (Risk identified and monitored) becomes a model query rather
 than a spreadsheet update. PM.1.11 writes the Risk Management
 Approach into the Project Plan. PM.2.3 re-runs the Automator query
-at each revision meeting. PM.3.1 uses the same query at iteration-
-boundary closure inside `@iteration-orchestrator`.
+at each revision meeting. PM.3.1 uses the same query at release
+baselining inside `@release-orchestrator`.
 
 ## Configuration Management Library (ConfigItem, Baseline)
 

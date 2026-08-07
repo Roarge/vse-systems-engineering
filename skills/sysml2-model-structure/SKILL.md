@@ -341,8 +341,8 @@ package HS_Requirements {
 Hand off to `@sysml2-metadata` for the `ConfigItem` and `Baseline`
 metadata def declarations, the state enumeration, and the Automator
 CI-by-baseline query recipe. Hand off to
-`@iteration-orchestrator` for the Change Request workflow that consumes
-these references at iteration-boundary closure.
+`@change-request` for the Change Request workflow that consumes
+these references at release baselining.
 
 ## Validation Checklist
 
@@ -422,7 +422,7 @@ WARN the engineer if:
 | Verification case authoring | `@verification-validation`, `@sysml2-cases` |
 | Allocations across architecture layers | `@sysml2-allocations` |
 | Project layout, tooling, CI validation | `@sysml2-modelling` |
-| Change Request workflow | `@iteration-orchestrator` |
+| Change Request workflow | `@change-request` |
 
 ## Knowledge base
 
