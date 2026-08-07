@@ -832,3 +832,89 @@ every skill body and a zero diff in `INDEX.md` below the generated-on
 timestamp line, which is the idempotence condition the skill states.
 ToC drift: 2 pages missing a qualifying `## Contents` block, reported
 and not repaired, because contents blocks are page content.
+
+## [2026-08-07] refactor | syside layer refresh to August 2026 state
+
+Editorial sweep over the `syside/` layer, driven by the v3 overhaul
+Track B scope. Every page in the layer carries a 2026-08 access date in
+its citations and a bumped `updated:`. Every `raw:` in the layer stays
+`null`, which is legal because the sources are Sensmetry web
+documentation and each citation carries its URL.
+
+Pages updated:
+
+- syside-tooling-overview: rewritten around the renamed lineup (Syside
+  Editor: SysML v2 Essential, Syside Pro Suite, Syside Cloud, Syside
+  Derisker beta), reference release 0.10.3 of 23 July 2026, a legacy
+  note recording that the open-source `sysml-2ls` was archived in
+  October 2025 as "SysIDE Editor Legacy", and a dated roadmap section
+  (Syside and Sysand v1.0 together in Q3 2026, MCP servers for both, a
+  high-level Python API). Confidence lowered to `medium` with a
+  Confidence note, because the Derisker beta and the roadmap are the
+  two forward-looking sections.
+- syside-project-configuration: largest rewrite. Three-level discovery
+  (global `$XDG_CONFIG_HOME/syside/syside.toml`, project
+  `syside.toml`, personal `syside.user.toml`), merge semantics
+  including the `exclude` concatenation exception, the `.git` and
+  `sysand-lock.toml` root markers, and the `[format]`, `[lint]`,
+  `[lsp]`, and `[telemetry]` sections with all six per-rule lint
+  severities named.
+- syside-core-api: parser characteristics section added (agent-driven
+  editing, real-time connection type checking), surface verified
+  against 0.10.x.
+- syside-model-modification: version-stability section added flagging
+  the 0.9.0 breaking changes (Automator CLI, scalar handling,
+  validation diagnostics).
+- syside-expression-evaluation: requirement evaluation added (0.9.0).
+- syside-vse-workflows: `syside check --stats` CI guidance, editable
+  grid views, ReqIF round-trip, and the 2026-03 standard library
+  added. Trimmed back under 300 lines while adding them.
+
+Page authored:
+
+- syside-sysand-package-management (new): Sysand v0.2.0, the
+  `sysand.toml` project manifest and the KerML 10.3 `.project.json`
+  and `.meta.json` interchange manifests, `sysand-lock.toml`, the
+  command surface, KPAR interchange packages, the publisher-namespaced
+  index at sysand.com, and the GitHub Action for CI publishing.
+  `confidence: high`, because every feature listed has shipped.
+  `referenced_by: [project-setup, sysml2-modelling]`.
+
+Cross-links: tooling-overview and project-configuration both gained a
+wikilink to the new page. The six existing pages had prose slug
+references converted to wikilinks, matching the rest of the wiki.
+
+Product-naming sweep in the same change: `SySiDE` normalised to
+`Syside` across skills, agents, templates, and wiki prose, and the
+layer label in `wiki/CLAUDE.md`. Eight pages outside the `syside/`
+layer carry the renamed product in prose. Their `updated:` fields are
+deliberately not bumped, because the edit is a branding
+normalisation rather than a content revision, and bumping them would
+suppress the source-freshness INFO that the sysmlv2 repagination cycle
+depends on.
+
+Routing resynced: project-setup, sysml2-metadata, sysml2-modelling.
+INDEX regenerated. Totals move from 130 to 131 pages across 11 layers,
+routed to by 20 skills.
+
+## [2026-08-07] lint | post-syside-refresh
+
+Full post-flip rule set. Pages scanned: 131. Routing blocks scanned:
+20.
+
+- ERROR: 0.
+- WARN: 150, down from 152 at the post-flip baseline. Every finding is
+  pre-existing editorial drift: wikilinks present in a body but absent
+  from the page's `related:` list, and schema-drift flags where a
+  page's H2 headings do not match the template shape for its `type`.
+  One of those schema flags is in the refreshed layer
+  (syside-vse-workflows is typed `pattern` and does not use the
+  pattern template headings), and it predates this change.
+- INFO: 73, up from 69. The increase is four `raw: null` entries from
+  the new page and the second citation added to two refreshed pages.
+  All are legal web-only sources whose citations carry URLs.
+
+No finding in this run is attributable to the refresh. Zero orphans.
+Contents blocks: zero drift across all 131 pages, including the
+project-structure page whose "Syside configuration" H2 was renamed by
+the sweep together with its Contents bullet.
