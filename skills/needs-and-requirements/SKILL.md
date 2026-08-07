@@ -189,7 +189,3 @@ The skill refuses, by default and without exception, to:
 - `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that verify acceptance criteria exercising stakeholder intent.
 - `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that verify acceptance criteria exercising system internals.
 - Updated `model/core/context/architecture-context.sysml` where the stakeholder set extends the System Context with a previously unmodelled actor.
-
-## Reference Bundle
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/needs-and-requirements.md`

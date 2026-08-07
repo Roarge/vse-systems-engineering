@@ -227,8 +227,7 @@ for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
 The query is advisory. A full risk-management workflow skill covering
 the identify-assess-mitigate-monitor loop is flagged as a follow-up.
 See the `syside-core-api` and `syside-expression-evaluation` atomic pages
-bundled into `${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md` for the
-Automator API.
+under `wiki/pages/syside/` for the Automator API.
 
 ### ISO 29110 Framing
 
@@ -516,7 +515,3 @@ WARN the engineer if:
 - A `Baseline` item def is declared without a `scope` reference list,
   which leaves `@traceability-guard` unable to check CI coverage at
   iteration-boundary closure
-
-## Reference: SysML 2.0 Metadata
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-metadata.md`

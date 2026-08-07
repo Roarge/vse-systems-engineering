@@ -133,7 +133,3 @@ WARN the engineer if:
 - The view uses a rendering style that does not exist in the standard
   library without declaring its own
 - A viewpoint frames no concerns (an empty viewpoint is a code smell)
-
-## Reference: SysML 2.0 Views and Viewpoints
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-views.md`

@@ -241,7 +241,3 @@ The skill produces or updates the following artefacts. File names are project-de
 - `model/variations/candidate-variants/<name>.sysml`. `variant` defs.
 - `model/variations/trade-studies/<name>.sysml`. `analysis def` per decision point.
 - `model/variations/resolved/<name>.sysml`. Specialisations that redefine variations.
-
-The wiki bundle below provides the supporting reference material on trade-study mechanics, AMBSE architecture analysis, and recursive component nesting.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/architecture-design.md`

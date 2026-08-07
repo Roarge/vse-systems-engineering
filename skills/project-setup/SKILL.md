@@ -334,5 +334,3 @@ Report a concise summary listing every directory created, every file copied from
 For brownfield projects, the report also names the outcome of the as-is survey (Step 6.5): whether it ran, the count of mandated rows, the count of contingent rows, and the count of skipped rows. If the survey was declined, the report names the resumption marker in `docs/as-is-classification.md` and points at `@architecture-design` as the re-entry skill.
 
 If any refusal triggered in Step 3, the report instead names the conflict and explains how to resolve it.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-setup.md`

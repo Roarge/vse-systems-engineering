@@ -154,7 +154,3 @@ WARN the engineer if:
 - A transition has no trigger and no guard (always fires, usually a bug)
 - A `stream flow` connects endpoints of mismatched item types
 - A `send` action has no matching `accept` anywhere in the model
-
-## Reference: SysML 2.0 Behaviour
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-behaviour.md`

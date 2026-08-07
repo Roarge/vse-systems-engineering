@@ -147,7 +147,3 @@ WARN the engineer if:
   actor should be external)
 - An analysis case has no `return` feature
 - Verdict handling is missing in a verification body that expects one
-
-## Reference: SysML 2.0 Cases
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-cases.md`

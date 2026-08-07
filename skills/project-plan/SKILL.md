@@ -105,5 +105,3 @@ Refuse and explain the reason if any of the following hold:
 - `docs/risk-register.md`, scaffolded register with the columns required by §10.7.
 - `docs/cm-strategy.md`, scaffolded from the §10.8 YAML.
 - An annotated tag `plan-baseline-vN.M` placed on the merge commit after Acquirer acceptance per §10.3.4. The skill surfaces the tag command for the engineer to run, the skill itself does not push tags.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-plan.md`

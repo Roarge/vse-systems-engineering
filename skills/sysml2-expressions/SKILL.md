@@ -145,7 +145,3 @@ WARN the engineer if:
 - A classification expression uses `@` where `@@` was meant (metaclass
   versus classifier confusion)
 - An `assert constraint` binding leaves an `in` parameter unset
-
-## Reference: SysML 2.0 Expressions
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-expressions.md`

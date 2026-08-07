@@ -123,5 +123,3 @@ The methodology spec wins over its sources because the methodology explicitly ad
 ## What This Skill Does Not Do
 
 This skill is the lens. It does not author models, run trace checks, configure hooks, or export documents. If the user asks for any of those, hand off to the named skill above and let it do the work.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/vse-companion-overview.md`

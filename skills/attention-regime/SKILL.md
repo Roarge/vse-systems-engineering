@@ -131,7 +131,3 @@ After a successful run, the following exist in the user project:
 - `core.hooksPath` set to `.githooks` in the local git config.
 
 `post-receive` is **not** installed locally. Document it in the project README as a server-side responsibility.
-
-## Reference Bundle
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/attention-regime.md`

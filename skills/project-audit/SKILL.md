@@ -187,7 +187,3 @@ The audit produces findings. Remediation is delegated to other skills:
 ## Outputs
 
 A single Markdown audit report per invocation, written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` if the engineer authorises the path, or surfaced inline otherwise. The skill does not modify any other file.
-
-## Reference
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/project-audit.md`

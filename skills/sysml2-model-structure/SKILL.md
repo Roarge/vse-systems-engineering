@@ -425,7 +425,3 @@ WARN the engineer if:
 | Allocations across architecture layers | `@sysml2-allocations` |
 | Project layout, tooling, CI validation | `@sysml2-modelling` |
 | Change Request workflow | `@iteration-orchestrator` |
-
-## Reference: SysML 2.0 Model Structure
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-model-structure.md`

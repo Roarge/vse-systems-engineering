@@ -111,5 +111,3 @@ In both cases, the skill names the obligation, points at the relevant section, a
 - A GitHub Issue with the `change-request` label, lifecycle line in the body, and the §10.4.2 impact analysis rendered as the issue body.
 - The impact-analysis markdown block, returned to the engineer for review before the issue is opened.
 - Optionally, a follow-up story branch and PR opened by `/vse-story` once the lifecycle reaches `agreed`.
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/change-request.md`

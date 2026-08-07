@@ -129,7 +129,3 @@ WARN the engineer if:
   physical element allocated to a logical function, for example)
 - The model uses custom keywords without a corresponding
   `SemanticMetadata` registration
-
-## Reference: SysML 2.0 Allocations
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-allocations.md`

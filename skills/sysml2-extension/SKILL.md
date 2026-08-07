@@ -206,7 +206,3 @@ WARN the engineer if:
 - A library duplicates a built-in concept that already exists in
   the Systems Model Library or one of the standard domain
   libraries (see `[[sysml2-libraries-architecture]]`)
-
-## Reference: SysML 2.0 Extension
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-extension.md`

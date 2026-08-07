@@ -143,7 +143,3 @@ WARN the engineer if:
   declared as `variation part`. The model parses but the variant intent
   is lost. Declare the target as `variation part` in the owning
   definition first
-
-## Reference: SysML 2.0 Variations and Variants
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/sysml2-variants.md`

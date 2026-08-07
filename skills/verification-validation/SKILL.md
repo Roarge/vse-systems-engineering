@@ -168,7 +168,3 @@ In each case, the skill states the rule, points to the methodology section, and 
 - `docs/generated/ivv-procedures.md`. Rendered, not authored.
 - `docs/verification-reports/<name>-<date>.md`. Execution-time, per §10.10.
 - `docs/validation-reports/<name>-<date>.md`. Execution-time, per §10.10.
-
-## Reference
-
-`!cat ${CLAUDE_PLUGIN_ROOT}/wiki/bundles/verification-validation.md`
