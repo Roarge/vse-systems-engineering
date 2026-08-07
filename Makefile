@@ -22,7 +22,7 @@ validate:
 
 lint:
 	@echo "Linting hook scripts..."
-	@shellcheck hooks/*.sh
+	@shellcheck hooks/*.sh hooks/lib/*.sh
 
 check-versions:
 	@echo "Checking version consistency..."

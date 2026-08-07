@@ -55,15 +55,11 @@ is_baselined() {
     done | grep -q match
 }
 
-# Surface a baselined-edit warning. Advisory only.
+# Surface a baselined-edit note. Advisory only. Naturally silent when
+# baselined_paths is empty, which is the light-profile default per
+# methodology §0.10.3, because the awk lookup then matches nothing.
 if is_baselined "$TARGET"; then
-    cat <<EOF
-[methodology reminder] Editing a baselined artefact: ${TARGET}.
-Per PM.O3 (§10.4.2), modifications to baselined artefacts require
-an open Change Request. Open a CR via /vse-cr if one does not
-exist, then reference 'CR #<n>' in your commit message. The
-project-side commit-msg hook enforces the CR reference.
-EOF
+    echo "[methodology] ${TARGET} is a baselined artefact. Edits reference an open Change Request per §10.4.2 (/vse-cr opens one)."
 fi
 
 # For story files, surface §1.9 reminders.

@@ -113,63 +113,65 @@ if [ -z "$ENG_ROOT" ]; then
     exit 0
 fi
 
-# Mode 2: VSE project.
-echo "VSE SYSTEMS ENGINEERING PROJECT DETECTED"
-echo "========================================="
-echo ""
-echo "MANDATORY FIRST ACTION:"
-echo "Before responding to the user, invoke the vse-companion-overview skill"
-echo "via the Skill tool. This skill sets the methodology lens (identity,"
-echo "story-centric routing, the methodology-as-source-of-truth convention,"
-echo "the §2.6 rule 7 reverse-engineering guard, and drift indicators) that"
-echo "every VSE project response must apply."
-echo ""
-echo "Methodology copy: ${ENG_ROOT}/methodology/ (project-local, authoritative)"
+# Mode 2: VSE project. Context lines, not instructions. The engineer
+# decides what follows, per methodology section 0.10.1.
+
+# Rigour profile via the shared library. The plugin copy is the primary
+# source here, because this hook runs from the plugin tree.
+ISO_PROFILE_LIB=""
+if [ -r "$(dirname "$0")/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="$(dirname "$0")/lib/iso-profile.sh"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"
+fi
+
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$ISO_PROFILE_LIB"
+    PROFILE="$(iso_profile)"
+else
+    PROFILE="standard"
+fi
+
+echo "VSE project (story-driven AMBSE, ISO/IEC 29110)."
+echo "Methodology: ${ENG_ROOT}/methodology/ (project-local, authoritative)"
+echo "Profile:     ${PROFILE} (per methodology section 0.10)"
 
 # Story state.
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "(no git)")
-echo "Branch:           ${CURRENT_BRANCH}"
+echo "Branch:      ${CURRENT_BRANCH}"
 
 # In-flight stories: count story branches and surface the active one.
-if command -v git >/dev/null 2>&1 && [ -d ".git" ]; then
-    STORY_BRANCHES=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep -c '^story/' || echo "0")
-    if [ "$STORY_BRANCHES" -gt 0 ]; then
+if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    STORY_BRANCHES=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep -c '^story/' || true)
+    if [ -n "$STORY_BRANCHES" ] && [ "$STORY_BRANCHES" -gt 0 ]; then
         echo "In-flight story branches: ${STORY_BRANCHES}"
     fi
 
     # Most recent plan-baseline tag.
-    PLAN_BASELINE=$(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | head -1)
+    PLAN_BASELINE=$(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | head -n 1)
     if [ -n "$PLAN_BASELINE" ]; then
-        echo "Plan baseline:    ${PLAN_BASELINE}"
+        echo "Plan baseline: ${PLAN_BASELINE}"
     else
-        echo "Plan baseline:    (none yet, run /vse-plan to author)"
+        echo "Plan baseline: (none yet, run /vse-plan to author)"
     fi
 
     # Most recent release tag.
-    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | head -1)
+    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | head -n 1)
     if [ -n "$LAST_RELEASE" ]; then
-        echo "Last release:     ${LAST_RELEASE}"
+        echo "Last release:  ${LAST_RELEASE}"
     fi
 fi
 
 # Pending change requests via gh CLI if configured.
 if command -v gh >/dev/null 2>&1; then
-    OPEN_CRS=$(gh issue list -l change-request -s open --json number 2>/dev/null | grep -c '"number"' || echo "0")
-    if [ "$OPEN_CRS" -gt 0 ]; then
+    OPEN_CRS=$(gh issue list -l change-request -s open --json number 2>/dev/null | grep -c '"number"' || true)
+    if [ -n "$OPEN_CRS" ] && [ "$OPEN_CRS" -gt 0 ]; then
         echo "Open Change Requests: ${OPEN_CRS} (run /vse-cr to manage)"
     fi
 fi
 
-echo ""
-echo "Reminders (per methodology/iso-29110-hooks-guide.md §5.1):"
-echo "- Edits to baselined artefacts require an open Change Request (PM.O3)."
-echo "- New stories shall declare role, capability, benefit, and at least"
-echo "  one acceptance criterion (§1.9)."
-echo "- After modifying a story, update its bound verification case (SR.O7)."
-echo "- Stories build forward from the Base Architecture (§2.1). Do NOT"
-echo "  reverse-engineer or auto-generate stakeholders, concerns, or"
-echo "  stories that explain Base Architecture decisions. Create context"
-echo "  stories only on explicit user request, with confirmation of intent"
-echo "  (§2.6 rule 7)."
+echo "Lens: load vse-companion-overview before VSE work if not yet loaded this session."
+echo "Agent posture: forward-going stories only (section 2.6 rule 7)."
 
 exit 0
