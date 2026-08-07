@@ -3,6 +3,7 @@ title: "SysML 2.0 Portions and Individuals"
 slug: sysml2-portions-and-individuals
 type: reference
 layer: sysml2
+summary: Portion vocabulary (snapshots, time slices, space slices) and the individual keyword
 tags: [portions, snapshots, time-slice, space-slice, individuals, life]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.3 and 25.4, pages 147 to 152."
@@ -14,10 +15,22 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Portions and Individuals
+
+## Contents
+
+- What a portion is
+- A cinema analogy
+- The portion kinds
+- Spacetime-enclosed points
+- Key invariant: portions share the same Life
+- Declaring portions in a model
+- When to declare custom portions
+- Individuals
+- See also
 
 This page captures the portion vocabulary (snapshots, time slices,
 space slices, space shots, spacetime-enclosed points) and the

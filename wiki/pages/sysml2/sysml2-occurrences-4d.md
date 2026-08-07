@@ -3,6 +3,7 @@ title: "SysML 2.0 Occurrences and 4D Modelling"
 slug: sysml2-occurrences-4d
 type: concept
 layer: sysml2
+summary: Occurrences and 4D modelling, where a part extends through time as well as through space
 tags: [occurrences, 4d-modelling, perdurantism, spacetime, kerml]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.1 and 25.2, pages 144 to 146. New chapter in the 2026-04 release."
@@ -19,10 +20,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Occurrences and 4D Modelling
+
+## Contents
+
+- A concrete payoff
+- Endurantism versus perdurantism
+- What an occurrence is
+- Occurrence definition and usage
+- See also
 
 Most engineers think about systems the way they think about
 everyday objects: a part is a thing, it has a position, and the

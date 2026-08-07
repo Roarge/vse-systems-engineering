@@ -3,6 +3,7 @@ title: "SysML 2.0 State Machines: States, Transitions, and Behaviours"
 slug: sysml2-state-machines
 type: reference
 layer: sysml2
+summary: State machines model behaviour through persistent conditions (states)
 tags: [states, transitions, state-machine, entry, do, exit, parallel-state, exhibit-state]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 28, pages 170 to 176."
@@ -15,10 +16,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 State Machines
+
+## Contents
+
+- States and state definitions
+- Transitions
+- Entry, do, and exit behaviours
+- Parallel states
+- Exhibit states
+- See also
 
 State machines model behaviour through persistent conditions
 (states) and the rules that move the system from one state to

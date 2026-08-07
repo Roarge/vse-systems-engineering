@@ -3,6 +3,7 @@ title: "Human-Systems Integration Foundations: TOP in Environment"
 slug: hsi-foundations
 type: concept
 layer: hsi
+summary: Human-Systems Integration as a transdisciplinary approach, and the technology, organisation, and people frame
 tags: [hsi, top-environment, sociotechnical, lifecycle, vse]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2. Boy and Kennedy (Eds.). ISBN 978-1-937076-12-2."
@@ -15,10 +16,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Human-Systems Integration Foundations: TOP in Environment
+
+## Contents
+
+- Core model: TOP in Environment
+- Why HSI matters
+- HSI is not an add-on
+- The "human" in HSI
+- Where this fits in the plugin
+- See also
 
 Human Systems Integration (HSI) is a transdisciplinary
 sociotechnical and management approach within systems

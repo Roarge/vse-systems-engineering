@@ -3,6 +3,7 @@ title: "SysML 2.0 Standard Views Catalogue"
 slug: sysml2-standard-views
 type: reference
 layer: sysml2
+summary: SysML 2.0 defines eight standard views in the StandardViewDefinitions package
 tags: [views, standard-views, library, sysmlv1-migration]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 13, pages 51 to 54."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-views]
+referenced_by: [sysml2-views]
 ---
 
 # SysML 2.0 Standard Views Catalogue

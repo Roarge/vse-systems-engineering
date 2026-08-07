@@ -3,6 +3,7 @@ title: "frame concern: linking stories to stakeholder concerns"
 slug: frame-concern-pattern
 type: pattern
 layer: methodology
+summary: The frame concern member that ties a User Story to persistent stakeholder concerns in the model
 tags: [user-story, concern, sysmlv2, stakeholder-need, traceability, framing]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §1.4.6 (frame concern)."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
+referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
 ---
 
 # frame concern: linking stories to stakeholder concerns

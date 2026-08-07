@@ -3,6 +3,7 @@ title: "AMBSE Canonical Model Layout for VSE Projects"
 slug: sysml2-canonical-model-layout
 type: concept
 layer: sysml2
+summary: The recommended top-level package layout for a VSE SysML 2.0 model, with the rationale that drives it
 tags: [ambse, canonical-layout, vse, top-level-packages, architecture-0, iteration]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Chapter 3.2.5 and Chapter 8.3."
@@ -17,10 +18,21 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [sysml2-model-structure]
+referenced_by: [sysml2-model-structure]
 ---
 
 # AMBSE Canonical Model Layout for VSE Projects
+
+## Contents
+
+- Why a canonical structure
+- Mandatory top-level packages
+- Root model overview file
+- Optional top-level packages
+- Why workflow-centric rather than phase-sequential
+- Architecture 0 and iteration mapping
+- Structural gotchas
+- See also
 
 > **Canonical for this plugin: methodology §8.3.1.** The
 > templated SysML 2.0 package names used on this page (for

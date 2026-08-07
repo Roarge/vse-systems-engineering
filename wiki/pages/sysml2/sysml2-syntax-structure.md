@@ -3,6 +3,7 @@ title: "SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocati
 slug: sysml2-syntax-structure
 type: reference
 layer: sysml2
+summary: Cheat sheet for the structural modelling vocabulary
 tags: [syntax, items, parts, ports, connections, interfaces, allocations, flows, messages]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.10 to 7.15."
@@ -16,10 +17,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations
+
+## Contents
+
+- Items (7.10)
+- Parts (7.11)
+- Ports (7.12)
+- Connections (7.13)
+- Interfaces (7.14)
+- Allocations (7.15)
+- See also
 
 Cheat sheet for the structural modelling vocabulary.
 

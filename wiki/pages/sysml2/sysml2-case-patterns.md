@@ -3,6 +3,7 @@ title: "SysML 2.0 Case Patterns and Gotchas"
 slug: sysml2-case-patterns
 type: pattern
 layer: sysml2
+summary: Practical case patterns and the recurring mistakes that show up in review
 tags: [cases, patterns, gotchas, vse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 230 to 242."
@@ -13,10 +14,16 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-cases]
+referenced_by: [sysml2-cases]
 ---
 
 # SysML 2.0 Case Patterns and Gotchas
+
+## Contents
+
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending material in the source
 
 This page collects practical patterns and recurring mistakes for
 SysML 2.0 cases. For the conceptual frame, see

@@ -3,6 +3,7 @@ title: "ISO/IEC TR 29110-5-6-2 compliance mapping"
 slug: iso-29110-compliance-mapping
 type: reference
 layer: methodology
+summary: The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014
 tags: [iso29110, compliance, basic-profile, pm-objectives, sr-objectives, traceability, baselines]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §9 (ISO/IEC TR 29110-5-6-2 Compliance)."
@@ -15,10 +16,20 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan]
+referenced_by: [vse-companion-overview, project-setup, project-audit, release-orchestrator, project-plan]
 ---
 
 # ISO/IEC TR 29110-5-6-2 compliance mapping
+
+## Contents
+
+- Scope of compliance (§9.2)
+- PM objective coverage (§9.3)
+- SR objective coverage (§9.4)
+- Artefact mapping (§9.5)
+- Lifecycle interpretation (§9.9)
+- Compliance automation (§9.10)
+- Limitations of the compliance claim (§9.12)
 
 The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014. It covers Project Management in full and the SR.1 to SR.3 activities of System Definition and Realization in full, plus the V&V *specification* portion of SR.5. SR.4 (Construction) and SR.6 (Product Delivery) are out of scope and shall be supplied by a separate, project-determined process. The methodology is a user-story-first, model-driven realisation of ISO 29110 obligations expressed in SysML v2, not a literal restatement of the standard. See [[methodology-overview]] for the broader frame.
 

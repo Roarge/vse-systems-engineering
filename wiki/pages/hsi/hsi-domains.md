@@ -3,6 +3,7 @@ title: "HSI Domains: 13 Perspectives"
 slug: hsi-domains
 type: reference
 layer: hsi
+summary: The thirteen HSI domains (manpower, training, safety and the rest) and what each asks of a design
 tags: [hsi, domains, hfe, safety, usability, training, manpower]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI Domains."
@@ -14,10 +15,27 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # HSI Domains: 13 Perspectives
+
+## Contents
+
+- 2.1 Human Factors Engineering (HFE)
+- 2.2 Social, cultural and organisational factors
+- 2.3 HSI planning
+- 2.4 Integrated logistics support (ILS) and maintenance
+- 2.5 Workforce planning (manpower)
+- 2.6 Competences and professionalism (personnel)
+- 2.7 Training
+- 2.8 Safety
+- 2.9 Occupational health
+- 2.10 Sustainability (environment)
+- 2.11 Habitability
+- 2.12 Usability
+- 2.13 Comfort and user experience (UX)
+- See also
 
 The INCOSE HSI Primer identifies 13 perspectives. Each is a lens
 through which human considerations enter requirements, design,

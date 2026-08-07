@@ -3,6 +3,7 @@ title: "SysML 2.0 Model Execution"
 slug: sysml2-model-execution
 type: concept
 layer: sysml2
+summary: Executing or simulating a model so that its specified behaviour can be observed
 tags: [model-execution, simulation, executable-modelling, traces, simulator]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 39, pages 284 to 289. New chapter in the 2026-04 release."
@@ -17,10 +18,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Model Execution
+
+## Contents
+
+- Is SysML an executable modelling language?
+- What does it mean to execute a SysML model?
+- How to execute SysML models?
+- When to execute and what
+- See also
 
 Model execution, also known as simulation, is the use of a
 machine to step or evolve a model so that its specified behaviour

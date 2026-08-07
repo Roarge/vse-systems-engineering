@@ -3,6 +3,7 @@ title: "Coupling story role to use-case actor via objective"
 slug: role-actor-coupling
 type: pattern
 layer: methodology
+summary: Coupling a story role to a use-case actor through the shared objective
 tags: [user-stories, use-cases, sysml2, traceability, well-formedness]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §1.4.5 (Coupling role to actor via use case objective)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
+referenced_by: [vse-companion-overview, story-orchestrator, needs-and-requirements]
 ---
 
 # Coupling story role to use-case actor via objective

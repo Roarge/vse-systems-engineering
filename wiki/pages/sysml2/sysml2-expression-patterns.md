@@ -3,6 +3,7 @@ title: "SysML 2.0 Expression Patterns and Gotchas"
 slug: sysml2-expression-patterns
 type: pattern
 layer: sysml2
+summary: Practical patterns and recurring mistakes for expressions, calculations, and constraints
 tags: [expressions, patterns, gotchas, vse]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 30, pages 189 to 206; Chapter 31, pages 208 to 210."
@@ -15,10 +16,16 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-expressions]
+referenced_by: [sysml2-expressions]
 ---
 
 # SysML 2.0 Expression Patterns and Gotchas
+
+## Contents
+
+- VSE authoring patterns
+- Gotchas and red flags
+- Pending chapters
 
 This page collects practical patterns and recurring mistakes for
 expressions, calculations, and constraints. For declaration syntax

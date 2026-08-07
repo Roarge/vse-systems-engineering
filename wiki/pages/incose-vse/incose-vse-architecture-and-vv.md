@@ -3,6 +3,7 @@ title: "INCOSE Architecture and V&V for VSEs"
 slug: incose-vse-architecture-and-vv
 type: concept
 layer: incose-vse
+summary: INCOSE architecture definition and verification and validation processes scaled to VSE scope
 tags: [incose, architecture, verification, validation, interfaces, vee, vse]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapters 4.4 and 4.5."
@@ -20,10 +21,23 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # INCOSE Architecture and V&V for VSEs
+
+## Contents
+
+- Architecture versus design
+- Logical and physical architecture models
+- Architecture process scaled for VSEs
+- Emergent properties
+- Interface management
+- Verification versus validation
+- Vee model verification strategy
+- Two nested loops (Galinier et al.)
+- Integration approaches for VSEs
+- SE return on investment in IVV
 
 ## Architecture versus design
 

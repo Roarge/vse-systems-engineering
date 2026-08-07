@@ -3,6 +3,7 @@ title: "PHAS-EAI Digital Engineering Integration Requirements R1-R4"
 slug: phas-eai-de-requirements
 type: reference
 layer: phas-eai
+summary: The four PHAS-EAI digital engineering integration requirements R1 to R4
 tags: [phas-eai, de-requirements, r1, r2, r3, r4, iso29110, complementarity]
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Sections 6.5 and 7.4. Table 24."
@@ -17,10 +18,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [attention-regime]
+referenced_by: [attention-regime]
 ---
 
 # PHAS-EAI Digital Engineering Integration Requirements R1-R4
+
+## Contents
+
+- R1: Reduce functional information burden
+- R2: Build designed cognitive reserve
+- R3: Provide machine-readable traceability
+- R4: Sustain attention through environmental design
+- Complementarity with ISO/IEC 29110
+- See also
 
 The PHAS-EAI framework distils four integration requirements
 that link the formal model (see [[phas-eai-equations]]) to

@@ -3,6 +3,7 @@ title: "SysML 2.0 Allocation Definitions and Usages"
 slug: sysml2-allocation-definitions
 type: reference
 layer: sysml2
+summary: Declaring allocation definitions and applying them through allocation usages
 tags: [allocations, syntax, connection, cross-subsetting]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
@@ -13,10 +14,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-allocations]
+referenced_by: [sysml2-allocations]
 ---
 
 # SysML 2.0 Allocation Definitions and Usages
+
+## Contents
+
+- Allocation definitions
+- Allocation usages
+- User-defined allocation keywords
+- Library design guidance
+- See also
 
 This page captures the syntax for declaring allocation definitions
 and applying them through allocation usages. For background and

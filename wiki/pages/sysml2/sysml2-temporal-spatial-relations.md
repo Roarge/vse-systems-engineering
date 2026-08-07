@@ -3,6 +3,7 @@ title: "SysML 2.0 Temporal and Spatial Relations"
 slug: sysml2-temporal-spatial-relations
 type: reference
 layer: sysml2
+summary: Occurrence equality operators, Allen's interval algebra, and the spatial relation vocabulary
 tags: [identity, equality, allen-interval-algebra, temporal-relations, spatial-relations, kerml]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.5, 25.6, and 25.7, pages 152 to 155."
@@ -18,10 +19,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Temporal and Spatial Relations
+
+## Contents
+
+- 4D Identity: == and ===
+- Allen's interval algebra
+- Spatial and combined relations
+- Composable temporal-spatial relations
+- See also
 
 This page captures the equality operators for occurrences, Allen's
 interval algebra in the KerML library, and the spatial relation

@@ -3,6 +3,7 @@ title: "INCOSE Lifecycle Models Scaled for VSEs"
 slug: incose-vse-lifecycle-models
 type: concept
 layer: incose-vse
+summary: The six generic lifecycle stages from Concept to Retirement, scaled for VSE projects
 tags: [incose, lifecycle, vee, vse, decision-gates]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # INCOSE Lifecycle Models Scaled for VSEs

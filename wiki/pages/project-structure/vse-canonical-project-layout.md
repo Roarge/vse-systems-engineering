@@ -3,6 +3,7 @@ title: "VSE Canonical Project Layout"
 slug: vse-canonical-project-layout
 type: reference
 layer: project-structure
+summary: The authoritative directory layout for a VSE project scaffolded by project-setup
 tags: [project-setup, project-audit, layout, greenfield, brownfield, .vse-iteration]
 sources:
   - citation: "Plugin-internal model, the authoritative directory structure used by @project-setup and @project-audit."
@@ -14,10 +15,23 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [project-setup, project-audit]
+referenced_by: [project-setup, project-audit]
 ---
 
 # VSE Canonical Project Layout
+
+## Contents
+
+- Layouts
+- Root files (both layouts)
+- Greenfield-only root files
+- CLAUDE.md marker block
+- .vse-iteration.yml schema (version 1)
+- SySiDE configuration
+- Gitignore entries
+- Hooks
+- GitHub Actions (optional)
+- See also
 
 This page defines the authoritative layout for a VSE project set
 up by `@project-setup`. Both `@project-setup` and `@project-audit`

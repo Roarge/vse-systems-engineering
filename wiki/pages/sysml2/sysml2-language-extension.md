@@ -3,6 +3,7 @@ title: "SysML 2.0 Extension: Overview"
 slug: sysml2-language-extension
 type: concept
 layer: sysml2
+summary: Choosing between model libraries and user-defined keywords when extending SysML 2.0
 tags: [extension, language-extension]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41, pages 291 to 297."
@@ -16,10 +17,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-05
-bundled_by: [sysml2-extension]
+referenced_by: [sysml2-extension]
 ---
 
 # SysML 2.0 Extension: Overview
+
+## Contents
+
+- Strategy 1: model libraries
+- Strategy 2: user-defined keywords
+- Choosing between them, or stacking them
+- Limits and pitfalls
+- See also
 
 SysML 2.0 is a general purpose modelling language. Domain-specific
 languages that have all the important concepts built in tend to be

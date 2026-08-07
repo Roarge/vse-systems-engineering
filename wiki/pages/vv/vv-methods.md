@@ -3,6 +3,7 @@ title: "Verification and Validation Methods, Test Case Design"
 slug: vv-methods
 type: reference
 layer: vv
+summary: The four standard methods apply to both verification and validation
 tags: [vv, methods, inspection, demonstration, test, analysis, test-case]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Sections on Verification Methods, Validation Methods, and Test Case Design."
@@ -17,10 +18,21 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [verification-validation]
+referenced_by: [verification-validation]
 ---
 
 # Verification and Validation Methods, Test Case Design
+
+## Contents
+
+- Inspection
+- Demonstration
+- Test
+- Analysis
+- Method selection guidance for VSE
+- Validation methods
+- Test case design
+- See also
 
 The four standard methods apply to both verification and
 validation. For underlying definitions see [[vv-definitions]];

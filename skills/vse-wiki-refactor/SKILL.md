@@ -2,9 +2,10 @@
 name: vse-wiki-refactor
 description: >-
   Run a full-wiki editorial sweep: re-read sources, propose merges and
-  splits, repair cross-links, revise confidence, regenerate all bundles.
-  Use when the contributor asks to go over everything, fact-check the
-  wiki, or perform a periodic audit. Heavy operation, not routine.
+  splits, repair cross-links, revise confidence, resync the index and
+  routing tables. Use when the contributor asks to go over everything,
+  fact-check the wiki, or perform a periodic audit. Heavy operation,
+  not routine.
 user-invocable: true
 ---
 
@@ -114,10 +115,18 @@ For each approved change:
 
 Every page touched during Step 4 has its `updated:` date bumped.
 
-## Step 5: Regenerate All Bundles
+## Step 5: Resync the Index and Routing Tables
 
-After all page changes have landed, dispatch `vse-wiki-bundle` with no
-argument to regenerate every bundle. This also rebuilds `INDEX.md`.
+After all page changes have landed, dispatch `vse-wiki-index` with no
+argument. A sweep changes which pages exist, which layer they sit in,
+and which skills reference them, so both derived surfaces are stale
+until it runs. It rebuilds `INDEX.md` from every page and rewrites every
+affected `wiki-routing` marker block from `referenced_by` and `summary`.
+
+Read its report before moving on. A merge or a retirement usually leaves
+a skill whose routing block lost rows, and a split usually leaves a new
+page whose `referenced_by` is empty. Both are decisions the contributor
+should see, not silent consequences of the sweep.
 
 ## Step 6: Append to the Log
 
@@ -129,7 +138,7 @@ Pages merged: <n>. Pages split: <n>. New cross-links: <n>.
 Confidence lowered on: <slug-list>.
 Confidence raised on: <slug-list>.
 Retired pages: <slug-list>.
-Bundles regenerated: all.
+Routing resynced: all. INDEX regenerated.
 ```
 
 ## Step 7: Post-Refactor Lint
@@ -148,7 +157,7 @@ commits by change type where practical:
 2. `refactor(wiki): split <page>` for splits.
 3. `refactor(wiki): repair cross-links` for the link pass.
 4. `refactor(wiki): revise confidence` for the confidence pass.
-5. `chore(wiki): regenerate bundles` for the final bundle rebuild.
+5. `chore(wiki): resync index and routing` for the final regeneration.
 
 The contributor reviews and stages manually following the repo's git
 workflow.
@@ -165,9 +174,5 @@ workflow.
 ## Cross-References
 
 - `vse-wiki-lint`: runs before and after the refactor.
-- `vse-wiki-bundle`: regenerates all bundles in Step 5.
+- `vse-wiki-index`: resyncs `INDEX.md` and the routing blocks in Step 5.
 - Subagent: `agents/vse-wiki-curator.md`.
-
-## Reference: Wiki Schema
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/CLAUDE.md`

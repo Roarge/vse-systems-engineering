@@ -3,6 +3,7 @@ title: "SysML 2.0 Special Action Usages: Assign, Send, Accept, Terminate, If, Lo
 slug: sysml2-special-action-usages
 type: reference
 layer: sysml2
+summary: The standard library defines built-in action usages with specific semantics for typical patterns
 tags: [actions, assignment, send, accept, if, loop, time-trigger]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 153 to 164."
@@ -14,10 +15,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Special Action Usages
+
+## Contents
+
+- Assignment action
+- Send and accept actions
+- Terminate action
+- If and loop actions
+- See also
 
 The standard library defines built-in action usages with specific
 semantics for typical patterns. They are primitives for defining

@@ -3,6 +3,7 @@ title: "INCOSE CM, Risk Management, and VSE Scaling Guidance"
 slug: incose-vse-cm-risk-and-scaling
 type: concept
 layer: incose-vse
+summary: Configuration management, risk management, and how INCOSE practice scales down to VSE size
 tags: [incose, configuration-management, risk, scaling, maturity, vse, semp]
 sources:
   - citation: "INCOSE (2015). Systems Engineering Handbook, 4th edition. Wiley. Chapters 5.5 and 8.6."
@@ -20,10 +21,21 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [release-orchestrator]
+referenced_by: [release-orchestrator]
 ---
 
 # INCOSE CM, Risk Management, and VSE Scaling Guidance
+
+## Contents
+
+- Configuration management purpose
+- Three baselines
+- CM activities scaled for VSEs
+- Risk management
+- VSE scaling guidance (INCOSE Section 8.6)
+- Maturity levels (Galinier et al.)
+- Practical scaling rules for VSEs
+- Common VSE pitfalls
 
 ## Configuration management purpose
 

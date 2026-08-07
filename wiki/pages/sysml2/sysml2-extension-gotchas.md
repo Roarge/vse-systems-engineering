@@ -3,6 +3,7 @@ title: "SysML 2.0 Extension Gotchas"
 slug: sysml2-extension-gotchas
 type: pattern
 layer: sysml2
+summary: Three pitfalls that accompany the user-defined-keyword extension mechanism
 tags: [language-extension, gotchas, semantic-metadata]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.2, pages 295 to 297."
@@ -13,10 +14,18 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [sysml2-extension]
+referenced_by: [sysml2-extension]
 ---
 
 # SysML 2.0 Extension Gotchas
+
+## Contents
+
+- Pitfall 1: kind-keyword optionality changes the resulting type
+- Pitfall 2: SysML::Type versus SysML::Usage in the meta-cast
+- Pitfall 3: definition-only keywords need an annotatedElement guard
+- When user-defined keywords are not enough
+- See also
 
 Three pitfalls accompany the user-defined-keyword mechanism
 described in [[sysml2-user-defined-keywords]]. Each can fail

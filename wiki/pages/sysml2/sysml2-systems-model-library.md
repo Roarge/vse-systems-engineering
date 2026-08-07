@@ -3,6 +3,7 @@ title: "SysML 2.0 Systems Model Library: Base Types and Specialisations"
 slug: sysml2-systems-model-library
 type: reference
 layer: sysml2
+summary: The Systems Model Library provides the base types that every SysML 2.0 keyword implicitly specialises
 tags: [systems-model-library, base-types, requirements, verification, verdict]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 9.2."
@@ -15,10 +16,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Systems Model Library: Base Types and Specialisations
+
+## Contents
+
+- Keyword to library type mapping
+- Specialised requirement types
+- Verification types
+- See also
 
 The Systems Model Library provides the base types that every
 SysML 2.0 keyword implicitly specialises. For the architecture

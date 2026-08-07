@@ -3,6 +3,7 @@ title: "AMBSE Use Case Driven Elicitation"
 slug: ambse-use-case-driven-elicitation
 type: process
 layer: ambse
+summary: Use cases as the structuring mechanism for stakeholder requirements in AMBSE
 tags: [use-case, elicitation, mission-statement, prioritisation, scenarios, executable-models]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 4."
@@ -19,10 +20,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # AMBSE Use Case Driven Elicitation
+
+## Contents
+
+- Use case mission statement
+- Use case prioritisation
+- From use cases to stakeholder needs
+- SysML 2.0 use case modelling
+- Executable requirements models
+- See also
 
 Use cases are the **primary structuring mechanism** for
 stakeholder requirements in AMBSE. A use case captures a

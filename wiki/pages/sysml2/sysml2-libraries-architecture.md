@@ -3,6 +3,7 @@ title: "SysML 2.0 Library Architecture: Systems Model Library and Domain Librari
 slug: sysml2-libraries-architecture
 type: concept
 layer: sysml2
+summary: The implicit Systems Model Library and the Domain Libraries a project imports explicitly
 tags: [libraries, architecture, systems-model-library, domain-libraries]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 9."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Library Architecture

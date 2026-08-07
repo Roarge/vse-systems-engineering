@@ -3,6 +3,7 @@ title: "SysML 2.0 Syntax: Actions and States"
 slug: sysml2-syntax-behaviour
 type: reference
 layer: sysml2
+summary: Cheat sheet for behavioural modelling syntax, covering actions and states
 tags: [syntax, action, state, control-node, transition, perform, send, accept, loop]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.16, 7.17."
@@ -16,10 +17,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Syntax: Actions and States
+
+## Contents
+
+- Actions (7.16)
+- Control nodes
+- Send, accept, perform
+- Assignment
+- Conditional and loop actions
+- States (7.17)
+- See also
 
 Cheat sheet for behavioural modelling syntax. For the conceptual
 material, see [[sysml2-actions]], [[sysml2-state-machines]], and

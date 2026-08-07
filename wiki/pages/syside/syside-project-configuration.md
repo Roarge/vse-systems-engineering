@@ -3,6 +3,7 @@ title: "SySiDE Project Configuration: syside.toml and .lsp.json"
 slug: syside-project-configuration
 type: reference
 layer: syside
+summary: The two SySiDE config files a project carries: syside.toml and .lsp.json, and what belongs in each
 tags: [syside, configuration, toml, lsp, vscode, project-setup]
 sources:
   - citation: "Sensmetry. SySiDE Modeler CLI configuration. https://docs.sensmetry.com/modeler/cli/configuration.html (accessed 2026-04)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, project-setup]
+referenced_by: [sysml2-modelling, project-setup]
 ---
 
 # SySiDE Project Configuration

@@ -3,6 +3,7 @@ title: "PHAS-EAI Equations: Response Time, Resilience, Functional Information"
 slug: phas-eai-equations
 type: reference
 layer: phas-eai
+summary: The three PHAS-EAI equation families for response time, resilience, and functional information
 tags: [phas-eai, equations, response-time, resilience, functional-information]
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Section 4.2.4."
@@ -14,10 +15,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [attention-regime]
+referenced_by: [attention-regime]
 ---
 
 # PHAS-EAI Equations: Response Time, Resilience, Functional Information
+
+## Contents
+
+- Response time
+- Resilience score
+- Functional information
+- See also
 
 This page collects the three formal equation families that
 underpin PHAS-EAI. For the conceptual frame see

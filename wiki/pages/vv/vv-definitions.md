@@ -3,6 +3,7 @@ title: "Verification and Validation Definitions"
 slug: vv-definitions
 type: concept
 layer: vv
+summary: What verification and validation each mean, how they differ, and the levels they apply at
 tags: [verification, validation, soi, success-criteria, levels-of-application]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. INCOSE-TP-2021-004-01."
@@ -17,10 +18,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [verification-validation]
+referenced_by: [verification-validation]
 ---
 
 # Verification and Validation Definitions
+
+## Contents
+
+- Verification
+- Validation
+- Key distinction
+- Levels of application
+- Terminology for VSE context
+- See also
 
 ## Verification
 

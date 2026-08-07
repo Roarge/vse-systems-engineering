@@ -3,6 +3,7 @@ title: "HSI in Architecture"
 slug: hsi-in-architecture
 type: process
 layer: hsi
+summary: Where human-systems concerns enter architectural decisions and allocations
 tags: [hsi, architecture, function-allocation, vhcd, lifecycle]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, Section on HSI in Architecture."
@@ -16,10 +17,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # HSI in Architecture
+
+## Contents
+
+- Key architectural considerations
+- The concept phase sets the HSI architecture baseline
+- The development phase refines HSI in architecture
+- Where this lands in the AMBSE model
+- See also
 
 Architecture is not only about technical component breakdown.
 It must also reflect how humans interact with, operate, and

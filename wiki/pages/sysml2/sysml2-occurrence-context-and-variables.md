@@ -3,6 +3,7 @@ title: "SysML 2.0 Occurrence Context (this), Suboccurrence vs Portion, and Time-
 slug: sysml2-occurrence-context-and-variables
 type: reference
 layer: sysml2
+summary: Suboccurrence versus portion, the context occurrence this, and variable features as time-functions
 tags: [this, suboccurrence, portion, variable-features, time-function, context]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Sections 25.8, 25.9, and 25.10, pages 155 to 158."
@@ -15,10 +16,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Occurrence Context (this), Suboccurrence vs Portion, and Time-Functions
+
+## Contents
+
+- Suboccurrence versus portion
+- The context occurrence: this
+- Variable features as time-functions
+- See also
 
 This page covers three closely related new topics from the 2026-04
 release of the SysML v2 book Chapter 25: the distinction between a

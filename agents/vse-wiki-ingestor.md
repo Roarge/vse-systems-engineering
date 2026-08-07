@@ -123,17 +123,18 @@ title: "[title]"
 slug: [slug-1]
 type: [reference|concept|process|pattern|glossary]
 layer: [layer]
+summary: [one line, under 120 characters, what the page covers and when to read it]
 tags: [tag1, tag2]
 sources:
   - citation: "[bibliographic citation]"
-    raw: [filename under sources/]
+    raw: [exact filename under sources/, repo-relative path, or null]
 related:
   - [related slug]
   - [related slug]
 confidence: [high|medium|low]
 created: [today's date]
 updated: [today's date]
-bundled_by: [[proposed consuming skill, or empty]]
+referenced_by: [[proposed routing skill, or empty]]
 ---
 ```
 
@@ -181,7 +182,7 @@ bundled_by: [[proposed consuming skill, or empty]]
 
 This is a draft decomposition. Edit slugs, titles, bodies, confidence,
 and cross-links freely. Only after your approval will the parent skill
-write pages and update bundles.
+write pages and resync the index and routing tables.
 ```
 
 ## Reporting Style
@@ -193,8 +194,8 @@ write pages and update bundles.
 - Every source excerpt must be attributable. If you paraphrase, mark it
   as paraphrase and keep the section reference.
 - Do not write any files. Do not modify the scratch source. Do not
-  regenerate bundles. The parent skill is responsible for all file
-  operations.
+  regenerate `INDEX.md` or any routing table. The parent skill is
+  responsible for all file operations.
 - If the source is too thin to propose a useful decomposition (for
   example, a two-page abstract), say so and request more context from
   the contributor rather than fabricating pages.

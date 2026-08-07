@@ -3,6 +3,7 @@ title: "SySiDE Model Modification and Element Reference"
 slug: syside-model-modification
 type: reference
 layer: syside
+summary: Adding, removing, and exporting model elements through the SySiDE API, with an element type reference
 tags: [syside, automator, model-modification, element-types, pretty-print]
 sources:
   - citation: "Sensmetry. SySiDE Automator Python API: textual notation and JSON. https://docs.sensmetry.com/python/latest/textual.html, https://docs.sensmetry.com/python/latest/json.html (accessed 2026-04)."
@@ -16,10 +17,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, sysml2-metadata]
+referenced_by: [sysml2-modelling, sysml2-metadata]
 ---
 
 # SySiDE Model Modification and Element Reference
+
+## Contents
+
+- Adding elements
+- Removing elements
+- Creating documents in memory
+- Exporting to text
+- Debugging model structure
+- Constraints
+- Element types quick reference
 
 ## Adding elements
 

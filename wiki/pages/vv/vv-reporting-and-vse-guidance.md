@@ -3,6 +3,7 @@ title: "V&V Reporting, VSE Guidance, and AMBSE Continuous Verification"
 slug: vv-reporting-and-vse-guidance
 type: process
 layer: vv
+summary: V&V records, the SVCM, approval packages, and continuous verification scaled for a VSE
 tags: [vv, svcm, reporting, ambse, nanocycle, microcycle, macrocycle, vse]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Sections on Reporting and VSE Guidance."
@@ -17,10 +18,24 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [verification-validation]
+referenced_by: [verification-validation]
 ---
 
 # V&V Reporting, VSE Guidance, and AMBSE Continuous Verification
+
+## Contents
+
+- Execution records
+- System Verification Compliance Matrix (SVCM)
+- System Verification Compliance Summary Matrix (SVCSM)
+- System Validation Compliance Matrix (SVaCM)
+- Approval package
+- Metrics (keep minimal for VSE)
+- VSE-specific guidance
+- Continuous verification timeframes (AMBSE)
+- Configuration management
+- What to keep
+- See also
 
 This page covers the executed surface of V&V (records, the
 SVCM, approval packages), VSE-specific guidance (role

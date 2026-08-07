@@ -3,6 +3,7 @@ title: "V&V Planning, Success Criteria, and the VCRM"
 slug: vv-planning
 type: process
 layer: vv
+summary: V&V planning, success criteria, and the verification cross-reference matrix
 tags: [vv, planning, vcrm, success-criteria, risk-driven, mivv]
 sources:
   - citation: "INCOSE (2022). Guide to Verification and Validation, v1.0. Section on V and V Planning."
@@ -16,10 +17,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [verification-validation]
+referenced_by: [verification-validation]
 ---
 
 # V&V Planning, Success Criteria, and the VCRM
+
+## Contents
+
+- When to start
+- VSE-scaled planning approach
+- Define success criteria first
+- Risk-driven strategy (essential for VSE)
+- Verification and Validation Cross Reference Matrix (VCRM)
+- See also
 
 For the underlying definitions, see [[vv-definitions]]. For
 methods and validation techniques, see [[vv-methods]]. For

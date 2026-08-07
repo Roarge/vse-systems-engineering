@@ -3,6 +3,7 @@ title: "SysML 2.0 Variation Definitions and Variant Usages"
 slug: sysml2-variation-definitions
 type: reference
 layer: sysml2
+summary: The two declaration forms for variations and the variant usages they own
 tags: [variants, syntax, definitions]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 246 to 248."
@@ -14,10 +15,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-variants]
+referenced_by: [sysml2-variants]
 ---
 
 # SysML 2.0 Variation Definitions and Variant Usages
+
+## Contents
+
+- Variation as a usage
+- Variation as a definition
+- Variant membership relationship
+- Constraints on variation contents
+- See also
 
 This page captures the two declaration forms for variations and the
 variant usages they own. For background and product line context, see

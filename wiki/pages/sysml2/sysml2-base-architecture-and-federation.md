@@ -3,6 +3,7 @@ title: "Base Architecture Reuse and Federation in AMBSE Models"
 slug: sysml2-base-architecture-and-federation
 type: reference
 layer: sysml2
+summary: Reusing a Base Architecture and federating models when a project is not greenfield
 tags: [base-architecture, federation, reuse, shared-model, subsystem-model]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 14, pages 56 to 58."
@@ -18,10 +19,22 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-06
-bundled_by: [sysml2-model-structure]
+referenced_by: [sysml2-model-structure]
 ---
 
 # Base Architecture Reuse and Federation in AMBSE Models
+
+## Contents
+
+- Base architecture as a top-level peer package
+- Specialisation operators for reuse
+- System context is methodological
+- Growing the base
+- Federation for scale
+- The three model types
+- Copy versus reference for subsystem specification
+- Plugin scope
+- See also
 
 > **Canonical for this plugin: methodology §2 and §8.3.1.**
 > Templated SysML 2.0 package names below describe the AMBSE

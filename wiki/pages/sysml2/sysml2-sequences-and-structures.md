@@ -3,6 +3,7 @@ title: "SysML 2.0 Sequences and Complex Structures"
 slug: sysml2-sequences-and-structures
 type: reference
 layer: sysml2
+summary: Multiplicity as sequences, ordering and uniqueness, and modelling complex structured values
 tags: [sequences, structures, indexing, feature-chains, constructor]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 30, pages 193 to 197."
@@ -14,10 +15,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-expressions]
+referenced_by: [sysml2-expressions]
 ---
 
 # SysML 2.0 Sequences and Complex Structures
+
+## Contents
+
+- Sequence terms
+- Sequence functions
+- Constructor expressions
+- Feature chain expressions
+- Occurrence equality operators
+- See also
 
 When a feature has multiplicity other than `[1]`, it holds a
 **sequence** of values. SysML 2.0 treats every value as a sequence,

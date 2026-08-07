@@ -3,6 +3,7 @@ title: "SySiDE Tooling Overview and Installation"
 slug: syside-tooling-overview
 type: reference
 layer: syside
+summary: SySiDE offers four complementary tools for SysML v2
 tags: [syside, tooling, installation, vscode, ci, licence]
 sources:
   - citation: "Sensmetry. SySiDE documentation: which tool, install, and licence pages. https://docs.sensmetry.com/about/which-tool.html, https://docs.sensmetry.com/automator/install.html (accessed 2026-04)."
@@ -15,10 +16,16 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling, sysml2-metadata, project-setup]
+referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
 # SySiDE Tooling Overview and Installation
+
+## Contents
+
+- Tool selection guide
+- Installation
+- VSE workflow positioning
 
 ## Tool selection guide
 

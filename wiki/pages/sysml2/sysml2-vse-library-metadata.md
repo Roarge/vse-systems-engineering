@@ -3,6 +3,7 @@ title: "VSE_Library Metadata: Risks, Configurations, Variants, Verification"
 slug: sysml2-vse-library-metadata
 type: pattern
 layer: sysml2
+summary: The VSE_Library package of shared metadata definitions and enumerations used across the skills
 tags: [vse-library, risk, configitem, baseline, variant-scope, iso29110]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 38 (Risks), Chapter 41 (Extending SysML v2)."
@@ -16,10 +17,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-metadata]
+referenced_by: [sysml2-metadata]
 ---
 
 # VSE_Library Metadata: Risks, Configurations, Variants, Verification
+
+## Contents
+
+- Library contents
+- Variant-aware metadata
+- Variant-scoping rule for 29110 products
+- Authoring patterns
+- Pending material
+- See also
 
 The vse-systems-engineering plugin ships a reusable library
 package (`VSE_Library`) that centralises all metadata definitions

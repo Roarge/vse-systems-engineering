@@ -3,6 +3,7 @@ title: "Lightweight HSI for VSEs: Tiered Approach"
 slug: hsi-vse-tiered-approach
 type: pattern
 layer: hsi
+summary: Tiered HSI practice for a VSE with no dedicated human factors team or simulation facilities
 tags: [hsi, vse, tiered, lightweight, lifecycle-integration]
 sources:
   - citation: "INCOSE (2023). Human Systems Integration Primer Volume 1, v1.2, scaled per ISO/IEC 29110."
@@ -16,10 +17,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # Lightweight HSI for VSEs: Tiered Approach
+
+## Contents
+
+- Tier 1: always do (every VSE project with human users)
+- Tier 2: do when relevant (depends on system type)
+- Tier 3: consider if resources allow
+- Embed HSI into existing SE activities
+- HSI activities across lifecycle phases
+- Key principle for VSEs
+- See also
 
 A VSE (fewer than 25 people) will not have a dedicated HSI team,
 formal HITL simulation facilities, or the budget for full-scale

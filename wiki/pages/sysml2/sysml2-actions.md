@@ -3,6 +3,7 @@ title: "SysML 2.0 Actions, Parameters, and Perform Actions"
 slug: sysml2-actions
 type: reference
 layer: sysml2
+summary: Action definitions and usages, parameters, and perform actions for modelling behaviour
 tags: [actions, behaviour, parameters, perform-action]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 140 to 145; pages 165 to 166."
@@ -15,10 +16,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Actions, Parameters, and Perform Actions
+
+## Contents
+
+- Action definitions and usages
+- Action parameters
+- Perform actions
+- See also
 
 SysML 2.0 draws a sharp line between **structure** (what the system
 has) and **behaviour** (what the system does). The language models

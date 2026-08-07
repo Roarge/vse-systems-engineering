@@ -21,9 +21,10 @@ If there is any conflict between this skill and the schema document, the
 schema document wins.
 
 **This skill writes files.** It writes atomic pages, updates cross-links
-on related pages, regenerates affected bundles, updates `INDEX.md`, and
-appends to `LOG.md`. It never touches anything outside `wiki/` except to
-hand the raw source to `markitdown` for conversion.
+on related pages, dispatches `vse-wiki-index` to resync the derived
+surfaces, and appends to `LOG.md`. It never touches anything outside
+`wiki/` except to hand the raw source to `markitdown` for conversion,
+and except for the routing marker blocks that `vse-wiki-index` owns.
 
 ## When This Skill Triggers
 
@@ -116,10 +117,17 @@ For each approved page:
    with that slug already exists; ask the contributor whether the intent
    is to update that page instead (in which case switch to Step 4b).
 2. Populate the full frontmatter per `wiki/CLAUDE.md`. Set `created` and
-   `updated` to today's date. Set `bundled_by` based on the contributor's
-   decision on which skills should consume this page (often the same
-   skill that consumed the predecessor knowledge file).
+   `updated` to today's date. Write a one-line `summary` under 120
+   characters, phrased as a trigger for a reader deciding whether to
+   open the page, because that one line becomes both the INDEX summary
+   and the "Read when" cell in every routing table carrying the page.
+   Set `referenced_by` based on the contributor's decision on which
+   skills should route to this page. An empty list is allowed and means
+   the page is reachable through `INDEX.md` and wikilinks only.
 3. Write the body with all wikilinks in `[[slug]]` form.
+4. If the finished page runs over 100 lines and carries three or more H2
+   headings, add the `## Contents` block the schema requires,
+   immediately after the H1.
 
 ### Step 4b: Update Existing Pages
 
@@ -133,17 +141,23 @@ cross-link proposal):
    confirms placement).
 4. Bump the `updated:` date.
 
-## Step 5: Regenerate Bundles
+## Step 5: Resync the Derived Surfaces and the Log
 
-For every unique skill named across all affected pages' `bundled_by:`
-lists, dispatch the `vse-wiki-bundle` skill to regenerate that skill's
-bundle. This writes `wiki/bundles/<skill>.md` with the standard
-generated-file header.
+Pages are the only content artefact. `INDEX.md` and the per-skill
+routing tables are derived from page frontmatter, so writing a page
+leaves both stale until they are regenerated.
 
-## Step 6: Update Index and Log
+Dispatch the `vse-wiki-index` skill with no argument. It rebuilds
+`INDEX.md` from every page, and it rewrites the `wiki-routing` marker
+block of each skill named in any touched page's `referenced_by:` list.
+Nothing outside those markers is modified, and no page is modified.
 
-Invoke `vse-wiki-bundle` with no argument to rebuild `INDEX.md` as a
-side effect (the bundle skill regenerates the index whenever it runs).
+Read the report it returns. Two lines matter here:
+
+- Any skill named in a new page's `referenced_by:` that carries no
+  marker block yet. Either the skill name is wrong, or that skill has
+  not been given a knowledge-base section.
+- Any contents-block drift on a page this ingest wrote or touched.
 
 Append a `LOG.md` entry using the `ingest` prefix:
 
@@ -153,19 +167,19 @@ Layer: <layer>. Pages authored:
 - <slug> (new)
 - <slug> (new)
 - <slug> (updated, cross-link added)
-Bundles regenerated: <skill-1>, <skill-2>.
+Routing resynced: <skill-1>, <skill-2>. INDEX regenerated.
 ```
 
 If the source matched a pre-existing `source-added` stub, update the
 stub's heading to `ingested` and link to this new entry.
 
-## Step 7: Present a Commit Plan
+## Step 6: Present a Commit Plan
 
 This skill does not commit. Summarise the changes for the contributor:
 
 - Files added (paths).
 - Files modified (paths and nature of change).
-- Files regenerated (bundle paths).
+- Files regenerated (`wiki/INDEX.md` and any routing marker block).
 - A suggested conventional-commit message starting with `feat(wiki):` or
   `docs(wiki):`.
 
@@ -184,12 +198,9 @@ workflow in `CLAUDE.local.md`.
 
 ## Cross-References
 
-- `vse-wiki-bundle`: regenerates bundles and the wiki index.
+- `vse-wiki-index`: regenerates the wiki index and the routing
+  marker blocks.
 - `vse-wiki-lint`: run after ingestion to confirm no new orphans or
   broken wikilinks were introduced.
 - `vse-wiki-refactor`: used periodically, not per-source.
 - Subagent: `agents/vse-wiki-ingestor.md`.
-
-## Reference: Wiki Schema
-
-!`cat ${CLAUDE_PLUGIN_ROOT}/wiki/CLAUDE.md`

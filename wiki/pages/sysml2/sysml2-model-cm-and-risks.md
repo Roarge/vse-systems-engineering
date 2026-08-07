@@ -3,6 +3,7 @@ title: "Model-Level Configuration Management and Risks in AMBSE Models"
 slug: sysml2-model-cm-and-risks
 type: pattern
 layer: sysml2
+summary: Model-level configuration management and risk modelling inside the canonical package layout
 tags: [configuration-management, baselines, configitem, risks, riskinfo, iso29110]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014. PM.1.11, PM.1.13, PM.1.18, PM.2.3, PM.2.5, PM.O5, PM.O6, SR.O6."
@@ -16,10 +17,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-model-structure]
+referenced_by: [sysml2-model-structure]
 ---
 
 # Model-Level Configuration Management and Risks in AMBSE Models
+
+## Contents
+
+- Model-level configuration management
+- Model-level risk modelling
+- Red flags
+- Pending material
+- See also
 
 This page introduces **model-level** configuration management and
 **model-level** risk modelling as first-class patterns in the

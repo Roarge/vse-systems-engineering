@@ -3,6 +3,7 @@ title: "SysML 2.0 Domain Model Libraries"
 slug: sysml2-domain-model-libraries
 type: reference
 layer: sysml2
+summary: Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs
 tags: [language-extension, libraries, domain-libraries, library-package]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.1, pages 291 to 293."
@@ -15,10 +16,18 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [sysml2-extension]
+referenced_by: [sysml2-extension]
 ---
 
 # SysML 2.0 Domain Model Libraries
+
+## Contents
+
+- Library packages
+- The PBSE canonical example
+- Avoid abstract definitions in libraries
+- Applying the library
+- See also
 
 The first strategy for extending SysML 2.0 is to **model the new
 concepts with the existing ones**. This is no different from

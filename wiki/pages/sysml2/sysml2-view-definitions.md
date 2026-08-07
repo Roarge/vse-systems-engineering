@@ -3,6 +3,7 @@ title: "SysML 2.0 View Definitions, Expose, Filters, and Render"
 slug: sysml2-view-definitions
 type: reference
 layer: sysml2
+summary: View definitions and the three content mechanisms, that is expose statements, filters, and render usages
 tags: [views, syntax, expose, filter, render]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 259 to 260."
@@ -14,10 +15,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-views]
+referenced_by: [sysml2-views]
 ---
 
 # SysML 2.0 View Definitions, Expose, Filters, and Render
+
+## Contents
+
+- View definitions
+- Expose statements
+- Filters
+- Render
+- View composition
+- See also
 
 This page covers the textual notation for view definitions and the
 three mechanisms that determine view content: expose statements,

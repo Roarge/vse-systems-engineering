@@ -3,6 +3,7 @@ title: "SysML 2.0 Contextual References: self and that"
 slug: sysml2-self-and-that
 type: reference
 layer: sysml2
+summary: The two special features every type and every feature inherits, self and that
 tags: [self, that, this, navigation, context, kerml]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 17.3, pages 98 to 99. New in the 2026-04 release."
@@ -14,10 +15,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-behaviour]
+referenced_by: [sysml2-behaviour]
 ---
 
 # SysML 2.0 Contextual References: self and that
+
+## Contents
+
+- The self feature
+- The that feature
+- Self versus that versus this
+- See also
 
 KerML defines two special features that every type and every feature
 inherits: `self` and `that`. They are the most fundamental

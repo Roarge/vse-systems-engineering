@@ -3,6 +3,7 @@ title: "SysML 2.0 Functions, Invocations, and Higher-Order Operations"
 slug: sysml2-functions-and-higher-order
 type: reference
 layer: sysml2
+summary: Calling functions and calculations, the higher-order function library, and runtime type tests
 tags: [calculations, invocations, higher-order, lambda, classification]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 30, pages 198 to 206."
@@ -14,10 +15,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-expressions]
+referenced_by: [sysml2-expressions]
 ---
 
 # SysML 2.0 Functions, Invocations, and Higher-Order Operations
+
+## Contents
+
+- Invocation expressions
+- Higher-order functions
+- Classification expressions
+- See also
 
 This page covers calling functions and calculations, the
 higher-order function library, and the classification expressions

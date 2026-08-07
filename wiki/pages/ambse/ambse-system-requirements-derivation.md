@@ -3,6 +3,7 @@ title: "AMBSE System Requirements Derivation"
 slug: ambse-system-requirements-derivation
 type: process
 layer: ambse
+summary: Deriving system requirements from stakeholder needs, one per thing the system must do or be
 tags: [requirements, derivation, satisfy, verify, smart, sysml2]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 4."
@@ -18,10 +19,17 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [needs-and-requirements]
+referenced_by: [needs-and-requirements]
 ---
 
 # AMBSE System Requirements Derivation
+
+## Contents
+
+- Derivation workflow
+- Requirement quality criteria
+- SysML 2.0 requirements modelling
+- See also
 
 System requirements are derived from stakeholder needs by
 identifying what the system must do or be to satisfy each

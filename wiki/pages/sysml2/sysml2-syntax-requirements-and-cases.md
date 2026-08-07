@@ -3,6 +3,7 @@ title: "SysML 2.0 Syntax: Calc, Constraint, Requirement, Verification, Cases, Vi
 slug: sysml2-syntax-requirements-and-cases
 type: reference
 layer: sysml2
+summary: Cheat sheet for the analytical and specification vocabulary
 tags: [syntax, calc, constraint, requirement, verification, use-case, analysis-case, view]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.18 to 7.25."
@@ -17,10 +18,21 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Syntax: Calc, Constraint, Requirement, Verification, Cases, Views
+
+## Contents
+
+- Calculations (7.18)
+- Constraints (7.19)
+- Requirements (7.20)
+- Verification (7.23)
+- Use cases (7.24)
+- Analysis cases (7.22)
+- Views and viewpoints (7.25)
+- See also
 
 Cheat sheet for the analytical and specification vocabulary. For
 the conceptual material see [[sysml2-expressions-constraints]],

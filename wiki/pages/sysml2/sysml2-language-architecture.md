@@ -3,6 +3,7 @@ title: "SysML 2.0 Language Architecture: KerML, Definition/Usage, Implicit Speci
 slug: sysml2-language-architecture
 type: concept
 layer: sysml2
+summary: The two-layer KerML and SysML architecture, the definition and usage pattern, and implicit specialisation
 tags: [kerml, language-architecture, definition-usage, implicit-specialisation, conformance]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 6."
@@ -14,7 +15,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Language Architecture

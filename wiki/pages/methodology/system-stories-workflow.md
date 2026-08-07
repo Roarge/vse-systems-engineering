@@ -3,6 +3,7 @@ title: "System Requirements Definition and Analysis workflow (§5)"
 slug: system-stories-workflow
 type: process
 layer: methodology
+summary: Translating stakeholder intent into a verifiable system-level specification, per §5
 tags: [system-stories, derive, require-constraint, behavioural-analysis, dependability, verification, sr-2]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §5 (System Requirements Definition and Analysis)."
@@ -16,7 +17,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, needs-and-requirements, story-orchestrator, architecture-design]
+referenced_by: [vse-companion-overview, needs-and-requirements, story-orchestrator, architecture-design]
 ---
 
 # System Requirements Definition and Analysis workflow (§5)

@@ -3,6 +3,7 @@ title: "Architectural Analysis and Trade Studies workflow (§6)"
 slug: architectural-analysis-workflow
 type: process
 layer: methodology
+summary: Turning a System User Story set into a resolved architecture through trade studies, per §6
 tags: [trade-study, variation, variant, analysis-def, architecture, sr-3]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §6 (Architectural Analysis and Trade Studies)."
@@ -15,7 +16,7 @@ related:
 confidence: high
 created: 2026-05-05
 updated: 2026-05-05
-bundled_by: [vse-companion-overview, architecture-design, story-orchestrator]
+referenced_by: [vse-companion-overview, architecture-design, story-orchestrator]
 ---
 
 # Architectural Analysis and Trade Studies workflow (§6)

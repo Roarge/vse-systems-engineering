@@ -3,6 +3,7 @@ title: "PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence"
 slug: phas-eai-levers-and-evidence
 type: reference
 layer: phas-eai
+summary: The four PHAS-EAI lever tables and the hypotheses with the strongest cross-case support
 tags: [phas-eai, levers, hypotheses, h7, h9, h13, h14, evidence]
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Tables 17 to 20 and Section 7.5."
@@ -14,10 +15,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [attention-regime]
+referenced_by: [attention-regime]
 ---
 
 # PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence
+
+## Contents
+
+- Table 17: Configuration-space levers
+- Table 18: Mobilisation-time levers
+- Table 19: Information and inference levers
+- Table 20: Coordination and governance levers
+- Hypotheses with strongest cross-case support
+- Quick-reference summary
+- See also
 
 This page collects the four lever tables (Tables 17 to 20 in the
 thesis), the four hypotheses with strongest cross-case support,

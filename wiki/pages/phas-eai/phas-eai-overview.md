@@ -3,6 +3,7 @@ title: "PHAS-EAI Framework: Core Constructs"
 slug: phas-eai-overview
 type: concept
 layer: phas-eai
+summary: The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction
 tags: [phas-eai, configuration-space, cognitive-reserve, regimes-of-attention, patterned-practices, niche-construction]
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Sections 4.2.2 to 4.2.5 and 5.5."
@@ -14,10 +15,19 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [attention-regime]
+referenced_by: [attention-regime]
 ---
 
 # PHAS-EAI Framework: Core Constructs
+
+## Contents
+
+- Configuration space
+- Designed cognitive reserve
+- Regimes of attention
+- Patterned practices
+- Niche construction
+- See also
 
 The PHAS-EAI framework grounds the plugin's design rationale in
 five core constructs: a configuration space, designed cognitive

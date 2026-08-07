@@ -3,6 +3,7 @@ title: "SysML 2.0 Metadata Definitions and Annotations"
 slug: sysml2-metadata-definitions
 type: reference
 layer: sysml2
+summary: Declaring metadata definitions and applying them as annotations
 tags: [metadata, syntax, annotations, at-syntax]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 252 to 254."
@@ -14,10 +15,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-metadata]
+referenced_by: [sysml2-metadata]
 ---
 
 # SysML 2.0 Metadata Definitions and Annotations
+
+## Contents
+
+- Metadata definitions
+- Annotating elements
+- Implicit meta-type metadata
+- Risks as metadata: a worked example
+- See also
 
 This page captures the syntax for declaring metadata definitions
 and applying them as annotations. For background see

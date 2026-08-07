@@ -3,6 +3,7 @@ title: "SysML 2.0 Specialisation, Typing, Composition, and Feature Values"
 slug: sysml2-specialisation-and-typing
 type: reference
 layer: sysml2
+summary: Semantic rules for how types relate to each other and how usages bind values
 tags: [specialisation, typing, ref, composition, feature-values, redefines, subsets]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 8.4."
@@ -14,10 +15,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-modelling]
+referenced_by: [sysml2-modelling]
 ---
 
 # SysML 2.0 Specialisation, Typing, Composition, and Feature Values
+
+## Contents
+
+- Specialisation
+- Ownership and composition
+- Typing
+- Feature values
+- See also
 
 This page captures the core semantic rules that govern how types
 relate to each other and how usages bind values.

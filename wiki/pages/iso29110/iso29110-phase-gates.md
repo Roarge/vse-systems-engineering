@@ -3,6 +3,7 @@ title: "ISO/IEC 29110 Phase Gate Checklists"
 slug: iso29110-phase-gates
 type: process
 layer: iso29110
+summary: Phase-to-phase transition checklists for the ISO 29110 process gates
 tags: [iso29110, phase-gate, transition, checklist, pm, sr]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Phase Gate transition criteria."
@@ -16,10 +17,20 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [project-setup, release-orchestrator]
+referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 Phase Gate Checklists
+
+## Contents
+
+- PM.1 to PM.2 (Planning to Execution)
+- SR.1 to SR.2 (Initiation to Requirements)
+- SR.2 to SR.3 (Requirements to Architecture)
+- SR.3 to SR.4 (Architecture to Construction)
+- SR.4 to SR.5 (Construction to IVV)
+- SR.5 to SR.6 (IVV to Delivery)
+- See also
 
 This page collects the phase-to-phase transition checklists. Use
 each checklist as a verification gate before declaring the next

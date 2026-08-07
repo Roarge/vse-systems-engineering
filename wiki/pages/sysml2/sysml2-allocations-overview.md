@@ -3,6 +3,7 @@ title: "SysML 2.0 Allocations Overview"
 slug: sysml2-allocations-overview
 type: concept
 layer: sysml2
+summary: Allocations bridge different layers and viewpoints in a systems model
 tags: [allocations, architecture-mapping, traceability]
 sources:
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
@@ -14,10 +15,18 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
-bundled_by: [sysml2-allocations]
+referenced_by: [sysml2-allocations]
 ---
 
 # SysML 2.0 Allocations Overview
+
+## Contents
+
+- What an allocation is
+- Why allocations matter for VSE practice
+- Directionality
+- Derived bidirectional relationships
+- Status of Chapter 75 in the source
 
 Allocations bridge different layers and viewpoints in a systems
 model. Mapping a logical architecture element to a physical
