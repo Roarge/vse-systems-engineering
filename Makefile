@@ -1,6 +1,9 @@
 # vse-systems-engineering plugin validation
 #
 # Run 'make' or 'make all' before opening a PR.
+#
+# Kept in parity with .github/workflows/plugin-ci.yml. A check added
+# here must be added there, and the reverse.
 
 .PHONY: all validate lint check-versions check-refs check-skills
 
@@ -48,22 +51,28 @@ check-skills:
 	 done; \
 	 exit $$EXIT_CODE
 
+# Every ${CLAUDE_PLUGIN_ROOT}/<path> reference in a harness-loaded
+# component must resolve inside the plugin tree, because the whole
+# committed tree is what reaches an installer. A reference written as a
+# file path is an error when it does not resolve. A reference written
+# as a directory path (trailing slash) stays at warning level, which
+# preserves the tolerance the previous templates/ check provided for
+# conditional directory copies.
 check-refs:
 	@echo "Checking cross-references..."
 	@EXIT_CODE=0; \
-	 for skill_file in skills/*/SKILL.md; do \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/knowledge/[a-zA-Z0-9_./-]+' "$$skill_file" 2>/dev/null || true); do \
+	 CHECKED=0; \
+	 for src_file in skills/*/SKILL.md commands/*.md agents/*.md hooks.json; do \
+	   [ -f "$$src_file" ] || continue; \
+	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
 	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
-	     if [ ! -f "$$rel_path" ]; then \
-	       echo "ERROR: $$skill_file references $$rel_path which does not exist"; \
-	       EXIT_CODE=1; \
-	     fi; \
-	   done; \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/templates/[a-zA-Z0-9_./-]+' "$$skill_file" 2>/dev/null || true); do \
-	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
-	     if [ ! -f "$$rel_path" ] && [ ! -d "$$rel_path" ]; then \
-	       echo "WARNING: $$skill_file references $$rel_path which does not exist"; \
-	     fi; \
+	     CHECKED=$$((CHECKED + 1)); \
+	     [ -e "$$rel_path" ] && continue; \
+	     case "$$rel_path" in \
+	       */) echo "WARNING: $$src_file references directory $$rel_path which does not exist";; \
+	       *)  echo "ERROR: $$src_file references $$rel_path which does not exist"; EXIT_CODE=1;; \
+	     esac; \
 	   done; \
 	 done; \
+	 echo "  Checked $$CHECKED plugin-root references."; \
 	 exit $$EXIT_CODE
