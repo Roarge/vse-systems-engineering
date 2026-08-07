@@ -16,7 +16,7 @@ Author or revise the Project Plan and its companion artefacts (SEMP, Risk Regist
 - The `@release-orchestrator` hands off because a release demands a Plan revision (Schedule, Milestones, Risks, or CM items have drifted from the last `plan-baseline-*` tag).
 - A coverage check against §10.3.1 has been requested with no operation named.
 
-If invoked outside a VSE project (no `methodology/` directory and no `docs/project-plan.md`), refuse and route the engineer to `@project-setup` (`/vse-setup`).
+If invoked outside a VSE project (no `methodology/` directory and no `docs/project-plan.md`), say so and route the engineer to `@project-setup` (`/vse-setup`). This is routing rather than a refusal: the Plan has no project to describe yet, and setup is the step that gives it one.
 
 ## Inputs
 
@@ -32,7 +32,7 @@ Read, in order, before proposing any edit:
 
 ### Default (no operation specified)
 
-Produce a §10.3.1 element coverage report. For each of the seventeen required elements (SOW reference, Objectives, System Description, Scope, SBS, Deliverables, Tasks, Estimated Duration, Resources, Composition of Work Team, Milestones, Schedule of Project Tasks, Estimated Effort and Cost, Risk Management Approach, Disposal Management Approach, Configuration Management Strategy, Delivery Instructions) report: present and populated, present but empty, or missing. Report the last `plan-baseline-*` tag, the date of that tag, and any uncommitted local edits to Plan-bearing files. Recommend the next action and stop.
+Produce a §10.3.1 element coverage report. For each of the seventeen elements (SOW reference, Objectives, System Description, Scope, SBS, Deliverables, Tasks, Estimated Duration, Resources, Composition of Work Team, Milestones, Schedule of Project Tasks, Estimated Effort and Cost, Risk Management Approach, Disposal Management Approach, Configuration Management Strategy, Delivery Instructions) report: present and populated, present but empty, or missing. Mark which of them the project actually owes at its profile, using the scaled plan sets in §10.3.1 and the obligation table in §0.10.3, so a `light` project is not shown fourteen findings it does not owe. Report the last `plan-baseline-*` tag, the date of that tag, and any uncommitted local edits to Plan-bearing files. Recommend the next action and stop.
 
 ### Initial authoring (no Plan exists)
 
@@ -63,7 +63,7 @@ Recognised section keywords map as follows:
 
 For any section-targeted edit:
 
-1. Check whether the Plan is baselined by inspecting tags and the element's content history. If baselined and the engineer has not referenced an open Change Request, refuse and hand off to `@change-request` (`/vse-cr`) per §10.4.2.
+1. Check whether the Plan is baselined by inspecting tags and the element's content history. If baselined and the engineer has not referenced an open Change Request, name the §10.4.2 obligation and hand off to `@change-request` (`/vse-cr`), with the per-profile disposition in Judgement calls.
 2. If the change is permitted, ask `@story-orchestrator` to open a methodology branch named `methodology/project-plan-<section>` per §8.4.3.
 3. Load only the named section, propose changes, and wait for approval before writing.
 4. After write, surface the §10.3.4 acceptance flow with the next tag incremented (patch for fixes, minor for new content, major for structural rework).
@@ -84,13 +84,17 @@ Populate `docs/cm-strategy.md` from the YAML template in §10.8. Items under CM,
 
 Populate Plan §8 with: trigger, schedule, actions (hardware, data, software licence, IP handover, environmental), resources, constraints on design (propagated to stakeholder concerns per §4.3.2 if non-trivial), acceptable end-state.
 
-## Refusals
+## Judgement calls
 
-Refuse and explain the reason if any of the following hold:
+Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry becomes a hard stop at the `full` profile and says so.
 
-- A baselined Plan element is targeted for change without an open, Acquirer-agreed Change Request issue (§10.4.2).
-- The engineer asks to commit a Plan with one or more mandatory §10.3.1 elements left empty.
-- The current branch is `main` (per the plugin git workflow, all work goes through a feature branch).
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
+
+- **A baselined Plan element changed with no Change Request.** §10.4.2. Changing a baselined element outside the Change Request lifecycle breaks the audit trail between the `plan-baseline-*` tag and the content it certifies, and the break is invisible afterwards. Name the element and route to `@change-request` (`/vse-cr`). At `standard`, wait for explicit confirmation. At `full` this is a hard stop, because the Plan is the PM.O1 artefact an assessor reads. At `light` the default `baselined_paths` list is empty, so the Plan is not under Change Request protection until the project puts it there.
+
+- **Committing a Plan with elements left empty.** The element set the Plan owes is tiered per §0.10.3, so check the populated set against the project profile rather than against all seventeen §10.3.1 elements. `light` owes the one-page set (Objectives, Scope, Deliverables, Milestones, known risks), `standard` adds System Description, Tasks, Resources, Risk Management Approach, and a one-paragraph Configuration Management section, and `full` owes all seventeen. Name the elements that are empty at the project's own profile, recommend populating them, and proceed on confirmation. An empty element is a gap the engineer can see, whereas a Plan that never gets written is a gap nobody sees.
+
+- **Working directly on `main`.** §8.4.1 as scaled by §0.10.3. At `light` a direct commit is permitted with a warning, so say it once and proceed. At `standard` it is discouraged, so recommend a `methodology/project-plan-<section>` branch per §8.4.3 and proceed on confirmation. At `full` it is prohibited and enforced by branch protection, so the push will be rejected regardless. Open the branch first.
 
 ## Hand-offs
 

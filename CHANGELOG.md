@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.4`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.5`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
-chunk took `rc.3`, and the profile-aware hooks chunk takes `rc.4`, with
-every later candidate shifting by one.
+chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, and the
+rigour skills chunk takes `rc.5`, with every later candidate shifting
+by one.
 
 ### Changed
 
@@ -323,6 +324,110 @@ The chunk below turns the §0.10.4 dispositions into running code.
   block, and the paragraph disowning the `iteration:` schema from
   `attention-regime`. The first named a file that has never existed,
   and the other two describe work that has since landed.
+
+### Changed (rigour profiles: skills, setup, lens)
+
+- **Skill refusals become judgement calls.** Seven skills
+  (`story-orchestrator`, `needs-and-requirements`,
+  `release-orchestrator`, `change-request`, `verification-validation`,
+  `architecture-design`, `project-plan`) carried roughly thirty hard
+  refusals between them. Every Refusals section is retitled Judgment
+  calls and rewritten on one pattern: name the rule and its section,
+  state the concrete risk, recommend the conforming path, and proceed
+  on informed confirmation. Each section carries the §0.10 pointer and
+  states its per-profile disposition inline, so a `light` project is
+  told a rule once and a `full` project is held to it.
+- **Hard stops survive in three places only**, per the same pattern:
+  where the action is destructive or irreversible, where it is agent
+  discipline that protects the model from invention (§2.6 rule 7), and
+  where the profile is `full` and the rule carries an ISO 29110
+  obligation a baseline rests on. Three examples of the first two,
+  unchanged in force at every profile: context-story synthesis in
+  `architecture-design` and `story-orchestrator`, the
+  `methodology/`-overwrite check in `project-setup`, and weakening an
+  inherited `require constraint` in `architecture-design`.
+- **`architecture-design` §6.3.4 makes gap surfacing the default.**
+  When a property has no story behind it, the skill now reports the
+  uncovered property, records it as an explicit coverage gap in the
+  trade study, and runs the study on the criteria the register does
+  supply. Inventing a stakeholder, a concern, a need, or a story to
+  close the gap is named and prohibited. The retroactive-story path of
+  §6.3.4 still exists and is now explicitly engineer-initiated: the
+  skill asks, and hands off only after the engineer has asked for it in
+  so many words.
+- `release-orchestrator` replaces its `git reflog` force-push forensics
+  with a tag-reachability check (`git merge-base --is-ancestor` against
+  the previous baseline tag), run at `full` before tagging. The reflog
+  is local to one clone and expires by default, so it never proved
+  anything about the shared history.
+- `change-request` stops refusing to discuss the Change Request bypass.
+  It explains the gate, the mechanism, and the recording obligation in
+  the §0.10.6 order, conforming path first. The skill answers honestly,
+  because the mechanism is one search away and refusing costs the
+  engineer's trust in everything else the skill says.
+- `vse-companion-overview` replaces its §8 git-workflow restatement
+  with a two-line pointer, since the obligations it paraphrased are now
+  tiered in §8.6.4. "Report the finding, do not block the work, the
+  engineer decides" is promoted out of the drift-indicator list into
+  its own posture section citing §0.10.1, with the corollary stated:
+  blocking is a choice a project makes through its profile, never a
+  default the lens imposes.
+- `project-setup` Step 3 is reframed from Refusals to pre-execution
+  safety checks, dropping the "even after Plan Mode approval" framing.
+  Plan Mode is kept. The scaffold-clash and repo-root-code cases become
+  warn-and-confirm, and the `methodology/`-overwrite case stays a hard
+  stop.
+- `project-audit` filters its ISO 29110 artefact-presence check through
+  the §0.10.3 column for the recorded profile, so a `light` project is
+  no longer told it is missing artefacts its profile omits on purpose.
+
+### Added (rigour profiles: skills, setup, lens)
+
+- **A profile question in `project-setup` Step 1.** The three tiers are
+  offered with their §0.10.2 glosses and the two-question heuristic for
+  the undecided. The default is `standard` in both greenfield and
+  brownfield mode. A brownfield repo whose `.iso-config.yaml` already
+  carries `project_profile` is read rather than asked, and one that
+  carries the file without the key is treated as `standard` with an
+  offer to record it explicitly.
+- **A tier-scaled `docs/` scaffold in `project-setup` Step 7.** The
+  artefact set follows the §0.10.3 obligation table, so `light` omits
+  the artefacts that table marks as omitted rather than writing seven
+  empty ISO stubs. Omissions are reported in Step 11 alongside the
+  skill that writes each on request.
+- Setup now writes `project_profile` into `.iso-config.yaml` together
+  with the tier defaults for `baselined_paths` and
+  `storymeta.required_fields`, and substitutes `{{PROFILE}}` and
+  `{{ENGINEERING_ROOT}}` in the copied templates. Both placeholders
+  arrived with the template slimming in the first chunk and had no
+  producer until now. `{{PROFILE}}` in the Project Plan writes the
+  one-line tailoring record §0.10.2 requires.
+- A **Project profile** section in `vse-companion-overview`, which is
+  the single operational home of the read convention: read
+  `project_profile` from `.iso-config.yaml` at the engineering root,
+  default `standard`, apply the §0.10.3 obligation table when advising.
+  Individual skills carry a pointer line and do not restate the
+  mechanism.
+- A **profile-recorded check** in `project-audit` (check 14). WARN-level
+  and never blocking, because an absent key has a defined meaning under
+  §0.10.2. It names the three tiers and invites the engineer to record
+  one, and it does not choose on their behalf. A recorded profile with
+  no matching tailoring line in the Project Plan is a second WARN.
+
+### Fixed (rigour profiles: skills, setup, lens)
+
+- `project-setup` Step 8 documented the `CLAUDE.md` merge markers as
+  `<!-- VSE-START -->` and `<!-- VSE-END -->` while the shipped template
+  has always used `<!-- BEGIN VSE COMPANION (managed by project-setup) -->`
+  and `<!-- END VSE COMPANION -->`. Brownfield merge logic written from
+  the prose would have failed to match an existing block and appended a
+  second one on every re-run, so the idempotence the step promises did
+  not hold.
+- The Opus model handshake is removed from `project-setup` (the soft
+  prerequisite paragraph and the Step 0 report-and-offer). It asked the
+  user to change model before the skill would work, which is neither a
+  prerequisite the skill can enforce nor a question the user should
+  have to answer to scaffold a project.
 
 ## [2.1.3] - 2026-08-07
 

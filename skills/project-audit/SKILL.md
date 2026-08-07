@@ -27,7 +27,7 @@ The audit consults the following inputs in order:
 1. **Project root.** The current working directory, or the `engineering/` subdirectory if the project uses the brownfield layout. Detect via `git rev-parse --show-toplevel` and presence of `engineering/`.
 2. **Project-local methodology copy.** `<project>/methodology/`. The project must carry the 12-section methodology (sections 00 through 10, plus README and the hooks guide).
 3. **Plugin methodology copy.** `${CLAUDE_PLUGIN_ROOT}/methodology/`. Used for version comparison only. Never edited.
-4. **ISO configuration.** `<project>/.iso-config.yaml` if present, recording project name, short code, plugin version recorded at setup, methodology version recorded at setup, and contact details.
+4. **ISO configuration.** `<project>/.iso-config.yaml` if present, recording the plugin version at setup, the rigour profile (`project_profile`), the baselined paths, and the StoryMeta required fields. The profile is read first, because it governs which obligations the checks below apply (methodology §0.10).
 5. **Plugin manifest.** `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, for the current plugin version.
 
 ## Audit Checks
@@ -41,6 +41,8 @@ Each check produces a finding with one of these severities:
 | PASS | Check satisfied. |
 
 Findings include the rule reference (for example "§1.9 rule 3"), the file path, and a one-sentence explanation. The skill does not propose fixes inside findings. Remediation is the engineer's decision and is delegated through hand-offs (see below).
+
+Several checks are tiered by the project's rigour profile (§0.10). Read `project_profile` from `.iso-config.yaml` before running them, defaulting to `standard` when the key is absent, and report an obligation only where the project's own profile owes it. Check 12 (ISO 29110 artefact presence) is the one this changes most: the artefact set is the §0.10.3 column for the recorded profile, not the `full` column.
 
 ### 1. Layout Audit (§8.3)
 
@@ -124,7 +126,7 @@ Walk every `derive`, `frame concern`, `satisfy`, `verify`, and `allocate` relati
 
 ### 12. ISO 29110 Artefact Presence (§9.5)
 
-Check `<project>/docs/` for the following information products. Each missing artefact emits ERROR if the project has progressed beyond project initiation, otherwise WARN:
+Check `<project>/docs/` for the following information products, filtered by the §0.10.3 column for the project's recorded profile. An artefact the profile marks as omitted is not a finding at all. An artefact the profile marks as recommended emits WARN when absent. An artefact the profile marks as required emits ERROR if the project has progressed beyond project initiation, otherwise WARN:
 
 - `project-plan.md` (§10.3).
 - `semp.md` (or a corresponding section of the Project Plan).
@@ -149,9 +151,21 @@ Compare three version sources:
 
 If the plugin version is newer than the project's recorded version, emit WARN ("plugin updated since last project setup. Review changelog for breaking changes."). If the methodology hashes differ, emit WARN ("methodology drift between project and plugin"). If `.iso-config.yaml` is missing, emit ERROR ("project does not record its setup version").
 
-### 14. Hook Installation (per `iso-29110-hooks-guide.md` §3.1)
+### 14. Profile Recorded (§0.10.2)
 
-- `<project>/.githooks/` exists and contains `pre-commit`, `commit-msg`, `prepare-commit-msg`, `pre-push`, `post-merge`, `post-checkout`, and the `lib/` helpers.
+Read `project_profile` from `<project>/.iso-config.yaml`.
+
+- Present and one of `light`, `standard`, or `full`: PASS. Report the value in the header, because every tiered finding below is read against it.
+- Present but not one of the three: WARN ("unrecognised `project_profile` value, treated as `standard`").
+- Absent: WARN ("project profile not recorded, treated as `standard` per §0.10.2"). Name the three tiers with their one-line glosses and invite the engineer to record the one that matches the project. Do not choose on their behalf and do not treat the absence as a defect: an absent key has a defined meaning, and a project that is genuinely at `standard` loses nothing by leaving it implicit. Recording it makes the choice visible to the next person, which is the point.
+
+The finding is never ERROR. A missing profile does not make a project non-conformant, and this check exists to prompt a decision rather than to fail one.
+
+Where the profile is present, also check the one-line tailoring record (§0.10.2) in `docs/project-plan.md` or the README. A recorded profile with no matching tailoring line emits WARN, because the Plan is where a reader looks for the process the project chose.
+
+### 15. Hook Installation (per `iso-29110-hooks-guide.md` §3.1)
+
+- `<project>/.githooks/` exists and contains `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, and the `lib/` helpers.
 - `git config core.hooksPath` returns `.githooks`.
 - `<project>/.claude/settings.json` exists with hook configuration.
 
@@ -162,6 +176,7 @@ Missing scripts or unset `core.hooksPath` emit ERROR. Hand off to `@attention-re
 Produce a structured Markdown report grouped by check, then by severity. Each finding includes the rule reference, file path, and one sentence of context. The report header records:
 
 - plugin version, methodology version, project recorded version,
+- recorded rigour profile, or "not recorded, treated as standard",
 - detected layout (greenfield or brownfield),
 - number of ERROR, WARN, and PASS findings.
 
@@ -183,6 +198,7 @@ The audit produces findings. Remediation is delegated to other skills:
 - Baseline state suggesting an unfinished release, hand off to `@release-orchestrator`.
 - Baselined-artefact drift, hand off to `@change-request`.
 - Hooks not installed or `core.hooksPath` not set, hand off to `@attention-regime`.
+- Rigour profile not recorded, hand off to `@project-setup` to record it, or point the engineer at §0.10.2 to write the key and the tailoring line by hand. Recording a profile is a one-line edit and does not need a full setup run.
 - Model-derived artefact rendering gaps, hand off to `@document-export`.
 
 ## Outputs

@@ -44,7 +44,7 @@ Choose exactly one path:
 - **Open a new story** when the engineer wants to start work that is not yet on file.
 - **Advance an existing story** when a story file exists and the engineer wants to change its `StoryMeta.status` or push it through review.
 - **Report current story state** when the engineer asks where they are or what is in flight.
-- **Block** when a precondition fails (no methodology copy, branch from a non-main base without authorisation, attempt to bypass the draft PR).
+- **Raise a judgement call** when a precondition fails (no methodology copy, a story branch cut from a non-main base, a status change ahead of the evidence for it). Read the disposition from Judgement calls below rather than stopping by reflex.
 
 ### Step 2a: Open a new story
 
@@ -72,7 +72,7 @@ Then:
    - `ready` to `inProgress` at story-branch creation (one open draft PR).
    - `inProgress` (draft) to `inProgress` (review) when §8.6.2 readiness criteria pass.
    - `inProgress` to `done` at PR merge.
-3. **Run the §8.6.2 readiness checklist** before transitioning to review. Surface each item as a checkbox. If any item fails, refuse the transition and name the gap.
+3. **Run the §8.6.2 readiness checklist** before transitioning to review. Surface each item as a checkbox. The checklist is tiered in §8.6.4, so the item set follows the project profile. If any item fails, name the gap and recommend closing it before the transition (see Judgement calls).
 4. **Update `StoryMeta` on commit.** Do not commit on the engineer's behalf. Surface the diff.
 5. **At PR merge.** `StoryMeta.status` should already read `done` on the final commit. Confirm the branch is deleted and that downstream stories that derive from this one (per §5 or §7) may unblock.
 
@@ -98,16 +98,29 @@ PENDING CHANGE REQUESTS
 
 If `gh` is not configured, name the gap and skip the CR section.
 
-## Refusals (Red Flags)
+## Judgement calls
 
-Refuse the following without explicit human authorisation. Warn once, name the rule, then wait.
+Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry is a hard stop and says so.
 
-1. **Non-main base for a story branch.** A story branch is created from `main` per §8.4.2. Refuse to branch from another story branch unless the engineer authorises divergence and accepts the merge complexity.
-2. **Advancing to `ready` without §1.9 well-formedness.** Refuse if the role is untyped, the subject is missing, no acceptance criterion exists, or the narrative `capability` and `benefit` strings have been removed.
-3. **Authoring a context story unsolicited.** Per §2.6 rule 7, AI agents shall not reverse-engineer or auto-generate stakeholder concerns or stories from the Base Architecture. The methodology output is forward-going stories, not retrospective fiction. Refuse unless the engineer explicitly confirms the intent and accepts ownership of the content.
-4. **Bypassing the draft-PR step.** A story moves to `inProgress` only when a draft PR is open (§8.5.1). Refuse to mark `StoryMeta.status = inProgress` on a branch with no PR.
-5. **Editing a baselined artefact without a Change Request.** If the engineer is about to edit content under a tagged baseline, refuse and route to the change-request workflow (per §10.4.2).
-6. **Squashing two stories onto one branch.** A story branch advances one story (or a small coherent group sharing a theme, per §8.4.2). Refuse to mix unrelated stories on a single branch.
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
+
+0. **No project-local methodology copy.** The resolution convention
+   falls back to the plugin-shipped spec, so nothing is broken, but the
+   project has not pinned its process. Recommend running
+   `@project-setup` to install the project-local copy, and proceed on
+   the plugin fallback when the engineer confirms.
+
+1. **Non-main base for a story branch.** A story branch is created from `main` per §8.4.2. Cutting one from another story branch couples the two histories, so the merge order becomes load bearing and a review of the second branch shows the first branch's diff as well. Recommend rebasing onto `main`. Proceed once the engineer confirms they accept the merge complexity. The disposition is the same at every profile, because the cost is a merge cost rather than a compliance cost.
+
+2. **Advancing to `ready` without §1.9 well-formedness.** Name the failing rule (untyped role, missing subject, no acceptance criterion, or a removed narrative `capability` or `benefit` string) and recommend authoring the missing element first. The status change is reversible through git. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
+
+3. **Authoring a context story unsolicited. Hard stop at every profile.** Per §2.6 rule 7, an AI agent shall not reverse-engineer or auto-generate stakeholder concerns or stories from the Base Architecture. The methodology output is forward-going stories, not retrospective fiction. This is agent discipline rather than ceremony, so no profile relaxes it. The skill authors a context story only when the engineer asks for one in so many words and confirms ownership of the content.
+
+4. **Marking `inProgress` with no draft PR.** §8.5.1 makes the draft PR the operational expression of `inProgress` status. At `light` the draft PR is optional per §0.10.3, so say nothing and proceed. At `standard`, recommend opening the draft PR and proceed. At `full` the draft PR is required at the first usable stub, so wait for explicit confirmation before recording the status without one.
+
+5. **Editing a baselined artefact with no Change Request.** Name the path, name the §10.4.2 obligation, and route to `@change-request`. The `commit-msg` gate is the enforcement point per §0.10.4, and this skill advises rather than enforces. Proceed once the engineer confirms. At `light` the default `baselined_paths` list is empty, so the question does not arise until the project baselines something.
+
+6. **Two stories on one branch.** A story branch advances one story, or a small coherent group sharing a theme, per §8.4.2. Mixing unrelated stories makes the review diff hard to reason about and leaves the §8.7 status alignment ambiguous. Say so once and proceed. The disposition is the same at every profile.
 
 ## Hand-off
 

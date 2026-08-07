@@ -124,7 +124,7 @@ Per §9.8 model-derived artefacts, the IVV Plan and IVV Procedures are *generate
 
 - The IVV Plan is rendered from the `verification def` set: subjects, objectives, expected outcomes. It is the union of `model/core/verification-validation/` and every recursive component-scope equivalent.
 - The IVV Procedures are rendered from the action bodies of those cases.
-- Hand off to `@document-export` for the rendering itself. Refuse to render the IVV Plan if any acceptance criterion in the story register has no verification or validation case bound (route through Workflow D first).
+- Hand off to `@document-export` for the rendering itself. Where an acceptance criterion in the story register has no bound case, run Workflow D first and carry the result into the rendered Plan as an explicit coverage-gap section (see Judgement calls for the per-profile disposition).
 - The renderer writes to `docs/generated/ivv-plan.md` and `docs/generated/ivv-procedures.md`. CI regenerates these on merge to `main` per §9.10. Confirm that the rendered files are current before reporting completion.
 
 ## Workflow F: V&V execution and reporting
@@ -136,16 +136,21 @@ Authoring stops at the `verification def`. Execution produces a Verification Rep
 - The default storage location is `docs/verification-reports/<case>-<date>.md` and `docs/validation-reports/<case>-<date>.md`, subject to the project's CM Strategy (§10.8).
 - Failures are recorded in the Correction Register at `docs/correction-register.md` per §10.5.2, with each correction following the normal PR workflow.
 
-## Refusals
+## Judgement calls
 
-The skill refuses to act in the following cases.
+Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. Two entries become hard stops at the `full` profile and say so.
 
-- The verification case's `subject` does not match (or specialise) the story's `subject`. Per §4.3.6 and §5.4.6, the case binds to the story it verifies, and a subject mismatch makes the binding incoherent.
-- The verification case's `objective` does not name an acceptance criterion of an existing story. There is nothing to verify.
-- The IVV Plan is requested while one or more acceptance criteria in the story register have no bound case. The plan would misrepresent coverage. Route to Workflow D first.
-- A story is asked to transition to `done` while its bound verification cases have empty bodies. Per §8.6.3 item 6 stubs are mandatory at final review, and per §10.5.3 bodies must be populated by release. The transition is blocked.
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
 
-In each case, the skill states the rule, points to the methodology section, and proposes the corrective routing (typically back to Workflow D, or to `@story-orchestrator`).
+- **Subject mismatch.** The case's `subject` does not match, or specialise, the story's `subject`. Per §4.3.6 and §5.4.6 the case binds to the story it verifies, so a mismatched subject means the case exercises something other than the thing the story is about, and the trace reads as covered when it is not. Offer the two conforming paths: correct the case subject, or correct the story subject if that is where the error is. Proceed once the engineer confirms which they intend. The disposition is the same at every profile, because the risk is an incoherent binding rather than ceremony.
+
+- **The `objective` names no existing acceptance criterion.** This is a missing input rather than a rule violation. Do not stop on it. Say which story and which criterion the `verify` clause appears to reach for, list the acceptance criteria the named story does declare, and ask which one the case should bind. If the story genuinely has no acceptance criterion yet, route to `@story-orchestrator` to author one, since a case with nothing to verify is not a case. Resolve the gap and continue.
+
+- **IVV Plan requested with unbound acceptance criteria.** At `light` and `standard`, generate the Plan and carry the gap explicitly: a coverage-gap table naming every unbound acceptance by story ID, placed where a reader meets it before the case list. A Plan that names its gaps is more useful to the engineer than a refusal, because it is the document the gaps get closed against. At `full` this is a hard stop. The Plan is a §9.8 model-derived artefact that an assessor reads as a coverage claim, and a Plan that overstates coverage misrepresents the project. Route through Workflow D first.
+
+- **Transition to `done` with empty verification bodies.** Per §8.6.3 item 6 stubs are expected at final review, and per §10.5.3 bodies are expected by release. An empty body means the case was planned and never run. Name every case with an empty body. At `light`, report and proceed. At `standard`, wait for explicit confirmation. At `full` this is a hard stop, because the `done` status is what the release baseline collects on.
+
+In every case, state the rule, point to the methodology section, and propose the corrective routing (typically back to Workflow D, or to `@story-orchestrator`).
 
 ## Hand-offs
 

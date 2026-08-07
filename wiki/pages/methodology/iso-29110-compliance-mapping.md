@@ -15,7 +15,7 @@ related:
   - project-management-workflow
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-07
 referenced_by: [project-setup, project-audit, release-orchestrator, project-plan]
 ---
 
@@ -115,7 +115,7 @@ ISO 29110 does not require all requirements to be baselined before any design, o
 
 ISO 29110 compliance is mechanically enforced rather than periodically audited. The hook set documented in `iso-29110-hooks-guide.md` covers:
 
-- **Pre-commit and pre-push gates** that block commits violating artefact well-formedness, StoryMeta lifecycle rules, or Traceability Matrix consistency.
+- **Pre-commit gates** that, in the full profile, block commits violating artefact well-formedness, StoryMeta lifecycle rules, or Traceability Matrix consistency, with the former pre-push checks carried by CI contracts.
 - **Claude Code session and tool hooks** that nudge author and reviewer behaviour toward ISO-compliant authoring patterns, including Change Request creation before edits to baselined artefacts, V&V case authoring after story changes, and Meeting Record creation after synchronous reviews.
 - **CI generators** that produce ISO documents from the model on merge to `main`, ensuring model-derived artefacts (Stakeholders Reqs Spec, System Reqs Spec, Traceability Matrix, IVV Plan, IVV Procedures) are always current.
 
