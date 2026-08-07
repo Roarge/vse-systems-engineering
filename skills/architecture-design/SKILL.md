@@ -88,7 +88,7 @@ Both relationships at once are forbidden by §2.6 rule 3. Where the system genui
 Before proposing the change is ready for review:
 
 1. The Base Architecture resides in a `library package` and imports only from `library/`, `model/core/domain/`, or external libraries.
-2. No specialising part redefines an inherited `require constraint` with a weaker one. Refuse to author such a redefinition.
+2. No specialising part redefines an inherited `require constraint` with a weaker one. Do not author such a redefinition (hard stop at every profile, see Judgment calls).
 3. The system has exactly one relationship to the Base Architecture (specialisation or allocation, not both).
 4. Base Architecture changes are flagged for elevated final review per §8.6.3.
 5. Forward-going stories declare their `subject` as a *specialisation* of a Base Architecture `part def`, not the Base Architecture part def itself. CI emits an informational warning when a story's `subject` resolves to a `library package` part def, which marks the story as optional context rather than required output.
@@ -124,7 +124,14 @@ Route to `@sysml2-expressions` for `assert constraint` bodies.
 
 This is the methodology's connective mechanism in operation. Extract the `require constraint` clauses already present in the system story register. The constraints *are* the criteria. Do not author criteria as a separate artefact.
 
-If a candidate-bearing function or property has no relevant story, either the decision needs no trade study, or a story is missing from §5. In the second case, hand off to `@needs-and-requirements` to add the story retroactively before continuing.
+**When a property has no story behind it, report the gap. That is the default.** Name the uncovered property, say which decision it bears on, and record it as an explicit coverage gap in the trade study. Then run the study on the criteria the register does supply, and state in the recommendation which properties were weighed with no story to anchor them, so the engineer can see exactly where the decision outruns the recorded intent. A trade study that names its gaps is honest and useful. A trade study whose criteria were manufactured to close the gaps is neither.
+
+**Do not invent the missing intent.** Do not add a stakeholder, a concern, or a need in order to supply a criterion. Do not author a story, stakeholder or system, on the skill's own initiative. Do not edit the stakeholder register, the concern register, or a provided story so that an uncovered property appears covered. The reverse-engineering guard (§2.6 rule 7) binds this step exactly as it binds the rest of the skill, and the criteria mandate of §0.3 is not an exception to it. A gap in the register is information about the project, not a defect in the trade study to be repaired by writing fiction.
+
+Two other outcomes are available, and both are the engineer's to choose rather than the skill's to take:
+
+- **The decision needs no trade study on that property.** The uncovered property may not discriminate between the candidates at all, in which case it is not a criterion and the gap closes itself. Say so and move on.
+- **A story genuinely is missing from §5 and the engineer wants it authored.** Adding a story retroactively is a legitimate act under §6.3.4, and it starts with the engineer. Ask whether they want one. Hand off to `@needs-and-requirements` only after the engineer has asked for it in so many words. State plainly that the story is theirs to own, and that its `role`, `capability`, and `benefit` come from a real stakeholder rather than from what the trade study happens to need.
 
 ### Step 5: Perform the trade study (§6.3.5)
 
@@ -137,7 +144,7 @@ Walk through the four sub-steps of §6.3.5:
 
 ### Step 6: Resolve variations (§6.3.6)
 
-The selected architecture is a *specialisation* of the configurable system `part def` that redefines every `variation` to its chosen `variant`. Place the resolution in `model/variations/resolved/`. Refuse to ship a resolution that leaves any variation unresolved or that violates an `assert constraint`.
+The selected architecture is a *specialisation* of the configurable system `part def` that redefines every `variation` to its chosen `variant`. Place the resolution in `model/variations/resolved/`. A resolution that leaves a variation unresolved, or that violates an `assert constraint`, is not a final resolution. Where the engineer wants to record progress before every decision is settled, mark the resolution as explicitly partial: name each unresolved variation in a comment on the resolution part def and say which decision it waits on. See Judgment calls.
 
 ### Step 7: Merge across decisions (§6.3.7)
 
@@ -175,7 +182,7 @@ Two valid approaches:
 - **Top-down.** Decompose system stories using `derive` into subsystem-internal stories, each allocated to one subsystem.
 - **Bottom-up.** Allocate the action defs / use cases that elaborate the stories first, then extract subsystem-level stories from the allocated behaviour.
 
-A system-level story is *not* allocated to a single subsystem when its realisation requires subsystem collaboration. The default is collaboration. Refuse to force a system-level collaborative story onto one subsystem.
+A system-level story is *not* allocated to a single subsystem when its realisation requires subsystem collaboration. The default is collaboration. Forcing a collaborative story onto one subsystem is a design judgment rather than a rule violation, so see Judgment calls for the disposition.
 
 ### Step 4: Update the logical data schema (§7.3.4)
 
@@ -202,16 +209,23 @@ Exercise the verification cases against the elaborated model where SysML v2 mode
 - Are inter-subsystem interfaces minimal? Each interface is a cost.
 - Does the decomposition match the team and procurement structure?
 
-## Refusals
+## Judgment calls
 
-Refuse and explain when the engineer attempts any of the following:
+Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. Two entries are hard stops at every profile and say so.
 
-- Authoring trade-study criteria as a separate artefact when story `benefit` constraints exist. Per §0.3, criteria *are* the benefit constraints. If a criterion is needed but no story expresses the underlying concern, hand off to `@needs-and-requirements` to add a story retroactively (§6.3.3 step 1).
-- Redefining an immutable Base Architecture `require constraint` with a weaker one in a specialising part (§2.6 rule 2).
-- Declaring more than one Base Architecture relationship per system (§2.6 rule 3, specialisation OR allocation, not both, except via intermediate part defs).
-- Synthesising a context story that justifies a Base Architecture decision (§2.6 rule 7). Forward-going stories only, unless the engineer explicitly confirms intent.
-- Shipping a resolved architecture that leaves any variation unresolved (§6.3.4).
-- Allocating a system-level story whose realisation requires subsystem collaboration to a single subsystem (§7.3.3, collaboration is the default).
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
+
+- **Trade-study criteria authored apart from story benefits.** Per §0.3 the criteria *are* the `benefit` constraints, and authoring them separately is how an architectural decision drifts out of reach of stakeholder intent, silently, because the resulting study looks complete. Where the register does not cover a property, the default response is the coverage gap described in Workflow B Step 4. It is neither a separately authored criterion nor a retroactively invented story. At `light`, say so once and proceed. At `standard` and `full`, wait for explicit confirmation, and record the deviation in the trade-study `analysis def` so the Justification Document carries it.
+
+- **Synthesising a context story or a stakeholder to justify an architectural decision. Hard stop at every profile.** §2.6 rule 7 is agent discipline rather than ceremony, so no profile relaxes it and no other rule in this skill overrides it. The skill does not author a context story, does not reverse-engineer a Base Architecture justification, and does not add a stakeholder, a concern, a need, or a story in order to satisfy the criteria mandate of §0.3. Context stories are authored only on explicit human request with explicit confirmation of intent, and the content belongs to the engineer.
+
+- **Redefining an inherited `require constraint` with a weaker one. Hard stop at every profile.** §2.6 rule 2. A specialising part that weakens an inherited constraint produces a model that is invalid on its own terms, and invalidity is not ceremony that a profile can scale. Offer the conforming alternatives instead: strengthen the specialising constraint, change the Base Architecture through a §8.4.3 methodology branch with the owner's agreement, or introduce an intermediate `part def` that does not inherit the constraint.
+
+- **More than one Base Architecture relationship per system.** §2.6 rule 3 allows specialisation or allocation, not both. Where the system genuinely is an instance of one platform and hosted on another, the conforming path already exists: introduce intermediate `part def`s so each relationship has its own subject. Name the two relationships, offer the intermediate-part-def form, and proceed once the engineer confirms. The disposition is the same at every profile.
+
+- **A resolved architecture with an unresolved variation.** §6.3.6. A resolution that still carries an open variation, or that violates an `assert constraint`, does not describe a buildable configuration, and downstream work that treats it as final inherits the ambiguity. Recommend completing the resolution. Where the engineer wants to record progress now, offer the explicitly partial form from Workflow B Step 6: every unresolved variation named in a comment on the resolution part def, with the decision it waits on. Proceed on confirmation. The disposition is the same at every profile.
+
+- **A collaborative system story forced onto one subsystem.** §7.3.3 makes collaboration the default, and a single-subsystem allocation of a story that genuinely spans subsystems hides an interface that will surface later as integration work. Say which parts of the capability fall outside the chosen subsystem. At `light` and `standard`, state it once and proceed, since the engineer may be simplifying deliberately. At `full`, wait for explicit confirmation, because the allocation feeds the §9.8 traceability matrix.
 
 ## Hand-offs
 

@@ -51,7 +51,7 @@ Collect, with one question per missing field at most:
 
 ### 3. Draft the impact analysis
 
-The impact analysis is required by §10.4.2 and ISO 29110 PM.2.2. It covers four dimensions. Each one may be flagged as "negligible" with a one-sentence justification, rather than left blank.
+The impact analysis is required by §10.4.2 and ISO 29110 PM.2.2. It covers four dimensions. Each one may be flagged as "negligible" with a one-sentence justification, rather than left blank. The brief form is what `standard` calls for, and `full` calls for each axis assessed in substance (§0.10.3).
 
 | Dimension | What to assess |
 |---|---|
@@ -80,7 +80,7 @@ Carry the CR through the §10.4.2 states by updating the issue labels and the li
 |---|---|---|
 | submitted | Issue opened | Label `change-request`, body line `Lifecycle: submitted`. |
 | evaluated | PJM (or designated reviewer) posts cost, schedule, technical assessment | Append the assessment as an issue comment. Update body line to `Lifecycle: evaluated`. |
-| agreed | Acquirer or PJM accepts (see Refusals) | Update body line to `Lifecycle: agreed`. Optionally route to `/vse-story` for the implementation branch. |
+| agreed | Acquirer or PJM accepts (see Judgment calls) | Update body line to `Lifecycle: agreed`. Optionally route to `/vse-story` for the implementation branch. |
 | in implementation | PR opened against the agreed scope | Update body line to `Lifecycle: in implementation`, link the PR. |
 | done | PR merged | Close the issue with a comment referencing the merge commit. Update body line to `Lifecycle: done`. |
 | rejected | Decision not to proceed | Close the issue with a rationale comment. Update body line to `Lifecycle: rejected`. |
@@ -92,14 +92,27 @@ The Issue thread, including all comments, is the audit trail. Never edit a previ
 
 Once the lifecycle reaches `agreed`, offer the engineer a handoff to `/vse-story` so the implementing story branch is opened with the CR number already in scope. Pass the issue number through so the new story commits inherit the `(CR #<n>)` suffix.
 
-## Refusals
+## Judgment calls
 
-The skill refuses, without exception, in these cases:
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
 
-- The engineer asks the skill to bypass the CR workflow on a baselined artefact (for example, by suggesting `--no-verify` or by inviting the agent to "just edit it"). Surface the §10.4.2 obligation and the §4.2 commit-message form, and stop.
-- The engineer asks the skill to mark a CR `agreed` when the artefact is on the §10.8 baselined paths and no Acquirer git identity has signed off in the issue thread. Require the Acquirer comment first, then proceed.
+### Proceeding past the Change Request gate
 
-In both cases, the skill names the obligation, points at the relevant section, and waits for the engineer to take the right preceding action.
+When the engineer asks how to commit against a baselined path without opening a Change Request, or asks about the git flag that skips the local hooks, answer honestly. Three things belong in the answer, in this order.
+
+1. **The conforming path first.** Open the Change Request (§10.4.2). It is one issue, the impact analysis may be brief, and it is what makes the edit auditable afterwards.
+2. **What the gate actually is.** The `commit-msg` hook checks for a `(CR #<n>)` reference on paths listed in `baselined_paths`. Its disposition follows the profile per §0.10.4: off at `light`, a warning at `standard`, blocking at `full`.
+3. **The bypass and its price.** Every local gate can be bypassed. Git documents the mechanism and no local hook can prevent its use (§0.10.6). A bypass is a legitimate engineering act when the engineer records why. At `full`, record the bypass and its rationale in the Correction Register (§10.5.2), which is the artefact an assessor reads. At `standard` and `light`, one line in the commit body naming what was bypassed and why is enough. A genuinely unbypassable gate belongs in continuous integration, not in a local hook.
+
+The skill never refuses to discuss the mechanism. Refusing buys no compliance, because the mechanism is one search away, and it costs the engineer's trust in everything else the skill says.
+
+### Marking a Change Request `agreed`
+
+Acquirer agreement is the substance of the `agreed` state rather than a formality, because the Acquirer comment in the issue thread is the evidence PM.O3 rests on.
+
+- At `full` this is a hard stop. The skill does not set `agreed` on an artefact under §10.8 baseline protection until an Acquirer git identity, or an authorised proxy named in the Project Plan, has commented in the issue thread.
+- At `standard`, name the missing sign-off, recommend requesting it, and proceed on explicit confirmation. Record in the issue thread that the state was set without the comment, so the gap stays visible.
+- At `light` the default `baselined_paths` list is empty, so the state rarely arises. Where a `light` project has baselined a path deliberately, treat it as `standard`.
 
 ## Hand-offs
 

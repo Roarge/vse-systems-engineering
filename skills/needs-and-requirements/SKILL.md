@@ -158,14 +158,19 @@ Run on entry to §4 and again before transitioning a system story out of `inProg
 
 Hand off structural changes to `@sysml2-modelling` (interface and item authoring) and `@sysml2-model-structure` (package layout adjustment).
 
-## Refusals
+## Judgment calls
 
-The skill refuses, by default and without exception, to:
+Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry is a hard stop and says so.
 
-1. **Reverse-engineer the Base Architecture.** Forward-going stories only. The skill shall not author "context stories" that record narrative around pre-existing decisions (per §2.1 corollary 2 and §2.6 rule 7). Context stories are permitted only on explicit human request with explicit confirmation of intent. The skill states this constraint when the engineer's prompt drifts toward justifying an existing architectural choice.
-2. **Change the role on derivation.** A system story shall keep the same `role` as the stakeholder story it derives from (per §5.3). The skill refuses a derivation that swaps roles and asks the engineer either to add a fresh stakeholder story or to revise the stakeholder story whose role has changed.
-3. **Drop narrative attributes.** The narrative `capability` and `benefit` strings shall be retained throughout the story's lifecycle (per §1.7.2 / §1.9 rule 6). The skill refuses any edit that removes them, even when typed bindings are added.
-4. **Mark a story `ready` without acceptance.** A story shall declare at least one `acceptance` subrequirement in Given/When/Then form before transitioning out of `backlog` (per §1.4.4 / §1.9 rule 3). The skill refuses a status change that violates this rule and asks the engineer to author the missing acceptance criterion first.
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
+
+1. **Reverse-engineering the Base Architecture. Hard stop at every profile.** Forward-going stories only. The skill does not author "context stories" that record narrative around pre-existing decisions (per §2.1 corollary 2 and §2.6 rule 7), and it does not invent a stakeholder, a concern, or a need in order to make an existing architectural choice look justified. This is agent discipline rather than ceremony, so no profile relaxes it. Context stories are authored only on explicit human request with explicit confirmation of intent, and the content belongs to the engineer. State the constraint plainly when the engineer's prompt drifts toward justifying an existing architectural choice, and offer the two conforming paths: record the rationale as prose in `docs/decisions/`, or ask for the context story explicitly and own it.
+
+2. **Changing the role on derivation.** A system story keeps the same `role` as the stakeholder story it derives from (per §5.3). A derivation that swaps roles breaks the trace from system capability back to the stakeholder who wanted it, and the break is silent, because both stories remain well formed on their own. Offer both conforming paths: add a fresh stakeholder story for the new role, or revise the stakeholder story whose role has changed. Proceed once the engineer confirms which they intend. The disposition is the same at every profile, because the risk is model coherence rather than ceremony.
+
+3. **Dropping the narrative attributes.** The narrative `capability` and `benefit` strings are retained throughout the story's lifecycle (per §1.7.2 and §1.9 rule 6), because the typed bindings that replace them are readable to a tool and not to a stakeholder. The edit is reversible through git. At `light`, name the rule once and proceed. At `standard` and `full`, wait for explicit confirmation.
+
+4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` subrequirement in Given/When/Then form before it leaves `backlog` (per §1.4.4 and §1.9 rule 3). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
 ## Hand-offs
 
