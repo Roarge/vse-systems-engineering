@@ -8,6 +8,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Release-candidate work for 3.0.0. The version in the manifests is
+`3.0.0-rc.1`. Entries accumulate here until the 3.0.0 release heading
+is cut.
+
+### Changed
+
+- The wiki data layer moves to the on-demand model. `wiki/CLAUDE.md`,
+  the binding schema, is rewritten around the navigable-wiki contract:
+  the runtime surface is `INDEX.md` plus per-skill routing tables that
+  name pages, and a skill reads a page on demand instead of receiving a
+  concatenated bundle. The schema gains a Routing tables section fixing
+  the marker-block format, the generation rules, the prohibition on hand
+  edits inside the markers, and the one-hop rule. The lint, ingest, and
+  refactor contracts are restated against those surfaces.
+- Page frontmatter migrates across all 130 pages. `bundled_by` becomes
+  `referenced_by` (required, may be empty), which names the skills whose
+  routing tables carry the page. A new required `summary` field, one
+  line under 120 characters, single-sources both the `INDEX.md` summary
+  column and the routing-table "Read when" column, so regenerating
+  either surface can never overwrite editorial text. The five page-type
+  templates under `wiki/schema/` carry the same two changes.
+- `wiki/INDEX.md` is regenerated in the discovery format: a navigation
+  preamble stating how a wikilink resolves, how to grep the pages
+  directory, and the read-on-demand rule, then per-layer tables carrying
+  Slug, Title, Type, Summary, and Referenced by.
+- `vse-wiki-ingest`, `vse-wiki-lint`, and `vse-wiki-refactor` are
+  updated for the new surfaces. Ingest resyncs through `vse-wiki-index`
+  instead of regenerating bundles. Lint swaps bundle-consistency checks
+  for bidirectional routing-table checks, path resolution, sort order,
+  and summary fidelity, adds contents-block and `raw:` resolution rules,
+  and drops orphan severity to INFO because every page is reachable
+  through `INDEX.md`. Refactor resyncs the index and routing tables. All
+  four wiki skills drop the executing `wiki/CLAUDE.md` tail in favour of
+  the prose instruction they already carried.
+- `agents/vse-wiki-curator.md` and `agents/vse-wiki-ingestor.md` drop
+  their bundle vocabulary. The ingestor's proposal template carries
+  `summary` and `referenced_by` with the three legal `raw:` forms, and
+  the curator proposes routing, cross-linking, retiring, or an explicit
+  index-only decision instead of adding a page to a bundle.
+
+### Added
+
+- `## Contents` blocks on 106 of the 130 wiki pages, per the mechanical
+  rule: a page over 100 lines with three or more H2 headings carries a
+  bullet list of its H2 headings immediately after the H1. On-demand
+  reading opens whole pages, so a long page needs an opening map.
+- The full `raw:` policy is written into the schema. The field is
+  optional per source entry, and when present it is an exact filename
+  under `sources/`, a repo-relative path inside the plugin tree, or
+  `null` for web-only sources whose citations carry URLs.
+- `skills/vse-wiki-index/` and `commands/vse-wiki-index.md`, replacing
+  `vse-wiki-bundle`. The skill regenerates `INDEX.md`, regenerates each
+  consumer skill's `wiki-routing` marker block from `referenced_by` and
+  `summary`, and verifies contents blocks against the schema rule.
+
+### Removed
+
+- `skills/vse-wiki-bundle/` and `commands/vse-wiki-bundle.md`, renamed
+  rather than deleted. The `bundle` LOG tag is marked historical and
+  retired at 3.0.0.
+
+Installed behaviour is unchanged by this step. `wiki/bundles/` remains
+on disk with all 21 bundles, and the 21 consumer skills are untouched,
+including their embed tails. Both are retired in the runtime flip that
+follows.
+
 ## [2.1.3] - 2026-08-07
 
 Pre-overhaul hygiene. This tag is the stable rollback anchor for the
