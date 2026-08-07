@@ -434,6 +434,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Syside Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
 | Syside Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
 | Syside Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
+| Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
 | Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
 | Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | pages/sysml2/sysml2-domain-libraries-causation-geometry.md | The Cause and Effect, Requirement Derivation, and Geometry domain libraries |

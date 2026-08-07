@@ -11,6 +11,7 @@ sources:
 related:
   - syside-tooling-overview
   - syside-core-api
+  - syside-sysand-package-management
   - vse-canonical-project-layout
   - vse-model-tiers-and-templates
   - sysml2-canonical-model-layout
@@ -63,7 +64,8 @@ precedence.
 The project root is found by walking upwards from the working directory
 until a root marker appears. The markers are a `.git` directory and a
 `sysand-lock.toml` file, so a project that uses Sysand for package
-management is discoverable even outside a git working tree.
+management (see [[syside-sysand-package-management]]) is discoverable
+even outside a git working tree.
 
 `syside.user.toml` is a personal file. Add it to `.gitignore`. Commit
 `syside.toml` so every engineer and the CI runner share one baseline.

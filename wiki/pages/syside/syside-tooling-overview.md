@@ -13,6 +13,7 @@ sources:
 related:
   - syside-project-configuration
   - syside-core-api
+  - syside-sysand-package-management
   - vse-canonical-project-layout
   - sysml2-canonical-model-layout
 confidence: medium
@@ -131,7 +132,8 @@ traceability checks). The plugin's `traceability-guard` and
 in the project's virtual environment.
 
 Package management is a separate concern handled by Sysand, the
-open-source SysML v2 package manager.
+open-source SysML v2 package manager described in
+[[syside-sysand-package-management]].
 
 [[vse-canonical-project-layout]] describes where the Syside tools sit
 in the canonical directory layout, and
