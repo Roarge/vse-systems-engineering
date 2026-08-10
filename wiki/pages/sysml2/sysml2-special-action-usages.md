@@ -12,6 +12,8 @@ related:
   - sysml2-actions
   - sysml2-successions
   - sysml2-flows-and-messages
+  - sysml2-actions-in-context
+  - sysml2-behaviour-patterns
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -77,6 +79,14 @@ interfaces (Ch 26, p 155).
 ```sysml
 send statusUpdate to operatorPort;
 ```
+
+There are two routes to a peer, and a real model picks one rather
+than using both. Sending **via** a port leaves the receiver to the
+connected interface, so the behaviour names no peer at all. Sending
+**to** a part addresses it directly by name, which reads more
+immediately but turns the partner into an explicit dependency
+(Ch 26, p 197). See [[sysml2-actions-in-context]] for how each route
+shapes what a reusable behaviour must know about its surroundings.
 
 ### Accept action
 

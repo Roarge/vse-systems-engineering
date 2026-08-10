@@ -13,6 +13,10 @@ related:
   - sysml2-special-action-usages
   - sysml2-state-machines
   - sysml2-cases-overview
+  - sysml2-abstract-actions
+  - sysml2-actions-in-context
+  - sysml2-event-occurrences
+  - sysml2-behaviour-patterns
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -53,7 +57,14 @@ constraints (Ch 26, p 142). Action usages are composite by default,
 meaning they must be performed during the lifetime of their owner.
 
 An **abstract action usage** declares that an action is not supposed
-to be performed unless it is redefined or subsetted (Ch 26, p 143).
+to be performed unless it is redefined or subsetted, which is what
+happens when a perform action usage refers to it, for example
+(Ch 26, p 143). The book's own example is the abstract `land`,
+subsetted by `normalLanding` and `emergencyLanding`, which expresses
+that the drone can land and that the landing will be one or the
+other. See [[sysml2-abstract-actions]] for the default multiplicity
+this works against and the four constructs that supply the concrete
+specialisation.
 
 ## Action parameters
 
@@ -110,12 +121,22 @@ specific action usage. This is common when the performing part is
 not known at the definition level but is fixed in the design
 (Ch 26, p 166).
 
+A perform action usage is an event occurrence that is also an action,
+with some extra features (Ch 25, p 162). See
+[[sysml2-event-occurrences]] for the constraint it inherits.
+
 ## See also
 
 - [[sysml2-successions]] for ordering action substeps with `then`,
   `first`, `done`, and end-multiplicity rules.
 - [[sysml2-special-action-usages]] for the standard library actions
   (assignment, send, accept, terminate, if, loop).
+- [[sysml2-abstract-actions]] for deferring a step's realisation,
+  count, or timing.
+- [[sysml2-actions-in-context]] for the four ways an action reaches
+  the part it runs in.
+- [[sysml2-event-occurrences]] for the referential construct that
+  perform actions specialise.
 - [[sysml2-state-machines]] for state-based behaviour modelling.
 - [[sysml2-cases-overview]] for the case family, which specialises
   actions for use, analysis, and verification.

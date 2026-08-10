@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical behaviour-modelling patterns and the recurring mistakes that show up in review
 tags: [behaviour, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 192; Chapter 28, pages 207 to 216; Chapter 29, pages 220 to 232."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 202; Chapter 28, pages 207 to 219; Chapter 29, pages 220 to 232."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -14,6 +14,9 @@ related:
   - sysml2-special-action-usages
   - sysml2-state-machines
   - sysml2-flows-and-messages
+  - sysml2-abstract-actions
+  - sysml2-actions-in-context
+  - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -89,6 +92,28 @@ Use `perform action someAction` to invoke a previously defined
 action. Cleaner than inlining the same behaviour multiple times
 (Ch 26, p 165).
 
+### Abstract action as a named placeholder
+
+Mark a step `abstract` to record that it belongs in the model while
+leaving its realisation open. It joins the behaviour the moment it is
+subsetted, redefined, performed, or wired into a succession, with
+nothing else to change (Ch 26, pp 193 to 195). See
+[[sysml2-abstract-actions]].
+
+### Choosing a context-access pattern
+
+Four ways exist for an action to reach the part it runs in, and the
+choice is a coupling decision (Ch 26, p 202). See
+[[sysml2-actions-in-context]].
+
+- **Inline**, when the behaviour belongs to one part and nothing
+  else, which needs no machinery at all.
+- **Explicit context reference**, when the behaviour is reusable and
+  the contract should be self-documenting.
+- **Redefining `this`**, for the same effect one binding shorter.
+- **Individual feature references**, when any part should be able to
+  wire the behaviour up regardless of its type.
+
 ## Gotchas and red flags
 
 ### Parameter redeclaration on inheritance
@@ -162,6 +187,24 @@ sequence is evaluated only once at loop start (Ch 26, p 163).
 
 The terminate action ends an occurrence, but the precise semantics
 are not formally specified in the 2026-06 release (Ch 26, p 184).
+
+### A message modelled directly between parts triggers on the wrong events
+
+`message of HeatEnergy from environment to droneSystem;` is valid
+syntax, but parts are occurrences and the start and end of their
+existence are events. The model then says the transfer occurs when
+the source part **ends** and is received when the target part is
+**created**, which is almost never the intent. Model the message
+between event occurrences instead (Ch 29, p 224). See
+[[sysml2-flows-and-messages]].
+
+### An untriggered state machine is really a sequence of steps
+
+A machine whose every transition fires on completion, with no
+triggers and nothing to wait for, should be actions with successions.
+Conversely, an action that stops and waits indefinitely for an
+external event is really resting in a state (Ch 28, p 219). See
+[[sysml2-actions-vs-states]].
 
 ## Pending material in the source
 
