@@ -167,8 +167,12 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
+| SysML 2.0 Abstract Actions | pages/sysml2/sysml2-abstract-actions.md | Deferring an action's realisation, count, or timing with abstract usages and the four ways they become concrete |
 | SysML 2.0 Actions, Parameters, and Perform Actions | pages/sysml2/sysml2-actions.md | Action definitions and usages, parameters, and perform actions for modelling behaviour |
+| SysML 2.0 Actions in a Context | pages/sysml2/sysml2-actions-in-context.md | How an action reaches its surrounding part: inline access, explicit context, redefining this, individual features |
+| Actions or States? Choosing the Behaviour Construct | pages/sysml2/sysml2-actions-vs-states.md | Deciding between state machines and action models, with the waiting-versus-working test and misuse symptoms |
 | SysML 2.0 Behaviour Patterns and Gotchas | pages/sysml2/sysml2-behaviour-patterns.md | Practical behaviour-modelling patterns and the recurring mistakes that show up in review |
+| SysML 2.0 Event Occurrences | pages/sysml2/sysml2-event-occurrences.md | Referring to an occurrence that must happen during the owner's life, the basis of perform, exhibit, and messages |
 | SysML 2.0 Flows and Messages | pages/sysml2/sysml2-flows-and-messages.md | Transferring items, signals, and values between behavioural elements with flows and messages |
 | SysML 2.0 Model Execution | pages/sysml2/sysml2-model-execution.md | Executing or simulating a model so that its specified behaviour can be observed |
 | SysML 2.0 Occurrence Context (this), Suboccurrence vs Portion, and Time-Functions | pages/sysml2/sysml2-occurrence-context-and-variables.md | Suboccurrence versus portion, the context occurrence this, and variable features as time-functions |
