@@ -6,7 +6,7 @@ layer: sysml2
 summary: The VSE_Library package of shared metadata definitions and enumerations used across the skills
 tags: [vse-library, risk, configitem, baseline, variant-scope, iso29110]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 38 (Risks), Chapter 41 (Extending SysML v2)."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 38 (Risks), Chapter 41 (Extending SysML v2)."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC TR 29110-5-6-2:2014. Lifecycle profiles for Very Small Entities (VSEs)."
     raw: null
@@ -16,7 +16,7 @@ related:
   - sysml2-language-extension
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-metadata]
 ---
 
@@ -151,7 +151,7 @@ See [[sysml2-filter-conditions]].
 ## Pending material
 
 Chapter 84 (Metadata in Part V SysML Reference) is pending in the
-2026-04 release. Chapter 112.4 (Risk metadata domain library) is
+2026-06 release. Chapter 112.4 (Risk metadata domain library) is
 referenced as the canonical home of the risk language extension.
 The plugin will track upstream changes and refresh this page when
 those chapters publish.

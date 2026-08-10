@@ -103,7 +103,7 @@ bind fuelTank.fuelFlowOut = engine.fuelFlowIn;
 ```
 
 For full binding-connector semantics, see
-[[sysml2-binding-connectors]] (new in the 2026-04 release).
+[[sysml2-binding-connectors]].
 
 ### Flows
 
@@ -157,5 +157,4 @@ For full allocation semantics, definitions, and patterns, see
   packaging and `def` syntax.
 - [[sysml2-syntax-behaviour]] for action and state syntax.
 - [[sysml2-allocations-overview]] for allocation semantics.
-- [[sysml2-binding-connectors]] for the new 2026-04 binding
-  connector chapter.
+- [[sysml2-binding-connectors]] for the binding connector chapter.

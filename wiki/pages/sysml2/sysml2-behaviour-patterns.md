@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical behaviour-modelling patterns and the recurring mistakes that show up in review
 tags: [behaviour, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 140 to 166; Chapter 28, pages 170 to 176; Chapter 29, pages 179 to 187."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 192; Chapter 28, pages 207 to 216; Chapter 29, pages 220 to 232."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -161,12 +161,12 @@ sequence is evaluated only once at loop start (Ch 26, p 163).
 ### Termination semantics are not formally specified
 
 The terminate action ends an occurrence, but the precise semantics
-are not formally specified in the 2026-04 release (Ch 26, p 159).
+are not formally specified in the 2026-06 release (Ch 26, p 184).
 
 ## Pending material in the source
 
-The 2026-04 release publishes Chapter 25 (Occurrences and 4D
-Modelling) and Chapter 39 (Model Execution), which the previous
+The SysML v2 book publishes Chapter 25 (Occurrences and 4D
+Modelling) and Chapter 39 (Model Execution), which an earlier
 release left pending. New pages capture this material:
 [[sysml2-occurrences-4d]] and [[sysml2-model-execution]].
 Behaviour-patterns guidance may evolve once those chapters have

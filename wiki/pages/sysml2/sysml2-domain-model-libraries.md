@@ -6,7 +6,7 @@ layer: sysml2
 summary: Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs
 tags: [language-extension, libraries, domain-libraries, library-package]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 41 Section 41.1, pages 291 to 293."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41 Section 41.1, pages 322 to 323."
     raw: sysmlv2.pdf
 related:
   - sysml2-language-extension
@@ -15,7 +15,7 @@ related:
   - sysml2-libraries-architecture
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-07
 referenced_by: [sysml2-extension]
 ---
 

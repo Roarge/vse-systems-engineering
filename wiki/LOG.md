@@ -918,3 +918,135 @@ No finding in this run is attributable to the refresh. Zero orphans.
 Contents blocks: zero drift across all 131 pages, including the
 project-structure page whose "Syside configuration" H2 was renamed by
 the sweep together with its Contents bullet.
+
+## [2026-08-07] source-added | sysmlv2.pdf
+
+Raw file replaced with the 2026-06 release of "The SysML v2 Book"
+(Weilkiens and Molnár, MBSE4U), 457 PDF pages. Stub appended manually
+because the file was modified outside Claude, so the
+source-added-reminder hook did not fire. The book changelog (printed
+page i) records new material in Section 18.2.2 (cross-subsetting),
+Section 25.9 (event occurrences), Sections 26.8 and 26.9 (abstract
+actions, actions in a context), Sections 28.5 and 28.6 (communicating
+state machines, actions or states), an expanded Section 29.1
+(messages), an updated Chapter 10 (certification), plus errata that
+name package-level-usage clarifications and expanded explanations in
+the Expressions chapter. Repagination resolved here. The content delta
+is tracked under issue #54.
+
+## [2026-08-07] refactor | sysmlv2.pdf repagination to the 2026-06 release
+
+All 46 pages carrying `raw: sysmlv2.pdf` cited the 2026-04 release with
+its printed page numbers. Every citation now names the 2026-06 release
+and carries page numbers taken from that release.
+
+Mapping approach. The shift is not an offset. Printed pages before
+Chapter 25 move by up to four pages, Chapter 26 by twenty-five, Chapter
+33 by forty-six, Chapters 36 and 37 by forty-seven, and Chapter 41 by
+thirty-one, because the 2026-06 insertions sit at several points and
+the errata rebalanced page breaks. Worse, the old citations were not
+all in one numbering: Chapter 41 appeared as pages 291 to 297 on pages
+touched by the earlier repagination and as pages 265 to 271 on pages
+that sweep missed, both under the same 2026-04 label. Arithmetic from
+the old numbers was therefore unsound, and the mapping was built from
+the source instead.
+
+The map is section-anchored. The PDF bookmark tree gives every chapter
+and section in Chapters 13 to 41. Printed page equals PDF physical page
+minus twenty-two, verified on chapter-opening and mid-chapter pages in
+Chapters 26, 37, 41, and 25. Bookmark destinations are not reliable on
+their own: fifteen section bookmarks in that range point one page before
+the page that actually prints the heading, so every section start was
+re-verified by locating its heading text in the extracted page text.
+Section 25.9 (Event Occurrences) prints on page 161, not the 160 its
+bookmark suggests.
+
+Each citation was then re-anchored to the sections its page draws on,
+and the new range is the extent of those sections. Sections added in
+2026-06 are excluded, because the wiki pages do not yet cover them.
+Sections merely expanded are included, because the cited material still
+lives there. Citations naming a chapter with no page range changed only
+their release label.
+
+Section renumbering. The occurrence page cited "Sections 25.8, 25.9,
+and 25.10". Inserting the new Section 25.9 pushed the old 25.9 and
+25.10 down to 25.10 and 25.11. The citation now reads Sections 25.8,
+25.10, and 25.11 at pages 159 to 160 and 162 to 164, and the three
+in-text section references in the body were renumbered to match. No
+Event Occurrences content was added, which belongs to issue #54.
+
+Editorial spot-check. Ten of the 46 rewritten citations were checked by
+extracting the new printed pages from the PDF and confirming the cited
+chapter or section heading sits there: Chapter 13 at 55, Section 17.3 at
+102, Chapter 25 at 148, Section 26.6 at 178, Chapter 28 at 207, Section
+30.4 at 243, Section 33.1 at 279, Chapter 35 at 296, Chapter 37 at 306,
+and Chapter 41 at 322. All ten passed.
+
+Release labels in page bodies. Twenty-four body lines named the 2026-04
+release. Statements about what the release leaves pending were each
+re-checked against the 2026-06 PDF and now name 2026-06: Chapter 59,
+Chapter 75, Chapter 84, Chapter 86, and Chapter 108 are still
+placeholders reading "This chapter will be published in a later
+release", Chapter 33 still has no dedicated verdict-semantics section,
+and the semantics of termination are still not formally specified.
+Novelty flags of the form "new in the 2026-04 release" were dropped,
+because the material is no longer new relative to the edition the wiki
+cites. Three pages outside the 46
+(sysml2-syntax-structure, sysml2-structural-and-behavioural-semantics,
+sysml2-domain-libraries-causation-geometry) carried the same flag in
+prose and were cleaned up with them.
+
+Two claims turned out to be false against 2026-06 and were corrected
+rather than re-anchored. Chapter 27 (Calculations) is published at pages
+203 to 206, and Section 33.2.1 (Trade Studies) is published at page 288.
+Both were recorded as pending upstream material on
+sysml2-expressions-constraints, sysml2-expression-patterns,
+sysml2-variant-patterns, and sysml2-variations-overview. Those pages now
+record the material as outstanding wiki work. Writing it in is content
+scope and lands under issue #54.
+
+The `updated:` discipline. Twenty-eight pages are bumped to 2026-08-07.
+Their cited chapters are untouched by the book changelog, so the
+repagination genuinely brings them level with the source and the
+lint source-freshness INFO would be noise. Eighteen pages keep their old
+`updated:` date: sixteen cite chapters the changelog marks as changed
+(18, 25, 26, 28, 29, 30) or sit in the package-level-clarification
+scope, and two more were found here to cite newly published material.
+For all eighteen the wiki still lags the source, so the freshness INFO
+has to stay live until issue #54 closes the gap. The three pages outside
+the 46 are not bumped either, following the precedent set by the Syside
+branding sweep: a wording normalisation is not a content revision.
+
+Not covered here. Roughly 250 fine-grained in-text page pointers of the
+form "(Ch 26, p 140)" across the same 46 pages still carry 2026-04
+numbering. They were left alone deliberately. Only a minority sit in
+chapters where a verified constant offset holds (13, 15, 34, 36, 37,
+38, 39, and Sections 26.1 to 26.7). The rest fall in chapters the
+2026-06 release restructured or expanded, where each pointer needs its
+own content check against the PDF, and guessing would put wrong numbers
+in front of readers. This is a separate work item.
+
+Routing and INDEX untouched. Citations live in frontmatter `sources`,
+never in `summary`, and no `summary` changed, so no routing block and no
+INDEX row needed regenerating.
+
+## [2026-08-07] lint | post-repagination
+
+Full post-flip rule set. Pages scanned: 131. Routing blocks scanned: 20.
+
+- ERROR: 0.
+- WARN: 152, unchanged. The same rule set run against `main` before this
+  change reports 152 as well, so the repagination introduced no new
+  warning. Every finding remains pre-existing editorial drift: wikilinks
+  present in a body but absent from the page's `related:` list, and
+  schema-drift flags where a page's H2 headings do not match the
+  template shape for its `type`.
+- INFO: 54, down by 28 from the same rule set run against `main`. The
+  drop is exactly the 28 pages whose `updated:` was bumped, each losing
+  one `sysmlv2.pdf` source-freshness finding. No other finding changed,
+  and no page lost a freshness signal for a source other than
+  `sysmlv2.pdf`.
+
+The 18 held-back pages still report the source-freshness INFO against
+`sysmlv2.pdf`, which is the intended state until issue #54 lands the
+2026-06 content delta.

@@ -110,11 +110,10 @@ This directly supports the R3 traceability principle and the
 displacement calculations are provided for coordinate
 transformations.
 
-The 4D-modelling worldview adopted in the 2026-04 release of the
-SysML v2 book interacts with the Geometry library: spatial extent
-is one of the two axes (alongside temporal) along which an
-occurrence is decomposed. See [[sysml2-occurrences-4d]] for the
-conceptual frame.
+The 4D-modelling worldview adopted by the SysML v2 book interacts
+with the Geometry library: spatial extent is one of the two axes
+(alongside temporal) along which an occurrence is decomposed. See
+[[sysml2-occurrences-4d]] for the conceptual frame.
 
 ### Shape Items (9.7.3)
 

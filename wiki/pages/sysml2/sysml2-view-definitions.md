@@ -6,7 +6,7 @@ layer: sysml2
 summary: View definitions and the three content mechanisms, that is expose statements, filters, and render usages
 tags: [views, syntax, expose, filter, render]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 37, pages 259 to 260."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 37, pages 306 to 307."
     raw: sysmlv2.pdf
 related:
   - sysml2-viewpoints-and-concerns
@@ -14,7 +14,7 @@ related:
   - sysml2-view-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-views]
 ---
 

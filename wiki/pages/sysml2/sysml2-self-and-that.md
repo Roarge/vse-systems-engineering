@@ -6,7 +6,7 @@ layer: sysml2
 summary: The two special features every type and every feature inherits, self and that
 tags: [self, that, this, navigation, context, kerml]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Section 17.3, pages 98 to 99. New in the 2026-04 release."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 17.3, pages 102 to 103."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -14,7 +14,7 @@ related:
   - sysml2-binding-connectors
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -29,8 +29,8 @@ referenced_by: [sysml2-behaviour]
 
 KerML defines two special features that every type and every feature
 inherits: `self` and `that`. They are the most fundamental
-navigation capabilities in the language. This material was added to
-the SysML v2 book in the 2026-04 release as a new Section 17.3.
+navigation capabilities in the language. This material is
+Section 17.3 of the SysML v2 book.
 A third related feature, `this`, is covered in
 [[sysml2-occurrence-context-and-variables]] and connects to the
 4D-modelling worldview.

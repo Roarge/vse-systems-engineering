@@ -6,7 +6,7 @@ layer: sysml2
 summary: SysML 2.0 treats product variation as a first-class language feature
 tags: [variants, product-line-engineering, configuration]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 35, pages 246 to 250."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 293 to 298."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC 26580:2021. Software and systems engineering — Methods and tools for the feature-based approach to software and systems product line engineering."
     raw: null
@@ -66,8 +66,9 @@ The SysML 2.0 specification does not cover:
 - Formal feature models or feature constraints in the PLE sense.
   These belong in an external feature model, integrated via the
   PLEML extension.
-- Trade-off analysis to support variant selection. The 2026-04
-  release marks Section 33.2.1 as pending for trade-off coverage.
+- Trade-off analysis to support variant selection. Section 33.2.1
+  (Trade Studies, page 288) covers this in the source, and the
+  material is not yet reflected in this layer.
 
 For deeper coverage of Model-Based Product Line Engineering (MBPLE),
 the SysML v2 book points to Forlingieri et al. (2025).

@@ -6,14 +6,14 @@ layer: sysml2
 summary: Declaring allocation definitions and applying them through allocation usages
 tags: [allocations, syntax, connection, cross-subsetting]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview
   - sysml2-allocation-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-allocations]
 ---
 
@@ -118,4 +118,4 @@ with typed ends are preferred.
 - [[sysml2-allocations-overview]] for the conceptual frame.
 - [[sysml2-allocation-patterns]] for VSE-scale patterns and gotchas.
 - [[sysml2-binding-connectors]] for the related binding connector
-  mechanism added in the 2026-04 release.
+  mechanism.

@@ -6,7 +6,7 @@ layer: sysml2
 summary: "The case construct family: use, analysis, verification, and validation cases share one structure"
 tags: [cases, use-cases, analysis-cases, verification-cases]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 33, pages 230 to 233."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 276 to 278."
     raw: sysmlv2.pdf
 related:
   - sysml2-case-kinds
@@ -14,7 +14,7 @@ related:
   - sysml2-actions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-cases]
 ---
 

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Declaring metadata definitions and applying them as annotations
 tags: [metadata, syntax, annotations, at-syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 36, pages 252 to 254."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, pages 299 to 301."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview
@@ -14,7 +14,7 @@ related:
   - sysml2-filter-conditions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-metadata]
 ---
 

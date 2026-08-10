@@ -6,7 +6,7 @@ layer: sysml2
 summary: Allocations bridge different layers and viewpoints in a systems model
 tags: [allocations, architecture-mapping, traceability]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 34, page 245; Chapter 41, pages 265 to 267."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocation-definitions
@@ -14,7 +14,7 @@ related:
   - sysml2-binding-connectors
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-07
 referenced_by: [sysml2-allocations]
 ---
 
@@ -102,7 +102,7 @@ across architectural layers (Ch 41, p 266).
 ## Status of Chapter 75 in the source
 
 Chapter 75 of the SysML v2 book (the formal Allocations Reference
-in Part V) is marked as pending in the 2026-04 release. The pages
+in Part V) is marked as pending in the 2026-06 release. The pages
 in this layer therefore draw on Chapter 34 (conceptual material)
 and Chapter 41 (the Platform-Based Systems Engineering library
 example) rather than the still-pending formal reference. When

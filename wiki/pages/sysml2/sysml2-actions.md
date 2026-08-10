@@ -6,7 +6,7 @@ layer: sysml2
 summary: Action definitions and usages, parameters, and perform actions for modelling behaviour
 tags: [actions, behaviour, parameters, perform-action]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-04 release. MBSE4U. Chapter 26, pages 140 to 145; pages 165 to 166."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 169; pages 190 to 192."
     raw: sysmlv2.pdf
 related:
   - sysml2-successions
