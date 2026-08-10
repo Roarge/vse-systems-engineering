@@ -6,7 +6,7 @@ layer: sysml2
 summary: Syntax for the three standard case kinds, that is use case, analysis case, and verification case
 tags: [cases, use-cases, analysis-cases, verification-cases, syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 279 to 290."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 276 to 290."
     raw: sysmlv2.pdf
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. VerdictKind enumeration."
     raw: 2-OMG_Systems_Modeling_Language.pdf
@@ -16,7 +16,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-10
 referenced_by: [sysml2-cases]
 ---
 
@@ -39,12 +39,12 @@ the conceptual frame and shared features, see
 
 Use cases describe the behaviour of a system from an outside
 perspective. The use case concept is older than SysML, but became
-more formally defined in SysML 2.0 (Ch 33, p 233).
+more formally defined in SysML 2.0 (Ch 33, p 279).
 
 A use case definition models interactions between one or more actors
 and the system or component. The case definition may carry a
 specific arrangement around the system, such as a test configuration
-or a sample environment, to illustrate the use case (Ch 33, p 230).
+or a sample environment, to illustrate the use case (Ch 33, p 276).
 
 ```sysml
 use case def 'Provide Transportation' {
@@ -60,20 +60,20 @@ use case def 'Provide Transportation' {
 
 Case definitions fit nicely with part definitions. A part definition
 can model a specific arrangement of the subject and its environment
-that frames a use case (Ch 33, p 230, Figure 33.1).
+that frames a use case (Ch 33, pp 276 to 277, Figure 33.1).
 
 ## Analysis cases
 
 Analysis cases capture parametric analysis. They enable computation
 over system properties to evaluate outcomes such as energy
 consumption, cost, or performance metrics under defined conditions
-(Ch 33, p 238).
+(Ch 33, p 284).
 
 An analysis case invokes behaviour of its subject and binds results
 through parametric relationships to analyse system performance or
 properties. The analysis case body uses calculations and constraint
 bindings to compute the result that the case returns
-(Ch 33, p 238). See [[sysml2-expressions-constraints]] for the
+(Ch 33, p 284). See [[sysml2-expressions-constraints]] for the
 constraint binding mechanism.
 
 ```sysml
@@ -125,14 +125,14 @@ specialised requirements, `MinimizedObjective` and
 ## Verification cases
 
 Verification cases model the verification of requirements. They
-specify how a requirement is to be verified (Ch 33, p 242).
+specify how a requirement is to be verified (Ch 33, p 289).
 
 A verification case includes a verification definition that
 specifies the verification task. The verification definition binds
 the subject to the element being verified. A verification case may
 include a `verify` clause that explicitly declares which requirement
 is being verified. The subject of the verification case is bound to
-the subject of the requirement being verified (Ch 33, p 242).
+the subject of the requirement being verified (Ch 33, p 289).
 
 ```sysml
 verification def VehicleMassTest {
@@ -146,7 +146,7 @@ verification def VehicleMassTest {
 
 A verification case may declare `verify` against a requirement only
 when the case subject matches the requirement subject. Mismatched
-subjects produce an invalid verification model (Ch 33, p 242).
+subjects produce an invalid verification model (Ch 33, p 289).
 
 ## Verdict semantics
 

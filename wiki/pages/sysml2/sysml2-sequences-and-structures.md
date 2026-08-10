@@ -14,7 +14,7 @@ related:
   - sysml2-occurrences-4d
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -34,7 +34,7 @@ When a feature has multiplicity other than `[1]`, it holds a
 so a scalar is a sequence of length one. The scalar operators
 covered in [[sysml2-expressions-overview]] only apply to sequences
 of length one. Longer sequences use dedicated sequence operators
-(Ch 30, p 193).
+(Ch 30, p 238).
 
 ## Sequence terms
 
@@ -55,7 +55,7 @@ attribute allVehicles = all Vehicle;
 The `all TypeName` form returns every instance of `TypeName`,
 including instances that are not reachable from the current
 context. The book notes that this is difficult to implement in real
-systems and should be used with care (Ch 30, p 194).
+systems and should be used with care (Ch 30, p 239).
 
 ## Sequence functions
 
@@ -72,10 +72,10 @@ Key sequence functions are grouped by purpose:
 - **Subsequencing**: `subsequence`, `head`, `tail`, `last`.
 
 The second operand of `#` **must be enclosed in parentheses**
-(Ch 30, p 195), as in `activeDrones#(1)`, which returns the first
+(Ch 30, p 240), as in `activeDrones#(1)`, which returns the first
 active drone.
 
-**Indexing is 1-based, not 0-based** (Ch 30, p 195). This is the
+**Indexing is 1-based, not 0-based** (Ch 30, p 240). This is the
 most common stumble for SysML authors arriving from a programming
 background.
 
@@ -86,7 +86,7 @@ the `new` keyword, followed by the type name and a comma-separated
 argument list. Arguments bind to public features in order, or
 explicitly by name using `featureName = expression`. Partial
 binding is allowed, and unspecified features without defaults
-remain unconstrained (Ch 30, p 196).
+remain unconstrained (Ch 30, p 241).
 
 ```sysml
 attribute origin = new Point3D(x = 0, y = 0, z = 0);
@@ -99,7 +99,7 @@ Feature chain expressions navigate structured data using dot
 notation. A chain is an expression, a dot, and a feature name,
 optionally continued. Chains **flatten sequences** at each step,
 concatenating values from every intermediate result into a single
-flat sequence (Ch 30, p 197).
+flat sequence (Ch 30, p 242).
 
 ```sysml
 attribute allWheelRadii = vehicle.wheels.radius;

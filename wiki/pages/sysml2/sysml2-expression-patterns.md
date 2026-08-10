@@ -15,7 +15,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -100,20 +100,20 @@ attribute criticalWheelRadii = vehicle.wheels.?{in w [1] : Wheel; w.isCritical}.
 ### Logical operators evaluate all operands
 
 Use the control operators `and`, `or`, `implies` if short-circuit
-evaluation matters (Ch 30, p 191).
+evaluation matters (Ch 30, p 236).
 
 ### Indexing is 1-based and takes parentheses
 
 `primes#(1)` is the first element, not the second, and the index
 operand must be enclosed in parentheses. Out-of-range indexing
-returns `null`, not an error (Ch 30, p 195). This is the most common
+returns `null`, not an error (Ch 30, p 240). This is the most common
 stumble for authors arriving from a programming background.
 
 ### The chaining symbol is `->`, not `>>`
 
 Function operation expressions put the first operand before `->`,
 which precedes the invoked function's name. `>>` is not an operator
-in the expression language (Ch 30, p 199).
+in the expression language (Ch 30, p 244).
 
 ### A function literal declares parameters, it does not use an arrow
 
@@ -121,41 +121,41 @@ A function literal is a calculation body with no name between curly
 braces: parameter declarations first, then the body expression, as in
 `{in drone [1] : Drone; drone.currentTarget}`. The language has no
 arrow-style lambda form, so a parameter list followed by an arrow and
-a body is not valid syntax (Ch 30, p 200).
+a body is not valid syntax (Ch 30, p 245).
 
 ### There are no negative literals
 
 A value like `-5` is the operator `-` applied to the literal `5`.
 This shows up in error messages and grammar diagnostics
-(Ch 30, p 191).
+(Ch 30, p 235).
 
 ### `hastype` breaks Liskov substitution
 
 Prefer `istype` unless the intent is to explicitly exclude subtypes
-(Ch 30, p 206).
+(Ch 30, p 251).
 
 ### A calc name without parentheses is a reference, not an invocation
 
 This matters when passing calcs to higher-order functions. Add
-empty parentheses to invoke a no-argument calc (Ch 30, p 198).
+empty parentheses to invoke a no-argument calc (Ch 30, p 243).
 
 ### Feature chain flattening can explode multiplicity
 
 Navigating `vehicle.wheels.bolts` concatenates all bolts of all
 wheels into one flat sequence, which may surprise authors expecting
-a nested structure (Ch 30, p 197).
+a nested structure (Ch 30, p 242).
 
 ### Null is a value, not an error
 
 Setting a feature with minimum multiplicity 1 to `null` produces a
 runtime error in simulators, not a compile-time rejection
-(Ch 30, p 194).
+(Ch 30, p 238).
 
 ### `all TypeName` returns unreachable instances
 
 Extent expressions are semantically global and include instances
 not visible from the current context. Use with care in large models
-(Ch 30, p 194).
+(Ch 30, p 239).
 
 ## Pending chapters
 

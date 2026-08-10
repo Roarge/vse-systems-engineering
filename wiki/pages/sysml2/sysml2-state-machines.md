@@ -17,7 +17,7 @@ related:
   - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -44,7 +44,8 @@ lifetime of their owner or a subset of it.
 States are occurrences that may be active throughout the lifetime
 of their owner or a subset of it. Every state definition specialises
 `State` from the standard library. State definitions may own
-features, constraints, and other model elements (Ch 28, p 170).
+features, constraints, and other model elements
+(Ch 28, pp 209 to 210).
 
 ```sysml
 state def Idle {
@@ -64,7 +65,7 @@ Transitions connect states and declare the conditions under which
 one state is exited and another is entered. The long form declares
 the source state, a trigger, a guard condition, and an effect
 action. The short form, inside a state body, is more concise
-(Ch 28, p 172).
+(Ch 28, pp 210 to 212).
 
 A transition is triggered by an event such as a message reception,
 a timeout, or a change in a condition. The trigger is declared
@@ -91,7 +92,7 @@ A state may own three kinds of action sequences:
 - **Exit actions** execute when the state is exited.
 
 The corresponding keywords are `entry`, `do`, and `exit`
-(Ch 28, pp 172 to 173).
+(Ch 28, pp 209 to 210).
 
 ```sysml
 state def Charging {

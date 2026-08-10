@@ -14,7 +14,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -37,7 +37,7 @@ for runtime type tests. For literal and operator expressions see
 
 An invocation expression calls a function or calculation usage by
 name and passes arguments in parentheses. Arguments are positional
-or explicitly named (Ch 30, p 198).
+or explicitly named (Ch 30, p 243).
 
 ```sysml
 calc def Distance(a : Point, b : Point) : LengthValue;
@@ -54,7 +54,7 @@ attribute d2 = Distance(a = origin, b = target);
 A calculation usage referenced **without** parentheses is a feature
 reference, not an invocation. This is load-bearing for higher-order
 use: the name alone refers to the calculation object itself, which
-can be stored in a variable or passed as an argument (Ch 30, p 198).
+can be stored in a variable or passed as an argument (Ch 30, p 243).
 
 ```sysml
 attribute calcFn = Distance;          // reference
@@ -166,7 +166,7 @@ clarity (Ch 30, p 247).
 ## Classification expressions
 
 Classification expressions test or cast the runtime type of a value
-(Ch 30, pp 205 to 206).
+(Ch 30, pp 250 to 252).
 
 | Expression | Meaning |
 |---|---|
@@ -182,7 +182,7 @@ attribute engines = components as Engine;
 
 The book warns that `hastype` violates the Liskov substitution
 principle and should be avoided unless the intent is explicitly to
-exclude subtypes (Ch 30, p 206).
+exclude subtypes (Ch 30, p 251).
 
 ## See also
 
