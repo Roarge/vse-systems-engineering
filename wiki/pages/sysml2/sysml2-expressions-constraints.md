@@ -58,8 +58,10 @@ calc def CostPerformanceRatio(cost : MonetaryValue, performance : Real) : Real {
     cost / performance
 }
 
-calc def MassRollup(parts : Part[*]) : MassValue {
-    parts >> collect { in p : Part => p.mass } >> reduce { in a, b => a + b }
+calc def MassRollup {
+    in part parts [*] : Part;
+    parts->collect({in p [1] : Part; p.mass})
+         ->reduce({in a [1] : MassValue; in b [1] : MassValue; a + b})
 }
 ```
 
@@ -83,10 +85,10 @@ formula over the parameters and any in-scope features.
 
 ```sysml
 constraint def PowerBudget {
-    in consumers : PowerConsumer[*];
+    in consumers [*] : PowerConsumer;
     attribute totalPowerUsage : PowerValue =
-        consumers >> collect { in c : PowerConsumer => c.powerDraw }
-                  >> reduce { in a, b => a + b };
+        consumers->collect({in c [1] : PowerConsumer; c.powerDraw})
+                 ->reduce({in a [1] : PowerValue; in b [1] : PowerValue; a + b});
     totalPowerUsage <= maxBudget
 }
 ```
@@ -99,9 +101,12 @@ intermediate values, not results.
 
 An `assert constraint` usage applies a constraint directly in its
 containing context and marks the model as invalid if the constraint
-evaluates to `false`. The containing context is available inside
-the constraint through reference subsetting with the `>>` operator
-(Ch 31, p 209).
+evaluates to `false`. The constraint reaches the containing context
+through its parameters, which the usage binds to features of that
+context, as the example below binds `consumers` to `powerConsumers`
+(Ch 31, p 209). Reference subsetting, written `::>` or `references`,
+is a different mechanism and is not what binds a constraint to its
+context. There is no `>>` operator in SysML 2.0.
 
 ```sysml
 part def Vehicle {

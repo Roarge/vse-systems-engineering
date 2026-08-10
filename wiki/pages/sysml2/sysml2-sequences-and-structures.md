@@ -67,9 +67,13 @@ Key sequence functions are grouped by purpose:
 - **Combination**: `union`, `intersection`, `including`,
   `includingAt`, `excluding`, `excludingAt`.
 - **Indexing**: the `#` operator accesses the element at a 1-based
-  index, for example `primes#3` evaluates to `5`. Out-of-range
+  index, for example `primes#(3)` evaluates to `5`. Out-of-range
   indexing returns `null`.
 - **Subsequencing**: `subsequence`, `head`, `tail`, `last`.
+
+The second operand of `#` **must be enclosed in parentheses**
+(Ch 30, p 195), as in `activeDrones#(1)`, which returns the first
+active drone.
 
 **Indexing is 1-based, not 0-based** (Ch 30, p 195). This is the
 most common stumble for SysML authors arriving from a programming

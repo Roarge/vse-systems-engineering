@@ -39,14 +39,15 @@ see [[sysml2-expressions-overview]],
 ### Aggregate a quantity across parts
 
 Use `collect` to project each part to its quantity, then `reduce`
-to sum:
+to sum. The chaining symbol is `->`, and each function literal
+declares its parameters before the body expression:
 
 ```sysml
 part def Vehicle {
-    part components : Component[*];
+    part components [*] : Component;
     attribute totalMass : MassValue =
-        components >> collect { in c : Component => c.mass }
-                   >> reduce { in a, b => a + b };
+        components->collect({in c [1] : Component; c.mass})
+                  ->reduce({in a [1] : MassValue; in b [1] : MassValue; a + b});
 }
 ```
 
@@ -57,17 +58,20 @@ every element of a sequence:
 
 ```sysml
 constraint def AllRequirementsSatisfied {
-    in requirements : Requirement[*];
-    requirements >> forAll { in r : Requirement => r.isSatisfied }
+    in requirements [*] : Requirement;
+    requirements->forAll({in r [1] : Requirement; r.isSatisfied})
 }
 ```
 
 ### Filter parts by condition
 
-Use `select` with operator notation for concise filtering:
+Use `select` with its operator notation `.?`, read as "collect if",
+for concise filtering. The plain `.{...}` form is the operator
+notation for `collect`, so it would collect the Booleans rather than
+filter on them:
 
 ```sysml
-attribute heavyComponents = components.{ in c : Component => c.mass > 100[kg] };
+attribute heavyComponents = components.?{in c [1] : Component; c.mass > 100[kg]};
 ```
 
 ### Parametric trade study input
@@ -88,7 +92,7 @@ Combine feature chains and higher-order functions to avoid
 intermediate attributes:
 
 ```sysml
-attribute criticalWheelRadii = vehicle.wheels.{ in w : Wheel => w.isCritical }.radius;
+attribute criticalWheelRadii = vehicle.wheels.?{in w [1] : Wheel; w.isCritical}.radius;
 ```
 
 ## Gotchas and red flags
@@ -98,12 +102,26 @@ attribute criticalWheelRadii = vehicle.wheels.{ in w : Wheel => w.isCritical }.r
 Use the control operators `and`, `or`, `implies` if short-circuit
 evaluation matters (Ch 30, p 191).
 
-### Indexing is 1-based
+### Indexing is 1-based and takes parentheses
 
-`primes#1` is the first element, not the second. Out-of-range
-indexing returns `null`, not an error (Ch 30, p 195). This is the
-most common stumble for authors arriving from a programming
-background.
+`primes#(1)` is the first element, not the second, and the index
+operand must be enclosed in parentheses. Out-of-range indexing
+returns `null`, not an error (Ch 30, p 195). This is the most common
+stumble for authors arriving from a programming background.
+
+### The chaining symbol is `->`, not `>>`
+
+Function operation expressions put the first operand before `->`,
+which precedes the invoked function's name. `>>` is not an operator
+in the expression language (Ch 30, p 199).
+
+### A function literal declares parameters, it does not use an arrow
+
+A function literal is a calculation body with no name between curly
+braces: parameter declarations first, then the body expression, as in
+`{in drone [1] : Drone; drone.currentTarget}`. The language has no
+arrow-style lambda form, so a parameter list followed by an arrow and
+a body is not valid syntax (Ch 30, p 200).
 
 ### There are no negative literals
 

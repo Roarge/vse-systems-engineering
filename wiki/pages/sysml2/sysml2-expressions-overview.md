@@ -118,9 +118,9 @@ comparison operators return Boolean.
 ### String operations
 
 String concatenation uses the `+` operator. Library functions
-provide `Length` and `SubString` (with start and end indices).
-Conversion functions include `ToString`, `ToComplex`, `ToReal`,
-`ToRational`, `ToInteger`, `ToNatural` (Ch 30, p 193).
+provide `Length(s)` and `Substring(s, start, end)`. Conversion
+functions include `ToString`, `ToComplex`, `ToReal`, `ToRational`,
+`ToInteger`, `ToNatural` (Ch 30, p 193).
 
 ## See also
 
