@@ -8,10 +8,13 @@ tags: [syntax, multiplicity, attribute, enum, feature-values]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.6, 7.7, 7.8, 7.13."
     raw: 2-OMG_Systems_Modeling_Language.pdf
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Pages 115, 180, and 235."
+    raw: sysmlv2.pdf
 related:
   - sysml2-syntax-packages-and-definitions
   - sysml2-syntax-structure
   - sysml2-expressions-overview
+  - sysml2-occurrence-context-and-variables
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -56,6 +59,29 @@ limit. A bare `[n]` means exactly `n`. Default multiplicity for
 features inside a definition is `[1]`. Default multiplicity for
 package-level usages is `[0..*]`, which is rarely the intended
 meaning, so explicit multiplicity is recommended.
+
+### Package-level features are not global variables
+
+A package-level feature behaves like an inherited feature of every
+type, so it can be redefined in any type. Redefining one is a good
+way to bring a floating feature into a concrete context, because the
+redefinition restricts the feature's domain from `Anything` to the
+owning type and adds its name to that type's namespace
+(Ch 18, p 115).
+
+Three consequences follow for reading and writing such a feature.
+
+- **Reading.** Referring to `ISQ::mass` inside `Drone` returns the
+  mass associated with the drone instance the expression is evaluated
+  on, not a single global value (Ch 30, p 235).
+- **Writing.** Assigning to a package-level feature binds to the
+  assignment action's context, so setting `ISQ::speed` inside `Drone`
+  sets it for the drone executing the action and affects no other
+  instance (Ch 26, p 180).
+- **Value kind.** A bound feature value on a package-level feature
+  constrains every instance in the universe, so the same value is
+  seen everywhere. An initial value gives every instance that value
+  to start with, but instances may then drift apart (Ch 30, p 235).
 
 ### Feature value forms summarised
 
@@ -117,3 +143,5 @@ as `RiskLevel` shows.
   that consume these features.
 - [[sysml2-expressions-overview]] for using attributes and
   multiplicity-bearing features in expressions.
+- [[sysml2-occurrence-context-and-variables]] for why package-level
+  usages are always non-variable.

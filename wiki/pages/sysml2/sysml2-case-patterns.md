@@ -138,15 +138,26 @@ A verification case may declare `verify` against a requirement only
 when the case subject matches the requirement subject. Mismatched
 subjects produce an invalid verification model (Ch 33, p 242).
 
+### `include use case uc1` declares a new usage, it does not reference one
+
+`include uc1;` and `include use case references uc1;` both parse into
+an unnamed include use case usage referring to `uc1`. Adding a name
+without `references`, as in `include use case uc1;`, parses into a
+**use case usage named `uc1`** that does not refer to the `uc1` in
+the outer scope at all. To name the including usage, write
+`include use case include_uc1 references uc1;` (Ch 33, pp 282 to
+283). See [[sysml2-case-kinds]] for the full set of combinations.
+
 ## Pending material in the source
 
 The 2026-06 release of the SysML v2 book leaves the following topics
 pending:
 
-- Detailed verdict semantics, with the `VerdictKind` enumeration and
-  the rules for combining verdicts across nested cases.
-- Advanced case composition patterns, including the `extend`
-  relationship for optional case sequences.
+- Rules for combining verdicts across nested cases. The four
+  `VerdictKind` values themselves are enumerated in Chapter 33 and
+  are captured on [[sysml2-case-kinds]].
+- The `extend` relationship for optional case sequences, which the
+  chapter does not cover.
 - Integration patterns for cases with other concerns such as
   interaction sequences and detailed state machines.
 - Tool and execution guidance for evaluating analysis and
