@@ -9,14 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.7`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.8`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
-rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, and
-the SysML v2 Book repagination takes `rc.7`, with every later candidate
-shifting by one.
+rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
+SysML v2 Book repagination took `rc.7`, and the SysML v2 Book 2026-06
+content delta takes `rc.8`, with every later candidate shifting by
+one.
+
+### Added
+
+- Four wiki pages capture material the 2026-06 release of "The SysML
+  v2 Book" introduces. `sysml2-abstract-actions` covers Section 26.8,
+  that is the `[0..*]` default a nested action usage carries, the
+  three ways to narrow it, and the four constructs that supply a
+  concrete specialisation. `sysml2-actions-in-context` covers Sections
+  26.9 to 26.9.4, the four ways an action reaches its surrounding
+  part. `sysml2-actions-vs-states` covers Section 28.6, the
+  being-versus-doing test for choosing a behaviour construct.
+  `sysml2-event-occurrences` covers Section 25.9, the referential
+  usage that pins its referent to the owner's life and underlies
+  perform actions, exhibit states, include use cases, and message
+  ends. All four route to `sysml2-behaviour`, whose routing block
+  gains four rows, and `INDEX.md` moves from 131 pages to 135.
+- `sysml2-state-machines` gains a Communicating state machines
+  section for Section 28.5. `sysml2-case-kinds` gains a Trade studies
+  subsection for Section 33.2.1. `sysml2-specialisation-and-typing`
+  gains a section covering reference subsetting and the new Section
+  18.2.2 on cross-subsetting, with both operators added to its table.
+  `sysml2-syntax-features-and-attributes` gains a note on the
+  package-level feature clarifications the release errata added.
 
 ### Changed
 
@@ -36,6 +60,24 @@ shifting by one.
   the book changelog leaves untouched. Eighteen pages keep their old
   date on purpose, so the lint source-freshness INFO keeps flagging the
   gap between the wiki and the 2026-06 content until that delta lands.
+- The Calculations section of `sysml2-expressions-constraints`
+  replaces its placeholder with the published Chapter 27 treatment: a
+  calculation as an action with a dedicated return parameter, the
+  implicit and explicit return forms with the semicolon asymmetry the
+  book calls a frequent mistake, the one-return-parameter rule, the
+  side-effect-free convention, and calculation usages read through
+  their result.
+- `sysml2-flows-and-messages` is rewritten against the expanded
+  Chapter 29. The invented "item flow, succession flow, streaming
+  flow" triad is replaced by the chapter's flow definition with one
+  source end and one target end and its three flow usage kinds, and
+  the Messages section is rebuilt around message ends as event
+  occurrences.
+- The 26 pages this content delta touches, together with the pages the
+  repagination held back, have `updated:` bumped and their in-body
+  page pointers refreshed from chapter extracts covering Chapters 18,
+  25, 26, 27, 28, 29, 30, and 33. The `sysmlv2.pdf` lint
+  source-freshness INFO count therefore goes from 18 to 0.
 
 ### Fixed
 
@@ -50,6 +92,36 @@ shifting by one.
   `sysml2-expressions-constraints`, `sysml2-expression-patterns`,
   `sysml2-variant-patterns`, and `sysml2-variations-overview` no longer
   describe them as gaps in the source.
+- Four pieces of expression syntax the wiki taught do not exist in the
+  language, and are corrected across the four expression pages. The
+  function operation chaining symbol is `->`, and `>>` is not an
+  operator at all. A function literal declares its parameters and then
+  its body expression between curly braces, with no arrow form. The
+  collect and select operator notations were shifted by one, so a
+  documented filter pattern would have collected Booleans rather than
+  filtering. The indexing operand must be enclosed in parentheses,
+  written `primes#(1)`.
+- `sysml2-expressions-constraints` claimed the containing context
+  reaches an assert constraint through reference subsetting with a
+  `>>` operator. The constraint reaches its context through parameter
+  binding, and reference subsetting is written `::>` or `references`.
+- `sysml2-expressions-overview` named the string library function
+  `SubString` rather than `Substring(s, start, end)`.
+- The parallel-state example on `sysml2-state-machines` did not match
+  the book. The `parallel` keyword marks the complex state itself, as
+  in `state flying parallel { ... }`, and transitions between the
+  sub-states of a parallel state are forbidden. The exhibit-state
+  section framed exhibit states as an intrinsic versus publicly
+  observable distinction, which Section 28.4 does not support, and is
+  rewritten around the link between the part tree and the state
+  machine.
+- `sysml2-case-kinds` told authors to consult the OMG specification
+  for verdict semantics until the book published its treatment.
+  Chapter 33 now enumerates all four `VerdictKind` values inline. The
+  page also claimed the chapter defers detailed coverage of include
+  relationships, which Figure 33.7 contradicts, and carried a
+  wiki-invented analysis-case example that is replaced by the book's
+  own.
 
 - The wiki data layer moves to the on-demand model. `wiki/CLAUDE.md`,
   the binding schema, is rewritten around the navigable-wiki contract:
