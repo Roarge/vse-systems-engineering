@@ -281,5 +281,6 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SYSMOD architecture kinds, coupling, and FAS | pages/sysmod/sysmod-architecture-kinds-and-coupling.md | The six architecture kinds, strong versus loose coupling, and the FAS functional-architecture bridge |
 | Base Architecture in SYSMOD: the source perspective | pages/sysmod/sysmod-base-architecture-source.md | SYSMOD's Base Architecture: the abstraction dial, reuse, innovation prompts, and coupling into the architecture chain |
 | System Context in SYSMOD: actors, Planet Environment, and the Death of the Actor | pages/sysmod/sysmod-system-context-source.md | SYSMOD's system context: actor rules, the mandatory Planet Environment actor, and why actors are blocks not Actors |
+| Variant modelling concepts: core, variants, and variations | pages/sysmod/sysmod-vamos-concepts.md | The variant vocabulary, the abstraction-distance bound, and deciding whether variants belong in one model |
 | The zigzag pattern between requirements and architecture | pages/sysmod/sysmod-zigzag-pattern.md | Why requirements always carry solution aspects, and the what-how alternation that descends the abstraction levels |
 <!-- wiki-routing:end -->

@@ -1240,3 +1240,70 @@ not introduced here: `sysml2-variation-definitions` names
 `sysml2-quick-ref-keywords` in its `related:` list and no page carries
 that slug. The documented rule set checks wikilink resolution rather
 than `related:` resolution, so it is not a finding at any severity.
+
+## [2026-08-13] ingest | vamos.pdf
+
+Layer: sysmod (existing, the schema row already names VAMOS alongside
+SYSMOD 3rd edition and The New Engineering Game).
+
+Pages authored:
+
+- sysmod-vamos-concepts (new)
+- sysmod-vamos-method (new)
+- sysmod-vamos-feature-trees (new)
+- sysmod-vamos-configurations (new)
+- sysmod-vamos-binding-and-constraints (new)
+
+The `sysmod-vamos-` prefix marks the source family inside a layer that
+now holds three Weilkiens sources, and keeps the method pages distinct
+from the `sysml2-variant-` syntax family.
+
+One candidate folded: the chapter 4 survey of FODA, CVL, and OVM
+becomes one section of `sysmod-vamos-concepts` rather than a page of
+its own. Reasons are in the decomposition proposal, as are the two
+candidates that stay rejected, the sample-project narrative and the
+proxy-port and diagram-adornment asides.
+
+Seam fix: `sysml2-variant-organisation` had `raw: null` on its 2016
+Weilkiens citation. Set to `vamos.pdf`, with three VAMOS cross-links
+added to `related:` and one body pointer at the end of the opening
+paragraph. `referenced_by:` untouched.
+
+Related-link touchpoints: 5 further existing pages updated
+(`sysml2-variations-overview`, `sysml2-variant-configuration`,
+`sysml2-variant-patterns`, `sysml2-vse-library-metadata`,
+`sysmod-toolbox-anatomy`). Two of them also carry a body one-liner.
+
+Routing resynced: sysml2-variants (+5 rows, 4 to 9),
+architecture-design (+1, 15 to 16), sysml2-model-structure (+1, 5
+to 6). INDEX regenerated: 146 pages to 151.
+
+Correction in the INDEX totals line. The referencing-skills count moves
+from 21 to 20, and the movement is a correction rather than a loss. The
+header had been left at 21 when the lens-design fix in #73 removed the
+routing block from `vse-companion-overview`, while the table body below
+it already listed 20 distinct skills. Regeneration from frontmatter,
+which is the rule the schema states, now agrees with the body.
+
+## [2026-08-13] lint | post-ingest (issue #56)
+
+Full rule set against the branch. Pages scanned: 151. Routing blocks
+scanned: 20, excluding the marker occurrences inside inline code spans
+in `vse-wiki-index` and `vse-wiki-lint`, which are documentation.
+
+- **ERROR: 0.** Frontmatter integrity, routing bidirectionality in both
+  directions across 204 rows, path resolution, sorted order, summary
+  fidelity, and wikilink resolution all hold.
+- **WARN: 236.** The movement from the previous run is exactly five new
+  schema-drift findings, one per new page. That rule fires on every page
+  in the wiki because the templates under `wiki/schema/` describe each
+  page type in prose rather than prescribing a heading set, so its count
+  tracks the page count and carries no signal about this ingest. The 84
+  wikilink findings and the single stale contents block are unchanged
+  from `main`, so none of them comes from this cycle.
+- **INFO: 0.** No orphans, no empty tag lists, no date inversions, and
+  no source file newer than its page by more than 14 days.
+
+The five new pages carry no finding other than the global schema-drift
+one. Each lists every slug it links, so the stale-metadata rule stays
+silent on all five.
