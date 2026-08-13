@@ -60,9 +60,9 @@ is, it does not exist in reality, and only its specialisations do.
 
 ```text
 System Architecture (abstract)
-├── Base Architecture
 ├── Functional Architecture
 └── Physical Architecture (abstract)
+    ├── Base Architecture
     ├── Logical Architecture
     ├── Product Architecture
     └── Test Architecture

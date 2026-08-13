@@ -16,7 +16,7 @@ related:
 confidence: high
 created: 2026-08-13
 updated: 2026-08-13
-referenced_by: [vse-companion-overview, project-setup]
+referenced_by: [project-setup]
 ---
 
 # The SYSMOD Model Purpose Model

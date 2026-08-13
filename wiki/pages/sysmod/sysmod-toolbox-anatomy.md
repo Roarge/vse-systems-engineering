@@ -23,7 +23,7 @@ related:
 confidence: high
 created: 2026-08-13
 updated: 2026-08-13
-referenced_by: [project-setup, vse-companion-overview]
+referenced_by: [project-setup]
 ---
 
 # SYSMOD as a toolbox: processes, methods, products, roles
@@ -185,14 +185,15 @@ own base-architecture package, and create an abstract system
 element in the core package, optionally generalising the Base
 Architecture element when strong coupling is wanted.
 
-**Lineage note.** The plugin's canonical layout and SYSMOD's
-package structure share an ancestor. Methodology §8.3.4 names the
-SYSMOD convention directly when it fixes SysML v2 package names as
-PascalCase with a project-name prefix and an underscore separator,
-and the AMBSE-side `{{sc}}_<Aspect>` naming on
-[[sysml2-canonical-model-layout]] descends from the same MBSE
-Cookbook telescope-team practice. The prefix rhyme is inheritance,
-not coincidence.
+**Lineage note.** SYSMOD's package structure is based on the MBSE
+Challenge Team SE2 telescope-modelling practice, per the source's
+own citation. On the plugin side, methodology §8.3.4 declares its
+package naming a match to the SYSMOD convention (PascalCase, a
+project-name prefix, an underscore separator), and the
+`{{sc}}_<Aspect>` naming on [[sysml2-canonical-model-layout]] cites
+Douglass's Agile MBSE Cookbook. The prefix conventions rhyme
+through §8.3.4's declared match rather than through one documented
+common ancestor.
 
 ## Where the plugin diverges
 

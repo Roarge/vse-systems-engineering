@@ -2,7 +2,7 @@
 title: "[Pattern Title]"
 slug: [kebab-case-slug]
 type: pattern
-layer: [iso29110|phas-eai|incose-vse|ambse|methodology|sysml2|syside|needs-and-reqs|vv|hsi|project-structure]
+layer: [iso29110|phas-eai|incose-vse|ambse|sysmod|methodology|sysml2|syside|needs-and-reqs|vv|hsi|project-structure]
 summary: [one line, under 120 characters, what the page covers and when to read it]
 tags: []
 sources:

@@ -18,7 +18,7 @@ related:
 confidence: high
 created: 2026-08-13
 updated: 2026-08-13
-referenced_by: [vse-companion-overview]
+referenced_by: [project-audit]
 ---
 
 # SYSMOD in an ISO 15288 process landscape

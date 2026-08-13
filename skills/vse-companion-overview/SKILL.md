@@ -161,9 +161,9 @@ methodology. Where the two differ, the methodology spec wins.
   not carry.
 - **Each specialist skill carries its own routing table.** A skill names the
   pages it is expected to need, so routing to the skill is usually enough.
-  This lens carries only the short table below, covering source-level
-  orientation that belongs to no single stage. Everything about how to do
-  the work is read from the methodology spec or from a specialist skill.
+  This lens deliberately carries no table of its own. Everything about how
+  to do the work is read from the methodology spec or from a specialist
+  skill, and source-level orientation pages are found through `INDEX.md`.
 - **Resolving a wikilink.** A `[[slug]]` inside a page body resolves to the
   file `pages/**/<slug>.md` under the wiki root. Slugs are unique.
 - **Searching.** For a term `INDEX.md` does not surface, run
@@ -171,14 +171,6 @@ methodology. Where the two differ, the methodology spec wins.
 
 The standing rule: read pages on demand, never bulk-load a layer, and cite
 the page title when quoting one.
-
-<!-- wiki-routing:begin -->
-| Page | Path | Read when |
-|---|---|---|
-| SYSMOD in an ISO 15288 process landscape | pages/sysmod/sysmod-iso15288-landscape.md | Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO 29110 story |
-| The SYSMOD Model Purpose Model | pages/sysmod/sysmod-model-purpose-levels.md | Three modelling-purpose levels (communication, traceability, specification) for sizing how much MBSE a project needs |
-| SYSMOD as a toolbox: processes, methods, products, roles | pages/sysmod/sysmod-toolbox-anatomy.md | What SYSMOD is: a methods toolbox, its four processes, tailoring, and the initial model package structure |
-<!-- wiki-routing:end -->
 
 ## What This Skill Does Not Do
 
