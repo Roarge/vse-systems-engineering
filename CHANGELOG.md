@@ -9,17 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.8`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.9`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
 rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
-SysML v2 Book repagination took `rc.7`, and the SysML v2 Book 2026-06
-content delta takes `rc.8`, with every later candidate shifting by
-one.
+SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
+content delta took `rc.8`, and the SYSMOD ingest takes `rc.9`, with
+every later candidate shifting by one.
 
 ### Added
+
+- A new `sysmod` wiki layer holds the Weilkiens methodology sources.
+  The layer row and the directory-tree entry land in `wiki/CLAUDE.md`
+  in the same change that introduces the pages, per the schema's
+  layer rule. The row names VAMOS and The New Engineering Game
+  alongside SYSMOD, because both later Weilkiens ingests land in the
+  same layer. The layer is separate from `ambse/` so that one layer
+  keeps meaning one source family, which is what makes a slug prefix
+  and a citation root mutually predictable.
+- Eleven wiki pages ingest SYSMOD (Weilkiens, 3rd edition).
+  `sysmod-toolbox-anatomy` covers what SYSMOD is, its four processes,
+  tailoring, deployment, the proxy convention, and the initial
+  package structure. `sysmod-model-purpose-levels` covers the three
+  modelling-purpose levels and the two add-ons.
+  `sysmod-base-architecture-source` and `sysmod-system-context-source`
+  give the source account of the two concepts the plugin's methodology
+  adopted at §2 and §3. `sysmod-problem-statement-and-objectives`
+  covers the framing artefacts and five workshop tools.
+  `sysmod-stakeholder-identification` covers the identification method
+  and the priority against effort matrix. `sysmod-zigzag-pattern`
+  covers the what and how alternation down the abstraction levels.
+  `sysmod-architecture-kinds-and-coupling` covers the architecture
+  taxonomy, the strong against loose coupling trade-off, and FAS.
+  `sysmod-functional-analysis-chain` covers the use-case-driven chain.
+  `sysmod-iso15288-landscape` condenses the appendix mapping and marks
+  the boundary against the plugin's ISO/IEC 29110 compliance claim.
+  `sysmod-test-modelling` covers the verdict-returning test behaviour,
+  the Model Test Case, and the Test Architecture as an architecture
+  kind.
+- `vse-companion-overview` gains its first wiki-routing block, holding
+  the three source-level orientation pages that belong to no single
+  workflow stage. The distinct referencing-skill count moves from 20
+  to 21.
 
 - Four wiki pages capture material the 2026-06 release of "The SysML
   v2 Book" introduces. `sysml2-abstract-actions` covers Section 26.8,
@@ -44,6 +77,20 @@ one.
 
 ### Changed
 
+- Thirteen existing wiki pages gain a `related:` entry pointing into
+  the new `sysmod` layer, so the source perspective is reachable from
+  the plugin page that owns the corresponding decision.
+  `base-architecture-corollaries` and `system-context-completeness`
+  also gain a one-line body pointer. `benefit-as-criterion` gains a
+  contents block, because the added `related:` line took it past the
+  100-line threshold in the schema's mechanical contents rule.
+  `sysml2-variant-organisation` is deliberately unchanged, since its
+  Weilkiens cross-links belong to the VAMOS cycle.
+- `INDEX.md` moves from 135 pages and 11 layers to 146 pages and 12
+  layers. Routing blocks resync with four new rows on `project-setup`,
+  four on `architecture-design`, five on `needs-and-requirements`,
+  three on `vse-companion-overview`, and one on
+  `verification-validation`.
 - All 46 wiki pages that cite "The SysML v2 Book" move from the 2026-04
   release to the 2026-06 release. The new printed page ranges come from
   a section-anchored map built from the PDF bookmark tree, with every
