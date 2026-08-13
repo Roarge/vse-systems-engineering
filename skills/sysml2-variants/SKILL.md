@@ -160,4 +160,9 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SysML 2.0 Variant Patterns and Gotchas | pages/sysml2/sysml2-variant-patterns.md | Practical variation patterns and the recurring mistakes that show up in review |
 | SysML 2.0 Variation Definitions and Variant Usages | pages/sysml2/sysml2-variation-definitions.md | The two declaration forms for variations and the variant usages they own |
 | SysML 2.0 Variations and Variants Overview | pages/sysml2/sysml2-variations-overview.md | SysML 2.0 treats product variation as a first-class language feature |
+| Binding times and variant constraints | pages/sysmod/sysmod-vamos-binding-and-constraints.md | Binding times, REQUIRES and XOR semantics, configuration validity rules, and their SysML 2.0 mappings |
+| Variant modelling concepts: core, variants, and variations | pages/sysmod/sysmod-vamos-concepts.md | The variant vocabulary, the abstraction-distance bound, and deciding whether variants belong in one model |
+| Variants and variant configurations: the configuration discipline | pages/sysmod/sysmod-vamos-configurations.md | What belongs in a variant, what a configuration adds, interface management, and behaviour variants |
+| Variation points and feature trees in VAMOS | pages/sysmod/sysmod-vamos-feature-trees.md | Variation-point granularity, selection multiplicities on variations, and reading the package tree as a feature tree |
+| The VAMOS method: one model for the whole configuration space | pages/sysmod/sysmod-vamos-method.md | VAMOS's core, variations, and configurations packages, their dependency rules, and the superset-model idea |
 <!-- wiki-routing:end -->

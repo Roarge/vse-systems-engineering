@@ -7,7 +7,7 @@ summary: Organising a model into Core, Variations, and Configurations, with vari
 tags: [variants, vamos, configurations, pleml, organisation, ambse]
 sources:
   - citation: "Weilkiens, T. (2016). Variant Modeling with SysML. MBSE4U. Chapters 2 and 3 (VAMOS)."
-    raw: null
+    raw: vamos.pdf
   - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC 26580:2021. Software and systems engineering — Methods and tools for the feature-based approach to software and systems product line engineering."
@@ -18,9 +18,12 @@ related:
   - sysml2-variation-definitions
   - sysml2-variant-configuration
   - sysml2-variant-patterns
+  - sysmod-vamos-method
+  - sysmod-vamos-feature-trees
+  - sysmod-vamos-binding-and-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-model-structure]
 ---
 
@@ -54,7 +57,12 @@ and [[sysml2-variant-patterns]]. This page adds the
 (2016) *Variant Modeling with SysML*, Chapters 2 and 3 (VAMOS).
 VAMOS was written against SysML v1 and its stereotype syntax is
 not reproduced. What transfers is the method and the
-organisation.
+organisation. The source method in full, including the dependency
+rules between the three concerns, the reasoning behind the
+granularity rule, and the semantics of the two predefined
+constraints, now lives on [[sysmod-vamos-method]],
+[[sysmod-vamos-feature-trees]], and
+[[sysmod-vamos-binding-and-constraints]].
 
 ## Core, Variations, Configurations
 

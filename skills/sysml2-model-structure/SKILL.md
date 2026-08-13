@@ -439,4 +439,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Model-Level Configuration Management and Risks in AMBSE Models | pages/sysml2/sysml2-model-cm-and-risks.md | Model-level configuration management and risk modelling inside the canonical package layout |
 | SysML 2.0 Namespace Hygiene: Short Codes, Imports, File Rules | pages/sysml2/sysml2-namespace-hygiene.md | Keeping namespaces from colliding as a model grows, using short codes, imports, and file rules |
 | Variant Modelling Organisation in AMBSE Models (VAMOS adapted) | pages/sysml2/sysml2-variant-organisation.md | Organising a model into Core, Variations, and Configurations, with variation-point discipline |
+| The VAMOS method: one model for the whole configuration space | pages/sysmod/sysmod-vamos-method.md | VAMOS's core, variations, and configurations packages, their dependency rules, and the superset-model idea |
 <!-- wiki-routing:end -->

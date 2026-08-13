@@ -12,9 +12,10 @@ related:
   - sysml2-variations-overview
   - sysml2-variation-definitions
   - sysml2-expressions-constraints
+  - sysmod-vamos-binding-and-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-variants]
 ---
 
@@ -64,7 +65,10 @@ feature constraints is out of scope for the SysML v2 book and is
 covered in Forlingieri et al. (2025).
 
 For the general expression and constraint language, see
-[[sysml2-expressions-constraints]].
+[[sysml2-expressions-constraints]]. The source semantics these
+constraints implement, including directionality, arity, and
+validation per configuration, are at
+[[sysmod-vamos-binding-and-constraints]].
 
 ## Setting a variant through specialisation
 
