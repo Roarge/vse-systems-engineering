@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.11`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.12`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
@@ -17,8 +17,42 @@ chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
 rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
 SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
 content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
-ingest took `rc.10`, and the New Engineering Game ingest takes
-`rc.11`, with every later candidate shifting by one.
+ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, and
+the thesis Papers IV and V ingest takes `rc.12`, with every later
+candidate shifting by one.
+
+### Added
+
+- Three wiki pages ingest thesis Papers IV and V into the `phas-eai`
+  layer, which previously carried the thesis kappe alone.
+  `phas-eai-active-inference-model` states the free-energy model
+  beneath the framework, defining perceptual uncertainty, alignment,
+  epistemic foraging, affordance as environmental surprise, the peer
+  and shared-norm model, the multi-scale property, and the five
+  Worldview principles, so that `omega`, `g(.)`, and `Phi` are defined
+  where the R3 model link names them.
+  `phas-eai-designing-attention-regimes` carries the five inquiry
+  questions for designing a Regime of Attention and the two-year VSE
+  security case that answers each of them, at `confidence: medium`
+  because the source records that its design does not isolate causal
+  effect against a process-only baseline. `phas-eai-llm-peer-review`
+  carries the case evidence behind the R2 premise, keeping the
+  method-level findings and stating the dated-evidence limit up front,
+  at `confidence: medium`. Two pages route to `attention-regime` and
+  the review page routes to `attention-regime` and
+  `needs-and-requirements`.
+
+### Changed
+
+- Four existing pages take the two papers as second sources.
+  `phas-eai-overview` gains the precision account of salience and the
+  Ramstead, Veissiere and Kirmayer provenance for Regimes of Attention
+  and Patterned Practices, which it had presented as thesis-native.
+  `phas-eai-de-requirements` gains pointers from R2, R3, and R4 to the
+  evidence and definitions behind them. `phas-eai-levers-and-evidence`
+  gains a published instance under each of H7 and H9.
+  `sysmod-neg-human-dimension` gains two wikilinks and no new source
+  entry, its sources being Weilkiens.
 
 ### Added
 
