@@ -226,4 +226,9 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Needs vs Requirements: Core Distinction and Categorisation | pages/needs-and-reqs/needs-vs-requirements.md | A need expresses what stakeholders expect from the System of Interest (SOI) |
 | Requirements Elicitation Techniques and Writing Rules | pages/needs-and-reqs/requirements-elicitation-and-writing.md | Elicitation techniques and the rules for writing well-formed requirement statements |
 | Requirements Traceability, Attributes, TBX, and AMBSE Model-Based Requirements | pages/needs-and-reqs/requirements-traceability-and-attributes.md | Requirement traceability, attributes, TBX resolution, and model-based requirements in AMBSE |
+| The SYSMOD functional analysis chain: use cases to domain knowledge | pages/sysmod/sysmod-functional-analysis-chain.md | System Use Cases, System Processes, Use Case Activities, and Domain Knowledge as the SYSMOD functional chain |
+| Problem Statement, System Idea, and System Objectives | pages/sysmod/sysmod-problem-statement-and-objectives.md | Framing the real problem, the elevator-pitch System Idea, two kinds of System Objectives, and the workshop tools |
+| Stakeholder identification and prioritisation in SYSMOD | pages/sysmod/sysmod-stakeholder-identification.md | Workshop-based stakeholder identification, the priority-times-effort matrix, and direct versus indirect stakeholders |
+| System Context in SYSMOD: actors, Planet Environment, and the Death of the Actor | pages/sysmod/sysmod-system-context-source.md | SYSMOD's system context: actor rules, the mandatory Planet Environment actor, and why actors are blocks not Actors |
+| The zigzag pattern between requirements and architecture | pages/sysmod/sysmod-zigzag-pattern.md | Why requirements always carry solution aspects, and the what-how alternation that descends the abstraction levels |
 <!-- wiki-routing:end -->
