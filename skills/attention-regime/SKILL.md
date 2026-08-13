@@ -205,4 +205,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | PHAS-EAI Equations: Response Time, Resilience, Functional Information | pages/phas-eai/phas-eai-equations.md | The three PHAS-EAI equation families for response time, resilience, and functional information |
 | PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence | pages/phas-eai/phas-eai-levers-and-evidence.md | The four PHAS-EAI lever tables and the hypotheses with the strongest cross-case support |
 | PHAS-EAI Framework: Core Constructs | pages/phas-eai/phas-eai-overview.md | The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction |
+| The human dimension: craftsmanship, New Work, and the gap of slackness | pages/sysmod/sysmod-neg-human-dimension.md | Craftsmanship over Taylorism, New Work values, the gap of slackness, and the project-hero burnout warning |
 <!-- wiki-routing:end -->
