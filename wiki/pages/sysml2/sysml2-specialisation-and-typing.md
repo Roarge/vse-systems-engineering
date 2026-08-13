@@ -75,6 +75,11 @@ perform action callFlyToPosition ::> flyToPosition;
 perform action performFlyToPosition references flyToPosition;
 ```
 
+The name mismatch is the book's own: Figure 18.7 declares
+`flyDroneToPosition` and then references `flyToPosition`. The figure
+is reproduced faithfully here, and a working model needs the two
+names to agree.
+
 **Cross-subsetting** is used exclusively with connection ends. It
 identifies the feature of a connected element that refers to the
 other connected elements reachable across the connection, which is

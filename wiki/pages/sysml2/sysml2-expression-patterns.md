@@ -80,10 +80,15 @@ Define a calc with trade-space parameters and invoke it inside an
 assert constraint to enforce the trade bound:
 
 ```sysml
-calc def CostPerformanceRatio(cost : MonetaryValue, performance : Real) : Real
-    = cost / performance;
+calc def CostPerformanceRatio {
+    in cost : MonetaryValue;
+    in performance : Real;
+    return : Real = cost / performance;
+}
 
-assert constraint CostPerformanceRatio(totalCost, measuredPerformance) < targetRatio;
+assert constraint {
+    CostPerformanceRatio(totalCost, measuredPerformance) < targetRatio
+}
 ```
 
 ### Chain navigation and operation

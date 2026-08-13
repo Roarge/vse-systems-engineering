@@ -47,6 +47,12 @@ of their owner or a subset of it. Every state definition specialises
 features, constraints, and other model elements
 (Ch 28, pp 209 to 210).
 
+Inside a state body, write the initial-state succession as one full
+succession usage, `first start then off;`. The two-line form
+`first start; then off;` does not work there: the chained shorthand
+of a `first` anchor followed by a bare `then` is available only in
+action bodies (Ch 28, p 213).
+
 ```sysml
 state def Idle {
     attribute statusCode : Integer;
@@ -82,6 +88,17 @@ transition off_to_starting
     do action powerUp : PowerUp
     then starting;
 ```
+
+Transitions are always usages. There is no transition definition,
+and every transition usage is defined by `StateTransitionAction`
+from the `States` standard library (Ch 28, p 212).
+
+When a transition fires, the source state's exit action runs, then
+the transition effect, then the target's entry action, and the
+machine settles into the target before the next event is considered.
+State machines are conventionally taken to handle one event at a
+time in this run-to-completion fashion, a good model to design
+against (Ch 28, p 211).
 
 ## Entry, do, and exit behaviours
 
@@ -147,6 +164,12 @@ state flying parallel {
 The state `flying` is expanded into a parallel state with two complex
 states, `positioning` and `observing`, which are orthogonal aspects
 (Ch 28, pp 213 to 215, Figure 28.6).
+
+There are no history states. SysML 2.0 currently has no mechanism
+for a complex state to remember which sub-state was active when it
+was last left. Where the effect is needed, model it explicitly:
+record the last active sub-state in an attribute and branch back to
+it with conditional successions on re-entry (Ch 28, p 215).
 
 ## Exhibit states
 

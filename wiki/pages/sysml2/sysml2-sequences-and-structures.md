@@ -68,8 +68,9 @@ Key sequence functions are grouped by purpose:
   `includingAt`, `excluding`, `excludingAt`.
 - **Indexing**: the `#` operator accesses the element at a 1-based
   index, for example `primes#(3)` evaluates to `5`. Out-of-range
-  indexing returns `null`.
-- **Subsequencing**: `subsequence`, `head`, `tail`, `last`.
+  indexing returns `null`. The functions `head` and `last` also
+  belong here.
+- **Subsequencing**: `subsequence`, `tail`.
 
 The second operand of `#` **must be enclosed in parentheses**
 (Ch 30, p 240), as in `activeDrones#(1)`, which returns the first

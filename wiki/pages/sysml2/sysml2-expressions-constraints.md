@@ -155,6 +155,7 @@ formula over the parameters and any in-scope features.
 ```sysml
 constraint def PowerBudget {
     in consumers [*] : PowerConsumer;
+    in maxBudget : PowerValue;
     attribute totalPowerUsage : PowerValue =
         consumers->collect({in c [1] : PowerConsumer; c.powerDraw})
                  ->reduce({in a [1] : PowerValue; in b [1] : PowerValue; a + b});

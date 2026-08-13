@@ -73,9 +73,9 @@ one.
   source end and one target end and its three flow usage kinds, and
   the Messages section is rebuilt around message ends as event
   occurrences.
-- The 26 pages this content delta touches, together with the pages the
-  repagination held back, have `updated:` bumped and their in-body
-  page pointers refreshed from chapter extracts covering Chapters 18,
+- The 27 wiki pages this branch touches, including the pages the
+  repagination held back and the namespace-hygiene freshness closure,
+  have `updated:` bumped and their in-body page pointers refreshed from chapter extracts covering Chapters 18,
   25, 26, 27, 28, 29, 30, and 33. The `sysmlv2.pdf` lint
   source-freshness INFO count therefore goes from 18 to 0.
 

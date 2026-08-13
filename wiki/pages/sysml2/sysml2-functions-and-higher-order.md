@@ -40,7 +40,11 @@ name and passes arguments in parentheses. Arguments are positional
 or explicitly named (Ch 30, p 243).
 
 ```sysml
-calc def Distance(a : Point, b : Point) : LengthValue;
+calc def Distance {
+    in a : Point;
+    in b : Point;
+    return : LengthValue;
+}
 
 // Positional invocation
 attribute d1 = Distance(origin, target);
