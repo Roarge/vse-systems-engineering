@@ -23,8 +23,11 @@ For the demo, one contributor fills every ISO 29110 role. In a real project, thi
 ## Tailoring record
 
 Profile: standard. Tailoring per methodology §0.10 defaults, except
-`baselined_paths` additionally lists `methodology/` and
-`model/library/` (recorded 2026-08-13).
+`baselined_paths` additionally lists `docs/cm-strategy.md`,
+`docs/risk-register.md`, `methodology/`, and `model/library/`
+(recorded 2026-08-13). The standard default baselines
+`docs/project-plan.md` alone, so the first two additions adopt
+full-profile items early and the last two are project-specific.
 
 ## Methodology reference
 
