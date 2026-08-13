@@ -47,3 +47,6 @@ spaces), a repo-relative path inside the plugin tree, or `null` for
 web-only sources. The `source-added-reminder` hook appends an
 unresolved stub to `LOG.md` whenever a file under `sources/` changes.
 Resolve stubs by running `/vse-wiki-ingest` on the referenced file.
+Session start emits wiki-freshness lines (days since the last LOG
+entry, unresolved stubs, lint findings) inside this repo. Read them as
+a nudge towards ingest, lint, or refactor.

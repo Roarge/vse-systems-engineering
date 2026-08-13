@@ -33,7 +33,9 @@ Never grant `Write`, `Edit`, or any file-modifying tool. Subagents
 return suggestion-shaped markdown to a dispatching skill, which
 surfaces the proposal to the engineer. Each subagent has exactly one
 orchestrating skill, documented in its description. Prefer
-parallelisable, context-heavy work for subagents.
+parallelisable, context-heavy work for subagents, and test a subagent
+by triggering its parent skill inside `demo/smart-sensor/` with the
+branch installed as a local plugin.
 
 **The manifest carries no agents field, deliberately.** Tested evidence
 (PR #63, at pinned CLI 2.1.224): the validator rejects every
