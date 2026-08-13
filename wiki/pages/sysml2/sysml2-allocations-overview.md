@@ -14,7 +14,7 @@ related:
   - sysml2-binding-connectors
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-allocations]
 ---
 
@@ -36,7 +36,7 @@ that performs it: all are allocations. SysML 2.0 provides a
 general-purpose allocation mechanism rather than imposing a fixed
 design methodology, which makes it useful from the earliest
 conceptual sketches through to detailed implementation handoff
-(Ch 34, p 245).
+(Ch 34, p 291).
 
 ## What an allocation is
 
@@ -84,7 +84,7 @@ Allocations are inherently directed. The structure has two ends:
 
 The `allocate X to Y` notation makes the direction explicit. X is
 the source and Y is the target. Reversing the order changes the
-meaning fundamentally (Ch 41, p 267). Authors transitioning from
+meaning fundamentally (Ch 34, p 291). Authors transitioning from
 SysML v1, where allocation was sometimes drawn as an undirected line,
 should take extra care.
 
@@ -97,7 +97,7 @@ appears in a derived `realizedFunctions` collection, and the function
 appears in the `realizingPlatforms` collection of the platform.
 These derived relationships update as allocations are refined,
 which supports automatic traceability and consistency checking
-across architectural layers (Ch 41, p 266).
+across architectural layers (Ch 41, p 323).
 
 ## Status of Chapter 75 in the source
 

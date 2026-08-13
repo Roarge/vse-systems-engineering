@@ -15,7 +15,7 @@ related:
   - sysml2-view-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-metadata]
 ---
 
@@ -35,7 +35,7 @@ Imports can be restricted with filter conditions that impact which
 elements are brought into a namespace. A filter condition is a
 Boolean expression about model elements. An imported element is
 brought in only when the filter condition is true for it
-(Ch 36, p 256).
+(Ch 36, p 303).
 
 ## What filters are good for
 
@@ -71,7 +71,7 @@ content.
 
 Filters can be written in terms of custom metadata. A filter can
 combine reflective metadata with project metadata
-(Ch 36, p 257):
+(Ch 36, p 304):
 
 ```sysml
 package ApprovedPartsCatalogue {
@@ -110,7 +110,7 @@ governs which exposed elements actually appear on the view. See
 
 Chapter 36 of the SysML v2 book flags an open issue in the OMG
 KerML group (KERML11-183) regarding filter expressions. Syntax may
-change in future SysML 2.0 releases (Ch 36, p 257).
+change in future SysML 2.0 releases (Ch 36, p 304).
 
 ## See also
 

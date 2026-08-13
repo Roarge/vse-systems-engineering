@@ -14,7 +14,7 @@ related:
   - sysml2-syntax-packages-and-definitions
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-13
 referenced_by: [sysml2-model-structure]
 ---
 
@@ -57,7 +57,7 @@ time.
 ## Imports
 
 SysML 2.0 distinguishes public and private imports
-(Ch 15, pp 74 to 75). A `private import` brings a namespace into
+(Ch 15, pp 78 to 79). A `private import` brings a namespace into
 scope without re-exporting it. **Use `private import` by
 default.** Reserve public imports for packages that deliberately
 forward a namespace.

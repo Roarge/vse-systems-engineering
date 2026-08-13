@@ -14,7 +14,7 @@ related:
   - sysml2-view-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-views]
 ---
 
@@ -40,7 +40,7 @@ A view definition declares a view that satisfies a viewpoint. In
 textual notation, the view begins with `view def`, followed by an
 optional specialisation clause. The body declares the satisfied
 viewpoints, the rendering, the exposed elements, and any filters
-(Ch 37, p 260).
+(Ch 37, p 306).
 
 ```sysml
 view def StructureView {
@@ -63,11 +63,11 @@ specific exposed elements and filters.
 The elements rendered on a view are declared by `expose`
 relationships, which are a special kind of import relationship (see
 Chapter 15.1 of the SysML v2 book). Selection can be further
-restricted using filters (see Chapter 36.3) (Ch 37, p 260).
+restricted using filters (see Chapter 36.3) (Ch 37, p 306).
 
 Expose relationships always have **protected visibility**. The
 exposed elements are only visible in the view itself and in
-specialisations of the view (Ch 37, p 260). Authors must treat
+specialisations of the view (Ch 37, p 306). Authors must treat
 `expose` as scoped to the view, not as a general import into the
 containing package.
 
@@ -76,7 +76,7 @@ containing package.
 Filters are Boolean expressions about model elements that determine
 which of the exposed elements actually appear on the view. Filters
 allow a single underlying model to be viewed from multiple
-perspectives without duplication (Ch 37, p 260).
+perspectives without duplication (Ch 36, p 303).
 
 ```sysml
 filter @ApprovedBaseline;
@@ -88,17 +88,18 @@ elements that satisfy the predicate appear on the view. Filters can
 be combined with logical operators inside a single `filter`
 statement.
 
-A filter condition placed in square brackets without the `filter`
-keyword applies to all imports in the containing package, not just
-to the view. This is a subtle source of bugs. See
-[[sysml2-view-patterns]].
+A filter condition placed in square brackets after an import
+statement, without the `filter` keyword, applies only to that
+import. The bare `filter` keyword form applies to every import in
+the containing package (Ch 36, pp 303 to 304). Confusing the two
+scopes is a subtle source of bugs. See [[sysml2-view-patterns]].
 
 ## Render
 
 A rendering is a special kind of part usage declared with the
 `render` keyword. The standard library `Views` provides predefined
 render usages such as `asElementTable` and `asTreeDiagram`
-(Ch 37, p 260). A view picks a rendering style by referencing one
+(Ch 37, p 306). A view picks a rendering style by referencing one
 of these predefined usages or declaring its own.
 
 ```sysml
@@ -120,10 +121,11 @@ book.
 
 Views may be composed. Multiple specialised views can be combined
 into a higher-level view, allowing stakeholders to see both
-detailed and abstract perspectives on the system. This follows
-from the general SysML 2.0 definition and usage mechanism, so a
-view definition can specialise another view and a view usage can
-reference several view definitions (Ch 37, p 259).
+detailed and abstract perspectives on the system. The book itself
+states only that views can be specialised (Ch 37, p 306). The
+composition reading follows from the general definition and usage
+mechanism, so treat it as an application of the language rules
+rather than a documented feature.
 
 ```sysml
 view def CombinedSystemView :> StructureView, BehaviourView {

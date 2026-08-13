@@ -16,7 +16,7 @@ related:
   - sysml2-standard-views
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-views]
 ---
 
@@ -33,10 +33,10 @@ referenced_by: [sysml2-views]
 Views and viewpoints in SysML 2.0 are grounded in ISO/IEC/IEEE 42010,
 which addresses stakeholder concerns through a structured
 visualisation mechanism. The SysML v2 book offers a memorable
-analogy. A viewpoint is the recipe, answering what stakeholders are
-hungry for. A view is the cake, the actual result. The stakeholder
-is the person with a concern, and the viewpoint lists the
-ingredients and steps needed to satisfy that concern (Ch 37, p 258).
+analogy. A viewpoint is a camera mode, set up to capture something
+specific. A view is the photo that the mode produces. The
+stakeholder is the person who wants to see something specific, and
+that want is the concern the viewpoint frames (Ch 37, p 305).
 
 ## What viewpoints and views are
 
@@ -53,13 +53,13 @@ In SysML 2.0 terms:
   cares about. Viewpoints frame one or more concerns through `frame
   concern` clauses.
 - A **stakeholder** is a part that expresses a concern, the person
-  who is hungry in the analogy.
+  who wants to see something specific in the analogy.
 
 ## Viewpoint definitions
 
 A viewpoint is technically a special requirement. Viewpoints are
 declared with the `viewpoint def` keyword and specify the concerns
-that must be addressed by any conforming view (Ch 37, p 258).
+that must be addressed by any conforming view (Ch 37, p 305).
 
 ```sysml
 viewpoint def 'Top-Level System Perspective' {
@@ -72,7 +72,7 @@ Viewpoints can be composed. A top-level viewpoint may frame two or
 more sub-viewpoints, allowing a hierarchical organisation of
 concerns. Viewpoints may also inherit from or specialise other
 viewpoints through the standard SysML 2.0 definition and usage
-mechanisms (Ch 37, p 259).
+mechanisms (Ch 37, p 306).
 
 ## Concerns and stakeholders
 
@@ -96,7 +96,7 @@ ISO/IEC/IEEE 42010 architecture description in SysML 2.0.
 
 ## Two satisfaction mechanisms
 
-A view may satisfy a viewpoint in two ways (Ch 37, p 260):
+A view may satisfy a viewpoint in two ways (Ch 37, p 306):
 
 - **Explicit `satisfy` relationship.** The view declares
   `satisfy viewpoint <name>`. This is the form covered in

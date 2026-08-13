@@ -13,7 +13,7 @@ related:
   - sysml2-language-extension
 confidence: high
 created: 2026-05-05
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-extension]
 ---
 
@@ -49,7 +49,7 @@ specialisation, but they differ in their concrete type in the
 SysML 2.0 abstract syntax. The downstream consequences appear
 when the model is accessed via the API or filtered by element
 kind. A view filter that targets `OccurrenceUsage` will pick up
-the first form and miss the second (Ch 41.2, p 295). The
+the first form and miss the second (Ch 41.2, p 327). The
 recommendation is to keep the kind-keyword in code that crosses
 API or view boundaries, even though the language allows omitting
 it.
@@ -66,7 +66,7 @@ right-hand side of `:>> baseType` written as `meta SysML::Usage`:
 This works when `baseType` resolves to a usage. The trap is that
 **if the base type is a definition rather than a usage, the
 meta-cast returns null, and the semantic metadata then does
-nothing, silently and without an error message** (Ch 41.2, p 295).
+nothing, silently and without an error message** (Ch 41.2, p 327).
 The recommended pattern is to use the more general
 `SysML::Type` instead:
 
@@ -85,7 +85,7 @@ The `baseType` of a SemanticMetadata can be set to a definition
 rather than a usage. That is a reasonable choice when the keyword
 is meant for definitions only. The trap is that **if a user then
 applies the keyword to a usage, no implicit specialisation is
-added, and there is no error message** (Ch 41.2, p 296).
+added, and there is no error message** (Ch 41.2, p 328).
 
 To make the misuse fail loudly rather than silently, redefine the
 inherited `annotatedElement` feature of the SemanticMetadata with
@@ -111,7 +111,7 @@ User-defined keywords build domain-specific languages on top of
 SysML 2.0 with low ceremony, and the resulting models are easier
 to read and write than ones with explicit specialisations. Two
 practical limitations are worth flagging before adopting the
-mechanism for a heavyweight DSL (Ch 41.2, p 297):
+mechanism for a heavyweight DSL (Ch 41.2, p 328):
 
 - **No custom validation rules.** There is currently no built-in
   way to attach extra validation rules to user-defined keywords
