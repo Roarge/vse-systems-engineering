@@ -13,9 +13,10 @@ related:
   - user-story-canonical-artefact
   - system-context-completeness
   - stakeholder-stories-workflow
+  - sysmod-system-context-source
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [story-orchestrator, needs-and-requirements]
 ---
 

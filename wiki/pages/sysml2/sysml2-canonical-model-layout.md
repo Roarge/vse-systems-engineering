@@ -15,9 +15,10 @@ related:
   - sysml2-namespace-hygiene
   - sysml2-variant-organisation
   - sysml2-model-cm-and-risks
+  - sysmod-toolbox-anatomy
 confidence: high
 created: 2026-05-04
-updated: 2026-05-06
+updated: 2026-08-13
 referenced_by: [sysml2-model-structure]
 ---
 

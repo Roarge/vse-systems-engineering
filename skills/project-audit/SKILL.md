@@ -221,4 +221,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
 | VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
 | VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
+| SYSMOD in an ISO 15288 process landscape | pages/sysmod/sysmod-iso15288-landscape.md | Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO 29110 story |
 <!-- wiki-routing:end -->

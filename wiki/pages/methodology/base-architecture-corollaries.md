@@ -13,15 +13,16 @@ related:
   - user-story-canonical-artefact
   - system-context-completeness
   - architectural-analysis-workflow
+  - sysmod-base-architecture-source
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [story-orchestrator, needs-and-requirements, architecture-design, attention-regime, project-setup]
 ---
 
 # Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard
 
-The Base Architecture in the VSE methodology is the set of architectural and technical decisions that pre-exist the project and constrain its work from outside it. The methodology captures it as a reference, not as something the project specifies. Two corollaries follow from that positioning, and a single agent-collaboration rule (§2.6 rule 7) protects those corollaries from drift when an AI agent helps author the story register. This page is the canonical reference for the corollaries and the guard. It supports the `UserPromptSubmit` hook reminder, the refusal lists in the story-orchestrator and needs-and-requirements skills, and the attention regime that ships with the plugin.
+The Base Architecture in the VSE methodology is the set of architectural and technical decisions that pre-exist the project and constrain its work from outside it. The methodology captures it as a reference, not as something the project specifies. Two corollaries follow from that positioning, and a single agent-collaboration rule (§2.6 rule 7) protects those corollaries from drift when an AI agent helps author the story register. This page is the canonical reference for the corollaries and the guard. It supports the `UserPromptSubmit` hook reminder, the refusal lists in the story-orchestrator and needs-and-requirements skills, and the attention regime that ships with the plugin. The source SYSMOD account of the same concept, including the abstraction dial and the disruptive-innovation prompt, is at [[sysmod-base-architecture-source]].
 
 ## The two §2.1 corollaries
 

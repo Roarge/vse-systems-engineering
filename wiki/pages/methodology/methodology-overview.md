@@ -21,9 +21,10 @@ related:
   - project-management-workflow
   - methodology-library-packaging
   - benefit-as-criterion
+  - sysmod-toolbox-anatomy
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [story-orchestrator, release-orchestrator, project-setup, project-audit]
 ---
 

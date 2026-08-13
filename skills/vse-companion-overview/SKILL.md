@@ -161,8 +161,9 @@ methodology. Where the two differ, the methodology spec wins.
   not carry.
 - **Each specialist skill carries its own routing table.** A skill names the
   pages it is expected to need, so routing to the skill is usually enough.
-  This lens carries no table of its own, because the methodology spec is
-  where it reads from.
+  This lens deliberately carries no table of its own. Everything about how
+  to do the work is read from the methodology spec or from a specialist
+  skill, and source-level orientation pages are found through `INDEX.md`.
 - **Resolving a wikilink.** A `[[slug]]` inside a page body resolves to the
   file `pages/**/<slug>.md` under the wiki root. Slugs are unique.
 - **Searching.** For a term `INDEX.md` does not surface, run

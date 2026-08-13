@@ -15,9 +15,10 @@ related:
   - base-architecture-corollaries
   - system-context-completeness
   - system-stories-workflow
+  - sysmod-stakeholder-identification
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 

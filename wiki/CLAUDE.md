@@ -60,6 +60,7 @@ wiki/
     project-structure/
     syside/
     sysml2/
+    sysmod/
     vv/
 ```
 
@@ -84,6 +85,7 @@ is the modelling language, and domain guides cover specific concerns.
 | PHAS-EAI | `pages/phas-eai/` | kappe.pdf, PHAS-EAI framework papers. |
 | INCOSE (VSE-scaled) | `pages/incose-vse/` | INCOSE SE Handbook 4e, filtered for VSE scope. |
 | AMBSE | `pages/ambse/` | Douglass 2016 (Agile Systems Engineering), Douglass 2021 (Agile MBSE Cookbook). |
+| SYSMOD (Weilkiens) | `pages/sysmod/` | Weilkiens methodology sources: SYSMOD 3rd edition, VAMOS, The New Engineering Game. |
 | Methodology | `pages/methodology/` | The plugin's methodology specification at `<plugin>/methodology/`. Atomic-page summaries cross-linked to the spec. |
 | SysML 2.0 | `pages/sysml2/` | OMG SysML 2.0 specification and derived notes. |
 | Syside tooling | `pages/syside/` | Sensmetry Syside documentation, Python API, and Sysand. |

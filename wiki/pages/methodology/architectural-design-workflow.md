@@ -13,9 +13,10 @@ related:
   - architectural-analysis-workflow
   - system-stories-workflow
   - user-story-canonical-artefact
+  - sysmod-architecture-kinds-and-coupling
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [architecture-design, story-orchestrator]
 ---
 

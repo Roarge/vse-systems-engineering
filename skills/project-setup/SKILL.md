@@ -411,4 +411,8 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
 | Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
 | Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| Base Architecture in SYSMOD: the source perspective | pages/sysmod/sysmod-base-architecture-source.md | SYSMOD's Base Architecture: the abstraction dial, reuse, innovation prompts, and coupling into the architecture chain |
+| The SYSMOD Model Purpose Model | pages/sysmod/sysmod-model-purpose-levels.md | Three modelling-purpose levels (communication, traceability, specification) for sizing how much MBSE a project needs |
+| Problem Statement, System Idea, and System Objectives | pages/sysmod/sysmod-problem-statement-and-objectives.md | Framing the real problem, the elevator-pitch System Idea, two kinds of System Objectives, and the workshop tools |
+| SYSMOD as a toolbox: processes, methods, products, roles | pages/sysmod/sysmod-toolbox-anatomy.md | What SYSMOD is: a methods toolbox, its four processes, tailoring, and the initial model package structure |
 <!-- wiki-routing:end -->

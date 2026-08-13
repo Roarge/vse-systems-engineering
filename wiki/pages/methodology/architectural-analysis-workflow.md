@@ -13,9 +13,10 @@ related:
   - benefit-as-criterion
   - system-stories-workflow
   - architectural-design-workflow
+  - sysmod-zigzag-pattern
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [architecture-design, story-orchestrator]
 ---
 

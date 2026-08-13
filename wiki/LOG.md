@@ -1152,3 +1152,91 @@ The four new pages carry no finding other than that global
 schema-drift one. Zero broken wikilinks, zero contents-block drift
 across all 135 pages, zero orphans, and no page lost or gained a
 frontmatter finding.
+
+## [2026-08-13] ingest | sysmod.pdf
+
+Layer: sysmod (new layer, schema row and directory-tree entry added in
+the same PR, per the layer rule in `wiki/CLAUDE.md`).
+
+Pages authored:
+
+- sysmod-toolbox-anatomy (new)
+- sysmod-model-purpose-levels (new)
+- sysmod-base-architecture-source (new)
+- sysmod-system-context-source (new)
+- sysmod-problem-statement-and-objectives (new)
+- sysmod-stakeholder-identification (new)
+- sysmod-zigzag-pattern (new)
+- sysmod-architecture-kinds-and-coupling (new)
+- sysmod-functional-analysis-chain (new)
+- sysmod-iso15288-landscape (new)
+- sysmod-test-modelling (new)
+
+Eleven pages rather than the ten the decomposition proposed. The
+eleventh, `sysmod-test-modelling`, was added at the engineer's
+direction over the proposal's recommendation to leave the Test Case
+and Test Architecture material out of this cycle. It covers the
+verdict-returning test behaviour, the Model Test Case, and the Test
+Architecture as an architecture kind, and it routes to
+verification-validation.
+
+Three candidates stay rejected, with the reasons recorded in the
+decomposition proposal. Proxy against full ports is resolved by SysML
+v2 having one port concept. Variant modelling is left wholly to the
+VAMOS cycle (issue #56), which also carries the `raw: vamos.pdf`
+correction on `sysml2-variant-organisation`. Risks stay covered by
+`sysml2-model-cm-and-risks` and `ambse-risk-and-metrics`, with the
+proxy-element idea preserved as one section of
+`sysmod-toolbox-anatomy`.
+
+Related-link touchpoints: 13 existing pages updated. Two of them
+(`base-architecture-corollaries`, `system-context-completeness`) also
+carry a body one-liner pointing at the source account.
+`sysml2-variant-organisation` was listed as a touchpoint and is
+deliberately unchanged, because its Weilkiens cross-links belong to
+the VAMOS cycle. `benefit-as-criterion` gained a contents block
+because the `related:` line took it past 100 lines.
+
+Routing resynced: project-setup (+4 rows), architecture-design (+4),
+needs-and-requirements (+5), project-audit (+1),
+verification-validation (+1). The review restored the lens design from
+the runtime flip: `vse-companion-overview` routes to skills, not
+pages, so it carries no marker block, and the three source-level
+orientation pages are homed on project-setup and project-audit. The
+distinct referencing-skill count stays at 20.
+
+INDEX regenerated: 135 pages and 11 layers to 146 pages and 12 layers.
+
+There was no unresolved `source-added` stub for `sysmod.pdf` in this
+log, so nothing is marked ingested by this entry.
+
+## [2026-08-13] lint | post-ingest (issue #55)
+
+Full rule set, run against the branch and against `main` at the merge
+base so the delta is like for like. Pages scanned: 146 on the branch,
+135 on `main`. Routing blocks scanned: 21 on the branch, 20 on `main`.
+
+- **ERROR: 0** on both sides.
+- **WARN: 231** on the branch against 220 on `main`. The movement is
+  exactly eleven new schema-drift findings, one per new page. The 84
+  wikilink findings and the single stale contents block are identical
+  on both sides.
+- **INFO: 0** on both sides.
+
+Reading the schema-drift count. This rule fires on every page in the
+wiki, on both sides, because the templates under `wiki/schema/`
+document what each page type is for in prose rather than prescribing a
+heading set. Its count therefore tracks the page count and carries no
+signal about the pages this ingest touched.
+
+The eleven new pages carry no finding other than that global one. Zero
+broken wikilinks, zero contents-block drift across all 146 pages, zero
+orphans, and no existing page gained a frontmatter finding. Routing
+bidirectional consistency holds in both directions, and all 199
+routing-row paths resolve.
+
+One observation for a future editorial sweep, present on `main` and
+not introduced here: `sysml2-variation-definitions` names
+`sysml2-quick-ref-keywords` in its `related:` list and no page carries
+that slug. The documented rule set checks wikilink resolution rather
+than `related:` resolution, so it is not a finding at any severity.
