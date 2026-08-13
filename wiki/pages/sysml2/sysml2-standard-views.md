@@ -14,7 +14,7 @@ related:
   - sysml2-view-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-views]
 ---
 
@@ -24,7 +24,7 @@ SysML 2.0 defines eight standard views in the
 `StandardViewDefinitions` package. These views provide predefined
 visual representations that map to common SysML v1 diagram types,
 easing migration and ensuring consistency across projects
-(Ch 13, p 51).
+(Ch 13, p 56).
 
 ## The eight standard views
 
@@ -42,7 +42,7 @@ easing migration and ensuring consistency across projects
 ## SysML v1 to v2 mapping
 
 SysML v1 diagrams map to corresponding SysML v2 standard views,
-providing a transition path for legacy models (Ch 13, p 54). A
+providing a transition path for legacy models (Ch 13, p 58). A
 project migrating from SysML v1 to SysML v2 can usually preserve
 the visual organisation of its existing diagrams by selecting the
 matching standard view.

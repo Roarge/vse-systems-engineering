@@ -91,7 +91,7 @@ documentation at delivery.
 Define a metadata with `status`, `priority`, and
 `responsiblePerson` and annotate elements as they move through the
 lifecycle. A filtered view can then produce a list of elements
-that still need review (Ch 36, pp 252 to 253).
+that still need review (Ch 36, pp 299 to 300).
 
 ### Smart package through filter
 
@@ -99,7 +99,7 @@ Use a `filter` clause in a package to define its contents
 declaratively. A parts catalogue that collects all approved part
 usages from other packages uses the reflective
 `@SysML::PartUsage` check together with a project-specific
-approval metadata (Ch 36, pp 256 to 257). See
+approval metadata (Ch 36, pp 303 to 304). See
 [[sysml2-filter-conditions]].
 
 ### Reflective abstract-type check
@@ -107,7 +107,7 @@ approval metadata (Ch 36, pp 256 to 257). See
 Use the `@@` operator together with the SysML reflective library
 to test whether a model element is a part definition, an abstract
 definition, or any other meta type. Useful in model validation
-scripts and automated checks (Ch 36, pp 254 to 255). See
+scripts and automated checks (Ch 36, pp 302 to 303). See
 [[sysml2-reflection-and-classification]].
 
 ### Risk annotation
@@ -140,13 +140,13 @@ occurrence navigationSubsystem` rather than the long form. See
 Apply more than one user-defined keyword to a single element when
 the keywords capture orthogonal aspects, such as `#critical
 #function navigation` to mark a function as both a function and a
-critical element (Ch 41, p 271).
+critical element (Ch 41, p 328).
 
 ### View-filtered import
 
 Combine a package-level import with a metadata filter to produce a
 view-specific namespace. Only elements carrying the required
-metadata appear in the filtered view (Ch 36, p 257; Ch 37, p 260).
+metadata appear in the filtered view (Ch 36, p 304; Ch 37, p 307).
 See [[sysml2-filter-conditions]].
 
 ## Pending material

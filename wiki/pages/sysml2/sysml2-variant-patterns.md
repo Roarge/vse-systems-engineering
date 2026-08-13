@@ -41,8 +41,9 @@ review. For declaration syntax and configuration mechanics, see
 
 Declare a `variation part` with named variants for each concrete
 option. The variants specialise the variation and carry their
-distinguishing attributes (Ch 35, p 247). This is the simplest form
-and the right starting point for most VSE-scale variation work.
+distinguishing attributes (Ch 35, pp 294 to 295). This is the
+simplest form and the right starting point for most VSE-scale
+variation work.
 
 ## Pattern: variation as definition
 
@@ -50,15 +51,15 @@ When the same variation structure is reused across contexts or
 appears in a parts catalogue alongside non-variation definitions,
 declare it as a variation definition that subclassifies the base
 part definition. Variant usages live inside the definition body
-(Ch 35, p 248). See [[sysml2-variation-definitions]] for the syntax.
+(Ch 35, p 295). See [[sysml2-variation-definitions]] for the syntax.
 
 ## Pattern: cross-variation constraint
 
 Use an `assert constraint` with an `implies` expression to enforce
-valid combinations across multiple variations (Ch 35, p 249). Keep
-constraints local to the smallest part definition that owns all
-variations involved. Constraints scattered across parent contexts
-become hard to audit during review.
+valid combinations across multiple variations
+(Ch 35, pp 295 to 296). Keep constraints local to the smallest part
+definition that owns all variations involved. Constraints scattered
+across parent contexts become hard to audit during review.
 
 ## Pattern: configured product from specialisation
 
@@ -74,7 +75,7 @@ When variation selection should follow mission-level or capability-
 level features, integrate with an external feature model via the
 PLEML extension. Feature bindings connect features to internal
 variations, and `assert constraints` handle dependent selections
-automatically (Ch 35, p 250).
+automatically (Ch 35, p 297).
 
 VSE projects should adopt this pattern only when the variation space
 exceeds three or four crosscutting decisions. Below that threshold,
@@ -92,13 +93,13 @@ Variant usages are related to their variation through a variant
 membership relationship, drawn as a solid line with a plus sign in a
 circle at the owner's end. They are not composite parts of the
 variation. Mass, cost, and other roll-ups must skip the variation
-and pick exactly one variant per configuration (Ch 35, p 247).
+and pick exactly one variant per configuration (Ch 35, p 294).
 
 ### Variation is a placeholder
 
 The variation acts as a placeholder. Anywhere the variation is used,
 one variant must be insertable in its place. Variants must therefore
-be specialisations of the variation (Ch 35, p 247). A variant that
+be specialisations of the variation (Ch 35, p 294). A variant that
 fails to specialise its variation is invalid.
 
 ### A variation can only own variants and annotations
@@ -106,7 +107,7 @@ fails to specialise its variation is invalid.
 A variation is not a normal definition body. It may only own
 variants and annotations such as comments. To give a variation
 structural detail, use a variation definition that subclassifies a
-concrete part definition (Ch 35, p 247). Attempting to add
+concrete part definition (Ch 35, pp 294 to 295). Attempting to add
 attributes or ports directly to a variation produces a malformed
 model.
 
@@ -115,20 +116,20 @@ model.
 Valid variant combinations are expressed as `assert constraint`
 bodies, not through the variation syntax alone. The relationship to
 PLE feature constraints is out of scope for the SysML v2 book
-(Ch 35, p 249).
+(Ch 35, pp 295 to 296).
 
 ### Setting a variant requires specialisation
 
 To fix a concrete configuration, specialise the variation owner and
 redefine each variation by binding it to a specific variant.
 Attempting to set variants directly on the base variation does not
-materialise a concrete product (Ch 35, p 249).
+materialise a concrete product (Ch 35, p 296).
 
 ### Feature model integration needs an extension
 
 Full PLE feature models are not part of core SysML 2.0. The PLEML
 language extension and tool support from vendors are required for a
-complete MBPLE workflow (Ch 35, p 250). Plan for this dependency
+complete MBPLE workflow (Ch 35, p 297). Plan for this dependency
 before adopting feature-driven selection.
 
 ## Pending material in the source

@@ -14,7 +14,7 @@ related:
   - sysml2-behaviour-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-13
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -91,7 +91,8 @@ present for each execution of the merge (Ch 26, p 175).
 
 Inside action bodies, successions may carry guard conditions written
 as Boolean expressions after the `if` keyword. A guarded succession
-is effective only when the guard evaluates to true (Ch 26, p 175).
+is effective only when the guard evaluates to true
+(Ch 26, pp 175 to 176).
 
 ```sysml
 then confirm if targetIdentified;

@@ -16,7 +16,7 @@ related:
   - sysml2-library-import-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-modelling]
 ---
 
@@ -57,7 +57,7 @@ The library exposes both **definition elements** (for example
 `LengthValue`) and **usage elements** (for example `length`,
 `width`, `height`, `altitude`). The SysML v2 book recommends using
 usage elements because they carry richer semantics and read as
-the physical role, not the underlying type (Ch 24, p 136).
+the physical role, not the underlying type (Ch 24, p 141).
 
 ## Units attach to values, not types (Ch 24.2)
 
@@ -66,7 +66,7 @@ In SysML 2.0 a unit (kilogram, metre, second) is bound to the
 deliberate change from SysML v1 where both the quantity and the
 unit were fixed on the value type. The 2.0 approach allows a
 single quantity attribute to accept values in different units,
-with automatic conversion during evaluation (Ch 24, p 136).
+with automatic conversion during evaluation (Ch 24, p 143).
 
 ```sysml
 part vehicle : Vehicle {

@@ -15,7 +15,7 @@ related:
   - sysml2-libraries-architecture
 confidence: high
 created: 2026-05-05
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-extension]
 ---
 
@@ -33,7 +33,7 @@ The first strategy for extending SysML 2.0 is to **model the new
 concepts with the existing ones**. This is no different from
 everyday modelling, except that the author defines more abstract
 concepts like `Function` or `Platform`, and organises them into
-model libraries for reuse (Ch 41.1, p 291). The same pattern is
+model libraries for reuse (Ch 41.1, p 322). The same pattern is
 used by SysML 2.0 itself, where every built-in concept is modelled
 in the Systems Library (Part VII). Domain libraries simply move
 the same mechanism into project-specific or methodology-specific
@@ -92,7 +92,7 @@ them with their own kinds (an action for a function, a part for a
 platform, or otherwise). The general advice is to **stay as
 general as possible** in libraries. Pinning a library concept to a
 narrower kind unnecessarily limits its scope of application
-(Ch 41.1, p 292).
+(Ch 41.1, p 323).
 
 `FunctionalAllocation` is an allocation definition, which is itself
 a special kind of connection (Chapter 34). The `crosses` clauses
@@ -116,7 +116,7 @@ choose to specialise them, or simply use them as the type of their
 own usages and detail those in place with nested usages. An
 abstract definition in a library forces the user to subclass
 before they can use it, which is heavier than necessary in most
-cases (Ch 41.1, p 292).
+cases (Ch 41.1, p 323).
 
 The exception is when the library deliberately wants to enforce
 specialisation, for example because every concrete realisation

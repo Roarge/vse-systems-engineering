@@ -29,7 +29,7 @@ A variation is a decision point in a model. At a variation point, one
 of several declared variant options must be chosen to materialise a
 concrete configuration. This stands in contrast with most engineering
 modelling languages, which leave variant management to external tools
-or naming conventions (Ch 35, p 246). The method-side vocabulary
+or naming conventions (Ch 35, pp 293 to 294). The method-side vocabulary
 behind this language feature, and the scoping test for whether
 candidate variants belong in one model at all, are at
 [[sysmod-vamos-concepts]].
@@ -46,7 +46,7 @@ the model is configured.
 A variation may only own variants and annotations such as comments.
 It cannot own ordinary structural members. To give a variation
 structural detail, use a variation definition that subclassifies a
-concrete part definition (Ch 35, p 247). See
+concrete part definition (Ch 35, pp 294 to 295). See
 [[sysml2-variation-definitions]] for the two declaration forms.
 
 ## Where variations fit in product line engineering
@@ -88,7 +88,7 @@ selection. The two surfaces communicate through feature bindings
 introduced by the PLEML extension. A long-range mission feature in
 the external model can drive the engine variation in the SysML model,
 which in turn drives the battery variation through an `assert
-constraint` (Ch 35, p 250).
+constraint` (Ch 35, p 297).
 
 For VSE-scale projects, this separation is often unnecessary in
 early phases. A pure SysML 2.0 variation model with internal

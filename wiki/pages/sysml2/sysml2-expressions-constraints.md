@@ -16,7 +16,7 @@ related:
   - sysml2-actions
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-13
 referenced_by: [sysml2-expressions]
 ---
 
@@ -144,7 +144,7 @@ A constraint is a logical predicate that evaluates to a Boolean. A
 `constraint` usage applies the predicate within a context. If the
 predicate evaluates to `false` for a well-formed model, the model
 or the real-world system fails to conform to the constraint
-(Ch 31, pp 208 to 210).
+(Ch 31, pp 253 to 255).
 
 ### Constraint definitions
 
@@ -174,7 +174,7 @@ containing context and marks the model as invalid if the constraint
 evaluates to `false`. The constraint reaches the containing context
 through its parameters, which the usage binds to features of that
 context, as the example below binds `consumers` to `powerConsumers`
-(Ch 31, p 209). Reference subsetting, written `::>` or `references`,
+(Ch 31, p 254). Reference subsetting, written `::>` or `references`,
 is a different mechanism and is not what binds a constraint to its
 context. There is no `>>` operator in SysML 2.0.
 
@@ -201,7 +201,7 @@ assert constraint not ForbiddenConfiguration;
 
 The inverted form is useful for explicit safety-invariant
 statements where the model author wants to say "this must never
-happen" rather than "this must always hold" (Ch 31, p 210).
+happen" rather than "this must always hold" (Ch 31, p 254).
 
 ## Where constraints meet other surfaces
 

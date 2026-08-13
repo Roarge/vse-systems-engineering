@@ -15,7 +15,7 @@ related:
   - sysml2-language-extension
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-metadata]
 ---
 
@@ -29,7 +29,7 @@ elements rather than about the modelled instances. Reflective
 expressions can access these annotations together with built-in
 ones that describe the model element itself. Reflection and
 metadata can be used in filters to implement smart packages and to
-specify view contents declaratively (Ch 36, p 252).
+specify view contents declaratively (Ch 36, p 299).
 
 ## Where metadata sits
 
@@ -46,7 +46,7 @@ This is the load-bearing distinction:
 - **Metadata annotates models, not instances.** Metadata usages sit
   on the model element at metalayer **M1**, not on instances at
   **M0**. Metadata is always about the model, never about the
-  system being modelled (Ch 36, p 254).
+  system being modelled (Ch 36, p 301).
 - Misreading this leads authors to attempt tag-based runtime
   state, which does not work. For state that varies during
   execution, use variable features (see
