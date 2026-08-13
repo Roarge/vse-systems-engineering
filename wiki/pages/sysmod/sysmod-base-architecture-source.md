@@ -14,6 +14,8 @@ sources:
     raw: sysmod.pdf
   - citation: "Weilkiens, T. (2020). SYSMOD - The Systems Modeling Toolbox, 3rd edition. MBSE4U. §11.6 (Zigzag Pattern)"
     raw: sysmod.pdf
+  - citation: "Weilkiens, T. (2018). The New Engineering Game: Strategies for Smart Product Engineering. MBSE4U. §4.6 (Base Architecture)"
+    raw: new-engineering-game.pdf
 related:
   - base-architecture-corollaries
   - sysmod-zigzag-pattern
@@ -21,6 +23,7 @@ related:
   - sysmod-system-context-source
   - sysmod-problem-statement-and-objectives
   - sysml2-base-architecture-and-federation
+  - sysmod-neg-complexity-and-dynamics
 confidence: high
 created: 2026-08-13
 updated: 2026-08-13
@@ -125,6 +128,24 @@ untouchable innovation potential.
 The prompt only works because the givens have been written down.
 An unwritten Base Architecture cannot be questioned, because nobody
 can see it.
+
+The same author's later book supplies the worked example this page
+otherwise lacks. A system for playing recorded music has held one base
+architecture since Emil Berliner invented the gramophone in 1887, and
+at that level of abstraction the architecture is still valid today,
+even though the crank and the zinc-based records are long gone. The
+compact disc, arriving in the mid 1980s, was the first strike against
+it, and it remained similar to a record at a high level of
+abstraction. MP3 and streaming deflated the architecture outright, and
+they changed the business model along with the technology, from owning
+music to renting access to a library by the month.
+
+A change of the Base Architecture rarely stops at the product. It can
+change supplier chains, business processes, market segments, and
+business models, and by Conway's Law the communication structure of the
+organisation is itself aligned with the Base Architecture, so the
+change propagates into the organisation as well. See
+[[sysmod-neg-complexity-and-dynamics]].
 
 ## How the source represents it
 
