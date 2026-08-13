@@ -150,6 +150,14 @@ the entire new set of values in one atomic operation. There is no
 rollback, and the result is undefined if the action is interrupted
 (Ch 26, p 180).
 
+### Assigning to a package-level usage is always an error
+
+Package-level usages are features of the type `Anything`, which is not
+an occurrence, so they are never variables and cannot be given a new
+value. An assignment that targets one fails with a message saying the
+referent feature of the assignment must be time varying (Ch 26,
+p 180).
+
 ### Control nodes are primarily for clarity
 
 Fork, join, decision, and merge nodes are largely aesthetic. Most

@@ -43,6 +43,9 @@ the left of `:=`, the expression evaluating to the new value, and
 the feature chain identifying the target feature. If there is no
 dot, the target is the parent action in which the assignment is
 nested. Attribute features cannot change their value (Ch 26, p 179).
+Package-level usages are never variables either, so an assignment to
+one is always an error, reported as the referent feature of the
+assignment having to be time varying (Ch 26, p 180).
 
 ```sysml
 assign vehicle.position := vehicle.position + velocity * dt;

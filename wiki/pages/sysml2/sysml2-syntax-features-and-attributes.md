@@ -8,7 +8,7 @@ tags: [syntax, multiplicity, attribute, enum, feature-values]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.6, 7.7, 7.8, 7.13."
     raw: 2-OMG_Systems_Modeling_Language.pdf
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Pages 115, 180, and 235."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Pages 105, 115, 180, and 235."
     raw: sysmlv2.pdf
 related:
   - sysml2-syntax-packages-and-definitions
@@ -69,19 +69,30 @@ redefinition restricts the feature's domain from `Anything` to the
 owning type and adds its name to that type's namespace
 (Ch 18, p 115).
 
-Three consequences follow for reading and writing such a feature.
+Three consequences follow for reading such a feature and for the
+values it can carry.
 
 - **Reading.** Referring to `ISQ::mass` inside `Drone` returns the
   mass associated with the drone instance the expression is evaluated
   on, not a single global value (Ch 30, p 235).
-- **Writing.** Assigning to a package-level feature binds to the
-  assignment action's context, so setting `ISQ::speed` inside `Drone`
-  sets it for the drone executing the action and affects no other
-  instance (Ch 26, p 180).
+- **Writing.** An assignment to a package-level usage is always an
+  error. Package-level usages are features of the type `Anything`,
+  which is not an occurrence, and only occurrences can have variables
+  because only they exist in time. Package-level usages are therefore
+  never variables and cannot be given a new value, so the tool reports
+  that the referent feature of the assignment must be time varying
+  (Ch 26, p 180). See [[sysml2-occurrence-context-and-variables]] for
+  the underlying rule about where variable features may appear.
 - **Value kind.** A bound feature value on a package-level feature
   constrains every instance in the universe, so the same value is
-  seen everywhere. An initial value gives every instance that value
-  to start with, but instances may then drift apart (Ch 30, p 235).
+  seen everywhere (Ch 30, p 235). An initial value gives every
+  instance that value to start with, and instances may hold different
+  values from one another, because the values of a package-level
+  feature are always associated with a domain instance rather than
+  kept in one global slot. The book's example is `ISQ::mass`, whose
+  value may differ for every drone (Ch 17, p 105). Such a per-instance
+  value never arrives through an assignment to the package-level
+  usage itself.
 
 ### Feature value forms summarised
 
