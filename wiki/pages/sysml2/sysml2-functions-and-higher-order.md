@@ -14,7 +14,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -37,10 +37,14 @@ for runtime type tests. For literal and operator expressions see
 
 An invocation expression calls a function or calculation usage by
 name and passes arguments in parentheses. Arguments are positional
-or explicitly named (Ch 30, p 198).
+or explicitly named (Ch 30, p 243).
 
 ```sysml
-calc def Distance(a : Point, b : Point) : LengthValue;
+calc def Distance {
+    in a : Point;
+    in b : Point;
+    return : LengthValue;
+}
 
 // Positional invocation
 attribute d1 = Distance(origin, target);
@@ -54,7 +58,7 @@ attribute d2 = Distance(a = origin, b = target);
 A calculation usage referenced **without** parentheses is a feature
 reference, not an invocation. This is load-bearing for higher-order
 use: the name alone refers to the calculation object itself, which
-can be stored in a variable or passed as an argument (Ch 30, p 198).
+can be stored in a variable or passed as an argument (Ch 30, p 243).
 
 ```sysml
 attribute calcFn = Distance;          // reference
@@ -65,23 +69,61 @@ Add empty parentheses to invoke a no-argument calc.
 
 ### Function operation expressions
 
-The `>>` notation chains the result of one expression into the
-first operand of a function, reading left to right (Ch 30, p 199):
+The first parameter of a function often represents a subject on which
+the operation is performed. A **function operation expression** puts
+that first operand before the arrow symbol `->`, which precedes the
+name of the invoked function, so results chain left to right
+(Ch 30, p 244).
 
 ```sysml
-attribute filtered = parts >> select { in p : Part => p.mass > 100 };
+calc def SelectLeader {
+    private import SequenceFunctions::excluding;
+    in part activeDrones [*];
+    in part damagedDrones [*];
+    activeDrones->excluding(damagedDrones)->NominateLeader()
+}
 ```
 
-This is equivalent to calling `select(parts, lambda)` but reads
-more naturally when chains are long.
+Here `activeDrones` feeds into `excluding`, which takes its second
+argument between parentheses. The result is the set of active,
+undamaged drones, which feeds into `NominateLeader` as its first and
+only argument, so nothing sits between the mandatory parentheses
+(Ch 30, pp 244 to 245, Figure 30.9).
+
+`->` is the only chaining symbol in the expression language. There is
+no `>>` operator.
 
 ## Higher-order functions
 
 SysML 2.0 supports first-class functions: calculations and
-function-typed features can be stored and passed as arguments.
-**Function literals** are lambda-like bodies with no name, declaring
-parameters in curly braces and returning an expression (Ch 30,
-pp 200 to 204).
+function-typed features can be stored and passed as arguments. A
+**function literal** is declared like a calculation body with no
+name, between curly braces, declaring all the parameters and then the
+return expression. Each parameter declaration ends in a semicolon and
+the body expression follows them (Ch 30, p 245).
+
+```sysml
+part def LeaderSelector {
+    private import SequenceFunctions::*;
+
+    attribute preferFirst : ScalarValues::Boolean;
+    calc nominateFirst = { in part drones; drones->head() };
+    calc nominateLast = { in part drones; drones->tail() };
+    calc nominate = if preferFirst ? nominateFirst else nominateLast;
+}
+```
+
+The pairing of the name `nominateLast` with `tail` is the book's own:
+`tail` returns the trailing subsequence, not a single element. A model
+that needs exactly one leader from the end of the sequence uses
+`last(drones)` instead.
+
+A function literal evaluates to a calculation instance that can be
+passed into a higher-order function or assigned to a calculation
+usage. At the time of writing it cannot be invoked directly
+(Ch 30, pp 245 to 246, Figure 30.10). The language has no arrow-style
+lambda form, so a parameter list followed by an arrow and a body is
+not valid syntax.
 
 ### Core higher-order functions (Control library)
 
@@ -97,24 +139,43 @@ Each of the following takes a sequence and a function parameter.
 | `forAll`, `allTrue` | Return `true` if the predicate holds for every element. | `all`. |
 | `exists`, `anyTrue` | Return `true` if the predicate holds for any element. | `any`. |
 
-### Operator notation for collect and select
+### Notations for collect and select
 
-Simplified syntax exists for `collect` (curly braces only) and
-`select` (period plus curly braces), which reads more compactly in
-common cases:
+Every higher-order function with the collect signature (a sequence
+and an expression) allows two shorthands on the function operation
+form (Ch 30, p 246).
+
+- The parentheses may be omitted when the second parameter is a
+  function literal and there are no other parameters, giving
+  `drones->collect{...}`.
+- When the second parameter would simply be an invocation of a
+  function or calculation definition, referring to it by name is
+  enough, giving `drones->collect GetAbortedTargets`.
+
+`collect` and `select` additionally have an **operator notation**. For
+`collect` the first operand is given before a dot and the second
+operand must be a function literal, so the curly braces are what
+distinguish it from a feature chain expression. For `select` the
+symbol is `.?`, read as "collect if", and the second operand must be
+a Boolean function literal (Ch 30, pp 246 to 247).
 
 ```sysml
-// Collect: map each part to its mass
-attribute masses = parts { in p : Part => p.mass };
-
-// Select: filter parts by mass
-attribute heavyParts = parts.{ in p : Part => p.mass > 100 };
+out item current [*] = collect(drones, {in drone [1] : Drone; drone.currentTarget});
+out item past [*] = drones->collect({in drone [1] : Drone; drone.pastTargets});
+out item succeeded = drones->collect{in drone [1] : Drone; drone.successfulTargets};
+out item failed = drones.{in drone [1] : Drone; drone.failedTargets};
+out item aborted = drones->collect GetAbortedTargets;
+out part damaged [*] = drones.?{in drone [1] : Drone; drone.isDamaged};
 ```
+
+The book recommends the function operation expression with
+parentheses, or the operator notation, to balance compactness against
+clarity (Ch 30, p 247).
 
 ## Classification expressions
 
 Classification expressions test or cast the runtime type of a value
-(Ch 30, pp 205 to 206).
+(Ch 30, pp 250 to 252).
 
 | Expression | Meaning |
 |---|---|
@@ -130,7 +191,7 @@ attribute engines = components as Engine;
 
 The book warns that `hastype` violates the Liskov substitution
 principle and should be avoided unless the intent is explicitly to
-exclude subtypes (Ch 30, p 206).
+exclude subtypes (Ch 30, p 251).
 
 ## See also
 

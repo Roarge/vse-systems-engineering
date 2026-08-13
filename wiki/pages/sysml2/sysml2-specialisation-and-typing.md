@@ -8,13 +8,15 @@ tags: [specialisation, typing, ref, composition, feature-values, redefines, subs
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 8.4."
     raw: 2-OMG_Systems_Modeling_Language.pdf
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 18.2.1 and 18.2.2, pages 111 to 112."
+    raw: sysmlv2.pdf
 related:
   - sysml2-language-architecture
   - sysml2-type-hierarchy
   - sysml2-syntax-packages-and-definitions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -23,6 +25,7 @@ referenced_by: [sysml2-modelling]
 ## Contents
 
 - Specialisation
+- The two special kinds of subsetting
 - Ownership and composition
 - Typing
 - Feature values
@@ -43,10 +46,48 @@ definition or vice versa.
 | `:>` | `specializes` | Subtype relationship. The specialising type inherits all features of the general type. |
 | `:>>` | `redefines` | Replaces an inherited feature with a more specific one. The redefined feature must be type-compatible with the original. |
 | `subsets` | `subsets` | Declares that a usage is a subset of another collection. The subsetting usage's values are always a subset of the subsetted usage's values. |
+| `::>` | `references` | Reference subsetting. Plain subsetting, at most one per usage declaration, marking the subsetted usage the modeller intends to reference. |
+| `=>` | `crosses` | Cross-subsetting. Plain subsetting, used only with connection ends, identifying the feature that refers to the elements reachable across the connection. |
 
 **Practical rule**: use `:>` to create subtypes of definitions.
 Use `:>>` inside a specialisation to override an inherited feature
 with a more specific type or value.
+
+## The two special kinds of subsetting
+
+Two special kinds of subsetting carry no extra semantic implication
+but help to interpret and structure the model (Ch 18, p 111).
+
+**Reference subsetting** is a simple subsetting with the restriction
+that there can be at most one of it in the declaration of each usage.
+Its role is to distinguish one of the subsetted usages as the one the
+subsetting usage was intended to reference. Ends of connectors may
+subset several usages, but only one was meant to be connected, and a
+perform action may subset several action usages, but only one was
+meant to be performed. Reference subsetting identifies that one. The
+symbol is `::>`, the "quadroclops smiley", which is not the
+redefinition symbol. The book recommends the keyword form
+`references` even for experienced modellers (Ch 18, p 111).
+
+```sysml
+action flyDroneToPosition;
+perform action callFlyToPosition ::> flyToPosition;
+perform action performFlyToPosition references flyToPosition;
+```
+
+The name mismatch is the book's own: Figure 18.7 declares
+`flyDroneToPosition` and then references `flyToPosition`. The figure
+is reproduced faithfully here, and a working model needs the two
+names to agree.
+
+**Cross-subsetting** is used exclusively with connection ends. It
+identifies the feature of a connected element that refers to the
+other connected elements reachable across the connection, which is
+where the name comes from. Like reference subsetting it is
+semantically just a subsetting, with additional significance in the
+language's syntax that tools can use to catch errors. Its textual
+syntax is the `crosses` keyword or the `=>` symbol, and the keyword
+form is again suggested for clarity (Ch 18, p 112).
 
 ## Ownership and composition
 

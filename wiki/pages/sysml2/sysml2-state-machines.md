@@ -4,18 +4,20 @@ slug: sysml2-state-machines
 type: reference
 layer: sysml2
 summary: State machines model behaviour through persistent conditions (states)
-tags: [states, transitions, state-machine, entry, do, exit, parallel-state, exhibit-state]
+tags: [states, transitions, state-machine, entry, do, exit, parallel-state, exhibit-state, communicating]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 28, pages 207 to 216."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 28, pages 207 to 219."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
   - sysml2-successions
   - sysml2-flows-and-messages
   - sysml2-behaviour-patterns
+  - sysml2-actions-in-context
+  - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -28,6 +30,7 @@ referenced_by: [sysml2-behaviour]
 - Entry, do, and exit behaviours
 - Parallel states
 - Exhibit states
+- Communicating state machines
 - See also
 
 State machines model behaviour through persistent conditions
@@ -41,7 +44,14 @@ lifetime of their owner or a subset of it.
 States are occurrences that may be active throughout the lifetime
 of their owner or a subset of it. Every state definition specialises
 `State` from the standard library. State definitions may own
-features, constraints, and other model elements (Ch 28, p 170).
+features, constraints, and other model elements
+(Ch 28, pp 209 to 210).
+
+Inside a state body, write the initial-state succession as one full
+succession usage, `first start then off;`. The two-line form
+`first start; then off;` does not work there: the chained shorthand
+of a `first` anchor followed by a bare `then` is available only in
+action bodies (Ch 28, p 213).
 
 ```sysml
 state def Idle {
@@ -51,7 +61,7 @@ state def Idle {
 
 States are persistent (they hold while active), whereas actions are
 transient (they execute and complete). A single component can have
-both states and actions; the state describes the condition the
+both states and actions. The state describes the condition the
 component is in, and the action describes what the component is
 doing right now.
 
@@ -61,7 +71,7 @@ Transitions connect states and declare the conditions under which
 one state is exited and another is entered. The long form declares
 the source state, a trigger, a guard condition, and an effect
 action. The short form, inside a state body, is more concise
-(Ch 28, p 172).
+(Ch 28, pp 210 to 212).
 
 A transition is triggered by an event such as a message reception,
 a timeout, or a change in a condition. The trigger is declared
@@ -79,6 +89,17 @@ transition off_to_starting
     then starting;
 ```
 
+Transitions are always usages. There is no transition definition,
+and every transition usage is defined by `StateTransitionAction`
+from the `States` standard library (Ch 28, p 212).
+
+When a transition fires, the source state's exit action runs, then
+the transition effect, then the target's entry action, and the
+machine settles into the target before the next event is considered.
+State machines are conventionally taken to handle one event at a
+time in this run-to-completion fashion, a good model to design
+against (Ch 28, p 211).
+
 ## Entry, do, and exit behaviours
 
 A state may own three kinds of action sequences:
@@ -88,7 +109,7 @@ A state may own three kinds of action sequences:
 - **Exit actions** execute when the state is exited.
 
 The corresponding keywords are `entry`, `do`, and `exit`
-(Ch 28, pp 172 to 173).
+(Ch 28, pp 209 to 210).
 
 ```sysml
 state def Charging {
@@ -104,41 +125,145 @@ are interrupted (terminated) when the state is exited.
 
 ## Parallel states
 
-Complex state machines can include parallel regions, where multiple
-states are active simultaneously. This is modelled with a parallel
-state definition (Ch 28, p 174). Parallel states are useful for
-modelling components that have orthogonal concerns, for example, a
-vehicle that is in `Driving` and also in `RadioOn` simultaneously.
+A complex state can be marked with the keyword `parallel`. The
+keyword marks the complex state itself, and it means that the
+sub-states are not exclusive but characterise the component together,
+like orthogonal aspects. Typically these parallel states are complex
+themselves, elaborating on those aspects (Ch 28, p 213).
+
+Because the sub-states hold at the same time, **it is forbidden to
+model transitions between the sub-states of a parallel state**
+(Ch 28, p 213).
 
 ```sysml
-state def VehicleState {
-    parallel {
-        state drivingState : DrivingMode;
-        state infotainmentState : InfotainmentMode;
+state flying parallel {
+    entry action : TakeOff;
+    do action {
+        first start;
+        then action performMission;
+    }
+    exit action : Land;
+
+    state positioning {
+        first start then stabilizing;
+        state stabilizing;
+            transition stabilizing then moving;
+        state moving;
+            transition moving then stabilizing;
+    }
+    state observing {
+        first start then idle;
+        state idle;
+            transition idle then observing;
+        state observing;
+            transition observing then idle;
     }
 }
 ```
 
-Each parallel region transitions independently. Joining them
-requires explicit coordination, typically through guards on
-transitions in the consuming state.
+The state `flying` is expanded into a parallel state with two complex
+states, `positioning` and `observing`, which are orthogonal aspects
+(Ch 28, pp 213 to 215, Figure 28.6).
+
+There are no history states. SysML 2.0 currently has no mechanism
+for a complex state to remember which sub-state was active when it
+was last left. Where the effect is needed, model it explicitly:
+record the last active sub-state in an attribute and branch back to
+it with conditional successions on re-entry (Ch 28, p 215).
 
 ## Exhibit states
 
-An **exhibit state** is a state that is exhibited by a part or
-system at a particular point in its lifecycle. Exhibit states are
-declared using the `exhibit` keyword and model the visible state of
-a component (Ch 28, p 176).
+Exhibit states are referential usages in the same way as perform
+action usages, and their purpose is the same: to establish links
+between the part tree of the system and its main state machine
+(Ch 28, p 215).
 
-The exhibit-state mechanism distinguishes the part's intrinsic
-state from the publicly observable state. A part may transition
-through several internal states while exhibiting only one of them
-to its environment.
+Typically the root of the part tree exhibits (or owns) the root
+state, and subparts then declare that they exhibit a certain
+sub-state of that machine. Depending on how the modelled system
+works, these may be parallel states, when every subpart operates in
+parallel, or simple states, when parts are activated one by one
+(Ch 28, p 215).
+
+Exhibit states work exactly like perform actions, with the same
+shorthand. The full form carries a name and a reference subsetting.
+The short form gives the exhibited state immediately after the
+`exhibit` keyword, and the exhibit state usage is then unnamed
+(Ch 28, pp 215 to 216, Figure 28.8).
+
+```sysml
+part def Drone {
+    port commPort;
+    state droneStates : DroneStates;
+    part navigationSystem {
+        exhibit state navigation ::> droneStates.on.flying.positioning;
+    }
+    part observationSystem {
+        exhibit droneStates.on.flying.observing;
+    }
+}
+```
+
+## Communicating state machines
+
+The alternative to one exhibited machine is to assign a dedicated
+state machine to each relevant part and handle their interactions
+implicitly by sending items between components. No exhibit state
+usage is needed (Ch 28, p 217).
+
+```sysml
+part def GroundStation {
+    port commPort;
+    state stationStates {
+        ref part context :>> this : GroundStation;
+        first start then standby;
+        state standby;
+            accept MissionStarted via context.commPort
+            then tracking;
+        state tracking;
+            accept MissionTimeout via context.commPort
+            then standby;
+    }
+}
+part def DroneSystem {
+    part drone : Drone;
+    part groundStation : GroundStation;
+    interface connect drone.commPort to groundStation.commPort;
+}
+```
+
+`GroundStation` waits in `standby`, moves to `tracking` when it
+accepts `MissionStarted` through its port, and returns on
+`MissionTimeout`. These are the signals the drone's own machine
+emits, and the interface in `DroneSystem` carries them to the ground
+station's port. The two machines are independent and coordinate
+entirely by messages, which is a typical pattern in distributed
+systems (Ch 28, p 217).
+
+Because a state is an action, everything about actions in a context
+carries over. Each machine binds to its component by redefining
+`this`, which is how it reaches that component's ports and features,
+and the same two routes to a peer apply, so a trigger or effect can
+travel through a port or directly to a named part. Routing through a
+port is what lets each machine stay ignorant of who is on the other
+end (Ch 28, p 218). See [[sysml2-actions-in-context]].
+
+Which arrangement to choose? One exhibited machine suits parts that
+move in lockstep, when the whole system's state should be visible in
+a single view. Communicating machines suit genuinely autonomous
+parts, designed and often operated independently, that coordinate
+through well-defined signals. The communication style scales across
+component and team boundaries, and the exhibited style is simpler to
+read for a tightly coupled system (Ch 28, p 218).
 
 ## See also
 
 - [[sysml2-actions]] for the action machinery that entry, do, and
   exit behaviours rely on.
+- [[sysml2-actions-vs-states]] for deciding between a state machine
+  and an action model in the first place.
+- [[sysml2-actions-in-context]] for the context-access patterns a
+  communicating machine relies on.
 - [[sysml2-flows-and-messages]] for the messages that typically
   trigger transitions.
 - [[sysml2-behaviour-patterns]] for VSE-scale patterns and gotchas.

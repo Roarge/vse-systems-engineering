@@ -13,9 +13,10 @@ related:
   - sysml2-functions-and-higher-order
   - sysml2-expression-patterns
   - sysml2-cases-overview
+  - sysml2-actions
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -23,48 +24,118 @@ referenced_by: [sysml2-expressions]
 
 ## Contents
 
-- Calculations (Chapter 27)
+- Calculations
+- Calculation usages
 - Constraints
 - Where constraints meet other surfaces
 - Pending material in the source
 - See also
 
 Calculations and constraints are the two main expression-bearing
-constructs in SysML 2.0. Calculations evaluate to a value;
+constructs in SysML 2.0. Calculations evaluate to a value, and
 constraints evaluate to a Boolean and govern model validity.
 
-## Calculations (Chapter 27)
+## Calculations
 
-Chapter 27 of the SysML v2 book (pages 203 to 206) is published in
-the 2026-06 release and covers calculation definitions and
-calculation usages. **This page does not yet reflect that
-material.** Until it is worked in, practical calculation authoring
-draws on the quick-reference syntax below and on the invocation
-semantics covered in [[sysml2-functions-and-higher-order]].
+A **calculation is an action with a dedicated return parameter**. The
+reason for the construct is composability: because a calculation has
+a designated result, it can be treated as that value, nested inside
+another calculation or used wherever a value is expected, without
+explicit parameter wiring. Cases are specialised calculations, and
+constraints are calculations that return a Boolean (Ch 27, p 203).
 
-Key things to remember when authoring calculations now:
-
-- A `calc def` declares a parametric calculation with named input
-  parameters and a result expression.
-- A `calc` usage applies a calculation in a context, typically
-  binding parameters to features of the containing part.
-- Calculations specialise the library type
-  `Calculations::Calculation`.
-- A `calc` has a body expression that evaluates when the
-  calculation is invoked.
+A calculation definition is declared with `calc def`. Its body is an
+action body, so everything that applies to action definitions applies
+here unchanged: parameters, successions, control nodes, send and
+accept actions, assignments, and any other action substep. The only
+thing a calculation adds is the return parameter (Ch 27, p 203). See
+[[sysml2-actions]].
 
 ```sysml
-calc def CostPerformanceRatio(cost : MonetaryValue, performance : Real) : Real {
-    cost / performance
+calc def ChargingTime {
+    in capacity : ScalarValues::Real;
+    capacity / 10.0
 }
 
-calc def MassRollup(parts : Part[*]) : MassValue {
-    parts >> collect { in p : Part => p.mass } >> reduce { in a, b => a + b }
+calc def FlightTime {
+    in capacity : ScalarValues::Real;
+    return time : ScalarValues::Real = capacity / 5.0;
 }
 ```
 
-Confidence on calculation authoring may need revision when Chapter
-27 publishes its full treatment.
+`ChargingTime` uses the **implicit return** form, where the body ends
+with an expression. `FlightTime` uses the **explicit return** form,
+where the keyword `return` introduces a regular feature declaration
+with a name, a type, and a bound value (Ch 27, pp 203 to 204,
+Figure 27.1).
+
+> **The semicolon asymmetry.** The implicit return expression at the
+> end of the body does **not** take a semicolon, but the explicit
+> return parameter does. This is a frequent mistake. A semicolon on
+> the implicit form would terminate it as a regular statement and
+> lead to an error (Ch 27, p 204).
+
+Further rules (Ch 27, pp 203 to 204):
+
+- There can be only **one** return parameter, and it always
+  implicitly redefines the inherited `result` feature from
+  `Evaluation` in the Performances library.
+- The return parameter must have a name, a type, or both, even when
+  it is bound to a value. A bare `return` with no name and no type is
+  not allowed. Where neither a name nor a type is wanted, the
+  implicit form is the cleaner choice.
+- Parameters and the return value can be any kind of feature, not
+  only attribute values. A calculation might receive a part as input,
+  or return one, for example by selecting an element of a sequence
+  according to some criterion.
+- Calculations may also carry additional output parameters alongside
+  the return parameter, but mixing the two is typically confusing.
+  Use a calculation when there is a dedicated return value, and an
+  action definition when there are multiple outputs.
+
+Although a calculation body can technically contain anything an
+action body can contain, the book strongly recommends keeping
+calculations **side-effect-free**. Use them to compute values, not to
+do things. Behaviour with side effects or multiple outputs belongs in
+an action definition (Ch 27, p 204).
+
+## Calculation usages
+
+A calculation usage is introduced with the `calc` keyword and is
+declared inside other types like any other usage (Ch 27, p 205).
+
+```sysml
+calc def MissionCycle {
+    in capacity : ScalarValues::Real;
+
+    calc charging : ChargingTime {
+        in capacity = capacity;
+    }
+    calc flight : FlightTime {
+        in capacity = capacity;
+    }
+
+    charging.result + flight.time
+    // Alternatively:
+    // ChargingTime(capacity) + FlightTime(capacity)
+}
+```
+
+The final expression refers to `charging.result` and `flight.time` to
+compute the total cycle time. The implicit return of `ChargingTime`
+is reached through the inherited `result` name, and the explicit
+return of `FlightTime` through the name it was given. **No succession
+is needed**, because the dependencies between the calculation usages
+are expressed by the expression itself (Ch 27, p 205, Figure 27.3).
+
+In practice calculations are most often used in expressions, where
+they are treated as their own return value, and there the definition
+is usually invoked directly rather than declared as a usage. Because
+a calculation usage is also an action usage, it can additionally
+appear as a step in an action's flow, participating in successions
+and control nodes like any other action usage. That is occasionally
+useful but should not be the default pattern (Ch 27, pp 205 to 206).
+See [[sysml2-functions-and-higher-order]] for the invocation forms.
 
 ## Constraints
 
@@ -83,10 +154,11 @@ formula over the parameters and any in-scope features.
 
 ```sysml
 constraint def PowerBudget {
-    in consumers : PowerConsumer[*];
+    in consumers [*] : PowerConsumer;
+    in maxBudget : PowerValue;
     attribute totalPowerUsage : PowerValue =
-        consumers >> collect { in c : PowerConsumer => c.powerDraw }
-                  >> reduce { in a, b => a + b };
+        consumers->collect({in c [1] : PowerConsumer; c.powerDraw})
+                 ->reduce({in a [1] : PowerValue; in b [1] : PowerValue; a + b});
     totalPowerUsage <= maxBudget
 }
 ```
@@ -99,9 +171,12 @@ intermediate values, not results.
 
 An `assert constraint` usage applies a constraint directly in its
 containing context and marks the model as invalid if the constraint
-evaluates to `false`. The containing context is available inside
-the constraint through reference subsetting with the `>>` operator
-(Ch 31, p 209).
+evaluates to `false`. The constraint reaches the containing context
+through its parameters, which the usage binds to features of that
+context, as the example below binds `consumers` to `powerConsumers`
+(Ch 31, p 209). Reference subsetting, written `::>` or `references`,
+is a different mechanism and is not what binds a constraint to its
+context. There is no `>>` operator in SysML 2.0.
 
 ```sysml
 part def Vehicle {
@@ -146,14 +221,13 @@ One upstream chapter remains pending in the 2026-06 release:
   signatures.
 
 When it publishes, expect new pages or updates that add a full
-function catalogue. Chapter 27 Calculations is no longer pending,
-and working its authoring patterns into this page is outstanding
-wiki work rather than an upstream gap.
+function catalogue.
 
 ## See also
 
 - [[sysml2-expressions-overview]] for the expression language used
   inside constraint and calc bodies.
+- [[sysml2-actions]] for the action body a calculation body is.
 - [[sysml2-functions-and-higher-order]] for invoking calcs from
   expressions.
 - [[sysml2-expression-patterns]] for VSE-scale patterns.

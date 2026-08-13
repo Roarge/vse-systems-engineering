@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical behaviour-modelling patterns and the recurring mistakes that show up in review
 tags: [behaviour, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 192; Chapter 28, pages 207 to 216; Chapter 29, pages 220 to 232."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 202; Chapter 28, pages 207 to 219; Chapter 29, pages 220 to 232."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -14,9 +14,12 @@ related:
   - sysml2-special-action-usages
   - sysml2-state-machines
   - sysml2-flows-and-messages
+  - sysml2-abstract-actions
+  - sysml2-actions-in-context
+  - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -39,55 +42,77 @@ up in review. For declaration syntax see [[sysml2-actions]],
 ### Sequential action chain
 
 Use `first`, `then`, and `done` to order actions linearly. This is
-the foundational pattern for any step-by-step process (Ch 26, p 146).
+the foundational pattern for any step-by-step process (Ch 26, p 170).
 
 ### Parallel execution with fork and join
 
 Use fork nodes to split into parallel paths and join nodes to
 synchronise. The textual notation allows multiple `[1]`-to-`[1]`
 successions to leave or arrive at an action naturally, and the
-`fork`/`join` keywords make the pattern explicit (Ch 26, pp 148
-to 150).
+`fork`/`join` keywords make the pattern explicit (Ch 26, pp 173
+to 175).
 
 ### Conditional branching without decision nodes
 
 Use multiple conditional successions with guard conditions after
 `if`. Each can fire independently when its condition is true,
 avoiding the forced use of a decision node when the semantics
-permit independent branches (Ch 26, p 152). Watch the parallel
+permit independent branches (Ch 26, p 177). Watch the parallel
 branches gotcha below.
 
 ### Looping with while or until
 
 Wrap an action body with `while not targetConfirmed { ... }` or
 `loop { ... } until targetConfirmed` for adaptive repetition. More
-concise than control nodes for simple repetition (Ch 26, p 162).
+concise than control nodes for simple repetition (Ch 26, p 187).
 
 ### For-each iteration
 
 Use `for target in targetCandidates { ... }` to iterate through a
 sequence. The loop variable is freshly bound in each iteration, and
 the sequence is evaluated only once at loop start
-(Ch 26, pp 163 to 164).
+(Ch 26, pp 188 to 189).
 
 ### Send and accept pattern for inter-component communication
 
 Use send actions to initiate message exchange and accept actions
 to receive. Specify sender and receiver ports to bind the action to
-actual interfaces (Ch 26, pp 155 to 157).
+actual interfaces (Ch 26, pp 181 to 183).
 
 ### State machine with entry, do, and exit actions
 
 Define a state, attach entry, do, and exit actions, and connect
 states with transitions triggered by messages or time events
-(Ch 28, pp 172 to 173). This is the bread and butter of any
+(Ch 28, pp 209 to 210). This is the bread and butter of any
 control-system model.
 
 ### Perform action for behaviour reuse
 
 Use `perform action someAction` to invoke a previously defined
 action. Cleaner than inlining the same behaviour multiple times
-(Ch 26, p 165).
+(Ch 26, p 190).
+
+### Abstract action as a named placeholder
+
+Mark a step `abstract` to record that it belongs in the model while
+leaving its realisation open. It joins the behaviour the moment it is
+subsetted, redefined, performed, or wired into a succession, with
+nothing else to change (Ch 26, pp 193 to 195). See
+[[sysml2-abstract-actions]].
+
+### Choosing a context-access pattern
+
+Four ways exist for an action to reach the part it runs in, and the
+choice is a coupling decision (Ch 26, p 202). See
+[[sysml2-actions-in-context]].
+
+- **Inline**, when the behaviour belongs to one part and nothing
+  else, which needs no machinery at all.
+- **Explicit context reference**, when the behaviour is reusable and
+  the contract should be self-documenting.
+- **Redefining `this`**, for the same effect one binding shorter.
+- **Individual feature references**, when any part should be able to
+  wire the behaviour up regardless of its type.
 
 ## Gotchas and red flags
 
@@ -96,72 +121,90 @@ action. Cleaner than inlining the same behaviour multiple times
 When redefining parameters in a specialised action, redeclare them
 in order. To override only the second parameter, redeclare the
 first as well. Omitting earlier parameters causes a parsing error
-(Ch 26, p 145).
+(Ch 26, pp 169 to 170).
 
 ### Default succession multiplicities do not enforce ordering
 
 The default `[0..*]`-to-`[0..*]` does not enforce any ordering. Set
 `[1]`-to-`[1]` explicitly when strict sequential execution is
-required (Ch 26, p 147).
+required (Ch 26, p 172).
 
 ### Black circle and bullseye are snapshots, not initial or final nodes
 
 In SysML 2.0, the black circle at the start of a succession chain
 and the bullseye at the end are snapshots, not Activity Diagram
 initial and final nodes. They do not terminate the parent action
-(Ch 26, p 146).
+(Ch 26, p 170).
 
 ### `this` inherited as Occurrence
 
 In assignment and send actions, the target of `this` points to the
 nearest structural element up the composition hierarchy, which may
 not be the immediate parent. The inherited type is `Occurrence`, so
-the correct type may need to be set manually (Ch 26, p 154).
+the correct type may need to be set manually (Ch 26, p 179).
 
 ### Assignment is atomic but not transactional
 
 For a feature with upper bound greater than 1, assignment writes
 the entire new set of values in one atomic operation. There is no
 rollback, and the result is undefined if the action is interrupted
-(Ch 26, p 155).
+(Ch 26, p 180).
 
 ### Control nodes are primarily for clarity
 
 Fork, join, decision, and merge nodes are largely aesthetic. Most
 of their logic is derivable from succession multiplicities. Use
 them for readability, not because semantics require them
-(Ch 26, p 150).
+(Ch 26, p 175).
 
 ### Multiple true guards cause parallel branches
 
 Without a decision node, conditional successions evaluate
 independently. If several guards are true, every matching branch
 executes in parallel, which may surprise authors expecting
-exclusive choice (Ch 26, p 152). When exclusive choice is required,
+exclusive choice (Ch 26, p 177). When exclusive choice is required,
 use a `decide` node explicitly.
 
 ### Accept payloads need the special syntax
 
 Redefining the payload in an accept action is not automatic. The
 `accept` keyword must be followed by a usage declaration without a
-body to bind the payload correctly (Ch 26, p 157).
+body to bind the payload correctly (Ch 26, p 182).
 
 ### Send and accept receivers depend on port connections
 
 When the sender is a port, the receiver is inferred from interfaces
 connected to that port. If the interface is not properly defined,
-the receiver is indeterminate (Ch 26, p 155).
+the receiver is indeterminate (Ch 26, p 181).
 
 ### Loop variable is fresh in each iteration
 
 The for loop variable takes a fresh value on each iteration.
 Modifying the sequence during iteration has no effect, because the
-sequence is evaluated only once at loop start (Ch 26, p 163).
+sequence is evaluated only once at loop start (Ch 26, p 188).
 
 ### Termination semantics are not formally specified
 
 The terminate action ends an occurrence, but the precise semantics
 are not formally specified in the 2026-06 release (Ch 26, p 184).
+
+### A message modelled directly between parts triggers on the wrong events
+
+`message of HeatEnergy from environment to droneSystem;` is valid
+syntax, but parts are occurrences and the start and end of their
+existence are events. The model then says the transfer occurs when
+the source part **ends** and is received when the target part is
+**created**, which is almost never the intent. Model the message
+between event occurrences instead (Ch 29, p 224). See
+[[sysml2-flows-and-messages]].
+
+### An untriggered state machine is really a sequence of steps
+
+A machine whose every transition fires on completion, with no
+triggers and nothing to wait for, should be actions with successions.
+Conversely, an action that stops and waits indefinitely for an
+external event is really resting in a state (Ch 28, p 219). See
+[[sysml2-actions-vs-states]].
 
 ## Pending material in the source
 

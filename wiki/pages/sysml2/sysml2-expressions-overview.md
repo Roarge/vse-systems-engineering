@@ -17,7 +17,7 @@ related:
   - sysml2-expression-patterns
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-expressions]
 ---
 
@@ -36,7 +36,7 @@ any context where a value is needed. Expressions parse into
 expression trees whose internal nodes are operators and whose leaf
 nodes are literals and references. Each node in the tree maps to a
 concrete modelling element, so an expression is itself a model
-object, not an opaque string (Ch 30, p 189).
+object, not an opaque string (Ch 30, p 233).
 
 ## Expression categories
 
@@ -67,7 +67,7 @@ Operators fall into four groups:
 The unary `+` is syntactically legal but has no effect. The unary
 `-` constructs a negation operator expression whose operand is a
 positive literal, because there are no negative-number literals in
-the grammar (Ch 30, p 191).
+the grammar (Ch 30, p 235).
 
 ## Scalar values
 
@@ -93,7 +93,7 @@ attribute energy = mass * velocity ** 2 / 2;
 
 The `^` and `**` operators both mean exponentiation. The unary `+`
 is a no-op. The unary `-` takes a positive literal or expression
-and negates it (Ch 30, p 191).
+and negates it (Ch 30, p 235).
 
 ### Logical operators
 
@@ -107,7 +107,7 @@ short-circuit: the right-hand operand is only evaluated if the
 left-hand operand does not already determine the result. Use the
 control operators when the right-hand side has side effects or is
 only well-defined under a condition checked by the left-hand side
-(Ch 30, p 191).
+(Ch 30, pp 236 to 237).
 
 ### Comparison operators
 
@@ -118,9 +118,9 @@ comparison operators return Boolean.
 ### String operations
 
 String concatenation uses the `+` operator. Library functions
-provide `Length` and `SubString` (with start and end indices).
-Conversion functions include `ToString`, `ToComplex`, `ToReal`,
-`ToRational`, `ToInteger`, `ToNatural` (Ch 30, p 193).
+provide `Length(s)` and `Substring(s, start, end)`. Conversion
+functions include `ToString`, `ToComplex`, `ToReal`, `ToRational`,
+`ToInteger`, `ToNatural` (Ch 30, p 238).
 
 ## See also
 

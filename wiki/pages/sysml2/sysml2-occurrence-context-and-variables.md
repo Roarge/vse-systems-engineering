@@ -13,9 +13,11 @@ related:
   - sysml2-portions-and-individuals
   - sysml2-self-and-that
   - sysml2-actions
+  - sysml2-event-occurrences
+  - sysml2-actions-in-context
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -31,9 +33,11 @@ referenced_by: [sysml2-behaviour]
 This page covers three closely related topics from Chapter 25 of the
 SysML v2 book: the distinction between a suboccurrence and a portion
 (Section 25.8), the context occurrence `this` (Section 25.10), and
-variable features as time-functions (Section 25.11). For the 4D
-worldview that frames all three, see [[sysml2-occurrences-4d]]. For
-the portion vocabulary, see [[sysml2-portions-and-individuals]].
+variable features as time-functions (Section 25.11). Section 25.9
+sits between the first and the second of these and is covered by
+[[sysml2-event-occurrences]]. For the 4D worldview that frames all
+three, see [[sysml2-occurrences-4d]]. For the portion vocabulary, see
+[[sysml2-portions-and-individuals]].
 
 ## Suboccurrence versus portion
 
@@ -205,5 +209,9 @@ inside the timeslice with the `constant` modifier.
   used by `snapshot`, `timeslice`, and the variable-feature
   semantics.
 - [[sysml2-self-and-that]] for `self` and `that`.
+- [[sysml2-event-occurrences]] for Section 25.9, the referential
+  usage that pins its referent to the owner's life.
 - [[sysml2-actions]] for actions as occurrences whose context is
   given by `this`.
+- [[sysml2-actions-in-context]] for the four ways a behaviour reaches
+  the context `this` identifies.

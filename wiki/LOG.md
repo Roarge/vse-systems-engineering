@@ -1050,3 +1050,105 @@ Full post-flip rule set. Pages scanned: 131. Routing blocks scanned: 20.
 The 18 held-back pages still report the source-freshness INFO against
 `sysmlv2.pdf`, which is the intended state until issue #54 lands the
 2026-06 content delta.
+
+## [2026-08-10] ingest | sysmlv2.pdf 2026-06 content delta (issue #54)
+
+Layer: sysml2. The content half of the 2026-06 release upgrade. The
+repagination entry above brought every citation to the new page
+numbers. This entry brings the wiki level with what the release
+actually changed.
+
+Pages authored:
+
+- sysml2-abstract-actions (new, Section 26.8)
+- sysml2-actions-in-context (new, Sections 26.9 to 26.9.4)
+- sysml2-actions-vs-states (new, Section 28.6)
+- sysml2-event-occurrences (new, Section 25.9)
+
+Pages updated, tier one (the new material and what it forces):
+
+- sysml2-state-machines (Section 28.5 added, plus two corrections)
+- sysml2-flows-and-messages (taxonomy and Messages rewritten from the
+  expanded Section 29.1)
+- sysml2-expressions-constraints (Chapter 27 placeholder replaced by
+  the published treatment of calculations)
+- sysml2-actions, sysml2-special-action-usages,
+  sysml2-behaviour-patterns (pointers, the via-versus-to send routes,
+  two patterns, two gotchas)
+
+Pages updated, tier two and three:
+
+- sysml2-specialisation-and-typing (Sections 18.2.1 and 18.2.2, the
+  book added as a second source)
+- sysml2-case-kinds, sysml2-case-patterns (verdict values, include
+  declarations, the analysis-case example, trade studies)
+- sysml2-expressions-overview, sysml2-sequences-and-structures,
+  sysml2-functions-and-higher-order, sysml2-expression-patterns
+- sysml2-syntax-features-and-attributes (package-level clarifications)
+- sysml2-occurrence-context-and-variables, sysml2-cases-overview,
+  sysml2-variations-overview, sysml2-variant-patterns
+
+Corrected syntax that was previously wrong in front of readers. The
+Tier 3 verification pass against Chapter 30 found six discrepancies,
+four of them syntax the language does not have. The wiki taught `>>`
+as the function operation chaining symbol, where the book uses `->`
+and has no `>>` operator at all. It taught an arrow-lambda form
+`{ in p : Part => p.mass }`, where a function literal declares its
+parameters and then its body expression. It had the collect and
+select operator notations shifted by one, so a documented "filter"
+pattern would have collected Booleans. And it dropped the mandatory
+parentheses around an indexing operand. All four are fixed on
+sysml2-functions-and-higher-order, sysml2-expression-patterns,
+sysml2-expressions-constraints, and sysml2-sequences-and-structures,
+and each corrected page now states the fact plainly so the wrong form
+is not reintroduced. Two smaller fixes: a false claim that reference
+subsetting binds a constraint to its context, and `SubString` for
+`Substring`.
+
+In-body pointers. Every pointer of the form "(Ch 26, p 140)" on a
+page this ingest touches is refreshed from the extracts, which cover
+Chapters 18, 25, 26, 27, 28, 29, 30, and 33 completely with printed
+page headers. Pointers into chapters outside that set, which means
+Chapter 31 on sysml2-expressions-constraints and Chapter 15 on
+sysml2-namespace-hygiene, stay with the separate work item recorded
+in the repagination entry.
+
+Freshness. All 18 pages the repagination held back are now verified
+and bumped, so the `sysmlv2.pdf` source-freshness INFO count goes
+from 18 to 0. That closes the state the post-repagination lint entry
+recorded as intended until this issue.
+
+Routing resynced: sysml2-behaviour (four new rows). INDEX
+regenerated, 131 pages to 135. No `summary:` on an existing page
+changed, so no other routing block moved. The 2026-08-07
+`source-added | sysmlv2.pdf` stub is marked ingested by this entry.
+
+## [2026-08-10] lint | post-ingest (issue #54)
+
+Full rule set, run against the branch and against `main` at the merge
+base so the delta is like for like. Pages scanned: 135 on the branch,
+131 on `main`. Routing blocks scanned: 20 in both.
+
+- **ERROR: 0** on both sides.
+- **WARN: 242** on the branch against 240 on `main`. The movement is
+  four new schema-drift findings, one per new page, against two
+  wikilink-related findings resolved by adding the linked slugs to
+  the pages' `related:` lists.
+- **INFO: 9** on the branch against 27 on `main`. The drop of 18 is
+  exactly the `sysmlv2.pdf` source-freshness findings, which reach
+  zero. The nine that remain are all `methodology/*.md` sources on
+  methodology-layer pages and are untouched by this ingest.
+
+Reading the schema-drift count. This rule fires on every page in the
+wiki, on both sides, because the templates under `wiki/schema/`
+document what each page type is for in prose rather than prescribing
+a heading set. Its count therefore tracks the page count and carries
+no signal about the pages this ingest touched. The absolute WARN
+figure here is not comparable with the 152 recorded in the
+post-repagination entry, which came from a differently calibrated
+run of the same rule.
+
+The four new pages carry no finding other than that global
+schema-drift one. Zero broken wikilinks, zero contents-block drift
+across all 135 pages, zero orphans, and no page lost or gained a
+frontmatter finding.

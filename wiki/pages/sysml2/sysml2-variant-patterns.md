@@ -12,9 +12,10 @@ related:
   - sysml2-variations-overview
   - sysml2-variation-definitions
   - sysml2-variant-configuration
+  - sysml2-case-kinds
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-variants]
 ---
 
@@ -140,5 +141,6 @@ pending:
 
 When it becomes available, the relevant pages should be updated and
 `confidence` revisited. Section 33.2.1 (Trade Studies), previously
-listed here as pending, is published at page 288 and is outstanding
-wiki work rather than an upstream gap.
+listed here as pending, is published at page 288 and is covered by
+[[sysml2-case-kinds]], because `TradeStudy` is a specialised analysis
+case.

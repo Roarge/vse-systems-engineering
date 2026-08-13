@@ -14,9 +14,10 @@ related:
   - sysml2-variation-definitions
   - sysml2-variant-configuration
   - sysml2-variant-patterns
+  - sysml2-case-kinds
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-10
 referenced_by: [sysml2-variants]
 ---
 
@@ -67,8 +68,9 @@ The SysML 2.0 specification does not cover:
   These belong in an external feature model, integrated via the
   PLEML extension.
 - Trade-off analysis to support variant selection. Section 33.2.1
-  (Trade Studies, page 288) covers this in the source, and the
-  material is not yet reflected in this layer.
+  (Trade Studies, page 288) covers this through the `TradeStudies`
+  standard library, which the cases layer carries. See
+  [[sysml2-case-kinds]].
 
 For deeper coverage of Model-Based Product Line Engineering (MBPLE),
 the SysML v2 book points to Forlingieri et al. (2025).
