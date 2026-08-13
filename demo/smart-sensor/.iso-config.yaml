@@ -7,6 +7,10 @@
 # Plugin version recorded at /vse-setup time.
 plugin_version: "2.1.3"
 
+# Project rigour profile per methodology section 0.10.
+# One of: light | standard | full. Absent means standard.
+project_profile: standard
+
 # Baselined paths require an open Change Request and a
 # "(CR #<n>)" reference in the commit message.
 baselined_paths:
