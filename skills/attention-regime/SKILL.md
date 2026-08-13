@@ -201,9 +201,12 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Page | Path | Read when |
 |---|---|---|
 | Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| The free-energy model beneath PHAS-EAI | pages/phas-eai/phas-eai-active-inference-model.md | The free-energy formal model beneath PHAS-EAI, defining surprise, affordance, peer models, and worldview principles |
 | PHAS-EAI Digital Engineering Integration Requirements R1-R4 | pages/phas-eai/phas-eai-de-requirements.md | The four PHAS-EAI digital engineering integration requirements R1 to R4 |
+| Designing regimes of attention: inquiry questions and case evidence | pages/phas-eai/phas-eai-designing-attention-regimes.md | Five inquiry questions for designing regimes of attention, with a worked VSE security case and quantified outcomes |
 | PHAS-EAI Equations: Response Time, Resilience, Functional Information | pages/phas-eai/phas-eai-equations.md | The three PHAS-EAI equation families for response time, resilience, and functional information |
 | PHAS-EAI Lever Tables and Cross-Case Hypothesis Evidence | pages/phas-eai/phas-eai-levers-and-evidence.md | The four PHAS-EAI lever tables and the hypotheses with the strongest cross-case support |
+| LLM as expert peer in VSE requirement reviews | pages/phas-eai/phas-eai-llm-peer-review.md | Case evidence for LLM-as-expert-peer requirement reviews in a VSE, with cautions on scoring and model ageing |
 | PHAS-EAI Framework: Core Constructs | pages/phas-eai/phas-eai-overview.md | The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction |
 | The human dimension: craftsmanship, New Work, and the gap of slackness | pages/sysmod/sysmod-neg-human-dimension.md | Craftsmanship over Taylorism, New Work values, the gap of slackness, and the project-hero burnout warning |
 <!-- wiki-routing:end -->

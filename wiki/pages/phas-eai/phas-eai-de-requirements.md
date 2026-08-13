@@ -10,10 +10,17 @@ sources:
     raw: kappe.pdf
   - citation: "ISO/IEC TR 29110-5-6-2:2014 (paired with the PHAS-EAI complementarity argument)."
     raw: "ISOIEC TR 29110-5-6-22014.pdf"
+  - citation: "Georgsen, R. E. (2023). Beyond Code Assistance with GPT-4: Leveraging GitHub Copilot and ChatGPT for Peer Review in VSE Engineering. Norsk IKT-konferanse for forskning og utdanning (NIKT), no. 2 (NOKOBIT track), November 2023. https://www.ntnu.no/ojs/index.php/nikt/article/view/5674"
+    raw: "Paper IV - 5674-Article Text-21352-1-10-20231101.pdf"
+  - citation: "Georgsen, R. E. (2026). Navigating Uncertainty: Guiding Attention in Purposeful Human Activity Systems. Systems Engineering. https://doi.org/10.1002/sys.70041"
+    raw: "Paper V - Systems Engineering - 2026 - Georgsen - Navigating Uncertainty  Guiding Attention in Purposeful Human Activity Systems.pdf"
 related:
   - phas-eai-overview
   - phas-eai-equations
   - phas-eai-levers-and-evidence
+  - phas-eai-active-inference-model
+  - phas-eai-designing-attention-regimes
+  - phas-eai-llm-peer-review
   - iso29110-overview
   - sysmod-neg-human-dimension
 confidence: high
@@ -65,18 +72,26 @@ phase and context, presenting only relevant options to the user.
 providing guidance that does not depend on the individual user
 having deep SE experience.
 
+Case evidence records engineers internalising the thought patterns of
+an LLM reviewer and producing clearer requirements even when working
+unassisted, which is the internalisation indicator named in the table
+above. See [[phas-eai-llm-peer-review]].
+
 ## R3: Provide machine-readable traceability
 
 | Aspect | Detail |
 |---|---|
-| Model link | `omega` (observation precision), `g(.)` (generative model), `Phi` (inference mapping) |
+| Model link | `omega` (observation noise), `g(.)` (observation mapping), `Phi` (shared expectations) |
 | Metrics | Detection-to-decision time, integration surprise rate, decision rework rate |
 | Case support | A, B, C, D |
-| Mechanism | Machine-readable models increase `omega`, making hidden states observable and reducing detection lag. |
+| Mechanism | Machine-readable models improve the observation mapping `g(.)` and reduce the noise `omega`, making hidden states observable and reducing detection lag. |
 
 **Plugin mapping**: SysML 2.0 textual models provide
 traceability that both humans and tools can parse, reducing
 `tau_detect`.
+
+The three symbols in the model link, `omega`, `g(.)`, and `Phi`, are
+defined in [[phas-eai-active-inference-model]].
 
 ## R4: Sustain attention through environmental design
 
@@ -89,6 +104,10 @@ traceability that both humans and tools can parse, reducing
 
 **Plugin mapping**: Hooks fire at lifecycle transitions, guards
 check model consistency, preventing silent process drift.
+
+A worked instance of the same mechanism, with a signal source, a
+shared display, a practice, and measured outcomes, is recorded in
+[[phas-eai-designing-attention-regimes]].
 
 ## Complementarity with ISO/IEC 29110
 
