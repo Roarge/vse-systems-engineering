@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.13`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.14`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
@@ -18,8 +18,22 @@ rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
 SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
 content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
 ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, the
-thesis Papers IV and V ingest took `rc.12`, and the in-text pointer
-sweep takes `rc.13`, with every later candidate shifting by one.
+thesis Papers IV and V ingest took `rc.12`, the in-text pointer
+sweep took `rc.13`, and the contributor rules split takes `rc.14`,
+with every later candidate shifting by one.
+
+### Added (contributor rules)
+
+- Committed contributor rules under `.claude/rules/`: git-workflow,
+  style, and distribution load in every session, and wiki,
+  skills-and-commands, hooks, methodology, and release are path-scoped
+  so they load when matching files are touched. Future contributors
+  inherit the conventions that previously lived only in the gitignored
+  `CLAUDE.local.md`, which shrinks to a personal core. Stale facts are
+  corrected in the move: 28 skills, the tested no-agents-field
+  decision with its silent-drop rationale, routing-era wiki language,
+  and the spec locations. Three committed files that pointed at the
+  gitignored file now point at the committed rules.
 
 ### Fixed (pointer sweep)
 

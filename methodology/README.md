@@ -51,7 +51,7 @@ mechanism in Claude Code: project-local files win.
 ## Editing the spec
 
 The plugin contributor edits files in this directory directly,
-following the conventions in `CLAUDE.local.md`. Each substantive
+following the conventions in `.claude/rules/`. Each substantive
 edit is reviewed under the same pull-request workflow as any other
 plugin change.
 
