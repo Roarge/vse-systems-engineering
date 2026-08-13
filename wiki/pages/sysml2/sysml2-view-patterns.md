@@ -41,7 +41,7 @@ For the syntactic and conceptual surface, see
 
 Define a viewpoint that frames one or more concerns, then define a
 view that satisfies the viewpoint either by an explicit `satisfy`
-clause or by owning a usage of the viewpoint (Ch 37, pp 305-306).
+clause or by owning a usage of the viewpoint (Ch 37, pp 305 to 306).
 This is the simplest form and the right starting point for most
 VSE-scale view work.
 

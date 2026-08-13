@@ -41,8 +41,9 @@ review. For declaration syntax and configuration mechanics, see
 
 Declare a `variation part` with named variants for each concrete
 option. The variants specialise the variation and carry their
-distinguishing attributes (Ch 35, pp 294 to 295). This is the simplest form
-and the right starting point for most VSE-scale variation work.
+distinguishing attributes (Ch 35, pp 294 to 295). This is the
+simplest form and the right starting point for most VSE-scale
+variation work.
 
 ## Pattern: variation as definition
 
@@ -55,10 +56,10 @@ part definition. Variant usages live inside the definition body
 ## Pattern: cross-variation constraint
 
 Use an `assert constraint` with an `implies` expression to enforce
-valid combinations across multiple variations (Ch 35, pp 295 to 296). Keep
-constraints local to the smallest part definition that owns all
-variations involved. Constraints scattered across parent contexts
-become hard to audit during review.
+valid combinations across multiple variations
+(Ch 35, pp 295 to 296). Keep constraints local to the smallest part
+definition that owns all variations involved. Constraints scattered
+across parent contexts become hard to audit during review.
 
 ## Pattern: configured product from specialisation
 
