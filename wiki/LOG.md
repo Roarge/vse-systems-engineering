@@ -1498,3 +1498,32 @@ present LLM quality scores.
 
 Pages indexed: 158. Routing blocks regenerated: 2. Routing rows 208 to
 212. Layers stay 12 and referencing skills stay 20. ToC drift: 0.
+
+## [2026-08-13] refactor | in-text pointer sweep to the 2026-06 release
+
+Closes the residue the 2026-08-07 repagination entry recorded as a
+separate work item. The 113 in-text pointers still citing 2026-04
+printed pages were verified by locating each pointer's cited content
+in the 2026-06 text, using a page-marked extract anchored on the
+physical-minus-22 rule. No pointer was moved by arithmetic. Results:
+9 already correct, 98 repaginated, 6 unresolvable as pointer fixes
+because the cited content changed underneath them.
+
+The six became content corrections. The filter-scoping claim on
+sysml2-view-definitions and sysml2-view-patterns stated the reverse
+of Section 36.3 and is corrected on both pages, including where it
+appeared without a pointer. The retired recipe and cake analogy on
+sysml2-viewpoints-and-concerns is replaced by the 2026-06 camera-mode
+and photo analogy. The view-composition passage and the view-library
+pattern are re-attributed as applications of the general
+specialisation and library-package mechanisms, which is all the book
+documents. The cross-subsetting gotcha on sysml2-allocation-patterns
+no longer claims evaluation-time-only failure and now cites Section
+18.2.2 on syntactic checkability.
+
+Acceptance: zero pointers citing 2026-04 numbering remain (string
+and census checks), an independent ten-pointer spot-check against
+the extract passed ten of ten, and the 23 touched pages are bumped
+to 2026-08-13, completing the level-with-source state the
+repagination began. Citations in frontmatter, routing blocks, and
+INDEX were untouched, so no derived surface needed regenerating.
