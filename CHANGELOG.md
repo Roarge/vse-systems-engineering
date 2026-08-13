@@ -21,7 +21,7 @@ ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, and
 the thesis Papers IV and V ingest takes `rc.12`, with every later
 candidate shifting by one.
 
-### Added
+### Added (papers ingest)
 
 - Three wiki pages ingest thesis Papers IV and V into the `phas-eai`
   layer, which previously carried the thesis kappe alone.
@@ -42,7 +42,7 @@ candidate shifting by one.
   the review page routes to `attention-regime` and
   `needs-and-requirements`.
 
-### Changed
+### Changed (papers ingest)
 
 - Four existing pages take the two papers as second sources.
   `phas-eai-overview` gains the precision account of salience and the

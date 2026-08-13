@@ -111,9 +111,8 @@ actions. Four formal mechanisms:
 
 1. **Noise reduction**. Filters irrelevant signals so that
    dependability-relevant information stands out.
-2. **Observation mapping**. Improves the mapping from hidden
-   system states to observable indicators (increases `omega`
-   precision).
+2. **Observation mapping**. Improves the mapping `g(.)` from
+   hidden system states to observable indicators.
 3. **Affordance increase**. Raises the perceived and actual
    feasibility of dependability actions, lowering the activation
    threshold.

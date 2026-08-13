@@ -126,8 +126,9 @@ competence sooner when practices were explicit.
 
 ### H14: Machine-readable traceability reduces noise
 
-Prediction: Machine-readable models improve observation
-precision `omega`, reducing detection time and decision rework.
+Prediction: Machine-readable traceability reduces the effective
+noise `omega` and improves the observation mapping `g(.)`,
+reducing detection time and decision rework.
 
 Evidence: Direct support from Cases A (A3, A4), B (B2), C (C3),
 D (D4). The effect was strongest when traceability was
@@ -140,7 +141,7 @@ artefact.
 |---|---|---|---|
 | Configuration space | `X`, `C`, `CP_i` | Context filtering | R1 |
 | Designed cognitive reserve | `h`, `H_cog` | LLM as embedded SE | R2 |
-| Observation precision | `omega` | SysML 2.0 models | R3 |
+| Observation noise | `omega` | SysML 2.0 models | R3 |
 | Regime of Attention | precision wt. | Hooks and guards | R4 |
 | Patterned Practices | `I*_g` reduction | Phase-specific skills | R1 |
 | Niche Construction | feedback loops | Workspace conventions | R4 |
