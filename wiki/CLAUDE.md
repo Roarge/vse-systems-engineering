@@ -73,8 +73,9 @@ untracked. It is scratch output for the contributor, never an artefact.
 
 ## VSE Source Layers
 
-Pages are grouped by the source-processing order documented in
-`.claude/rules/wiki.md`. This ordering reflects the VSE-first editorial stance:
+Pages are grouped by VSE source layer. The editorial authority order
+for resolving disagreements between sources is documented in
+`.claude/rules/wiki.md` and reflects the VSE-first editorial stance:
 ISO 29110 is the process backbone, PHAS-EAI supplies design rationale,
 INCOSE is scaled for VSE scope, AMBSE governs the agile process, SysML 2.0
 is the modelling language, and domain guides cover specific concerns.

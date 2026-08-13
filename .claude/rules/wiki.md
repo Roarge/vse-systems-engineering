@@ -41,12 +41,14 @@ guides (Needs and Requirements, V&V, HSI).
 
 **Sources and citations.** `sources/` stays gitignored, so every
 `sources[].citation` must stand alone as a bibliographic reference. The
-`raw:` field is contributor metadata and takes exactly one of three
-forms: an exact filename under `sources/` (quoted when it contains
-spaces), a repo-relative path inside the plugin tree, or `null` for
-web-only sources. The `source-added-reminder` hook appends an
-unresolved stub to `LOG.md` whenever a file under `sources/` changes.
-Resolve stubs by running `/vse-wiki-ingest` on the referenced file.
+`raw:` field is contributor metadata, optional per source entry, and
+when present takes exactly one of three forms: an exact filename under
+`sources/` (quoted when it contains spaces), a repo-relative path
+inside the plugin tree, or `null` for web-only sources. The
+`source-added-reminder` hook appends an unresolved stub to `LOG.md`
+whenever a file under `sources/` is written or edited through the
+harness. Resolve stubs by running `/vse-wiki-ingest` on the referenced
+file.
 Session start emits wiki-freshness lines (days since the last LOG
 entry, unresolved stubs, lint findings) inside this repo. Read them as
 a nudge towards ingest, lint, or refactor.
