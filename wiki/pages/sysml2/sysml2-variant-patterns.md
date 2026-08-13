@@ -13,9 +13,10 @@ related:
   - sysml2-variation-definitions
   - sysml2-variant-configuration
   - sysml2-case-kinds
+  - sysmod-vamos-configurations
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-13
 referenced_by: [sysml2-variants]
 ---
 

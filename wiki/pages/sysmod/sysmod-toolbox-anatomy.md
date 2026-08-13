@@ -20,6 +20,7 @@ related:
   - sysmod-model-purpose-levels
   - sysmod-architecture-kinds-and-coupling
   - sysmod-iso15288-landscape
+  - sysmod-vamos-method
 confidence: high
 created: 2026-08-13
 updated: 2026-08-13

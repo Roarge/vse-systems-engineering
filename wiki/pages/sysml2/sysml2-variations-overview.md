@@ -15,9 +15,10 @@ related:
   - sysml2-variant-configuration
   - sysml2-variant-patterns
   - sysml2-case-kinds
+  - sysmod-vamos-concepts
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-13
 referenced_by: [sysml2-variants]
 ---
 
@@ -28,7 +29,10 @@ A variation is a decision point in a model. At a variation point, one
 of several declared variant options must be chosen to materialise a
 concrete configuration. This stands in contrast with most engineering
 modelling languages, which leave variant management to external tools
-or naming conventions (Ch 35, p 246).
+or naming conventions (Ch 35, p 246). The method-side vocabulary
+behind this language feature, and the scoping test for whether
+candidate variants belong in one model at all, are at
+[[sysmod-vamos-concepts]].
 
 ## What a variation is
 
