@@ -6,22 +6,51 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2026-08-13
 
-Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.15`. Entries accumulate here until the 3.0.0 release heading
-is cut. The release-candidate numbering runs one ahead of the
-provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
-the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
-chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
-rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
-SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
-content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
-ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, the
-thesis Papers IV and V ingest took `rc.12`, the in-text pointer
-sweep took `rc.13`, the contributor rules split took `rc.14`, and
-the demo sync takes `rc.15`, with every later candidate shifting by
-one.
+The Claude 5 era overhaul. The plugin repositions from enforcing one
+ceremony level to guiding with knowledge: every project records a
+rigour profile (light, standard, or full, methodology §0.10) that
+scales artefacts, ceremony, and gate dispositions. The wiki becomes
+the single on-demand reference surface (routing tables plus INDEX,
+bundles retired), the knowledge base catches up with the 2026-06
+SysML v2 Book, the Syside 0.10.3 product line, the Weilkiens
+methodology family, and the thesis papers, and the contributor rules
+move into committed path-scoped files. The release closed a
+fifteen-slot train of release candidates: pre-overhaul hygiene
+(rc.1), the wiki runtime flip (rc.2), the rigour-profile methodology,
+hooks, and skills chunks (rc.3 to rc.5), the Syside refresh (rc.6),
+the SysML v2 Book repagination and content delta (rc.7, rc.8), the
+SYSMOD, VAMOS, New Engineering Game, and thesis-papers ingests (rc.9
+to rc.12), the in-text pointer sweep (rc.13), the contributor rules
+split (rc.14), and the demo sync (rc.15).
+
+### Changed (release)
+
+- Full section-by-section README refresh against the shipped tree:
+  guide-not-enforce positioning with the profile idea up front, all
+  28 skills in five groups (including the paths-gated SysML family
+  and the contributor wiki skills), all twelve slash commands, all
+  five subagents, the routing-and-INDEX knowledge-base narrative with
+  current totals, the complete source list, current Syside product
+  names at 0.10.3 plus Sysand v0.2.0, profile-aware getting-started
+  and hooks sections, a current demo description, and the 3.0.0
+  versioning statement with the rc-train convention.
+- The story-orchestrator source-order line gains the missing SYSMOD
+  and SySiDE entries, matching the authority order in
+  `.claude/rules/wiki.md`.
+
+### Fixed (release)
+
+- The release fact-check found that `project-setup` never copied
+  `syside.toml` and `.lsp.json` into new projects, although the
+  templates exist, the demo carries both, and the canonical-layout
+  and Syside configuration pages record them as required for a
+  complete bootstrap. Step 4 now copies both. The same skill's
+  scaffold no longer tells new projects to gitignore
+  `docs/generated/`, which contradicted the Contract 3 committed-copy
+  design and was the origin of the demo defect fixed during the demo
+  sync.
 
 ### Changed (demo sync)
 
