@@ -236,6 +236,17 @@ folder per §8.3.2.
 Direct commits to `main` are prohibited. Hot-fixes are not exempt; they
 follow the same PR workflow with elevated priority.
 
+The prohibition as stated is the `full`-profile rule, enforced by
+branch protection on the remote. Lighter profiles scale it per the
+§0.10.3 obligation table. At `standard` the rule is a strong default
+rather than a technical bar: model and documentation work goes on story
+branches, and a direct commit to `main` draws a warning rather than a
+rejection. At `light` direct commits to `main` are permitted, with the
+same warning, because a solo exploratory project pays the branch-and-PR
+cost without gaining the review it buys. The three bullet obligations
+above (validation, methodology conformance, reviewed state) hold at
+every profile. What scales is the mechanism that keeps them true.
+
 ### 8.4.2 Story branches
 
 The standard branch is a **story branch**, dedicated to advancing one
@@ -296,6 +307,13 @@ Opening the draft PR triggers:
 - the PR template (§8.6.1) is populated;
 - CI runs the lint and well-formedness checks; failures surface as PR
   comments rather than blocking work.
+
+The timing above is the `full`-profile rule. Draft-PR timing scales per
+the §0.10.3 obligation table: at `standard` a draft PR is recommended on
+the first commit and required before the PR is marked ready for review,
+and at `light` the draft stage is optional because a PR opened at
+ready-for-review is enough when the author and the reviewer are the same
+person.
 
 ### 8.5.2 Iterative review on the draft PR
 
@@ -358,6 +376,9 @@ The PR template shall include the following sections:
 
 ### 8.6.2 Story-readiness checklist (author, before marking ready)
 
+The nine items below are the `full`-profile set. Lighter profiles use
+the subsets mapped in §8.6.4.
+
 A story is ready for final review when, for each story advanced by the
 PR:
 
@@ -385,6 +406,9 @@ PR:
 
 ### 8.6.3 Final review checklist (reviewer, before approving)
 
+The seven items below are the `full`-profile set. Lighter profiles use
+the subsets mapped in §8.6.4.
+
 In addition to confirming the §8.6.2 items:
 
 1. **Methodology conformance.** The story conforms to §1 well-formedness
@@ -410,6 +434,45 @@ For architectural branches (§8.4.3), the reviewer additionally confirms
 that the trade-study `analysis def` is reproducible and that the
 selected variant's score advantage is documented in the PR description.
 
+### 8.6.4 Tiered checklists
+
+The checklists in §8.6.2 and §8.6.3 are written once, at `full` rigour.
+This subsection selects which of those items apply at each project
+profile (§0.10.2). It repeats no item text. Read an entry as a reference
+into the numbered list of the named subsection.
+
+**Author readiness (§8.6.2).**
+
+| Profile | Items | Count |
+|---|---|---|
+| `light` | 2, 4, plus "the story file sits in the package appropriate to its level" and "the model parses" | 4 |
+| `standard` | 1, 2, 3, 4, 7, plus "the model parses" | 6 |
+| `full` | 1 through 9 | 9 |
+
+The `light` entry "the story file sits in the package appropriate to its
+level" is a coarse-grained stand-in for items 1 and 3. It retires at
+`standard`, where those two items are checked directly. "The model
+parses" is the local equivalent of item 8 for a project that does not
+run CI. Item 7 is checked against the `required_fields` list configured
+for the profile (§0.10.3), not against the full three-field set.
+
+**Reviewer (§8.6.3).**
+
+| Profile | Items | Count |
+|---|---|---|
+| `light` | 3 and 7, performed as self-review, plus "the story still matches the intent that prompted it" | 3 |
+| `standard` | 1, 3, 6, 7 | 4 |
+| `full` | 1 through 7, plus the architectural-branch extras above | 7 plus extras |
+
+At `light` the author and the reviewer are usually the same person, so
+the reviewer set is a deliberate re-reading rather than a second opinion.
+The value it retains is trace integrity (item 3) and self-containment
+(item 7), which are the two failures a single author is least likely to
+notice while writing.
+
+A project may adopt a longer list than its profile requires at any time.
+The profile sets a floor, not a ceiling (§0.10.1).
+
 ## 8.7 Story Lifecycle Alignment
 
 The story lifecycle (per `StoryMeta.status`) maps onto the branch/PR
@@ -423,9 +486,12 @@ state as follows:
 | `inProgress` (review) | branch exists; PR marked ready | awaiting final approval |
 | `done` | merged to `main`; branch deleted | story is accepted |
 
-The mapping is enforced by repository tooling: a CI check shall flag any
-story where `StoryMeta.status` is inconsistent with branch/PR state. For
-example, a story on `main` with `status = inProgress` is a defect.
+In the `full` profile a CI check flags any story where
+`StoryMeta.status` is inconsistent with branch/PR state. For example, a
+story on `main` with `status = inProgress` is a defect. The check is
+recommended at `standard` and absent at `light`, per the §0.10.3
+obligation table. Lighter profiles rely on `/vse-trace` run on demand
+and on review to catch the same inconsistency.
 
 Stories whose `status` returns from `done` to `inProgress` (because
 later validation surfaced an issue) shall do so via a new branch and a
@@ -448,3 +514,9 @@ are project-determined:
 ---
 
 *End of Section 8.*
+The shipped pull request template keeps the intent re-check visible at
+every profile. It is the light set's core reviewer item, and re-asking
+whether the story still matches its intent costs nothing at the higher
+tiers.
+
+

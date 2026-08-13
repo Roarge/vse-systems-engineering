@@ -467,6 +467,234 @@ shall be addressed by separate documents:
   mechanism in §6 is the mechanical foundation; full PLE feature
   modelling is a separate methodology layer)
 
+## 0.10 Scaling and Tailoring
+
+### 0.10.1 Floor and ceiling
+
+The methodology and its tooling raise the floor. The team raises the
+ceiling. Automation removes friction from work a disciplined engineer
+would do anyway, and it catches the classes of drift that are tedious to
+spot by eye. It does not supply engineering judgement, and it is not
+designed to.
+
+Enforcement is therefore a project choice rather than a default posture.
+Where the tooling detects drift, it reports what it found and names the
+section of this specification the finding comes from. The engineer
+decides what follows. A project that wants the tooling to block rather
+than report says so explicitly, by selecting a profile (§0.10.2) or by
+setting a per-gate override (§0.10.4).
+
+This section is the normative home of that choice. Skills, git hooks,
+lifecycle hooks, and templates implement it. Where an implementation
+disagrees with this section, the implementation is wrong.
+
+### 0.10.2 Project profiles
+
+Every project records a **rigour profile**. The profile scales the
+artefact set, the ceremony, and the enforcement disposition of the
+automated gates. It does not change the methodology itself. The same
+workflow stages, the same story artefact, and the same well-formedness
+rules (§1.9) apply at every profile.
+
+| Profile | Meaning |
+|---|---|
+| `light` | Solo work, prototypes, exploration. The methodology guides, nothing blocks, minimal artefact set. |
+| `standard` | Small team, real product. Gates warn, core artefacts required, full ceremony optional. This is the default. |
+| `full` | Audit-ready ISO/IEC 29110 conformance. Complete §9 mapping, blocking gates, full artefact set. |
+
+**Selecting a profile.** Two questions settle most cases.
+
+1. Does more than one person work on the project?
+2. Is there an external acquirer, an audit obligation, or a safety
+   obligation?
+
+Two answers of no suggest `light`. Either answer of yes suggests
+`standard`. A project that needs an acquirer or an assessor to sign off
+on the process itself selects `full`.
+
+**Recording the profile.** The profile is recorded once, in the
+`project_profile` key of `.iso-config.yaml` at the engineering root, and
+restated as a one-line tailoring record in the Project Plan (or in the
+README where no Plan exists yet), in this form:
+
+```text
+Profile: standard. Tailoring per methodology §0.10 defaults.
+```
+
+An absent `project_profile` key means `standard`. A project that
+deviates from the profile defaults, for example by adding a path back to
+`baselined_paths` or by overriding a single gate, names the deviation on
+the same tailoring line. That line is the tailoring record referred to
+throughout this section.
+
+**Changing profile mid-project.** A profile may be raised or lowered at
+any point. Record the change and its date on the tailoring line, keeping
+the previous entry so the history stays readable. The change itself does
+not require a Change Request, unless the project has placed
+`.iso-config.yaml` on its own `baselined_paths` list, in which case the
+ordinary §10.4.2 lifecycle applies. Raising the profile late is expected
+practice. A prototype that becomes a product moves from `light` to
+`standard` at the moment it acquires its first external stakeholder.
+
+### 0.10.3 Obligation table
+
+Legend: **R** required, **Rec** recommended, **O** omitted from the
+scaffold and available on demand. Each row names the section that
+specifies the obligation in full.
+
+| Obligation | Home section | light | standard | full |
+|---|---|---|---|---|
+| Project Plan | §10.3.1 | Rec: one-page set (Objectives, Scope, Deliverables, Milestones, known risks) | R: core set (adds System Description, Tasks, Resources, Risk Management Approach, one-paragraph CM) | R: all 17 §10.3.1 elements |
+| SEMP | §10.3.2 | O | Rec (as a Plan section) | R (Plan section or `docs/semp.md`) |
+| Risk Register | §10.7 | O (risks listed in the Plan) | Rec | R |
+| Configuration Management Strategy | §10.8 | O (one CM paragraph in the Plan) | Rec | R |
+| Disposal Management Approach | §10.9 | O | O (stub on request) | R |
+| Correction Register | §10.5.2 | O | Rec | R |
+| Meeting Records | §10.4.3 | O | Rec | R (PM.O4) |
+| Progress Status Record | §10.5 | O | Rec | R |
+| Draft pull request | §8.5.1 | Optional. A PR at ready-for-review is enough | Rec on the first commit, R before marking ready | R at the first usable stub |
+| Direct commits to `main` | §8.4.1 | Permitted, with a warning | Discouraged. Story branches for model and docs work | Prohibited, enforced by branch protection |
+| Author readiness checklist | §8.6.2, tiered in §8.6.4 | 4 items | 6 items | All 9 items |
+| Reviewer checklist | §8.6.3, tiered in §8.6.4 | 3-item self-review | 4 items | All 7 items plus the architectural extras |
+| `StoryMeta` required fields | §1.5 | `[status]` | `[status, priority]` | `[points, priority, status]` |
+| `baselined_paths` default | §10.4.2 | `[]`, so the CR machinery stays dormant | `[docs/project-plan.md]` | `[docs/project-plan.md, docs/cm-strategy.md, docs/risk-register.md, docs/disposal-management-approach.md, model/library/]` |
+| Change Request four-axis impact analysis | §10.4.2 | Not applicable while `baselined_paths` is empty | Brief form permitted. An axis may read "negligible" with one line | R in full form |
+| Traceability | §9.8 | `/vse-trace` on demand | `/vse-trace`, warning gates, advisory CI | Blocking gates and blocking CI |
+| Status and branch consistency CI check | §8.7 | None | Rec | R |
+
+**`methodology/` is deliberately absent from the default
+`baselined_paths` at every profile, including `full`.** Placing the
+project-local methodology copy under Change Request protection
+contradicts the override convention that makes the copy useful, and
+§8.4.3 methodology branches plus pull-request review already control
+changes to it. A project under formal assessment that wants the copy
+frozen adds it back explicitly and records the addition on its tailoring
+line.
+
+### 0.10.4 Gate dispositions
+
+A **gate** is an automated check that runs outside Claude Code, in a git
+hook or in CI. Each gate has a **disposition** per profile:
+
+| Disposition | Behaviour |
+|---|---|
+| `block` | The gate reports its finding and the operation stops. |
+| `warn` | The gate reports its finding and the operation proceeds. |
+| `info` | The gate prints one summary line and the operation proceeds. |
+| `off` | The gate does not run. |
+
+Five gates carry a per-profile disposition and may be overridden
+individually. The configuration key is the name used in
+`.iso-config.yaml`.
+
+| Gate | Configuration key | light | standard | full |
+|---|---|---|---|---|
+| Conventional-commit pattern (`commit-msg`) | `commit_msg_pattern` | off | warn | block |
+| Change Request reference for baselined paths (`commit-msg`) | `commit_msg_cr_reference` | off | warn | block |
+| SysML lint on changed model files (`pre-commit`) | `precommit_lint` | warn | warn | block |
+| Story well-formedness (`pre-commit`) | `precommit_story_wellformed` | off | warn | block |
+| Traceability on touched requirements (`pre-commit`) | `precommit_traceability` | info | warn | block |
+
+At `light` the Change Request gate is `off` because the default
+`baselined_paths` list is empty, so the gate would have nothing to
+check. A `light` project that baselines a path raises that one gate with
+an override.
+
+The disposition columns govern a gate wherever its hook is installed.
+The installation matrix in §3.4 of the hooks guide defines the per-tier
+install set, and at `light` the `pre-commit` and `commit-msg` hooks are
+not installed by default, so their rows take effect only when a light
+project adds those hooks through the §3.4 phased-rollout path. The
+light column then applies as written.
+
+The remaining automated surfaces are not per-gate configurable:
+
+- **Continuous integration traceability workflow**
+  (`.github/workflows/traceability-check.yml`). Not installed at
+  `light`. Installed as advisory (non-blocking) at `standard`. Installed
+  as blocking at `full`.
+- **`prepare-commit-msg`, `post-merge`, and `post-checkout`.** These
+  three hooks are informational at every profile. They prepopulate,
+  regenerate, or report, and they never block.
+- **Claude Code lifecycle hooks.** Advisory at every profile. They
+  inject context and surface reminders. They do not deny a tool call.
+- **Pre-push checks.** No local pre-push hook ships. The four pre-push
+  obligations are documented as continuous-integration contracts in §4.4
+  of the companion hooks guide, and a `full` project implements them
+  there.
+
+**Per-gate overrides.** A project may set any of the five keys above in
+`.iso-config.yaml`, and the override wins over the profile column:
+
+```yaml
+project_profile: standard
+gate_overrides:
+  precommit_traceability: block
+  commit_msg_pattern: off
+```
+
+An unset key follows the profile column of the table. The principle is
+configuration over code. A project changes a disposition by editing
+`.iso-config.yaml`, never by editing the shipped hook scripts, so the
+scripts stay identical across projects and an upgrade does not overwrite
+the project's intent. Record any override on the tailoring line
+(§0.10.2).
+
+### 0.10.5 ISO/IEC 29110 conformance
+
+The `full` profile is the complete §9 mapping. A project that runs at
+`full` and keeps its artefacts current satisfies the ISO 29110‑5‑6‑2
+Basic Profile objectives within the scope §9.2 declares, and §9.12 states
+what that claim does and does not cover. Projects intending formal
+assessment per ISO/IEC TR 29110‑3 select `full`.
+
+The lighter profiles are documented tailoring, not partial conformance.
+The distinction matters. ISO/IEC 29110 is itself a tailored subset of
+ISO/IEC/IEEE 15288, assembled into a profile so that a Very Small Entity
+is not asked to carry the ceremony of a large programme. The `light` and
+`standard` profiles extend that same tailoring principle one step
+further, for projects whose risk and audit posture is lighter still. A
+project at `light` or `standard` records its deviations from the `full`
+obligation set through the tailoring record (§0.10.2) rather than through
+a Change Request, because the deviation is a property of the process the
+project chose, not a change to a baselined artefact.
+
+A project at `light` or `standard` does not claim ISO 29110 conformance.
+It claims to follow this methodology at a recorded profile. Raising the
+profile to `full` is the act that opens the conformance claim, and the
+work it adds is the artefact set in the `full` column of §0.10.3.
+
+### 0.10.6 Bypass with rationale
+
+Every local gate can be bypassed. Git provides the mechanism, it is
+documented in the git manual, and no local hook can prevent its use.
+Pretending otherwise wastes the engineer's time and misrepresents what
+the tooling does. The methodology's position is that a bypass is a
+legitimate engineering act when the engineer records why.
+
+**The recording obligation.** At `full`, a bypass and its rationale are
+recorded in the Correction Register (§10.5.2), because the register is
+the artefact an assessor reads. At `standard` and `light`, one line in
+the commit body naming what was bypassed and why is enough.
+
+**How the tooling behaves.** A blocking gate names the rule it enforces,
+names the section of this specification the rule comes from, and points
+at this section. It does not advertise the bypass mechanism, because a
+gate whose message ends with instructions for skipping it is not a gate.
+
+**How skills behave.** When an engineer asks how to proceed past a gate,
+the skill answers honestly. It names the mechanism, names the recording
+obligation above, and recommends the conforming path first. It does not
+refuse to discuss a mechanism the engineer can find in one search.
+Refusing buys no compliance and costs the engineer's trust in every other
+thing the skill says.
+
+**Where bypass does not apply.** A check that runs in continuous
+integration is not reachable from a workstation. A project that needs a
+genuinely unbypassable gate puts that gate in CI and protects the branch,
+which is why the `full` profile installs the CI workflow and enables
+branch protection. See §11 of the companion hooks guide.
+
 ---
 
 *End of overview. All process-description sections are drafted:

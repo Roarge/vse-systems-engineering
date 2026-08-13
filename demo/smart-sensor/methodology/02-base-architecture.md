@@ -276,6 +276,21 @@ specialising part across the project; they shall be planned as their
 own work item rather than executed inside an unrelated story branch
 (§8.4.3).
 
+Discovery is the canonical entry path for **brownfield adoption**. The
+`@project-setup` skill performs an as-is architecture survey when
+implementation code is detected in the host project, and offers the
+user a per-element classification into mandated givens and contingent
+current-state choices. Mandated elements populate the Base Architecture
+`library package` under a `BL-BA-AS-IS-0.1` baseline. Contingent
+elements are recorded in `model/core/as-is/` under a separate
+`BL-AS-IS-CURRENT-0.1` baseline and may later be promoted, replaced,
+or retired through forward-going stories. The survey records evidence
+and source of mandate (one of parent organisation, customer, parent
+product, or regulator); it does not synthesise stakeholders, concerns,
+or stories about those decisions, per rule 7 of §2.6. The survey is
+opt-in and may be declined at setup time, in which case it is resumed
+later under the same opt-in posture via `@architecture-design`.
+
 ## 2.8 Out of scope
 
 - Detailed design of the Base Architecture parts beyond what the

@@ -40,9 +40,12 @@ change_request:
   issue_label: change-request
   required_for_paths: ${baselined_paths}
 
-# Renderers for §9.8 model-derived artefacts. The demo ships stubs.
-renderers:
-  traceability_matrix: tools/render/traceability-matrix.py
-  stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
-  system_reqs:         tools/render/system-reqs-doc.py
-  ivv_plan:            tools/render/ivv-plan.py
+# Renderers for §9.8 model-derived artefacts. The block stays
+# commented out until the demo ships renderer scripts, because a
+# configured path to a script that does not exist makes the
+# post-merge hook report a failure the project cannot act on.
+# renderers:
+#   traceability_matrix: tools/render/traceability-matrix.py
+#   stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
+#   system_reqs:         tools/render/system-reqs-doc.py
+#   ivv_plan:            tools/render/ivv-plan.py

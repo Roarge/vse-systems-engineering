@@ -25,11 +25,11 @@ the project-local copy first, then falling back to
 file exists. The pattern is the same as for any other override
 mechanism in Claude Code: project-local files win.
 
-> **Note (v1.2.0).** This release ships the spec to the plugin
-> tree. The runtime resolution path (project-local copy + skill-side
-> fallback) and the `/vse-setup` copy step are delivered in a
-> subsequent release that restructures the command, skill, and
-> hook surfaces around the user-story-first methodology.
+> **History.** Version 1.2.0 shipped the specification into the plugin
+> tree only. The runtime resolution path described above (project-local
+> copy plus skill-side fallback) and the `/vse-setup` copy step arrived
+> with version 2.0.0, which restructured the command, skill, and hook
+> surfaces around the user-story-first methodology. Both are live.
 
 ## Document map
 

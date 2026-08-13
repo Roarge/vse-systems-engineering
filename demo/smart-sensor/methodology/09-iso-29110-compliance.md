@@ -248,9 +248,11 @@ The methodology is designed for ISO 29110 compliance to be
 mechanically enforced rather than periodically audited. The set of
 hooks specified in `iso-29110-hooks-guide.md` covers:
 
-- **Pre-commit and pre-push gates** that block commits violating
-  artefact well-formedness, Story Meta lifecycle, or Traceability
-  Matrix consistency.
+- **Pre-commit gates** that, in the `full` profile, block commits
+  violating artefact well-formedness, Story Meta lifecycle, or
+  Traceability Matrix consistency. Lighter profiles warn or inform
+  per §0.10.4, and the former pre-push checks are carried by the
+  §4.4 CI contracts of the hooks guide.
 - **Claude Code session and tool hooks** that nudge author and
   reviewer behaviour toward ISO-compliant authoring patterns
   (Change Request before editing baselined artefacts, V&V case

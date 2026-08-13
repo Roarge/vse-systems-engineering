@@ -94,7 +94,6 @@ docs/
   decisions/                ADRs
   meetings/                 Meeting Records
   releases/                 Release plans
-  templates/                Out-of-scope §10.10 deliverable templates
 .iso-config.yaml            ISO 29110 hook configuration
 ```
 
