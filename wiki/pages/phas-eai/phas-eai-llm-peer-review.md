@@ -34,11 +34,12 @@ referenced_by: [attention-regime, needs-and-requirements]
 - Related patterns
 
 Confidence note: this page sits at `medium` rather than `high` for four
-reasons. The evidence is a single case study of one company, the author took
-part as a researcher in that company, the study isolates no causal effect, and
-the models it used are several generations old. What the page keeps are the
-findings about the shape of the interaction between engineers and a language
-model, which do not depend on which model generation is in use.
+reasons. The evidence is a single case study of one company, the study was
+participatory action research conducted with the company, it isolates no
+causal effect, and the models it used are several generations old. What the
+page keeps are the findings about the shape of the interaction between
+engineers and a language model, which do not depend on which model
+generation is in use.
 
 ## Problem
 
@@ -56,8 +57,8 @@ delays and keep stakeholders aligned on what is being built.
 
 ## Context
 
-Apply this pattern when review competence, rather than effort, is the missing
-ingredient, and when the budget does not stretch to hiring the competence in.
+Apply this pattern when review competence is missing, whether the constraint
+is the budget or a labour market that does not supply it.
 It suits a team that already works on a shared digital collaboration platform
 and can accept cloud tooling for the material under review.
 

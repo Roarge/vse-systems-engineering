@@ -81,10 +81,10 @@ above. See [[phas-eai-llm-peer-review]].
 
 | Aspect | Detail |
 |---|---|
-| Model link | `omega` (observation precision), `g(.)` (generative model), `Phi` (inference mapping) |
+| Model link | `omega` (observation noise), `g(.)` (observation mapping), `Phi` (shared expectations) |
 | Metrics | Detection-to-decision time, integration surprise rate, decision rework rate |
 | Case support | A, B, C, D |
-| Mechanism | Machine-readable models increase `omega`, making hidden states observable and reducing detection lag. |
+| Mechanism | Machine-readable models improve the observation mapping `g(.)` and reduce the noise `omega`, making hidden states observable and reducing detection lag. |
 
 **Plugin mapping**: SysML 2.0 textual models provide
 traceability that both humans and tools can parse, reducing

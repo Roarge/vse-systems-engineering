@@ -236,7 +236,7 @@ plugin's design rationale was built to address.
   to observe it, stands beside that as the source's own contribution.
   [[phas-eai-llm-peer-review]] records one concrete way of raising the
   curve without a hero, by giving a small team review competence it
-  could not otherwise afford.
+  could not otherwise hire in.
 - **The hero warning converges with hypothesis H7.** The source says
   heroes may bridge short-term trouble and must not be an
   organisational strategy. H7 predicts that increasing designed reserve

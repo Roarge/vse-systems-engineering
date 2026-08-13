@@ -97,8 +97,8 @@ Evidence: Direct support from Cases A (episode A1), B (B1), C
 (C1), D (D4). Teams with higher `h` sustained performance
 through personnel changes, while teams relying on individual
 expertise suffered when key staff departed. The published LLM review
-case is the clearest single instance, with embedded competence
-standing in for expertise the company could not hire. See
+case is the clearest illustration of the mechanism, with embedded
+competence standing in for expertise the company could not hire. See
 [[phas-eai-llm-peer-review]].
 
 ### H9: Regimes of attention reduce drift

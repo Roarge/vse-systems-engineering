@@ -145,9 +145,9 @@ Regular, ritualised interactions through which agents engage with
 Regimes of Attention and internalise knowledge. Examples from the
 case studies:
 
-- End-of-Phase (EoP) game sessions (Case B)
-- LLM-assisted review pipelines (Case D)
-- Patch-triage huddles (Case C)
+- Elevation of Privilege (EoP) game sessions (Case B)
+- LLM-assisted review pipelines (Case C)
+- Patch-triage huddles (Case D)
 - Structured lessons-learned workshops (Case A)
 
 Patterned Practices reduce functional information by narrowing

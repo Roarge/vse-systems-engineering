@@ -176,9 +176,9 @@ the case is the published worked example of raising the methods and tools
 curve without a project hero, the industry-side problem stated in
 [[sysmod-neg-human-dimension]].
 
-The source's closing position is the shortest statement of the whole
-procedure. If you cannot make the right thing the easiest thing to notice and
-do, your process will drift.
+The closing line of the source's case-study discussion is the shortest
+statement of the whole procedure. If you cannot make the right thing the
+easiest thing to notice and do, your process will drift.
 
 ## See also
 

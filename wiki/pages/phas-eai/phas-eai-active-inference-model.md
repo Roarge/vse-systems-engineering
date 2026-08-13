@@ -41,7 +41,9 @@ principle (FEP), a formalism from computational biology in which a system
 holds its organised state by reducing the gap between what it predicts and
 what it senses. Every engineered system has a purpose, and what marks a PHAS
 is awareness of that purpose. This page is the formal layer beneath the
-constructs [[phas-eai-overview]] states in prose.
+regime, practice, and niche-construction constructs [[phas-eai-overview]]
+states in prose. The configuration-space and cognitive-reserve constructs
+are formalised on the thesis side, in [[phas-eai-equations]].
 
 ## The boundary and perceptual uncertainty
 
@@ -67,8 +69,8 @@ observation. Two of the three symbols in the R3 row of
 ## Free energy, surprise, and alignment
 
 A generative model is a likelihood and a prior, and free energy binds the
-surprise of an observation, `-ln p(s)`, to the quality of that model. Entropy
-is the expected surprise over time.
+surprise of an observation, `-ln p(s)`, to the quality of the agent's
+internal model, written `mu`. Entropy is the expected surprise over time.
 
 ```text
 p(s, eta) = p(s | eta) * p(eta)
@@ -190,7 +192,7 @@ always means a local optimum.
 
 ## See also
 
-- [[phas-eai-overview]] for the five constructs this model formalises.
+- [[phas-eai-overview]] for the constructs this model underpins.
 - [[phas-eai-equations]] for the thesis-side equation families.
 - [[phas-eai-de-requirements]] for the requirements R1 to R4.
 - [[phas-eai-designing-attention-regimes]] for the design procedure.
