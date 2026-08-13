@@ -36,7 +36,7 @@ wiki or skill content, resolve in this order, highest authority first:
 the plugin's `methodology/` (project-local copy first), ISO/IEC 29110,
 PHAS-EAI (kappe and Papers IV and V), Galinier et al., the INCOSE SE
 Handbook scaled for VSEs, Douglass 2016 and 2021, SYSMOD (Weilkiens),
-the OMG SysML 2.0 specification with SySiDE notes, then the domain
+the OMG SysML 2.0 specification with Syside notes, then the domain
 guides (Needs and Requirements, V&V, HSI).
 
 **Sources and citations.** `sources/` stays gitignored, so every

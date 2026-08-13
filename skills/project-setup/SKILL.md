@@ -328,7 +328,7 @@ Create the following at `<ENG_ROOT>`:
   - `docs/progress-status-record.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/progress-status.md`.
   - `docs/disposal-management-approach.md`, the §10.9 stub.
 
-  The four directories written at every tier are empty and carry a `.gitkeep`. `docs/generated/` is gitignored, for renderer outputs.
+  The four directories written at every tier are empty and carry a `.gitkeep`. `docs/generated/` holds renderer outputs and is tracked, per the Contract 3 committed-copy design stated in Step 4.
 
   Report the omissions in Step 11 rather than silently skipping them, so the engineer knows what the tier decided and can ask for any of it later.
 
