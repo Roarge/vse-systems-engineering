@@ -40,6 +40,18 @@ split (rc.14), and the demo sync (rc.15).
   and SySiDE entries, matching the authority order in
   `.claude/rules/wiki.md`.
 
+### Fixed (release)
+
+- The release fact-check found that `project-setup` never copied
+  `syside.toml` and `.lsp.json` into new projects, although the
+  templates exist, the demo carries both, and the canonical-layout
+  and Syside configuration pages record them as required for a
+  complete bootstrap. Step 4 now copies both. The same skill's
+  scaffold no longer tells new projects to gitignore
+  `docs/generated/`, which contradicted the Contract 3 committed-copy
+  design and was the origin of the demo defect fixed during the demo
+  sync.
+
 ### Changed (demo sync)
 
 - The demo project is brought level with the v3 plugin. Its

@@ -124,13 +124,16 @@ Create or extend the following at `<PROJECT_ROOT>`:
 
   Leave the commented `gate_overrides` block commented. A project raises or lowers a single gate later by uncommenting one key, and an override written at setup that nobody asked for is a surprise the engineer meets at their first blocked commit.
 - `.githooks/`. Create the directory empty for now. Population is deferred to `@attention-regime`. Add a placeholder `README.md` that points to `methodology/iso-29110-hooks-guide.md` §3.
+- `syside.toml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` to `<PROJECT_ROOT>`. Configures the Syside tooling (three-level discovery starts at the project root).
+- `.lsp.json`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to `<PROJECT_ROOT>/.lsp.json`, verbatim (no placeholder substitution). Tells the Claude Code IDE to launch `syside lsp` for `.sysml` and `.kerml` files. Without it, model files fall back to plain text.
 
 Append to `.gitignore` (create if absent):
 
 ```text
-docs/generated/
 .iso-config.local.yaml
 ```
+
+Do not ignore `docs/generated/`. Model-derived artefacts are committed, because the Contract 3 CI check (hooks guide §4.4) compares the matrix regenerated from the pushed tree against the committed copy, which only works when the copy is tracked.
 
 ## Step 5: Copy the Methodology Specification
 
@@ -249,9 +252,9 @@ Present the consolidated list to the user as a single table.
 
 For each row, ask the user to choose exactly one of:
 
-- **`mandated`** — externally constrained, the project may not change without an external mandate.
-- **`contingent`** — currently used, but the project owns the choice and may revisit.
-- **`irrelevant`** — tooling-only, not architectural; will be excluded from both packages.
+- **`mandated`**: externally constrained, the project may not change without an external mandate.
+- **`contingent`**: currently used, but the project owns the choice and may revisit.
+- **`irrelevant`**: tooling-only, not architectural, and excluded from both packages.
 
 For every row marked `mandated`, ask one additional question and **only** this question:
 

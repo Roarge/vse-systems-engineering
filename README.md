@@ -18,7 +18,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 1. **Reduce information burden** by filtering guidance to the current story and its workflow stage.
 2. **Build designed cognitive reserve** by embedding SE competence in the tooling.
-3. **Provide machine-readable traceability** through SysML 2.0 model relationships (`derive`, `frame concern`, `verify`, `allocation`).
+3. **Provide machine-readable traceability** through SysML 2.0 model relationships (`derive`, `frame concern`, `satisfy`, `verify`, `allocation`).
 4. **Sustain attention** through environmental design rather than compliance mandates.
 
 ## Skills
@@ -42,14 +42,14 @@ The plugin ships 28 skills in five groups.
 | needs-and-requirements | Stakeholder needs elicitation and system requirements analysis (§1, §3, §4, §5) |
 | architecture-design | Base Architecture authoring, trade studies, subsystem decomposition (§2, §6, §7) |
 | verification-validation | Verification cases, validation cases, IVV plan rendering (§4.3.6, §5.4.6, §9.8) |
-| traceability-guard | Trace integrity check (`derive`, `frame concern`, `verify`, `allocation`) |
+| traceability-guard | Trace integrity check (`satisfy` and `verify` links, validation coverage) |
 
 ### Lifecycle skills
 
 | Skill | Purpose |
 |---|---|
 | project-setup | Bootstrap a VSE project per §8.3 layout, ask the rigour-profile question once, copy the methodology into the project, optional brownfield `engineering/` subdirectory |
-| project-audit | Audit project layout, story well-formedness, trace integrity, ISO 29110 artefact presence, hook installation, version drift (read-only) |
+| project-audit | Audit project layout, story well-formedness, trace integrity, ISO 29110 artefact presence, hook installation, version drift (read-only apart from its audit report) |
 | attention-regime | Configure the ISO 29110 hook surface and install profile-scaled project-side git hooks (per `methodology/iso-29110-hooks-guide.md`) |
 | session-journal | Manage cross-session continuity journal |
 | document-export | Export work products to docx, pptx, or pdf |
@@ -115,7 +115,7 @@ The plugin ships read-only subagents that the orchestrating skills dispatch for 
 |---|---|---|
 | vse-stakeholder-elicitor | needs-and-requirements at §4 persona-driven elicitation | Per-persona interview script, candidate need statements attributed to the persona of origin, and a cross-persona conflict summary |
 | vse-trade-study-runner | architecture-design at §6 trade-off steps | Weighted trade-off matrix with score rationale, sensitivity analysis, and any missing alternatives |
-| vse-traceability-matrix-builder | traceability-guard, project-audit, and verification-validation | Complete trace matrix with gap report keyed by rule, plus a bidirectional consistency check across the SysML model tree |
+| vse-traceability-matrix-builder | traceability-guard and project-audit (verification-validation routes through traceability-guard) | Complete trace matrix with gap report keyed by rule, plus a bidirectional consistency check across the SysML model tree |
 | vse-wiki-ingestor | vse-wiki-ingest (contributor side) | Atomic-page decomposition proposal for one converted source |
 | vse-wiki-curator | vse-wiki-refactor (contributor side) | Full-wiki refactor proposal (merges, splits, cross-links, confidence revisions) |
 
@@ -136,7 +136,7 @@ See `wiki/INDEX.md` for the page catalogue and totals (158 atomic pages across 1
 Knowledge is extracted from these sources, consulted in priority order:
 
 1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
-2. **ISO/IEC 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
+2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
 3. **PHAS-EAI framework**: Georgsen (2026) doctoral thesis, Georgsen (2023) on LLM peer review in VSE engineering, and Georgsen (2026) on guiding attention in purposeful human activity systems.
 4. **Galinier et al.** on SME engineering practices.
 5. **INCOSE SE Handbook 4e**, scaled for VSEs.
@@ -163,11 +163,11 @@ Additionally:
 - Configuration via `syside.toml` in the project root (three-level discovery, read by Syside itself).
 - IDE language server wiring via `.lsp.json` in the project root, copied by `project-setup` so Claude Code launches `syside lsp` automatically for `.sysml` and `.kerml` files.
 
-The pre-2025 open-source "SysIDE" extension is archived as "SysIDE Editor Legacy" and is no longer maintained. Use Syside Editor.
+The earlier open-source `sysml-2ls` language server was archived in October 2025 as "SysIDE Editor Legacy" and is no longer maintained. Use Syside Editor.
 
 ### Automator capabilities
 
-The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `derive`, `frame concern`, and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/syside/` for the API surface the plugin's skills rely on.
+The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `satisfy` and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/syside/` for the API surface the plugin's skills rely on.
 
 ## Getting started
 
@@ -208,7 +208,7 @@ After adding the marketplace, you might need to restart Claude Code so it discov
 The plugin ships an ISO 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
 - **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status including the rigour profile, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up. Lifecycle hooks are advisory at every profile.
-- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, and the shared `lib/iso-profile.sh`. They cover SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
+- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh`. They cover SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
 
 Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_profile`, `gate_overrides`, `baselined_paths`, and the other keys per §8 of the hooks guide). The schema is reproduced in the `attention-regime` skill body.
 
@@ -216,7 +216,7 @@ Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_p
 
 1. Open a fresh project directory in your terminal.
 2. Launch Claude Code and invoke `/vse-setup`.
-3. The skill enters Plan Mode, asks the rigour-profile question once (`light`, `standard`, or `full`, reversible later), drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. The default is the `engineering/` subdirectory. The user can override to the repo root or a custom subdirectory.
+3. The skill enters Plan Mode, asks the rigour-profile question once (`light`, `standard`, or `full`, reversible later), drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. For a fresh project the default is the repo root. Brownfield adoption defaults to an `engineering/` subdirectory, and a custom sub-path is possible in both modes.
 4. After Plan Mode approval, the skill scaffolds the directories, copies the methodology spec into the project's `methodology/` folder, writes the profile and its tailoring record, generates the profile-scaled document stubs, and prepares the `.github/`, `.iso-config.yaml`, and `.githooks/` scaffolding. Greenfield mode runs `git init` and an initial commit. Brownfield mode leaves staging to the engineer.
 5. From there, route through the orchestration skills:
    - `/vse-story` opens the first stakeholder story branch.
