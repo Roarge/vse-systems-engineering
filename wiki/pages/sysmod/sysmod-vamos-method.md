@@ -84,7 +84,7 @@ standard SysML tool is higher.
 The source adds one honest qualification. Customising the modelling
 tool with specific variant functionality raises the value again,
 but the result is no longer a standard SysML tool. It has become a
-variant modelling tool as well, with the maintenance that implies.
+variant modelling tool as well.
 
 ## Three concerns as three packages
 

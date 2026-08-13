@@ -59,7 +59,7 @@ in different variants, organisations increasingly face the challenge
 of providing a large set of product variants, and the industry is
 moving from the phase of mass production to a phase of mass
 customisation, that is, mass production of customised products
-(Ch 1, and SYSMOD §11.5 in the same words).
+(Ch 1; the customised-mass-production gloss is SYSMOD §11.5's).
 
 Three reasons to manage variants inside a model are named, and all
 three are within reach of a very small entity:
