@@ -125,7 +125,7 @@ applied to a project, and SYSMOD can be used on itself to elaborate
 what a project needs, with the MBSE Methodology as the system of
 interest.
 
-The same author's later book publishes one such tailoring ready made.
+The same author's later book publishes one such tailoring ready-made.
 SYSMOD Essentials is a modelling-independent derivation of the toolbox,
 supported by a workshop card set, which states on an abstract level
 which outcomes are essential and how they connect rather than how to

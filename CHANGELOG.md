@@ -22,8 +22,8 @@ ingest took `rc.10`, and the New Engineering Game ingest takes
 
 ### Added
 
-- Four wiki pages ingest The New Engineering Game (Weilkiens, 2018,
-  *Strategies for Smart Product Engineering*) into the `sysmod` layer
+- Four wiki pages ingest *The New Engineering Game: Strategies for
+  Smart Product Engineering* (Weilkiens, 2018) into the `sysmod` layer
   under a `sysmod-neg-` slug prefix, which marks the third Weilkiens
   source family in that layer.
   `sysmod-neg-complexity-and-dynamics` covers the two complexity
