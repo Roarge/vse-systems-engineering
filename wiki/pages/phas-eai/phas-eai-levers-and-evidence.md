@@ -8,10 +8,16 @@ tags: [phas-eai, levers, hypotheses, h7, h9, h13, h14, evidence]
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Tables 17 to 20 and Section 7.5."
     raw: kappe.pdf
+  - citation: "Georgsen, R. E. (2026). Navigating Uncertainty: Guiding Attention in Purposeful Human Activity Systems. Systems Engineering. https://doi.org/10.1002/sys.70041"
+    raw: "Paper V - Systems Engineering - 2026 - Georgsen - Navigating Uncertainty  Guiding Attention in Purposeful Human Activity Systems.pdf"
+  - citation: "Georgsen, R. E. (2023). Beyond Code Assistance with GPT-4: Leveraging GitHub Copilot and ChatGPT for Peer Review in VSE Engineering. Norsk IKT-konferanse for forskning og utdanning (NIKT), no. 2 (NOKOBIT track), November 2023. https://www.ntnu.no/ojs/index.php/nikt/article/view/5674"
+    raw: "Paper IV - 5674-Article Text-21352-1-10-20231101.pdf"
 related:
   - phas-eai-overview
   - phas-eai-equations
   - phas-eai-de-requirements
+  - phas-eai-designing-attention-regimes
+  - phas-eai-llm-peer-review
   - sysmod-neg-human-dimension
 confidence: high
 created: 2026-05-04
@@ -90,7 +96,10 @@ individual skill `u(E, MF)`.
 Evidence: Direct support from Cases A (episode A1), B (B1), C
 (C1), D (D4). Teams with higher `h` sustained performance
 through personnel changes, while teams relying on individual
-expertise suffered when key staff departed.
+expertise suffered when key staff departed. The published LLM review
+case is the clearest single instance, with embedded competence
+standing in for expertise the company could not hire. See
+[[phas-eai-llm-peer-review]].
 
 ### H9: Regimes of attention reduce drift
 
@@ -100,7 +109,9 @@ lower rates of process drift than those without.
 Evidence: Direct support from Cases B (B1), C (C2), D (D2). The
 mechanism operates through precision weighting: the regime keeps
 dependability signals salient even when competing priorities
-demand attention.
+demand attention. A fully worked instance, with quantified outcomes
+over two years, is recorded in
+[[phas-eai-designing-attention-regimes]].
 
 ### H13: Patterned practices reduce functional information
 

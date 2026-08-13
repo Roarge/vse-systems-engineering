@@ -20,6 +20,8 @@ related:
   - phas-eai-overview
   - phas-eai-de-requirements
   - phas-eai-levers-and-evidence
+  - phas-eai-designing-attention-regimes
+  - phas-eai-llm-peer-review
   - sysmod-neg-complexity-and-dynamics
 confidence: medium
 created: 2026-08-13
@@ -232,6 +234,9 @@ plugin's design rationale was built to address.
   performance depending on whether the right person is available on the
   right day. The timing instruction, forecast the gap rather than wait
   to observe it, stands beside that as the source's own contribution.
+  [[phas-eai-llm-peer-review]] records one concrete way of raising the
+  curve without a hero, by giving a small team review competence it
+  could not otherwise afford.
 - **The hero warning converges with hypothesis H7.** The source says
   heroes may bridge short-term trouble and must not be an
   organisational strategy. H7 predicts that increasing designed reserve
@@ -247,6 +252,9 @@ plugin's design rationale was built to address.
   [[phas-eai-de-requirements]] states it: environmental structures such
   as hooks, gates, and dashboards keep dependability salient when
   competing priorities would otherwise displace it.
+  [[phas-eai-designing-attention-regimes]] is the published worked
+  example of that mechanism, applied by a company of comparable size to
+  a concern the source would recognise.
 
 ## A tension worth stating
 

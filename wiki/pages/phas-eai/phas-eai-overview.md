@@ -8,10 +8,14 @@ tags: [phas-eai, configuration-space, cognitive-reserve, regimes-of-attention, p
 sources:
   - citation: "Georgsen, R. E. (2026). Resilient Smart City Design (Doctoral thesis). Sections 4.2.2 to 4.2.5 and 5.5."
     raw: kappe.pdf
+  - citation: "Georgsen, R. E. (2026). Navigating Uncertainty: Guiding Attention in Purposeful Human Activity Systems. Systems Engineering. https://doi.org/10.1002/sys.70041"
+    raw: "Paper V - Systems Engineering - 2026 - Georgsen - Navigating Uncertainty  Guiding Attention in Purposeful Human Activity Systems.pdf"
 related:
   - phas-eai-equations
   - phas-eai-de-requirements
   - phas-eai-levers-and-evidence
+  - phas-eai-active-inference-model
+  - phas-eai-designing-attention-regimes
   - sysmod-neg-human-dimension
   - sysmod-neg-complexity-and-dynamics
 confidence: high
@@ -121,6 +125,16 @@ sustained environmental structures (review gates, dashboards,
 automated checks) that keep dependability visible under workload
 pressure.
 
+Salience, in the underlying model, is estimated precision, that is,
+the signal-to-noise ratio of an input. A regime therefore works by
+raising the precision of dependability signals relative to everything
+else competing for attention. Both constructs, Regimes of Attention
+and Patterned Practices, are re-purposed from Ramstead, Veissière and
+Kirmayer (2016), where they describe how cultural affordances scaffold
+local worlds, and are used here as prescriptive design tools. The
+design procedure built on them is in
+[[phas-eai-designing-attention-regimes]].
+
 Plugin implication (R4): Hooks and guards in the plugin sustain
 attention by triggering at lifecycle boundaries, preventing
 silent drift away from process compliance.
@@ -155,6 +169,11 @@ In the PHAS-EAI model, niche construction explains why some
 teams sustain good practices while others drift: the environment
 either reinforces or undermines the inference system that drives
 behaviour.
+
+Formally, the same equation is read from the environment's side, so
+that the environment minimises free energy over its own model of the
+agent, which is what gives affordance a definition rather than a name.
+See [[phas-eai-active-inference-model]].
 
 ## See also
 
