@@ -17,9 +17,10 @@ related:
   - sysml2-syntax-requirements-and-cases
   - sysml2-requirements-semantics
   - needs-vs-requirements
+  - sysmod-neg-why-mbe
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-13
 referenced_by: [needs-and-requirements]
 ---
 

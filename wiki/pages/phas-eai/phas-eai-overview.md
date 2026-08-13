@@ -12,9 +12,11 @@ related:
   - phas-eai-equations
   - phas-eai-de-requirements
   - phas-eai-levers-and-evidence
+  - sysmod-neg-human-dimension
+  - sysmod-neg-complexity-and-dynamics
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-13
 referenced_by: [attention-regime]
 ---
 
@@ -91,6 +93,11 @@ makes reserve **designed** rather than accidental.
 Plugin implication (R2): LLM-assisted workflows raise `h` by
 embedding SE competence in the toolchain, so that even
 inexperienced VSE staff maintain a minimum performance floor.
+
+The industry-side statement of the same gap is Weilkiens' Gap of
+Slackness, where a methods and tools curve falls behind an
+exponentially rising product curve and is bridged by project heroes
+until they run out. See [[sysmod-neg-human-dimension]].
 
 ## Regimes of attention
 

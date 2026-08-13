@@ -12,9 +12,10 @@ related:
   - phas-eai-overview
   - phas-eai-equations
   - phas-eai-de-requirements
+  - sysmod-neg-human-dimension
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-13
 referenced_by: [attention-regime]
 ---
 
