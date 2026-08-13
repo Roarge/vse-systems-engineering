@@ -113,6 +113,11 @@ part def LeaderSelector {
 }
 ```
 
+The pairing of the name `nominateLast` with `tail` is the book's own:
+`tail` returns the trailing subsequence, not a single element. A model
+that needs exactly one leader from the end of the sequence uses
+`last(drones)` instead.
+
 A function literal evaluates to a calculation instance that can be
 passed into a higher-order function or assigned to a calculation
 usage. At the time of writing it cannot be invoked directly
