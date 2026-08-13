@@ -1416,3 +1416,85 @@ documentation.
 The four new pages carry no finding other than the global schema-drift
 one. Each lists every slug it links, so the stale-metadata rule stays
 silent on all four.
+
+## [2026-08-13] ingest | Paper V - Systems Engineering - 2026 - Georgsen - Navigating Uncertainty  Guiding Attention in Purposeful Human Activity Systems.pdf
+
+Layer: phas-eai (existing, the schema row names PHAS-EAI framework
+papers alongside kappe.pdf).
+
+Pages authored:
+
+- phas-eai-active-inference-model (new)
+- phas-eai-designing-attention-regimes (new)
+- phas-eai-overview (updated)
+- phas-eai-de-requirements (updated)
+- phas-eai-levers-and-evidence (updated)
+- sysmod-neg-human-dimension (updated)
+
+The concept page carries the formal model, which supplies definitions
+for `omega`, `g(.)`, and `Phi`, the three symbols the R3 model link
+names and the wiki did not define anywhere. The process page carries
+the five inquiry questions and the two-year VSE security case, at
+`confidence: medium` because the source records that its design does
+not isolate causal effect against a process-only baseline.
+
+Three candidates stay rejected: a PHAS-lineage page, a case-study-only
+page, and a precision-and-salience page. The first is intellectual
+history the plugin does not need to operate, and the other two would
+force a two-hop read the schema forbids.
+
+Second-source updates. `phas-eai-overview` gains the Paper V entry, the
+precision account of salience, the Ramstead, Veissiere and Kirmayer
+provenance for the two constructs, and the formal reading of niche
+construction. `phas-eai-de-requirements` gains the entry with pointers
+from R3 and R4. `phas-eai-levers-and-evidence` gains the entry with a
+worked instance under H9. `sysmod-neg-human-dimension` takes no source
+entry, its sources being Weilkiens, and gains one pointer in its
+regimes bullet. `referenced_by:` is untouched on every existing page.
+
+No `source-added` stub existed for this file, so nothing was resolved.
+
+Routing resynced: attention-regime (+2 rows for this source, 6 to 8).
+
+## [2026-08-13] ingest | Paper IV - 5674-Article Text-21352-1-10-20231101.pdf
+
+Layer: phas-eai (existing).
+
+Pages authored:
+
+- phas-eai-llm-peer-review (new)
+- phas-eai-de-requirements (updated)
+- phas-eai-levers-and-evidence (updated)
+- sysmod-neg-human-dimension (updated)
+
+The page is the case evidence behind the R2 premise, which the wiki
+previously held as one line and two case-support letters. It is a
+`pattern` page at `confidence: medium`, and it states the dated-evidence
+limit up front. The 2023 model-specific findings, the regular
+expression, mathematics, and JSON weaknesses and the privacy landscape
+of that year, are excluded as stale. What is kept concerns the shape of
+the interaction rather than model capability: the mentor effect, the
+divergence caution on numerical scores, the mechanism behind the quality
+gain, and the workflow shape.
+
+Rejected second source: adding this file to the iso29110 layer for its
+valve-liability anecdote. The anecdote belongs to Laporte and Munoz
+(2021), which is the source to ingest if that ground is wanted.
+
+Second-source updates. `phas-eai-de-requirements` gains the entry and a
+sentence under R2. `phas-eai-levers-and-evidence` gains the entry and a
+sentence under H7. `sysmod-neg-human-dimension` gains one pointer in its
+reserve bullet, with no source entry.
+
+No `source-added` stub existed for this file, so nothing was resolved.
+
+Routing resynced: attention-regime (+1 row, 8 to 9),
+needs-and-requirements (+1 row, 25 to 26). The second routing home is
+justified by the
+divergence caution and the rubric, which shape how that skill should
+present LLM quality scores.
+
+## [2026-08-13] index | routing resync
+
+Pages indexed: 158. Routing blocks regenerated: 2. Routing rows 208 to
+212. Layers stay 12 and referencing skills stay 20. ToC drift: 0.
