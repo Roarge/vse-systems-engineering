@@ -9,17 +9,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.9`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.10`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
 rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
 SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
-content delta took `rc.8`, and the SYSMOD ingest takes `rc.9`, with
-every later candidate shifting by one.
+content delta took `rc.8`, the SYSMOD ingest took `rc.9`, and the
+VAMOS ingest takes `rc.10`, with every later candidate shifting by
+one.
 
 ### Added
+
+- Five wiki pages ingest VAMOS (Weilkiens, 2016, *Variant Modeling
+  with SysML*) into the `sysmod` layer under a `sysmod-vamos-` slug
+  prefix, which marks the source family inside a layer that now holds
+  three Weilkiens sources. `sysmod-vamos-concepts` covers the variant
+  vocabulary, the abstraction-distance bound that decides whether
+  candidates belong in one model, and a folded survey of FODA, CVL,
+  and OVM. `sysmod-vamos-method` covers the three concerns, their
+  dependency rules, the core as a toolbox, and the tool-economics
+  argument for keeping variant modelling inside one standard tool.
+  `sysmod-vamos-feature-trees` covers variation-point granularity, the
+  query-generated view practice, and selection multiplicities.
+  `sysmod-vamos-configurations` covers what a variant package must
+  contain, the variant-to-core seam, what a configuration may add, and
+  behaviour variants. `sysmod-vamos-binding-and-constraints` covers
+  binding times and the semantics of the two predefined constraints.
+  The five route to `sysml2-variants`, with `sysmod-vamos-concepts`
+  also on `architecture-design` and `sysmod-vamos-method` also on
+  `sysml2-model-structure`.
+- The five pages carry the method, not the language. The SysML 2.0
+  pages remain the syntax authority and `sysml2-variant-organisation`
+  remains the organisation authority. No SysML v1 stereotype notation
+  is reproduced, the source's formal constraint rules are carried in
+  words, and every mapping into SysML 2.0 is flagged as commentary
+  rather than as source content.
 
 - A new `sysmod` wiki layer holds the Weilkiens methodology sources.
   The layer row and the directory-tree entry land in `wiki/CLAUDE.md`
@@ -77,6 +103,22 @@ every later candidate shifting by one.
 
 ### Changed
 
+- `sysml2-variant-organisation` gains `raw: vamos.pdf` on its 2016
+  Weilkiens citation, which had been left at `raw: null` while the
+  file sat under `sources/`. The page also gains three cross-links
+  into the new method pages and one body pointer, closing the seam the
+  SYSMOD cycle deferred. Its `referenced_by:` is untouched.
+- Five further existing wiki pages gain a `related:` entry into the
+  VAMOS material. `sysml2-variations-overview` and
+  `sysml2-variant-configuration` also gain a one-line body pointer,
+  the first towards the scoping test that precedes any syntax and the
+  second towards the semantics an asserted constraint implements.
+- `INDEX.md` moves from 146 pages to 151. Routing blocks resync with
+  five new rows on `sysml2-variants`, one on `architecture-design`,
+  and one on `sysml2-model-structure`. The totals line also corrects
+  the referencing-skills count from 21 to 20, which the header had
+  kept after the lens-design fix removed the routing block from
+  `vse-companion-overview` while the table body already listed 20.
 - Thirteen existing wiki pages gain a `related:` entry pointing into
   the new `sysmod` layer, so the source perspective is reachable from
   the plugin page that owns the corresponding decision.
