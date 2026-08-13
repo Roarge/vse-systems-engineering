@@ -14,6 +14,8 @@ sources:
     raw: sysmod.pdf
   - citation: "Weilkiens, T. (2020). SYSMOD - The Systems Modeling Toolbox, 3rd edition. MBSE4U. §11.8 to §11.12 (Workshop tools)"
     raw: sysmod.pdf
+  - citation: "Weilkiens, T. (2018). The New Engineering Game: Strategies for Smart Product Engineering. MBSE4U. §4.5 (Business Motivation Model) and §4.8 (Design Thinking)"
+    raw: new-engineering-game.pdf
 related:
   - project-bootstrap-prerequisites
   - benefit-as-criterion
@@ -68,7 +70,13 @@ Two approaches are named.
   with a prototype in an iterative loop, a first statement leads to
   first solution attempts which clarify the statement again, and
   the user stays at the centre throughout. Invisible emotional
-  needs are addressed alongside the visible problem.
+  needs are addressed alongside the visible problem. The same
+  author's later book names the six steps of the version it
+  describes, purpose, empathise, define, ideate, prototype, and
+  test, each with jumps back to earlier steps and each with its own
+  set of methods, among them personas, empathy maps, and SCAMPER,
+  which prompts substitute, combine, adapt, modify, put to another
+  use, eliminate, and reverse.
 - **The problem-solving process of Haberfellner and colleagues**,
   which traces back to the five steps of problem solving published
   by John Dews in 1910. It starts with analysis of the problem
@@ -151,6 +159,21 @@ The modelling guidance also asks for a root objective element that
 owns all the others by containment, and for a table carrying
 identifier, name, text, and the related stakeholder. The guidance
 prefers a table over a diagram for managing objectives.
+
+**Goals against objectives.** The same author's later book borrows a
+distinction from the Business Motivation Model, an Object Management
+Group standard for business vocabulary, that sharpens what belongs in
+this product. A Goal is directly related to the Vision and is a
+long-term state the business must reach in order to amplify it. An
+Objective quantifies a Goal and makes it measurable, and the test is as
+blunt as the source makes it: an objective is something you can
+measure. The worked pair is a publisher whose goal is that its books
+are among the most important references in its field and whose
+objective is that at least one of them appears on a named top-ten list.
+Typically more than one objective quantifies a goal. The distinction
+maps onto the pressure this plugin applies to a story benefit, which is
+to sharpen an aspiration into a `require constraint` predicate that a
+trade study can score. See [[benefit-as-criterion]].
 
 ## The workshop toolbox
 

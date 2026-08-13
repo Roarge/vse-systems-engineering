@@ -14,6 +14,8 @@ sources:
     raw: sysmod.pdf
   - citation: "Weilkiens, T. (2020). SYSMOD - The Systems Modeling Toolbox, 3rd edition. MBSE4U. §7.1 (How to set up an initial package structure)"
     raw: sysmod.pdf
+  - citation: "Weilkiens, T. (2018). The New Engineering Game: Strategies for Smart Product Engineering. MBSE4U. §4.9 (Complex Product Engineering)"
+    raw: new-engineering-game.pdf
 related:
   - methodology-overview
   - sysml2-canonical-model-layout
@@ -122,6 +124,13 @@ Tailoring is a standard task performed before the methodology is
 applied to a project, and SYSMOD can be used on itself to elaborate
 what a project needs, with the MBSE Methodology as the system of
 interest.
+
+The same author's later book publishes one such tailoring ready-made.
+SYSMOD Essentials is a modelling-independent derivation of the toolbox,
+supported by a workshop card set, which states on an abstract level
+which outcomes are essential and how they connect rather than how to
+build a model, and which walks the same steps this wiki already covers
+across its SYSMOD pages.
 
 ## Deploying a methodology
 

@@ -10,6 +10,8 @@ sources:
     raw: sysmod.pdf
   - citation: "Weilkiens, T. (2020). SYSMOD - The Systems Modeling Toolbox, 3rd edition. MBSE4U. §5.7 (Base Architecture)"
     raw: sysmod.pdf
+  - citation: "Weilkiens, T. (2018). The New Engineering Game: Strategies for Smart Product Engineering. MBSE4U. §4.7 (Zigzag Pattern)"
+    raw: new-engineering-game.pdf
 related:
   - sysmod-base-architecture-source
   - system-stories-workflow

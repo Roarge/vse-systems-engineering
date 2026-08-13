@@ -1307,3 +1307,112 @@ in `vse-wiki-index` and `vse-wiki-lint`, which are documentation.
 The five new pages carry no finding other than the global schema-drift
 one. Each lists every slug it links, so the stale-metadata rule stays
 silent on all five.
+
+## [2026-08-13] ingest | new-engineering-game.pdf
+
+Layer: sysmod (existing, the schema row already names The New
+Engineering Game alongside SYSMOD 3rd edition and VAMOS).
+
+Pages authored:
+
+- sysmod-neg-complexity-and-dynamics (new)
+- sysmod-neg-organisational-tools (new)
+- sysmod-neg-human-dimension (new)
+- sysmod-neg-why-mbe (new)
+
+The `sysmod-neg-` prefix marks the third Weilkiens source family in
+the layer, following the `sysmod-vamos-` precedent.
+
+This is the most narrative of the three Weilkiens sources, so roughly
+half the extract material is folded or rejected rather than carried.
+The industrial-revolutions narrative and the globalisation section
+fold into one orientation paragraph on page 1. The Business Model
+Canvas, the Value Proposition Canvas, and the Business Model Navigator
+are rejected as outside the wiki's engineering scope. SYSMOD
+Essentials and the FAS restatement are rejected as duplicates of the
+existing SYSMOD ingest. REThink 4.0 was evaluated as a standalone page
+and folded into page 4 instead, where it does the why-MBE work
+directly. Reasons are in the decomposition proposal.
+
+Three pages carry `confidence: medium` with a Confidence note in the
+body, because the fourth-industrial-revolution framing, the New Work
+observations, and the ten PLM4MBSE theses are forecast or advocacy
+rather than settled practice. Page 2 is `high`.
+
+Two findings are recorded on the pages rather than buried. The de Weck
+First Law equation does not survive text extraction from the source in
+a trustworthy form, so page 1 carries the conservation idea in prose
+only and says so. The source's two complexity definitions and the
+plugin's own option-count formalisation are three different
+measurements, so page 1 carries a bridging note rather than a
+unification.
+
+One tension is stated rather than smoothed. Wohland's "find the right
+person instead of the right process", quoted by the source, is
+person-first where PHAS-EAI H7 is environment-first. Page 3 states the
+reconciliation: the two prescriptions address different scopes, the
+person for the surprise in front of you and the designed reserve that
+reduces how often a surprise needs one, and the book's own §3.8 and
+§3.9 already argue the second.
+
+Second-source seams: `sysmod-base-architecture-source` gains the
+record-player worked example, the Conway propagation sentence, and a
+§4.6 citation. `sysmod-zigzag-pattern` gains a §4.7 citation only, the
+body being unchanged because the source reuses the identical worked
+example. `sysmod-toolbox-anatomy` gains one SYSMOD Essentials sentence
+in its tailoring section plus a §4.9 citation. The §4.10 functional
+architecture restatement takes nothing, being a duplicate of
+`sysmod-architecture-kinds-and-coupling`.
+
+Touchpoints: `sysmod-problem-statement-and-objectives` gains the BMM
+goal-against-objective paragraph in its System Objectives section, the
+six Design Thinking step names in its Design Thinking bullet, and a
+§4.5 and §4.8 citation. The Business Motivation Model check the brief
+required was performed and the cluster stays rejected as pages. All
+three phas-eai pages carry the new human-dimension page in `related:`,
+and `phas-eai-overview` also carries a one-line pointer in its
+designed-cognitive-reserve section. `ambse-requirements-as-models`,
+`ambse-principles`, and `sysmod-model-purpose-levels` are
+metadata-only. `referenced_by:` is untouched on every existing page.
+
+No `source-added` stub existed for this file, so nothing was resolved.
+
+Routing resynced: project-setup (+3 rows, 23 to 26), attention-regime
+(+1, 5 to 6). Routing rows 204 to 208. project-audit was evaluated as
+a third routing home and takes nothing, because none of the four pages
+is audit material. `vse-companion-overview` stays block-free per the
+#73 lens-design rule, which this ingest honours by homing every page
+elsewhere.
+
+INDEX regenerated: 151 pages to 155. Layers stay 12 and referencing
+skills stay 20.
+
+## [2026-08-13] lint | post-ingest (issue #57)
+
+Full rule set against the branch. Pages scanned: 155. Routing blocks
+scanned: 20, excluding the marker occurrences inside fenced blocks and
+inline code spans in `vse-wiki-index` and `vse-wiki-lint`, which are
+documentation.
+
+- **ERROR: 0.** Frontmatter integrity, routing bidirectionality in
+  both directions across 208 rows, path resolution, sorted order,
+  summary fidelity, and wikilink resolution all hold.
+- **WARN: 240.** The movement from the previous run is exactly four
+  new schema-drift findings, one per new page. That rule fires on
+  every page in the wiki because the templates under `wiki/schema/`
+  describe each page type in prose rather than prescribing a heading
+  set, so its count tracks the page count and carries no signal about
+  this ingest. The 84 wikilink findings and the single stale contents
+  block are unchanged from `main`, so none of them comes from this
+  cycle.
+- **INFO: 30.** Twenty-six are `raw: null` observations on web-sourced
+  syside and sysml2 pages, whose citations carry the URL as the schema
+  requires. Four are source-freshness observations on
+  methodology-derived pages whose `raw:` file under `methodology/` has
+  been edited since the page was last updated. All thirty are
+  pre-existing and none touches a page from this ingest. No orphans,
+  no empty tag lists, and no date inversions.
+
+The four new pages carry no finding other than the global schema-drift
+one. Each lists every slug it links, so the stale-metadata rule stays
+silent on all four.

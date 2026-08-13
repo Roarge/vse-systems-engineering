@@ -13,9 +13,10 @@ sources:
 related:
   - ambse-risk-and-metrics
   - ambse-iso29110-mapping
+  - sysmod-neg-why-mbe
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [release-orchestrator, verification-validation]
 ---
 
