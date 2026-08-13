@@ -119,8 +119,8 @@ be quoted as such if it is quoted at all.
 ## The document-based failure mode
 
 The source's argument against document-based specification is a single
-image: doing systems engineering with documents is like doing
-mechanical engineering with a raster paint program. What you see is
+image: "doing systems engineering with documents is like doing
+mechanical engineering with MS Paint". What you see is
 what you get, there is no way to process the information
 automatically, and there is no way to create specific views for
 different stakeholders.

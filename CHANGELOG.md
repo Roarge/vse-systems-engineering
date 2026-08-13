@@ -144,7 +144,8 @@ ingest took `rc.10`, and the New Engineering Game ingest takes
   `sysmod-toolbox-anatomy` gains one sentence naming SYSMOD
   Essentials as the source's own modelling-independent profile of
   the toolbox.
-- Cross-link touchpoints on six further existing pages.
+- Cross-link touchpoints on seven further existing pages, including
+  the optional levers-and-evidence back-link for symmetry.
   `sysmod-problem-statement-and-objectives` gains the Business
   Motivation Model distinction between a Goal and a measurable
   Objective in its System Objectives section, and the six Design

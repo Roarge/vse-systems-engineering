@@ -227,10 +227,11 @@ plugin's design rationale was built to address.
   the source draws as a curve that must be raised before the gap opens
   is what PHAS-EAI formalises as `h`, the fraction of cognitive
   headroom guaranteed by design rather than by individual skill. See
-  [[phas-eai-overview]]. The floor property is the formal statement of
-  the source's timing instruction: raising `h` is what stops
+  [[phas-eai-overview]]. The floor property formalises the
+  skill-independence half of the argument: raising `h` is what stops
   performance depending on whether the right person is available on the
-  right day.
+  right day. The timing instruction, forecast the gap rather than wait
+  to observe it, stands beside that as the source's own contribution.
 - **The hero warning converges with hypothesis H7.** The source says
   heroes may bridge short-term trouble and must not be an
   organisational strategy. H7 predicts that increasing designed reserve
@@ -244,7 +245,7 @@ plugin's design rationale was built to address.
   survives schedule pressure, and never names a mechanism for making
   that investment survive. R4 is that mechanism, and
   [[phas-eai-de-requirements]] states it: environmental structures such
-  as hooks, gates, and review points keep dependability salient when
+  as hooks, gates, and dashboards keep dependability salient when
   competing priorities would otherwise displace it.
 
 ## A tension worth stating
