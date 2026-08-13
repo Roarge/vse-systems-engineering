@@ -23,4 +23,8 @@ CLAUDE.local.md
 
 # Personal Claude Code harness config (per-user, not plugin content).
 # Plugin manifests live under .claude-plugin/ and are committed normally.
-.claude/
+# Local .claude state stays ignored, but the committed contributor rules
+# under .claude/rules/ track (ignore contents, then re-include rules/,
+# because git cannot re-include beneath an ignored directory).
+.claude/*
+!.claude/rules/

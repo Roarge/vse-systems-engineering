@@ -180,7 +180,7 @@ This skill does not commit. Summarise the changes for the contributor:
   `docs(wiki):`.
 
 The contributor stages, commits, and pushes following the repo's git
-workflow in `CLAUDE.local.md`.
+workflow in `.claude/rules/git-workflow.md`.
 
 ## Failure Modes
 

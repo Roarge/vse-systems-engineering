@@ -74,7 +74,7 @@ untracked. It is scratch output for the contributor, never an artefact.
 ## VSE Source Layers
 
 Pages are grouped by the source-processing order documented in
-`CLAUDE.local.md`. This ordering reflects the VSE-first editorial stance:
+`.claude/rules/wiki.md`. This ordering reflects the VSE-first editorial stance:
 ISO 29110 is the process backbone, PHAS-EAI supplies design rationale,
 INCOSE is scaled for VSE scope, AMBSE governs the agile process, SysML 2.0
 is the modelling language, and domain guides cover specific concerns.
@@ -488,5 +488,5 @@ page is edited.
 
 UK English throughout. No em-dashes, no semicolons in body text, no
 contractions. Plain language first, specialist terms introduced with a
-one-line gloss on first use. See `CLAUDE.local.md` for the full style
-guide. This file does not duplicate it.
+one-line gloss on first use. See `.claude/rules/style.md` for the full
+style guide. This file does not duplicate it.
