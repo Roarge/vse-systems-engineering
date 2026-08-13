@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.12`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.13`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
@@ -17,9 +17,23 @@ chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
 rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
 SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
 content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
-ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, and
-the thesis Papers IV and V ingest takes `rc.12`, with every later
-candidate shifting by one.
+ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, the
+thesis Papers IV and V ingest took `rc.12`, and the in-text pointer
+sweep takes `rc.13`, with every later candidate shifting by one.
+
+### Fixed (pointer sweep)
+
+- The 113 in-text pointers still citing the 2026-04 printing of The
+  SysML v2 Book are brought level with the 2026-06 release across 23
+  sysml2 pages, each verified by locating its cited content rather
+  than by offset arithmetic. Six pointers exposed content drift
+  rather than page drift and became corrections: the filter-scoping
+  claim on the view pages had the square-bracket and filter-keyword
+  scopes reversed against Section 36.3, the retired recipe analogy is
+  replaced by the camera-mode analogy, the view-composition passage
+  and view-library pattern are re-attributed as applications of the
+  general mechanisms, and the cross-subsetting gotcha now cites
+  Section 18.2.2 instead of an unsupported evaluation-time claim.
 
 ### Added (papers ingest)
 
