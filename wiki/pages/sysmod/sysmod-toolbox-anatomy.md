@@ -186,7 +186,7 @@ element in the core package, optionally generalising the Base
 Architecture element when strong coupling is wanted.
 
 **Lineage note.** SYSMOD's package structure is based on the MBSE
-Challenge Team SE2 telescope-modelling practice, per the source's
+Challenge Team SE^2 telescope-modelling practice, per the source's
 own citation. On the plugin side, methodology §8.3.4 declares its
 package naming a match to the SYSMOD convention (PascalCase, a
 project-name prefix, an underscore separator), and the

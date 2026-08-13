@@ -1198,11 +1198,12 @@ the VAMOS cycle. `benefit-as-criterion` gained a contents block
 because the `related:` line took it past 100 lines.
 
 Routing resynced: project-setup (+4 rows), architecture-design (+4),
-needs-and-requirements (+5), vse-companion-overview (+3),
-verification-validation (+1). `vse-companion-overview` had no marker
-block before this ingest and gained its first one, so the distinct
-referencing-skill count moves from 20 to 21 rather than staying at 20
-as the decomposition estimated.
+needs-and-requirements (+5), project-audit (+1),
+verification-validation (+1). The review restored the lens design from
+the runtime flip: `vse-companion-overview` routes to skills, not
+pages, so it carries no marker block, and the three source-level
+orientation pages are homed on project-setup and project-audit. The
+distinct referencing-skill count stays at 20.
 
 INDEX regenerated: 135 pages and 11 layers to 146 pages and 12 layers.
 

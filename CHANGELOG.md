@@ -49,10 +49,10 @@ every later candidate shifting by one.
   `sysmod-test-modelling` covers the verdict-returning test behaviour,
   the Model Test Case, and the Test Architecture as an architecture
   kind.
-- `vse-companion-overview` gains its first wiki-routing block, holding
-  the three source-level orientation pages that belong to no single
-  workflow stage. The distinct referencing-skill count moves from 20
-  to 21.
+- The three source-level orientation pages are homed on
+  `project-setup` and `project-audit`. The lens skill keeps its
+  table-free design from the runtime flip, routing to skills rather
+  than pages, and the distinct referencing-skill count stays at 20.
 
 - Four wiki pages capture material the 2026-06 release of "The SysML
   v2 Book" introduces. `sysml2-abstract-actions` covers Section 26.8,
@@ -89,8 +89,7 @@ every later candidate shifting by one.
 - `INDEX.md` moves from 135 pages and 11 layers to 146 pages and 12
   layers. Routing blocks resync with four new rows on `project-setup`,
   four on `architecture-design`, five on `needs-and-requirements`,
-  three on `vse-companion-overview`, and one on
-  `verification-validation`.
+  one on `project-audit`, and one on `verification-validation`.
 - All 46 wiki pages that cite "The SysML v2 Book" move from the 2026-04
   release to the 2026-06 release. The new printed page ranges come from
   a section-anchored map built from the PDF bookmark tree, with every
