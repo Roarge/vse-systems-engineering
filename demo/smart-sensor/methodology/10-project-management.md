@@ -54,6 +54,12 @@ families).
                                     └─────────────┘
 ```
 
+This section specifies every PM artefact at `full` rigour. Which of
+those artefacts a given project is obliged to produce depends on its
+recorded rigour profile. The obligation table in §0.10.3 is the single
+place that answers "does this project need a Risk Register", and the
+subsections below point back to it where the answer varies by profile.
+
 ## 10.3 PM.1 Project Planning
 
 **Inputs:** Statement of Work (SOW); project initiation conditions
@@ -89,6 +95,30 @@ ISO 29110 PM.1 task list (Table 6) item-by-item:
 | Disposal Management Approach | PM.1.12 | See §10.9 |
 | Configuration Management Strategy | PM.1.13 | See §10.8 |
 | Delivery Instructions | PM.1.2 | What is delivered, how, when |
+
+**Scaled plan sets.** The seventeen elements above are the `full`
+obligation, and they are the ISO 29110 PM.1 task list in full. Lighter
+profiles produce a documented subset per §0.10.5, named here by the
+table's own element names.
+
+- **`light`.** A one-page Plan carrying Objectives, Scope, Deliverables,
+  Milestones, and the project's known risks written as a short list
+  rather than as a separate Risk Register. The Plan is recommended
+  rather than required, on the reasoning that a solo exploratory project
+  gains more from five honest paragraphs than from an unmaintained
+  seventeen-element document.
+- **`standard`.** The `light` set plus System Description, Tasks,
+  Resources, Risk Management Approach, and a one-paragraph
+  Configuration Management Strategy carried inside the Plan rather than
+  as a separate document. Required.
+- **`full`.** All seventeen elements, each as specified above, with the
+  Risk Management Approach, Disposal Management Approach, and
+  Configuration Management Strategy elaborated per §10.7, §10.9, and
+  §10.8. Required.
+
+The full set is the ISO 29110 PM.1 obligation. The lighter sets are
+documented tailoring in the sense of §0.10.5, recorded on the project's
+tailoring line, and they are not a partial-conformance claim.
 
 The Project Plan is *baselined* on initial acceptance (PM.1.17) by
 tagging the commit and pushing the tag. Subsequent revisions follow
@@ -197,7 +227,20 @@ Change Requests against *baselined* artefacts (Plan, baselined
 stories, baselined architecture) require explicit Acquirer agreement
 recorded in the Issue before the implementing PR is merged. The hook
 guide (§10 in `iso-29110-hooks-guide.md`) specifies the automation
-that enforces this.
+that checks this, with dispositions per §0.10.4.
+
+**Tailoring note.** The lifecycle above applies to whatever the project
+has placed on the `baselined_paths` list in `.iso-config.yaml`. The
+`light` default for that list is empty, so a `light` project carries the
+Change Request machinery in a dormant state until it baselines
+something. The moment it does, the lifecycle applies in full to that
+path. At `standard` the default list holds the Project Plan alone, and
+the four-axis impact analysis may be recorded in brief form, where an
+axis with no material effect reads "negligible" with a one-line
+justification. At `full` the default list and the impact analysis are as
+specified in §0.10.3. Changing the list is a tailoring decision recorded
+on the project's tailoring line (§0.10.2), not a Change Request in
+itself.
 
 ### 10.4.3 Meeting Records
 

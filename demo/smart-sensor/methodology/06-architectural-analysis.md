@@ -149,14 +149,22 @@ criteria.
 ```
 
 If a candidate-bearing function or property has *no* sensitive story,
-either:
+one of three outcomes applies, and the engineer chooses which.
 
-- the decision does not need a trade study (one variant is fine), or
-- a story is missing from §5 — return to §5 and add it before
-  proceeding.
+- The decision does not need a trade study. One variant is fine.
+- The register is genuinely missing a story. The engineer returns to
+  §5 (or to §4 for a missing stakeholder need), adds it, and the study
+  proceeds with the new criterion.
+- The study proceeds on the criteria the register does supply, with
+  the uncovered property recorded as a coverage gap in the trade study
+  notes. The recorded gap is a standing prompt for the next story
+  conversation. It is not a licence to author the missing story on the
+  agent's own initiative (§2.6 rule 7).
 
-This is the methodology pressure for completeness of the story
-register: §6 cannot run if §5 is under-specified.
+This keeps the completeness pressure on the story register without
+inverting it into invented coverage. §6 reports what §5 lacks, and the
+engineer decides whether the answer is a new story, a narrower study,
+or an accepted gap.
 
 ### 6.3.5 Perform the trade study
 

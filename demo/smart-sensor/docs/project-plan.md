@@ -20,6 +20,15 @@ The Base Architecture (the parent product line's reference platform) is the ESP3
 
 For the demo, one contributor fills every ISO 29110 role. In a real project, this section enumerates the Work Team members and lists which person holds which role. Roles per §10.11.
 
+## Tailoring record
+
+Profile: standard. Tailoring per methodology §0.10 defaults, except
+`baselined_paths` additionally lists `docs/cm-strategy.md`,
+`docs/risk-register.md`, `methodology/`, and `model/library/`
+(recorded 2026-08-13). The standard default baselines
+`docs/project-plan.md` alone, so the first two additions adopt
+full-profile items early and the last two are project-specific.
+
 ## Methodology reference
 
 This project applies the story-driven AMBSE methodology shipped at `methodology/`. The project-local copy is authoritative for this project. Where the methodology reference disagrees with §10 of the SEMP, the methodology wins.

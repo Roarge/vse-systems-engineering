@@ -192,9 +192,11 @@ check-config:
 	@PLUGIN_VERSION=$$(jq -r '.version' .claude-plugin/plugin.json); \
 	 DEMO_VERSION=$$(sed -n 's/^plugin_version:[[:space:]]*"\(.*\)"[[:space:]]*$$/\1/p' demo/smart-sensor/.iso-config.yaml); \
 	 if [ -z "$$DEMO_VERSION" ]; then \
-	   echo "WARNING: demo/smart-sensor/.iso-config.yaml has no readable plugin_version"; \
+	   echo "ERROR: demo/smart-sensor/.iso-config.yaml has no readable plugin_version"; \
+	   exit 1; \
 	 elif [ "$$DEMO_VERSION" != "$$PLUGIN_VERSION" ]; then \
-	   echo "WARNING: demo/smart-sensor/.iso-config.yaml plugin_version ($$DEMO_VERSION) does not match plugin.json ($$PLUGIN_VERSION)"; \
+	   echo "ERROR: demo/smart-sensor/.iso-config.yaml plugin_version ($$DEMO_VERSION) does not match plugin.json ($$PLUGIN_VERSION)"; \
+	   exit 1; \
 	 else \
 	   echo "  Demo plugin_version pin matches plugin.json ($$PLUGIN_VERSION)."; \
 	 fi

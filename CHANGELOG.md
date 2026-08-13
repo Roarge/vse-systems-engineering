@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.14`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.15`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
@@ -19,8 +19,22 @@ SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
 content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
 ingest took `rc.10`, the New Engineering Game ingest took `rc.11`, the
 thesis Papers IV and V ingest took `rc.12`, the in-text pointer
-sweep took `rc.13`, and the contributor rules split takes `rc.14`,
-with every later candidate shifting by one.
+sweep took `rc.13`, the contributor rules split took `rc.14`, and
+the demo sync takes `rc.15`, with every later candidate shifting by
+one.
+
+### Changed (demo sync)
+
+- The demo project is brought level with the v3 plugin. Its
+  `CLAUDE.md` is regenerated as the slim managed block (markers
+  restored, profile standard) with only demo-specific content kept
+  outside the markers. The missing work products the project plan
+  referenced are authored against the demo's real state: the SEMP,
+  the correction register, and the first progress status record.
+  `.iso-config.yaml` gains `project_profile: standard` and the
+  version pin now tracks the plugin version, enforced by the demo-pin
+  CI check promoted from warning to error in both Makefile and
+  workflow. `.lsp.json` verified byte-identical to the template.
 
 ### Added (contributor rules)
 
