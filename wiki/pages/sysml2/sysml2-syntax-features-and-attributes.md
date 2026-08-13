@@ -8,7 +8,7 @@ tags: [syntax, multiplicity, attribute, enum, feature-values]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Sections 7.6, 7.7, 7.8, 7.13."
     raw: 2-OMG_Systems_Modeling_Language.pdf
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Pages 115, 180, and 235."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Pages 115, 180, and 235."
     raw: sysmlv2.pdf
 related:
   - sysml2-syntax-packages-and-definitions

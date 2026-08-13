@@ -6,7 +6,7 @@ layer: sysml2
 summary: Extending the language itself with user-defined keywords, beyond domain-library modelling
 tags: [language-extension, semantic-metadata, user-defined-keywords]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41 Section 41.2, pages 324 to 326."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 41 Section 41.2, pages 325 to 327."
     raw: sysmlv2.pdf
 related:
   - sysml2-language-extension
@@ -36,7 +36,7 @@ through ordinary modelling (see
 further and lets the author **extend the language itself** with
 user-defined keywords. SysML 2.0 and KerML support this through
 semantic metadata, a special kind of metadata that the modelling
-tool interprets at parse time (Ch 41.2, p 324).
+tool interprets at parse time (Ch 41.2, p 325).
 
 ## How the mechanism works
 
@@ -57,7 +57,7 @@ A user-defined keyword reuses this machinery. Any metadata can be
 applied as a user-defined keyword by preceding its long or short
 name with the `#` symbol, just before the kind-keyword in the
 declaration. If the metadata is a kind of `SemanticMetadata`, the
-implicit-specialisation effect is triggered (Ch 41.2, p 325).
+implicit-specialisation effect is triggered (Ch 41.2, p 326).
 
 For ordinary metadata syntax (without the implicit-specialisation
 machinery), see [[sysml2-metadata-definitions]].
@@ -143,7 +143,7 @@ The effect is the same as if `navigation` had been declared
 allocation had been typed by `PBSE::FunctionalAllocation`. The
 custom domain model is easier to read and write, and the modeller
 does not need to spell out the underlying specialisations
-(Ch 41.2, p 327).
+(Ch 41.2, p 328).
 
 ## Stacking keywords
 
@@ -167,7 +167,7 @@ User-defined keywords work on both definitions and usages, even
 when the SemanticMetadata's `baseType` is set to a usage. In that
 case, the implicit specialisation will target all the definitions
 of the usage that was named as the `baseType` value. The mechanism
-quietly resolves the difference (Ch 41.2, p 328).
+quietly resolves the difference (Ch 41.2, p 329).
 
 The reverse direction is also supported. The `baseType` of a
 SemanticMetadata can be set to a definition rather than a usage.

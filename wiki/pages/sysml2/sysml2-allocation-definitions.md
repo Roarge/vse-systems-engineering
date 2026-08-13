@@ -6,7 +6,7 @@ layer: sysml2
 summary: Declaring allocation definitions and applying them through allocation usages
 tags: [allocations, syntax, connection, cross-subsetting]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 34, pages 292 to 293; Chapter 41, pages 323 to 325."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview
@@ -35,7 +35,7 @@ directionality semantics, see [[sysml2-allocations-overview]].
 
 An allocation definition is a specialisation of a connection
 definition with defined ends and typed relationships. The basic
-structure includes (Ch 34, p 291; Ch 41, p 323):
+structure includes (Ch 34, p 292; Ch 41, p 324):
 
 - **Named connection ends** that identify the elements being
   allocated.
@@ -64,14 +64,14 @@ library package PlatformBasedSystemsEngineering {
 
 Allocation definitions typically live in library packages, so they
 can be reused across projects and specialised to create
-domain-specific allocation types (Ch 41, p 323).
+domain-specific allocation types (Ch 41, p 324).
 
 ## Allocation usages
 
 Allocation usages apply an allocation definition in a specific
 context. The `allocate` keyword provides a concise shorthand for
 expressing allocations without the verbose connection syntax
-(Ch 34, p 291; Ch 41, p 324).
+(Ch 34, p 292; Ch 41, p 325).
 
 ```sysml
 alias PBSE for PlatformBasedSystemsEngineering;
@@ -87,13 +87,13 @@ part def Drone {
 Named allocations give meaningful identifiers to allocation usages
 for traceability and documentation. Allocations may also be nested
 to support progressive refinement as design matures from abstract to
-concrete (Ch 34, p 291).
+concrete (Ch 34, p 292).
 
 ## User-defined allocation keywords
 
 A domain-specific keyword can be defined using semantic metadata
 and applied with the `#` prefix. The keyword form reads more
-compactly at the usage site (Ch 41, pp 324 to 327).
+compactly at the usage site (Ch 41, pp 325 to 328).
 
 ```sysml
 #functionalAllocation allocate navigation to navigationSubsystem;
@@ -102,7 +102,7 @@ compactly at the usage site (Ch 41, pp 324 to 327).
 The keyword form is convenient but carries no extra validation. There
 is currently no mechanism to attach validation rules to custom
 allocation keywords, and incorrect use fails silently without an
-error message (Ch 41, p 328). Treat custom keywords as syntactic
+error message (Ch 41, p 329). Treat custom keywords as syntactic
 sugar, not as a way to enforce allocation semantics.
 
 ## Library design guidance
@@ -110,7 +110,7 @@ sugar, not as a way to enforce allocation semantics.
 The book advises avoiding abstract allocation definitions in
 libraries unless they are deliberately incomplete. Abstract
 definitions force users to specialise or inline detail, which
-undermines reuse (Ch 41, p 323). Concrete allocation definitions
+undermines reuse (Ch 41, p 324). Concrete allocation definitions
 with typed ends are preferred.
 
 ## See also

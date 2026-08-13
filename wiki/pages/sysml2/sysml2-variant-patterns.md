@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical variation patterns and the recurring mistakes that show up in review
 tags: [variants, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 294 to 298."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 35, pages 295 to 299."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview
@@ -41,7 +41,7 @@ review. For declaration syntax and configuration mechanics, see
 
 Declare a `variation part` with named variants for each concrete
 option. The variants specialise the variation and carry their
-distinguishing attributes (Ch 35, pp 294 to 295). This is the
+distinguishing attributes (Ch 35, pp 295 to 296). This is the
 simplest form and the right starting point for most VSE-scale
 variation work.
 
@@ -51,13 +51,13 @@ When the same variation structure is reused across contexts or
 appears in a parts catalogue alongside non-variation definitions,
 declare it as a variation definition that subclassifies the base
 part definition. Variant usages live inside the definition body
-(Ch 35, p 295). See [[sysml2-variation-definitions]] for the syntax.
+(Ch 35, p 296). See [[sysml2-variation-definitions]] for the syntax.
 
 ## Pattern: cross-variation constraint
 
 Use an `assert constraint` with an `implies` expression to enforce
 valid combinations across multiple variations
-(Ch 35, pp 295 to 296). Keep constraints local to the smallest part
+(Ch 35, pp 296 to 297). Keep constraints local to the smallest part
 definition that owns all variations involved. Constraints scattered
 across parent contexts become hard to audit during review.
 
@@ -75,7 +75,7 @@ When variation selection should follow mission-level or capability-
 level features, integrate with an external feature model via the
 PLEML extension. Feature bindings connect features to internal
 variations, and `assert constraints` handle dependent selections
-automatically (Ch 35, p 297).
+automatically (Ch 35, p 298).
 
 VSE projects should adopt this pattern only when the variation space
 exceeds three or four crosscutting decisions. Below that threshold,
@@ -93,13 +93,13 @@ Variant usages are related to their variation through a variant
 membership relationship, drawn as a solid line with a plus sign in a
 circle at the owner's end. They are not composite parts of the
 variation. Mass, cost, and other roll-ups must skip the variation
-and pick exactly one variant per configuration (Ch 35, p 294).
+and pick exactly one variant per configuration (Ch 35, p 295).
 
 ### Variation is a placeholder
 
 The variation acts as a placeholder. Anywhere the variation is used,
 one variant must be insertable in its place. Variants must therefore
-be specialisations of the variation (Ch 35, p 294). A variant that
+be specialisations of the variation (Ch 35, p 295). A variant that
 fails to specialise its variation is invalid.
 
 ### A variation can only own variants and annotations
@@ -107,7 +107,7 @@ fails to specialise its variation is invalid.
 A variation is not a normal definition body. It may only own
 variants and annotations such as comments. To give a variation
 structural detail, use a variation definition that subclassifies a
-concrete part definition (Ch 35, pp 294 to 295). Attempting to add
+concrete part definition (Ch 35, pp 295 to 296). Attempting to add
 attributes or ports directly to a variation produces a malformed
 model.
 
@@ -116,25 +116,25 @@ model.
 Valid variant combinations are expressed as `assert constraint`
 bodies, not through the variation syntax alone. The relationship to
 PLE feature constraints is out of scope for the SysML v2 book
-(Ch 35, pp 295 to 296).
+(Ch 35, pp 296 to 297).
 
 ### Setting a variant requires specialisation
 
 To fix a concrete configuration, specialise the variation owner and
 redefine each variation by binding it to a specific variant.
 Attempting to set variants directly on the base variation does not
-materialise a concrete product (Ch 35, p 296).
+materialise a concrete product (Ch 35, p 297).
 
 ### Feature model integration needs an extension
 
 Full PLE feature models are not part of core SysML 2.0. The PLEML
 language extension and tool support from vendors are required for a
-complete MBPLE workflow (Ch 35, p 297). Plan for this dependency
+complete MBPLE workflow (Ch 35, p 298). Plan for this dependency
 before adopting feature-driven selection.
 
 ## Pending material in the source
 
-The 2026-06 release of the SysML v2 book leaves the following topic
+The 2026-07 release of the SysML v2 book leaves the following topic
 pending:
 
 - Formal treatment of feature constraints and their relationship to

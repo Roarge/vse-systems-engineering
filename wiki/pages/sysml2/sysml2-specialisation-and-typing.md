@@ -8,7 +8,7 @@ tags: [specialisation, typing, ref, composition, feature-values, redefines, subs
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 8.4."
     raw: 2-OMG_Systems_Modeling_Language.pdf
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 18.2.1 and 18.2.2, pages 111 to 112."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Sections 18.2.1 and 18.2.2, pages 111 to 112."
     raw: sysmlv2.pdf
 related:
   - sysml2-language-architecture

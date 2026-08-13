@@ -6,7 +6,7 @@ layer: sysml2
 summary: "The case construct family: use, analysis, verification, and validation cases share one structure"
 tags: [cases, use-cases, analysis-cases, verification-cases]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 276 to 278."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 33, pages 277 to 279."
     raw: sysmlv2.pdf
 related:
   - sysml2-case-kinds
@@ -31,7 +31,7 @@ Cases are one of the most important new concepts in SysML 2.0. They
 generalise the use cases of SysML v1 and capture the abstract notion
 of considering a system or a component, called the **subject** of
 the case, in a specific situation for a specific purpose
-(Ch 33, p 276).
+(Ch 33, p 277).
 
 ## What a case is
 
@@ -39,7 +39,7 @@ Cases are behaviour models, but they do not represent system
 behaviours. Instead, they model what happens **to** the subject in
 different situations, such as during a use case or a verification
 task. Cases may invoke behaviours of their subject as substeps, but
-the subject's own internal behaviour lives elsewhere (Ch 33, p 276).
+the subject's own internal behaviour lives elsewhere (Ch 33, p 277).
 
 Cases are a special kind of calculation, and therefore a special
 kind of action (see Chapter 27 of the SysML v2 book and
@@ -56,7 +56,7 @@ declared verdict.
 
 ## The three standard kinds
 
-SysML 2.0 defines three standard case kinds (Ch 33, p 279):
+SysML 2.0 defines three standard case kinds (Ch 33, p 280):
 
 - **Use cases** describe the behaviour of a system from an outside
   perspective.
@@ -77,7 +77,7 @@ Every case carries the same set of structural features.
 
 The subject of a case is the system or component considered in the
 modelled case. It is declared with the `subject` keyword and is
-always the **first `in` parameter** of the case (Ch 33, p 276).
+always the **first `in` parameter** of the case (Ch 33, p 277).
 Placing actors or other parameters before the subject violates case
 semantics.
 
@@ -85,7 +85,7 @@ semantics.
 
 A case may involve actors, which are parts interacting with the
 subject. Actors are declared with the `actor` keyword and are
-automatically input parameters of the case (Ch 33, p 276).
+automatically input parameters of the case (Ch 33, p 277).
 
 Actors represent **roles**, not entities. Different actors may refer
 to the same physical entity in different roles. Confusing the role
@@ -99,7 +99,7 @@ the subject and any actors declared in the case definition.
 A case may have an objective, which captures why the case is being
 considered. Typical examples include testing the subject's
 behaviour or verifying a requirement. Objectives are requirements
-but are declared with the `objective` keyword (Ch 33, p 279).
+but are declared with the `objective` keyword (Ch 33, p 280).
 
 The `requirement` element in SysML 2.0 is not necessarily a system
 requirement. It is a neutral statement about a property of a
@@ -115,7 +115,7 @@ The body of a case contains the steps or interactions that describe
 what happens during the case. These steps may model how actors
 interact with the subject, how the subject is exercised to verify a
 requirement, how a property of it is measured, and so on
-(Ch 33, p 276).
+(Ch 33, p 277).
 
 Steps inside a case body can be ordered with successions in the
 usual way (see [[sysml2-actions]]). Successions inside cases work

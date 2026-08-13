@@ -6,7 +6,7 @@ layer: sysml2
 summary: Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism
 tags: [reflection, metaclassification, meta-operator, m2]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, page 302."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 36, page 303."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview
@@ -34,7 +34,7 @@ Metaclassification expressions form the foundation of the SysML
 2.0 reflection mechanism. They enable access to both explicit and
 implicit metadata annotations associated with an element. The
 resulting expression can reason about properties of the element
-itself, for example to filter all abstract types (Ch 36, p 302).
+itself, for example to filter all abstract types (Ch 36, p 303).
 
 ## The three reflection mechanisms
 
@@ -43,7 +43,7 @@ with a model element, including the implicit metadata describing
 the element itself. The access expression is written as the
 element name, a dot, and the `metadata` keyword. Metadata access
 is already enough for full reflection, but two operators make it
-easier to work with specific metadata (Ch 36, p 302).
+easier to work with specific metadata (Ch 36, p 303).
 
 | Mechanism | Syntax | Behaviour |
 |---|---|---|
@@ -74,7 +74,7 @@ attribute isAbstract = (UAV meta SysML::PartDefinition).isAbstract;
   every element carries.
 - Line 9 uses `meta` to fetch all attached metadata instances of
   `SysML::PartDefinition` and navigate into them via a feature
-  chain to read the `isAbstract` flag (Ch 36, p 303).
+  chain to read the `isAbstract` flag (Ch 36, p 304).
 
 ## `@` versus `@@`
 
@@ -86,7 +86,7 @@ The two operators operate at different meta-layers:
 - `@@` checks metadata annotations one meta-layer below. Most
   often used with the metadata definitions in the KerML and SysML
   reflective libraries to create reflective checks
-  (Ch 36, p 302).
+  (Ch 36, p 303).
 
 ## `meta` returns null on type mismatch
 

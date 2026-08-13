@@ -6,7 +6,7 @@ layer: sysml2
 summary: Occurrence equality operators, Allen's interval algebra, and the spatial relation vocabulary
 tags: [identity, equality, allen-interval-algebra, temporal-relations, spatial-relations, kerml]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 25.5, 25.6, and 25.7, pages 156 to 159."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Sections 25.5, 25.6, and 25.7, pages 156 to 159."
     raw: sysmlv2.pdf
   - citation: "Allen, J. F. (1983). Maintaining knowledge about temporal intervals. Communications of the ACM 26(11): 832-843."
     raw: null

@@ -6,7 +6,7 @@ layer: sysml2
 summary: The native expression language and scalar values, usable in feature values, constraints, and guards
 tags: [expressions, operators, scalars, literals]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 30, pages 233 to 237."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 30, pages 233 to 237."
     raw: sysmlv2.pdf
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 30."
     raw: 2-OMG_Systems_Modeling_Language.pdf

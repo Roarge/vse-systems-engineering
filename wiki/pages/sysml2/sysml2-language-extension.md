@@ -6,7 +6,7 @@ layer: sysml2
 summary: Choosing between model libraries and user-defined keywords when extending SysML 2.0
 tags: [extension, language-extension]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41, pages 322 to 328."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 41, pages 323 to 329."
     raw: sysmlv2.pdf
 related:
   - sysml2-domain-model-libraries

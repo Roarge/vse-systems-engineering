@@ -6,7 +6,7 @@ layer: sysml2
 summary: Extending SysML 2.0 by modelling domain concepts as libraries with existing constructs
 tags: [language-extension, libraries, domain-libraries, library-package]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41 Section 41.1, pages 322 to 323."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 41 Section 41.1, pages 323 to 324."
     raw: sysmlv2.pdf
 related:
   - sysml2-language-extension
@@ -33,7 +33,7 @@ The first strategy for extending SysML 2.0 is to **model the new
 concepts with the existing ones**. This is no different from
 everyday modelling, except that the author defines more abstract
 concepts like `Function` or `Platform`, and organises them into
-model libraries for reuse (Ch 41.1, p 322). The same pattern is
+model libraries for reuse (Ch 41.1, p 323). The same pattern is
 used by SysML 2.0 itself, where every built-in concept is modelled
 in the Systems Library (Part VII). Domain libraries simply move
 the same mechanism into project-specific or methodology-specific
@@ -92,7 +92,7 @@ them with their own kinds (an action for a function, a part for a
 platform, or otherwise). The general advice is to **stay as
 general as possible** in libraries. Pinning a library concept to a
 narrower kind unnecessarily limits its scope of application
-(Ch 41.1, p 323).
+(Ch 41.1, p 324).
 
 `FunctionalAllocation` is an allocation definition, which is itself
 a special kind of connection (Chapter 34). The `crosses` clauses
@@ -116,7 +116,7 @@ choose to specialise them, or simply use them as the type of their
 own usages and detail those in place with nested usages. An
 abstract definition in a library forces the user to subclass
 before they can use it, which is heavier than necessary in most
-cases (Ch 41.1, p 323).
+cases (Ch 41.1, p 324).
 
 The exception is when the library deliberately wants to enforce
 specialisation, for example because every concrete realisation

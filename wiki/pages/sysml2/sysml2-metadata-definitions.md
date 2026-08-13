@@ -6,7 +6,7 @@ layer: sysml2
 summary: Declaring metadata definitions and applying them as annotations
 tags: [metadata, syntax, annotations, at-syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, pages 299 to 301."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 36, pages 300 to 302."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview
@@ -39,12 +39,12 @@ metadata definition imposes a structured format for its
 annotations. The structured form enables automatic evaluation,
 such as tracking the development status of a model element or
 linking the element to an external representation in another tool
-(Ch 36, p 299).
+(Ch 36, p 300).
 
 Metadata is defined as items (see Chapter 19.1 of the SysML v2
 book) but uses the `metadata` keyword instead of `item`. A
 metadata definition declares the attributes that every annotation
-of this kind must carry (Ch 36, p 299).
+of this kind must carry (Ch 36, p 300).
 
 ```sysml
 library package MBSEMethodology {
@@ -74,12 +74,12 @@ A metadata usage is an annotation attached to an element. The
 graphical notation is similar to a comment, with the `metadata`
 keyword and a structured list of data. The annotation can also
 appear as a compartment inside the annotated element
-(Ch 36, p 300).
+(Ch 36, p 301).
 
 The textual notation begins with `@` followed by the metadata
 definition name. If no further data is given, the annotation
 closes with a semicolon. Otherwise the structured data sits inside
-curly braces (Ch 36, p 300):
+curly braces (Ch 36, p 301):
 
 ```sysml
 part def Battery {
@@ -96,7 +96,7 @@ longer alternative uses the classical `name : Definition` form
 with redefinitions of the metadata features. The longer form is
 useful when an element carries more than one metadata of the same
 definition, because the long form lets the author give each
-annotation a distinct name (Ch 36, p 301).
+annotation a distinct name (Ch 36, p 302).
 
 ## Implicit meta-type metadata
 
@@ -106,7 +106,7 @@ Ch 105). Those libraries contain metadata definitions that
 describe the KerML and SysML metamodel itself. Every modelling
 element carries an implicit metadata annotation of its
 corresponding meta-type, which is accessible through reflective
-expressions (Ch 36, p 301). See
+expressions (Ch 36, p 302). See
 [[sysml2-reflection-and-classification]].
 
 ## Risks as metadata: a worked example
@@ -115,12 +115,12 @@ SysML 2.0 offers a simple way to model risks. Risks are not
 first-class model elements. They are a language extension defined
 in a SysML metadata domain library. The library ships with the
 SysML v2 book and is referenced in Chapter 112.4 of the reference
-section (Ch 38, p 308).
+section (Ch 38, p 309).
 
 The model element `Risk` is a metadata definition. A `Risk`
 metadata usage annotates an element and provides a risk assessment.
 When more than one risk applies to an element, the author can name
-the usages to distinguish them (Ch 38, p 308).
+the usages to distinguish them (Ch 38, p 309).
 
 ```sysml
 occurrence def UAVProject {

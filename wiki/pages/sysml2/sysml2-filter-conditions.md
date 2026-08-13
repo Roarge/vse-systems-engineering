@@ -6,7 +6,7 @@ layer: sysml2
 summary: Imports can be restricted with filter conditions that impact which elements are brought into a namespace
 tags: [filters, imports, smart-packages, views]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, pages 303 to 304; Chapter 37, page 307."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 36, pages 304 to 305; Chapter 37, page 308."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-overview
@@ -35,7 +35,7 @@ Imports can be restricted with filter conditions that impact which
 elements are brought into a namespace. A filter condition is a
 Boolean expression about model elements. An imported element is
 brought in only when the filter condition is true for it
-(Ch 36, p 303).
+(Ch 36, p 304).
 
 ## What filters are good for
 
@@ -71,7 +71,7 @@ content.
 
 Filters can be written in terms of custom metadata. A filter can
 combine reflective metadata with project metadata
-(Ch 36, p 304):
+(Ch 36, p 305):
 
 ```sysml
 package ApprovedPartsCatalogue {
@@ -110,7 +110,7 @@ governs which exposed elements actually appear on the view. See
 
 Chapter 36 of the SysML v2 book flags an open issue in the OMG
 KerML group (KERML11-183) regarding filter expressions. Syntax may
-change in future SysML 2.0 releases (Ch 36, p 304).
+change in future SysML 2.0 releases (Ch 36, p 305).
 
 ## See also
 

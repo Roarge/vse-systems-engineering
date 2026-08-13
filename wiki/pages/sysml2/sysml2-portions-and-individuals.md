@@ -6,7 +6,7 @@ layer: sysml2
 summary: Portion vocabulary (snapshots, time slices, space slices) and the individual keyword
 tags: [portions, snapshots, time-slice, space-slice, individuals, life]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 25.3 and 25.4, pages 151 to 155."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Sections 25.3 and 25.4, pages 151 to 155."
     raw: sysmlv2.pdf
 related:
   - sysml2-occurrences-4d

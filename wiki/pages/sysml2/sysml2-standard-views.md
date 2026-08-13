@@ -6,7 +6,7 @@ layer: sysml2
 summary: SysML 2.0 defines eight standard views in the StandardViewDefinitions package
 tags: [views, standard-views, library, sysmlv1-migration]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 13, pages 55 to 58."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 13, pages 55 to 58."
     raw: sysmlv2.pdf
 related:
   - sysml2-viewpoints-and-concerns
@@ -72,7 +72,7 @@ Projects with significant spatial or temporal modelling add
 
 Chapter 108 of the SysML v2 book (the `StandardViewDefinitions`
 library chapter) provides the full render style catalogue and
-per-view rendering conventions. As of the 2026-06 release, this
+per-view rendering conventions. As of the 2026-07 release, this
 chapter is pending. Authors should validate render output in their
 chosen modelling tool until the chapter publishes.
 

@@ -6,7 +6,7 @@ layer: sysml2
 summary: Deciding between state machines and action models, with the waiting-versus-working test and misuse symptoms
 tags: [behaviour, states, actions, patterns, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 28.6, page 219."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Section 28.6, page 219."
     raw: sysmlv2.pdf
 related:
   - sysml2-state-machines

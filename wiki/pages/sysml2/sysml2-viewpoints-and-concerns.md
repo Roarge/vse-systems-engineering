@@ -6,7 +6,7 @@ layer: sysml2
 summary: Viewpoints, views, and stakeholder concerns, grounded in ISO/IEC/IEEE 42010
 tags: [views, viewpoints, concerns, stakeholders, iso42010]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 37, pages 305 to 307."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 37, pages 306 to 308."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC/IEEE 42010:2022. Systems and software engineering — Architecture description."
     raw: null
@@ -36,7 +36,7 @@ visualisation mechanism. The SysML v2 book offers a memorable
 analogy. A viewpoint is a camera mode, set up to capture something
 specific. A view is the photo that the mode produces. The
 stakeholder is the person who wants to see something specific, and
-that want is the concern the viewpoint frames (Ch 37, p 305).
+that want is the concern the viewpoint frames (Ch 37, p 306).
 
 ## What viewpoints and views are
 
@@ -59,7 +59,7 @@ In SysML 2.0 terms:
 
 A viewpoint is technically a special requirement. Viewpoints are
 declared with the `viewpoint def` keyword and specify the concerns
-that must be addressed by any conforming view (Ch 37, p 305).
+that must be addressed by any conforming view (Ch 37, p 306).
 
 ```sysml
 viewpoint def 'Top-Level System Perspective' {
@@ -72,7 +72,7 @@ Viewpoints can be composed. A top-level viewpoint may frame two or
 more sub-viewpoints, allowing a hierarchical organisation of
 concerns. Viewpoints may also inherit from or specialise other
 viewpoints through the standard SysML 2.0 definition and usage
-mechanisms (Ch 37, p 306).
+mechanisms (Ch 37, p 307).
 
 ## Concerns and stakeholders
 
@@ -96,7 +96,7 @@ ISO/IEC/IEEE 42010 architecture description in SysML 2.0.
 
 ## Two satisfaction mechanisms
 
-A view may satisfy a viewpoint in two ways (Ch 37, p 306):
+A view may satisfy a viewpoint in two ways (Ch 37, p 307):
 
 - **Explicit `satisfy` relationship.** The view declares
   `satisfy viewpoint <name>`. This is the form covered in

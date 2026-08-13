@@ -6,7 +6,7 @@ layer: sysml2
 summary: "Metadata definitions, annotations, and reflection: how models describe and query their own structure"
 tags: [metadata, reflection, annotations, m1, m2]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 36, pages 299 to 301."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 36, pages 300 to 302."
     raw: sysmlv2.pdf
 related:
   - sysml2-metadata-definitions
@@ -29,7 +29,7 @@ elements rather than about the modelled instances. Reflective
 expressions can access these annotations together with built-in
 ones that describe the model element itself. Reflection and
 metadata can be used in filters to implement smart packages and to
-specify view contents declaratively (Ch 36, p 299).
+specify view contents declaratively (Ch 36, p 300).
 
 ## Where metadata sits
 
@@ -46,7 +46,7 @@ This is the load-bearing distinction:
 - **Metadata annotates models, not instances.** Metadata usages sit
   on the model element at metalayer **M1**, not on instances at
   **M0**. Metadata is always about the model, never about the
-  system being modelled (Ch 36, p 301).
+  system being modelled (Ch 36, p 302).
 - Misreading this leads authors to attempt tag-based runtime
   state, which does not work. For state that varies during
   execution, use variable features (see

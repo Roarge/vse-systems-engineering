@@ -6,7 +6,7 @@ layer: sysml2
 summary: Allocations bridge different layers and viewpoints in a systems model
 tags: [allocations, architecture-mapping, traceability]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 34, pages 291 to 292; Chapter 41, pages 322 to 324."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 34, pages 292 to 293; Chapter 41, pages 323 to 325."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocation-definitions
@@ -36,7 +36,7 @@ that performs it: all are allocations. SysML 2.0 provides a
 general-purpose allocation mechanism rather than imposing a fixed
 design methodology, which makes it useful from the earliest
 conceptual sketches through to detailed implementation handoff
-(Ch 34, p 291).
+(Ch 34, p 292).
 
 ## What an allocation is
 
@@ -84,7 +84,7 @@ Allocations are inherently directed. The structure has two ends:
 
 The `allocate X to Y` notation makes the direction explicit. X is
 the source and Y is the target. Reversing the order changes the
-meaning fundamentally (Ch 34, p 291). Authors transitioning from
+meaning fundamentally (Ch 34, p 292). Authors transitioning from
 SysML v1, where allocation was sometimes drawn as an undirected line,
 should take extra care.
 
@@ -97,12 +97,12 @@ appears in a derived `realizedFunctions` collection, and the function
 appears in the `realizingPlatforms` collection of the platform.
 These derived relationships update as allocations are refined,
 which supports automatic traceability and consistency checking
-across architectural layers (Ch 41, p 323).
+across architectural layers (Ch 41, p 324).
 
 ## Status of Chapter 75 in the source
 
 Chapter 75 of the SysML v2 book (the formal Allocations Reference
-in Part V) is marked as pending in the 2026-06 release. The pages
+in Part V) is marked as pending in the 2026-07 release. The pages
 in this layer therefore draw on Chapter 34 (conceptual material)
 and Chapter 41 (the Platform-Based Systems Engineering library
 example) rather than the still-pending formal reference. When

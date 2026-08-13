@@ -6,7 +6,7 @@ layer: sysml2
 summary: Deferring an action's realisation, count, or timing with abstract usages and the four ways they become concrete
 tags: [actions, abstract, behaviour, multiplicity, succession]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 26.8, pages 193 to 195."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Section 26.8, pages 193 to 195."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions

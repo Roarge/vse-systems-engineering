@@ -6,7 +6,7 @@ layer: sysml2
 summary: SysML 2.0 treats product variation as a first-class language feature
 tags: [variants, product-line-engineering, configuration]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 293 to 298."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 35, pages 294 to 299."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC 26580:2021. Software and systems engineering — Methods and tools for the feature-based approach to software and systems product line engineering."
     raw: null
@@ -29,7 +29,7 @@ A variation is a decision point in a model. At a variation point, one
 of several declared variant options must be chosen to materialise a
 concrete configuration. This stands in contrast with most engineering
 modelling languages, which leave variant management to external tools
-or naming conventions (Ch 35, pp 293 to 294). The method-side vocabulary
+or naming conventions (Ch 35, pp 294 to 295). The method-side vocabulary
 behind this language feature, and the scoping test for whether
 candidate variants belong in one model at all, are at
 [[sysmod-vamos-concepts]].
@@ -46,7 +46,7 @@ the model is configured.
 A variation may only own variants and annotations such as comments.
 It cannot own ordinary structural members. To give a variation
 structural detail, use a variation definition that subclassifies a
-concrete part definition (Ch 35, pp 294 to 295). See
+concrete part definition (Ch 35, pp 295 to 296). See
 [[sysml2-variation-definitions]] for the two declaration forms.
 
 ## Where variations fit in product line engineering
@@ -88,7 +88,7 @@ selection. The two surfaces communicate through feature bindings
 introduced by the PLEML extension. A long-range mission feature in
 the external model can drive the engine variation in the SysML model,
 which in turn drives the battery variation through an `assert
-constraint` (Ch 35, p 297).
+constraint` (Ch 35, p 298).
 
 For VSE-scale projects, this separation is often unnecessary in
 early phases. A pure SysML 2.0 variation model with internal
