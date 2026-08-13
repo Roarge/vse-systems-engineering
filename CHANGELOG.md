@@ -9,18 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Release-candidate work for 3.0.0. The version in the manifests is
-`3.0.0-rc.10`. Entries accumulate here until the 3.0.0 release heading
+`3.0.0-rc.11`. Entries accumulate here until the 3.0.0 release heading
 is cut. The release-candidate numbering runs one ahead of the
 provisional overhaul plan: the pre-overhaul hygiene work took `rc.1`,
 the wiki runtime flip landed as `rc.2`, the rigour-profile methodology
 chunk took `rc.3`, the profile-aware hooks chunk took `rc.4`, the
 rigour skills chunk took `rc.5`, the Syside refresh took `rc.6`, the
 SysML v2 Book repagination took `rc.7`, the SysML v2 Book 2026-06
-content delta took `rc.8`, the SYSMOD ingest took `rc.9`, and the
-VAMOS ingest takes `rc.10`, with every later candidate shifting by
-one.
+content delta took `rc.8`, the SYSMOD ingest took `rc.9`, the VAMOS
+ingest took `rc.10`, and the New Engineering Game ingest takes
+`rc.11`, with every later candidate shifting by one.
 
 ### Added
+
+- Four wiki pages ingest The New Engineering Game (Weilkiens, 2018,
+  *Strategies for Smart Product Engineering*) into the `sysmod` layer
+  under a `sysmod-neg-` slug prefix, which marks the third Weilkiens
+  source family in that layer.
+  `sysmod-neg-complexity-and-dynamics` covers the two complexity
+  definitions, complexity conservation, Conway's Law with its three
+  consequences, cyber-physical systems, and interdisciplinary
+  engineering. `sysmod-neg-organisational-tools` covers the Turtles
+  and Rabbits pattern with its exit options, the five Cynefin
+  domains, and the four interdisciplinary collaboration levels.
+  `sysmod-neg-human-dimension` covers the Taylor tube, New Work, the
+  Gap of Slackness with its early-warning signals, and the
+  project-hero burnout warning. `sysmod-neg-why-mbe` covers the model
+  criterion, the ten PLM4MBSE theses, the REThink 4.0 stages, and
+  query-driven modelling. Three pages route to `project-setup` and
+  the human-dimension page routes to `attention-regime`.
+- The pages carry the industry-side argument for the pressures the
+  plugin's own design rationale answers from the thesis side, which
+  is what a reader needs when the discipline has to be justified to
+  somebody outside the project. Three of the four sit at
+  `confidence: medium` with a Confidence note in the body, because
+  the fourth-industrial-revolution framing, the New Work
+  observations, and the ten theses are forecast or advocacy rather
+  than settled practice. Two source-quality judgements are stated on
+  the pages themselves: the de Weck First Law equation is carried in
+  prose only, and the source's complexity definitions are bridged to
+  the plugin's option-count formalisation as a complement rather
+  than unified with it.
 
 - Five wiki pages ingest VAMOS (Weilkiens, 2016, *Variant Modeling
   with SysML*) into the `sysmod` layer under a `sysmod-vamos-` slug
@@ -102,6 +131,34 @@ one.
   package-level feature clarifications the release errata added.
 
 ### Changed
+
+- Second-source seams on three existing `sysmod` pages.
+  `sysmod-base-architecture-source` gains the record-player worked
+  example, from the 1887 gramophone through the compact disc to
+  streaming, which is the concrete illustration of a
+  base-architecture strike the page previously lacked, plus a
+  sentence recording that such a change propagates into the
+  organisation through Conway's Law. `sysmod-zigzag-pattern` gains a
+  corroborating citation with no body change, because the second
+  source reuses the identical worked example.
+  `sysmod-toolbox-anatomy` gains one sentence naming SYSMOD
+  Essentials as the source's own modelling-independent profile of
+  the toolbox.
+- Cross-link touchpoints on six further existing pages.
+  `sysmod-problem-statement-and-objectives` gains the Business
+  Motivation Model distinction between a Goal and a measurable
+  Objective in its System Objectives section, and the six Design
+  Thinking step names in its Design Thinking bullet. The three
+  `phas-eai` pages carry the new human-dimension page in `related:`,
+  with `phas-eai-overview` also naming the Gap of Slackness as the
+  industry-side statement of the gap that designed cognitive reserve
+  closes. `ambse-requirements-as-models`, `ambse-principles`, and
+  `sysmod-model-purpose-levels` are metadata-only. `referenced_by:`
+  is untouched on every existing page.
+- Issue #57 names `3.0.0-rc.8` in its acceptance criteria. That
+  criterion was stale before this work started, because the SYSMOD
+  ingest took `rc.9` and the VAMOS ingest took `rc.10`. This ingest
+  takes `rc.11` under the shifting convention stated above.
 
 - `sysml2-variant-organisation` gains `raw: vamos.pdf` on its 2016
   Weilkiens citation, which had been left at `raw: null` while the
