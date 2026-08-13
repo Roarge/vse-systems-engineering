@@ -17,9 +17,10 @@ related:
   - sysml2-case-kinds
   - sysml2-case-patterns
   - requirements-elicitation-and-writing
+  - sysmod-functional-analysis-chain
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-08-13
 referenced_by: [needs-and-requirements]
 ---
 

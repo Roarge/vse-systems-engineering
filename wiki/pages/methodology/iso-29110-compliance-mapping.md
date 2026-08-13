@@ -13,9 +13,10 @@ related:
   - story-branch-pr-workflow
   - storymeta-lifecycle
   - project-management-workflow
+  - sysmod-iso15288-landscape
 confidence: high
 created: 2026-05-05
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [project-setup, project-audit, release-orchestrator, project-plan]
 ---
 

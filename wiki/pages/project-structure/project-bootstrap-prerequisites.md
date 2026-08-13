@@ -21,9 +21,11 @@ related:
   - system-context-completeness
   - project-management-workflow
   - methodology-overview
+  - sysmod-base-architecture-source
+  - sysmod-problem-statement-and-objectives
 confidence: high
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-08-13
 referenced_by: [project-setup, project-audit]
 ---
 

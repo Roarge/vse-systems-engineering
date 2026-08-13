@@ -13,9 +13,10 @@ related:
   - base-architecture-corollaries
   - role-actor-coupling
   - stakeholder-stories-workflow
+  - sysmod-system-context-source
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [needs-and-requirements, architecture-design]
 ---
 
@@ -33,7 +34,7 @@ referenced_by: [needs-and-requirements, architecture-design]
 
 ## Purpose
 
-The System Context establishes the system boundary, identifies the external entities the system interacts with, and types the item flows that cross the boundary. It is the shared reference for every story's `subject`, for any `actor` typing in elaborated use cases, and for the interface set that downstream architectural work refines. The concept adapts SYSMOD §5.11 (Weilkiens, 2020) to native SysML 2.0 constructs: `part def` for the system and its actors, `interface def` for the connections, and `item def` together with item flows for what crosses the boundary. See [[methodology-overview]] for how System Context sits between Base Architecture and stakeholder stories.
+The System Context establishes the system boundary, identifies the external entities the system interacts with, and types the item flows that cross the boundary. It is the shared reference for every story's `subject`, for any `actor` typing in elaborated use cases, and for the interface set that downstream architectural work refines. The concept adapts SYSMOD §5.11 (Weilkiens, 2020) to native SysML 2.0 constructs: `part def` for the system and its actors, `interface def` for the connections, and `item def` together with item flows for what crosses the boundary. See [[methodology-overview]] for how System Context sits between Base Architecture and stakeholder stories. The source perspective, including the Planet Environment actor and the Death of the Actor rationale for typing actors as parts rather than as Actor elements, is at [[sysmod-system-context-source]].
 
 ## What the artefact owns
 

@@ -16,9 +16,10 @@ related:
   - sysml2-canonical-model-layout
   - sysml2-namespace-hygiene
   - sysml2-specialisation-and-typing
+  - sysmod-architecture-kinds-and-coupling
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-13
 referenced_by: [sysml2-model-structure]
 ---
 

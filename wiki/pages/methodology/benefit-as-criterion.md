@@ -15,13 +15,23 @@ related:
   - user-story-canonical-artefact
   - architectural-analysis-workflow
   - system-stories-workflow
+  - sysmod-problem-statement-and-objectives
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-08-13
 referenced_by: [architecture-design, needs-and-requirements]
 ---
 
 # Benefit constraint as trade-study criterion
+
+## Contents
+
+- The principle
+- Consequence: no drift from stakeholder intent
+- Pressure to formalise benefits
+- What §6.3.4 does when no story matches
+- SysML 2.0 worked example
+- Why this matters
 
 The methodology's load-bearing structural property is that the `benefit` slot of a user story, when expressed as a `require constraint` over value properties of the system, *is* the same model element that supplies assessment criteria during architectural trade studies (§6). One element, two roles. There is no separate criterion-authoring artefact and no intermediate translation step.
 
