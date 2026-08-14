@@ -81,16 +81,20 @@ the iso-config share. The last two are legacy layouts.
 
 ### Step 2: Extract Requirements
 
-Search for `requirement def` declarations. For each, record:
+Search for `requirement def` declarations, and for the
+`RequirementDerivation::derivations` connections that record §5.4.1
+derivation. For each requirement, record:
 - The requirement ID (from the `id` attribute)
-- Whether it has a `satisfy` link (upward trace)
+- Whether it has an upward trace (a derivation connection naming it
+  as the derived end, or a `satisfy` link)
 - Whether any verification case has a `verify` link to it (downward trace)
 
 ### Step 3: Extract Stakeholder Needs
 
 Search for stakeholder need declarations (requirements in the StakeholderNeeds
 package). For each, record:
-- Whether at least one system requirement satisfies it
+- Whether at least one system requirement traces to it (as the
+  original end of a derivation connection, or through `satisfy`)
 - Whether at least one validation case verifies it
 
 ### Step 3a: Extract element requirements
@@ -108,7 +112,8 @@ Search for `verification def` declarations. For each, record:
 
 ### Step 4a: Cross-check bidirectional consistency (Rule 5)
 
-For each `satisfy` link found in a requirement:
+For each `satisfy` link found in a requirement, and for each end of
+every derivation connection:
 - Verify the target stakeholder need or system requirement exists in the model
 - Verify that the target entity is reachable (not in a missing file)
 
@@ -126,8 +131,8 @@ Present results as a table:
 TRACEABILITY CHECK RESULTS
 ==========================
 Requirements checked: [n]
-  With upward trace (satisfy):    [n] / [total]
-  With downward trace (verify):   [n] / [total]
+  With upward trace (derive or satisfy):  [n] / [total]
+  With downward trace (verify):           [n] / [total]
 
 Stakeholder needs checked: [n]
   With system requirement:        [n] / [total]
