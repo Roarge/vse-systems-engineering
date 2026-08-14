@@ -12,6 +12,7 @@ related:
   - sysml2-type-hierarchy
   - sysml2-specialisation-and-typing
   - sysml2-libraries-architecture
+  - sysml2-api-and-services
 confidence: high
 created: 2026-05-04
 updated: 2026-05-04
@@ -72,7 +73,9 @@ The OMG SysML 2.0 specification defines five conformance levels:
 - **Abstract Syntax** (metamodel structure)
 - **Concrete Syntax** in two forms: **Textual** and **Graphical**
 - **Semantic** (meaning and well-formedness rules)
-- **Model Interchange** (JSON-based API)
+- **Model Interchange** (JSON-based API). The interface itself is a
+  separate OMG specification, the Systems Modeling API and Services,
+  covered in [[sysml2-api-and-services]].
 
 For a VSE, the most relevant levels are:
 
