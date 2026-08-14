@@ -82,6 +82,7 @@ project or a commit (Ch 42, pp 332 to 334).
 | `DataVersion` | The versions of that data, pointing at exactly one commit owned by a project |
 | `Data` | The interface the data sits behind, implemented by `Element`, `Relationship`, `ExternalElement`, `ExternalRelationship`, and `ProjectUsage` |
 | `Element`, `Relationship` | The KerML model elements that found every KerML and SysML 2.0 model element |
+| `ExternalData` | Data outside the model that the API integrates, reached through an `ExternalRelationship` |
 | `ExternalRelationship` | Connects an `Element` to an `ExternalData` entity, specifying the mapping and its language, for example Python, which is not part of the standard |
 | `ProjectUsage` | The use of one project within another |
 | `Query` | A request to retrieve information from a project, implementable in a language such as SQL or SPARQL |

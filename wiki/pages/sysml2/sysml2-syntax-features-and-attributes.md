@@ -69,8 +69,8 @@ redefinition restricts the feature's domain from `Anything` to the
 owning type and adds its name to that type's namespace
 (Ch 18, p 115).
 
-Three consequences follow for reading such a feature and for the
-values it can carry.
+Three consequences follow, for reading such a feature, for
+attempting to write it, and for the values it can carry.
 
 - **Reading.** Referring to `ISQ::mass` inside `Drone` returns the
   mass associated with the drone instance the expression is evaluated
