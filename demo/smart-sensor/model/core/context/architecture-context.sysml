@@ -43,16 +43,29 @@ package SmartSensor_Context {
         end cloudSide  : MqttIngestPort;
     }
 
+    interface def MaintenanceInterface {
+        end systemSide     : MaintenancePort;
+        end technicianSide : ServiceToolPort;
+    }
+
     // Composite System Context part.
     part def SmartSensor_Context_Composite {
         part system   : SmartSensor_System;
         part operator : Operator;
-        part maint    : MaintenanceTechnician;
+        part maint    : MaintenanceTechnician {
+            port serviceTool : ServiceToolPort;
+        }
         part dashboard: CloudDashboard;
         part ambient  : AmbientClimate;
 
         interface ui : OperatorUIInterface
             connect system.operatorUI to dashboard.operatorPort;
+
+        interface telemetry : CloudInterface
+            connect system.cloud to dashboard.mqttIngest;
+
+        interface service : MaintenanceInterface
+            connect system.maintenance to maint.serviceTool;
     }
 
     // Placeholder port types used at the system boundary.
@@ -60,4 +73,5 @@ package SmartSensor_Context {
     port def MaintenancePort;
     port def CloudIngestPort;
     port def DashboardPort;
+    port def ServiceToolPort;
 }
