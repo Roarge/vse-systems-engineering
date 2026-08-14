@@ -67,13 +67,17 @@ A. The model must be consistent in both directions.
 
 ### Step 1: Find All Model Files
 
+Try these globs in order, first root with matches wins:
+
 ```
-Glob for, first match wins: model/**/*.sysml,
-engineering/model/**/*.sysml, models/**/*.sysml
+model/**/*.sysml
+engineering/model/**/*.sysml
+models/**/*.sysml
+engineering/models/**/*.sysml
 ```
 
 The first two roots mirror the discovery convention the renderers and
-the iso-config share. The third is the legacy layout.
+the iso-config share. The last two are legacy layouts.
 
 ### Step 2: Extract Requirements
 
@@ -174,7 +178,7 @@ message.
 **When to dispatch.** Whenever matrix generation is requested across
 more than a handful of model files and the Agent tool is available.
 
-**What to pass.** The model directory path (default `models/`), an
+**What to pass.** The model root detected in Step 1, an
 optional scope filter listing the identifier prefixes to include
 (`STK-`, `REQ-`, `ELE-`, `VER-`, `VAL-`), and the trace rules to
 apply. Default to all five rules from the section above.
@@ -233,7 +237,7 @@ Use this script template to perform programmatic trace analysis:
 import syside
 import sys
 
-def check_traceability(model_dir: str = "models/") -> list[str]:
+def check_traceability(model_dir: str = "model/") -> list[str]:
     """Check trace completeness across all SysML models."""
     paths = syside.collect_files_recursively(model_dir)
     model, diagnostics = syside.try_load_model(paths=paths)
@@ -298,7 +302,7 @@ def check_traceability(model_dir: str = "models/") -> list[str]:
     return gaps
 
 if __name__ == "__main__":
-    model_dir = sys.argv[1] if len(sys.argv) > 1 else "models/"
+    model_dir = sys.argv[1] if len(sys.argv) > 1 else "model/"
     gaps = check_traceability(model_dir)
     sys.exit(1 if gaps else 0)
 ```

@@ -49,9 +49,11 @@ the engineer for editing.
 
 When invoked, you receive from the parent skill:
 
-1. **Model directory.** The path to the SysML 2.0 model root, typically
-   `models/` or `engineering/models/`. If the parent does not specify,
-   default to `models/` and report which root you used.
+1. **Model directory.** The path to the SysML 2.0 model root, which
+   the parent detects and passes. If the parent does not specify,
+   discover it in this order, first hit wins, and report which root
+   you used: `model/`, `engineering/model/`, `models/`,
+   `engineering/models/` (the last two are legacy layouts).
 2. **Scope filter (optional).** A list of element identifier prefixes
    (for example `STK-`, `REQ-`, `ELE-`, `VER-`, `VAL-`) to constrain
    the matrix. If absent, include every requirement, element
@@ -78,17 +80,24 @@ return an "Empty model" report and stop.
    `verification def` declaration, capture the identifier, the method
    attribute if present, and any `verify` link target.
 4. **Cross-link.** Build the matrix by joining requirements to their
-   parent stakeholder needs (via `satisfy` links) and to their
-   verification or validation cases (via `verify` links).
+   parent stakeholder needs (via §5.4.1 derivation, that is the
+   `#derive` annotation plus `RequirementDerivation::derivations`
+   connections, or via `satisfy` links where the project uses that
+   form) and to their verification or validation cases (via `verify`
+   links). Extract derivation connections alongside the relationship
+   statements in step 2.
 5. **Identify gaps** against the rule set:
-   - Rule 1: requirement without `satisfy` link (upward orphan)
+   - Rule 1: system requirement with neither a derivation connection
+     nor a `satisfy` link upward (a doc-comment mention counts for
+     neither)
    - Rule 2: requirement without `verify` link (downward orphan)
    - Rule 2a: element requirement without `satisfy` to a system
      requirement, or without a verification case
    - Rule 3: stakeholder need without a validation case
    - Rule 4: verification case without a `verify` link
-   - Rule 5: bidirectional inconsistency, where a `satisfy` or `verify`
-     references an identifier that does not exist in any model file
+   - Rule 5: bidirectional inconsistency, where a `satisfy`, `verify`,
+     or derivation connection end references an identifier that does
+     not exist in any model file
 6. **Suggest fixes.** For every gap, suggest the specific edit using
    the fix table from the traceability-guard skill. Phrase fixes as
    recommendations, never as commands.
