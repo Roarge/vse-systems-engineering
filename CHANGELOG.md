@@ -6,6 +6,30 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-08-14
+
+### Added (forked execution)
+
+- project-audit and traceability-guard execute in forked contexts
+  (`context: fork`, `agent: general-purpose`), keeping the main
+  conversation clean of their heavy reading while staying
+  model-invocable for the skills that route to them. Bodies are
+  fork-aware: self-contained execution, the complete report in the
+  final message, report saving only into an already-existing
+  audit-reports directory, and an inline fallback where the Agent
+  tool is unavailable, the fork itself providing the isolation the
+  matrix-builder subagent exists to give.
+
+### Fixed (forked execution)
+
+- traceability-guard's Rules 1 and 4 accept the section 5.4.1
+  derivation connection as the story-tier upward trace, ending false
+  satisfy gaps against models that trace exactly as the methodology
+  prescribes. The model-root discovery matches the renderer
+  convention, the invocation context is a declared input, and the
+  story-closure and gap-trend wordings no longer assume session
+  memory a fork does not carry.
+
 ## [3.1.0] - 2026-08-14
 
 ### Added

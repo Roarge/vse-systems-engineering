@@ -3,13 +3,15 @@ name: project-audit
 description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Read-only except for the audit report it produces.
 when_to_use: Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions.
 user-invocable: true
+context: fork
+agent: general-purpose
 ---
 
 # Project Audit
 
-If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
+This skill executes in a forked context. Work self-contained from this body, and return the complete audit report as the final message, because only the final message reaches the conversation. Do not load the VSE lens here. The lens routes in the main conversation, and this body carries everything the audit needs.
 
-You are the project auditing skill for VSE systems engineering. You inspect an existing VSE project against the methodology specified in `${CLAUDE_PLUGIN_ROOT}/methodology/` and produce a structured report of findings. The skill is strictly read-only. It never modifies files, creates directories, installs hooks, or writes to disk outside the audit-report path that the engineer explicitly approves. It produces a report. The engineer decides what to act on.
+You are the project auditing skill for VSE systems engineering. You inspect an existing VSE project against the methodology specified in `${CLAUDE_PLUGIN_ROOT}/methodology/` and produce a structured report of findings. The skill is strictly read-only. It never modifies files, creates directories, installs hooks, or writes to disk beyond the one audit-report write whose authorisation the Outputs section defines (an already-existing `docs/audit-reports/` directory). It produces a report. The engineer decides what to act on.
 
 ## When This Skill Triggers
 
@@ -122,7 +124,7 @@ Inspect `model/core/context/`:
 
 ### 11. Trace Integrity
 
-Walk every `derive`, `frame concern`, `satisfy`, `verify`, and `allocate` relation in the model. Confirm that each end-point resolves to a defined element. Dispatch the `vse-traceability-matrix-builder` subagent for the heavy walk, in line with the dispatching pattern documented for that subagent. The subagent returns a suggestion-shaped report. The audit surfaces the report and adds an ERROR finding for every unresolved reference.
+Walk every `derive`, `frame concern`, `satisfy`, `verify`, and `allocate` relation in the model. Confirm that each end-point resolves to a defined element. Dispatch the `vse-traceability-matrix-builder` subagent for the heavy walk when the Agent tool is available, in line with the dispatching pattern documented for that subagent. When it is not (a forked execution may carry a restricted tool set), perform the walk inline, because the fork itself already provides the context isolation the subagent exists to give. Either way the audit surfaces the matrix and adds an ERROR finding for every unresolved reference.
 
 ### 12. ISO 29110 Artefact Presence (§9.5)
 
@@ -180,7 +182,7 @@ Produce a structured Markdown report grouped by check, then by severity. Each fi
 - detected layout (greenfield or brownfield),
 - number of ERROR, WARN, and PASS findings.
 
-The report is saved to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` when a `docs/audit-reports/` directory exists or the engineer authorises the skill to create one. When the project carries no `docs/` folder, the report is surfaced inline in the chat instead.
+The report is saved to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` when a `docs/audit-reports/` directory already exists, its existence standing as the project's authorisation. The skill never creates the directory itself, because a forked execution cannot ask. In every case the complete report is also returned as the final message, and the conversation can save or route it afterwards on the engineer's request.
 
 If every check passes with no ERROR findings, the report header reads "VSE PROJECT AUDIT: PASS".
 
@@ -203,7 +205,7 @@ The audit produces findings. Remediation is delegated to other skills:
 
 ## Outputs
 
-A single Markdown audit report per invocation, written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` if the engineer authorises the path, or surfaced inline otherwise. The skill does not modify any other file.
+A single Markdown audit report per invocation, returned in full as the final message, and additionally written to `<project>/docs/audit-reports/<YYYY-MM-DD>.md` when that directory already exists. The skill does not modify any other file.
 
 ## Knowledge base
 
