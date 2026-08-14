@@ -116,6 +116,11 @@ jobs:
           while IFS= read -r renderer; do
               [ -z "$renderer" ] && continue
               case "$renderer" in
+                  *..*)
+                      echo "::warning::Skipping renderer with unsafe path: ${renderer}"
+                      echo "Renderer paths shall not contain .. segments."
+                      continue
+                      ;;
                   tools/render/*) ;;
                   *)
                       echo "::warning::Skipping renderer with unsafe path: ${renderer}"

@@ -83,7 +83,8 @@ change_request:
 # the post-merge hook on main and by the Contract 3 freshness check in
 # CI. Every path shall start with tools/render/, which is the constraint
 # the post-merge hook applies so that a project-controlled YAML file
-# cannot name an arbitrary command.
+# cannot name an arbitrary command, and no path may contain a ..
+# segment, which would escape the prefix.
 #
 # The three keys below are the renderers the plugin ships and
 # @project-setup installs under tools/render/. Comment out any key whose

@@ -62,7 +62,7 @@ def verification_cases_for(model, story):
 
 
 def stakeholder_story_is_covered(model, story):
-    """True when every acceptance of a stakeholder story has coverage.
+    """True when the story's acceptance has coverage by either route.
 
     Coverage comes from either of the two routes the methodology defines.
     A validation case exercises the stakeholder story directly (section

@@ -46,7 +46,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 # Directories searched for the model, in order, relative to the project
 # root. This mirrors the .iso-config.yaml discovery convention used by the
