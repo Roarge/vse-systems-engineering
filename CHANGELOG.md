@@ -6,6 +6,39 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3] - 2026-08-14
+
+### Fixed (demo model)
+
+- The Smart Sensor System Context composite now uses the interfaces it
+  declares. It defined `CloudInterface` and gave the system a
+  `maintenance` port, but connected neither, so two of the three
+  boundary interactions the methodology §3 composite is meant to own
+  existed only as unused declarations. A `MaintenanceInterface`
+  definition joins the reusable interface types, the maintenance
+  technician usage gains a service tool port (placed on the context
+  usage rather than the §4 stakeholder definition, keeping the
+  stakeholder definition free of context concerns), and the composite
+  connects both the telemetry and service interfaces.
+- Derivation between stakeholder and system stories is recorded as
+  model structure rather than prose. Both system stories asserted
+  their origin in a `#derive from ...` sentence inside a StoryMeta doc
+  comment, which no tool can query and which methodology §5.4.1 does
+  not accept as canonical. The sentence is replaced by the two
+  constructs §5.4.1 prescribes, the `#derive` prefix annotation on
+  each derived requirement and an explicit `Derivation` connection
+  naming original and derived ends, so the trace is machine-readable
+  as design principle R3 intends.
+- Stakeholder stories US_002 and US_004 gain the validation cases they
+  lacked. Half the story register carried acceptance criteria that no
+  validation case exercised. VAL_003 validates batch acknowledgement
+  during an incident storm and VAL_004 validates alert history review
+  across the documented retention window, both following the house
+  form of VAL_001 and VAL_002.
+- The demo documents that enumerate the validation case set are
+  brought level with the model: the structure tree in the demo
+  `CLAUDE.md` and both validation mentions in the demo SEMP.
+
 ## [3.0.2] - 2026-08-14
 
 ### Fixed (attribution)

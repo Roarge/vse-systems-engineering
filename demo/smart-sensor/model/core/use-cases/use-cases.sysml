@@ -23,7 +23,8 @@ package SmartSensor_UseCases {
     // the dashboard, the cloud broker, and the device co-operating to
     // clear an alert batch within the SLA.
     use case def AcknowledgeAlertBatch {
-        doc /* #derive from US_002_AcknowledgeAlertsBatched.
+        doc /* Elaborates US_002_AcknowledgeAlertsBatched, bound as
+               the `objective` below per §1.4.5.
 
                Primary actor: Operator.
                Secondary actor: CloudDashboard (the device holding

@@ -62,4 +62,65 @@ package SmartSensor_ValidationCases {
             verify US_003_CalibrateInField::acceptance;
         }
     }
+
+    // VAL_003 validates US_002_AcknowledgeAlertsBatched.
+    verification def VAL_003_OperatorBatchAcknowledgement {
+        doc /* Subject of validation: the operator's ability to clear
+               an alert queue during an incident storm using the
+               batch acknowledgement action alone.
+
+               Method: seed a representative alert storm at the demo
+               deployment, sized as the operator judges typical of a
+               real incident. Have the operator clear the queue with
+               the "Acknowledge all" action and nothing else, with no
+               per-alert follow-up permitted. Record the time from
+               the action to the last seeded alert reaching the
+               acknowledged state, and observe that every seeded
+               alert transitions.
+
+               Pass criterion: the queue clears in one action, every
+               seeded alert reaches the acknowledged state within
+               1 second of the action per the story acceptance, and
+               the operator reports the mechanism as fast enough to
+               keep up with an incident storm.
+             */
+
+        subject system : SmartSensor_System;
+
+        objective {
+            verify US_002_AcknowledgeAlertsBatched::acceptance;
+        }
+    }
+
+    // VAL_004 validates US_004_RetainAlertHistory. The story is
+    // Regulator-side, so the case validates the Regulator's
+    // retention intent, with the operator executing the review on
+    // the Regulator's behalf.
+    verification def VAL_004_RegulatorRetentionEvidence {
+        doc /* Subject of validation: the Regulator's retention
+               intent, evidenced by whether the retained alert
+               history is complete and reviewable once real alerts
+               have accumulated across the documented retention
+               window.
+
+               Method: after the documented retention interval has
+               accumulated real alerts at the demo deployment, have
+               the operator review the alert history against the
+               independently kept incident log. Check each logged
+               incident for a corresponding retained alert, and run
+               the tamper-evidence check on every record retrieved.
+
+               Pass criterion: the history is complete across the
+               retention window with no logged incident missing from
+               the store, and every alert queried during the review
+               is retrievable with its tamper-evidence check
+               confirming the record is unmodified.
+             */
+
+        subject system : SmartSensor_System;
+
+        objective {
+            verify US_004_RetainAlertHistory::acceptance;
+        }
+    }
 }

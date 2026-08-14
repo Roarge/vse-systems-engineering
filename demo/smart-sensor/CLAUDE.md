@@ -77,7 +77,7 @@ model/
       interface-types/      Reusable interface defs
     verification-validation/
       verification-cases/   VC_001, VC_002
-      validation-cases/     VAL_001, VAL_002
+      validation-cases/     VAL_001..VAL_004
     core.sysml              top-level package declaration
   variations/               §6 trade-study mechanism
     decision-points/        AlertHistoryStorageStrategy
