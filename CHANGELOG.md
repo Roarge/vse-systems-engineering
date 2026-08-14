@@ -6,6 +6,63 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-08-14
+
+### Added
+
+- Renderer scripts for the §9.8 model-derived artefacts, shipped at
+  `templates/tools/render/` and installed into each project under
+  `tools/render/`. Three renderers cover the artefacts the model can
+  already answer for: `traceability-matrix.py` writes the Traceability
+  Matrix (ISO/IEC TR 29110-5-6-2 product description 27),
+  `stakeholder-reqs-doc.py` writes the Stakeholders Requirements
+  Specification, and `system-reqs-doc.py` writes the System
+  Requirements Specification, all under `docs/generated/`. A fourth
+  file, `sysml_model.py`, is the shared model reader the three import,
+  so there is one parser and three renderers rather than three
+  parsers. The scripts use the Python 3 standard library only, so they
+  run inside a git hook and on a bare CI runner with no licence and no
+  install step, and they remain the swap point for a full SysML 2.0
+  API implementation per the hooks guide §3.1. Output is deterministic
+  by design, because Contract 3 compares bytes: files are read in
+  sorted path order, elements keep their declaration order, no
+  timestamp or absolute path is emitted, every artefact opens with a
+  fixed generator line, and the writer emits LF endings with a
+  trailing newline. The IVV Plan, IVV Procedures, and Justification
+  Document have no renderer yet.
+- The Contract 3 freshness step in
+  `templates/github/traceability-check.yml`. The hooks guide §4.4 has
+  named this workflow as the shipped implementation of Contract 3
+  since v2.0.0, but the workflow never compared the regenerated
+  artefacts against the committed copies. The step reads the
+  `renderers:` block with the same awk idiom and the same
+  `tools/render/` path constraint as the project-side `post-merge`
+  hook, runs each configured renderer that is present and executable,
+  and then runs `git diff --exit-code -- docs/generated/`. It is
+  blocking as written, which is the `full` disposition under §3.4, and
+  the `continue-on-error` line a `standard` install uncomments sits
+  directly above it.
+- `@project-setup` Step 4 installs the four renderer files to
+  `<ENG_ROOT>/tools/render/` with the executable bit set, and gains a
+  fifth `.iso-config.yaml` edit covering the `renderers:` block. The
+  brownfield exception is stated rather than left to be discovered: a
+  scaffold under `engineering/` has no renderer path that both starts
+  with `tools/render/` and resolves from the project root, so those
+  projects keep the block commented and regenerate by hand.
+- The demo project carries the renderers, the activated `renderers:`
+  block, and the three generated artefacts under
+  `demo/smart-sensor/docs/generated/`, which is Contract 3 proved end
+  to end on a real model rather than asserted.
+
+### Changed
+
+- `templates/iso-config/.iso-config.yaml` ships the `renderers:` block
+  active with the three implemented keys instead of commented out. The
+  three keys with no renderer stay commented, with the rationale
+  reworded to say those scripts do not ship yet rather than that no
+  renderer exists at all. `@attention-regime`, which described the
+  block as shipping commented out, is corrected to match.
+
 ## [3.0.3] - 2026-08-14
 
 ### Fixed (demo model)
