@@ -89,9 +89,13 @@ package SmartSensor_ValidationCases {
         }
     }
 
-    // VAL_004 validates US_004_RetainAlertHistory.
-    verification def VAL_004_OperatorAlertHistoryReview {
-        doc /* Subject of validation: whether the retained alert
+    // VAL_004 validates US_004_RetainAlertHistory. The story is
+    // Regulator-side, so the case validates the Regulator's
+    // retention intent, with the operator executing the review on
+    // the Regulator's behalf.
+    verification def VAL_004_RegulatorRetentionEvidence {
+        doc /* Subject of validation: the Regulator's retention
+               intent, evidenced by whether the retained alert
                history is complete and reviewable once real alerts
                have accumulated across the documented retention
                window.
