@@ -73,13 +73,16 @@ package SmartSensor_ValidationCases {
                deployment, sized as the operator judges typical of a
                real incident. Have the operator clear the queue with
                the "Acknowledge all" action and nothing else, with no
-               per-alert follow-up permitted. Observe whether every
-               seeded alert transitions to acknowledged.
+               per-alert follow-up permitted. Record the time from
+               the action to the last seeded alert reaching the
+               acknowledged state, and observe that every seeded
+               alert transitions.
 
                Pass criterion: the queue clears in one action, every
-               seeded alert reaches the acknowledged state, and the
-               operator reports the mechanism as fast enough to keep
-               up with an incident storm.
+               seeded alert reaches the acknowledged state within
+               1 second of the action per the story acceptance, and
+               the operator reports the mechanism as fast enough to
+               keep up with an incident storm.
              */
 
         subject system : SmartSensor_System;
