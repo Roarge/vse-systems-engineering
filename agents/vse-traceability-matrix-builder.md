@@ -3,9 +3,11 @@ name: vse-traceability-matrix-builder
 description: >
   Walks SysML 2.0 model files, extracts every requirement, satisfy
   link, and verify link, and synthesises a complete traceability matrix
-  with a gap report. Use this agent from traceability-guard or
-  verification-validation when matrix generation would otherwise force
-  the parent skill to load every model file into its own context.
+  with a gap report. Dispatched by two skills for the same work:
+  traceability-guard (through which verification-validation also
+  routes) and project-audit (its trace-integrity check), whenever the
+  matrix walk would otherwise force the parent skill to load every
+  model file into its own context.
   Returns a suggestion-shaped markdown matrix and gap report. The
   engineer reviews the result inside the parent skill.
 
@@ -24,11 +26,12 @@ description: >
   </example>
 
   <example>
-  Context: verification-validation Step 4 needs the trace completeness
-  check before defining new validation cases.
-  user: "Check trace completeness across the model"
-  assistant: "Dispatching vse-traceability-matrix-builder, then I will
-  present the matrix and any gaps for your decision."
+  Context: project-audit is running its trace-integrity check and the
+  model tree is too large to walk in the auditing context.
+  user: "Audit the project before the release"
+  assistant: "Dispatching vse-traceability-matrix-builder for the
+  relation walk, then folding unresolved references into the audit
+  findings."
   </example>
 model: inherit
 color: green

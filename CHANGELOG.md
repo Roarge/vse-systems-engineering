@@ -6,6 +6,20 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2026-08-14
+
+### Fixed (attribution)
+
+- The vse-traceability-matrix-builder subagent's description now names
+  its actual dispatchers, traceability-guard and project-audit, with
+  verification-validation noted as routing through the former, and its
+  second example shows the audit dispatch. The one-orchestrator rule in
+  the contributor rules gains the enumerated-multi-dispatch allowance
+  the plugin already practised: a subagent may serve several skills
+  only when the dispatched work is identical for every caller and each
+  dispatcher is named in the description. The README subagent row
+  already stated the true routing and is unchanged.
+
 ## [3.0.1] - 2026-08-14
 
 Brings the knowledge base level with the 2026-07 release of "The SysML
