@@ -6,6 +6,65 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-08-14
+
+Brings the knowledge base level with the 2026-07 release of "The SysML
+v2 Book". The book's release notes name three changes, and each one
+reached the wiki. A new Chapter 42 introduces the OMG Systems Modeling
+API and Services, which the wiki did not cover at all. An erratum
+retracts a claim about assigning to package-level usages that the wiki
+carried as fact, on the very page the book corrected. And the new
+Part III shifts the printed pages of chapters 33 to 41 by one, which
+staled 131 in-text pointers and part of 52 frontmatter citations. The
+two forewords the release also adds are not cited anywhere and need no
+action.
+
+### Added (Chapter 42)
+
+- New wiki page `sysml2-api-and-services` covering the Systems
+  Modeling API and Services: the PIM and PSM layering, the record and
+  service structures, and why tool-independent model access matters to
+  a VSE that can least afford vendor lock-in. The page separates the
+  OMG standard from the Sensmetry Syside Automator Python library,
+  which this knowledge base also calls an API, and records that
+  chapters 43 and 44 are still placeholders so usage guidance cannot
+  be sourced from the book yet.
+- `sysml2-language-architecture` gains a cross-reference at its Model
+  Interchange conformance level, which was the wiki's only previous
+  mention of the API.
+
+### Changed (repagination)
+
+- All 131 in-text pointers citing chapters 33 to 41 move forward one
+  page. Section numbers, figure numbers, and chapter mentions without
+  pages are left alone, because only page positions moved.
+- All 52 frontmatter citations name the 2026-07 release, and the 22
+  whose page lists cover a band chapter also move forward one page.
+  Citations for chapters 32 and below keep their pages.
+- The 12 body mentions of the release name 2026-07. Every pending
+  claim they carry was checked against the new text and is still true,
+  so no wording changed beyond the label.
+- `INDEX.md` and the `sysml2-modelling` routing block are regenerated,
+  and all 54 touched pages are bumped to 2026-08-14.
+
+### Fixed (package-level assignment)
+
+- `sysml2-syntax-features-and-attributes` stated that assigning to a
+  package-level feature binds to the assignment action's context and
+  sets the value for the executing instance. The 2026-07 errata
+  retract exactly this. An assignment to a package-level usage is
+  always an error, because such usages are features of the type
+  `Anything` rather than occurrences, so they are never variables and
+  cannot be given a new value. The page now carries the corrected rule
+  and the error the tool reports, and its value-semantics bullet no
+  longer rests on assignment being possible.
+- `sysml2-special-action-usages` stated the generic rule that
+  attribute features cannot change their value but not the
+  package-level case, and the assignment gotchas on
+  `sysml2-behaviour-patterns` covered atomicity and `this` typing
+  only. Both now close the gap, so a reader arriving from either page
+  learns why the tool rejects the assignment.
+
 ## [3.0.0] - 2026-08-13
 
 The Claude 5 era overhaul. The plugin repositions from enforcing one
