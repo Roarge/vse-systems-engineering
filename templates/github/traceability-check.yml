@@ -72,6 +72,82 @@ jobs:
         env:
           CI: true
 
+      - name: Check derived-artefact freshness (Contract 3)
+        # Per `methodology/iso-29110-hooks-guide.md` §4.4 Contract 3, the
+        # artefacts regenerated from the pushed tree shall match the copies
+        # committed under `docs/generated/`. A mismatch means a model change
+        # landed without its rendered artefacts, which is the one way
+        # documentation drift can still happen under §9.8.
+        #
+        # Disposition per hooks guide §3.4. The step is blocking as written,
+        # which is the `full` profile setting. A `standard` profile install
+        # makes it advisory by uncommenting the `continue-on-error` line
+        # below, and a `light` profile install deletes the step.
+        # continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          ISO_CONFIG=""
+          if [ -f ".iso-config.yaml" ]; then
+              ISO_CONFIG=".iso-config.yaml"
+          elif [ -f "engineering/.iso-config.yaml" ]; then
+              ISO_CONFIG="engineering/.iso-config.yaml"
+          fi
+
+          if [ -z "$ISO_CONFIG" ]; then
+              echo "No .iso-config.yaml found. Nothing to regenerate."
+              exit 0
+          fi
+
+          # The same awk idiom as the project-side post-merge hook, so that
+          # both read the renderers: block the same way. Renderer paths are
+          # constrained to start with tools/render/ to prevent arbitrary
+          # command execution from a project-controlled YAML file.
+          RENDERERS=$(awk '
+              /^renderers:/ { inside=1; next }
+              inside && /^[A-Za-z]/ { inside=0 }
+              inside && /^[[:space:]]+[a-z_]+:[[:space:]]+/ {
+                  sub(/^[[:space:]]+[a-z_]+:[[:space:]]+/, "")
+                  print
+              }
+          ' "$ISO_CONFIG")
+
+          DREW=0
+          while IFS= read -r renderer; do
+              [ -z "$renderer" ] && continue
+              case "$renderer" in
+                  tools/render/*) ;;
+                  *)
+                      echo "::warning::Skipping renderer with unsafe path: ${renderer}"
+                      echo "Renderer paths shall start with tools/render/."
+                      continue
+                      ;;
+              esac
+              if [ -x "$renderer" ]; then
+                  DREW=1
+                  echo "Running ${renderer}"
+                  "$renderer"
+              else
+                  echo "::warning::Configured renderer ${renderer} is absent or not executable."
+              fi
+          done <<< "$RENDERERS"
+
+          if [ "$DREW" -eq 0 ]; then
+              echo "No renderer ran. Nothing to compare."
+              exit 0
+          fi
+
+          # Record any artefact that is new in this run, so that a first
+          # rendering counts as a difference rather than passing unseen.
+          git add --intent-to-add -- docs/generated/ 2>/dev/null || true
+
+          if git diff --exit-code -- docs/generated/; then
+              echo "Derived artefacts are current."
+          else
+              echo "::error::Derived artefacts under docs/generated/ are stale. Regenerate them with the scripts in tools/render/ and commit the result (methodology §9.8, hooks guide Contract 3)."
+              exit 1
+          fi
+
       - name: Report results
         if: failure()
         run: |
