@@ -16,7 +16,7 @@ related:
   - sysml2-vse-library-metadata
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-14
 referenced_by: [sysml2-extension]
 ---
 

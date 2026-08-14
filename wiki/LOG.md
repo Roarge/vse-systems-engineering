@@ -1527,3 +1527,52 @@ the extract passed ten of ten, and the 23 touched pages are bumped
 to 2026-08-13, completing the level-with-source state the
 repagination began. Citations in frontmatter, routing blocks, and
 INDEX were untouched, so no derived surface needed regenerating.
+
+## [2026-08-14] ingest | sysmlv2.pdf
+
+A source revision rather than a new source. The user replaced
+`sources/sysmlv2.pdf` with the 2026-07 release of "The SysML v2 Book".
+No `source-added` stub existed to resolve, because the
+source-added-reminder hook fires only on harness writes and this file
+was replaced outside the session.
+
+The book's own release notes name three changes. Two forewords were
+added, which no wiki page cites. An introduction chapter about the
+Systems Modeling API and Services was added as Chapter 42. An erratum
+retracts a claim the wiki taught as fact, namely that an assignment to
+a package-level usage sets the value for the executing instance. The
+corrected rule is that such an assignment is always an error, because
+package-level usages are features of the type Anything rather than
+occurrences, so they are never variables and cannot be given a new
+value.
+
+Chapters 1 to 32 keep their printed pages. Chapters 33 to 41 shift by
+one, because the new Part III grows the end of Chapter 32. The shift
+was verified rather than assumed: the book's table of contents confirms
+it for all nine chapters, and for 31 of the 36 cited band pages the old
+printed page N is byte-identical to the new printed page N plus one.
+The five that differ are the typo and wording errata the release notes
+announce. The reference-part chapters are renumbered nowhere and remain
+placeholders, so every pending claim in the wiki stays true, and no
+pointer anywhere cites a page of 331 or above.
+
+Layer: sysml2. Pages authored:
+- sysml2-api-and-services (new, Chapter 42, printed 331 to 335)
+
+Pages corrected:
+- sysml2-syntax-features-and-attributes (retracted assignment claim
+  replaced, value semantics reworked, citation extended to page 105)
+- sysml2-special-action-usages (package-level case added to the
+  assignment rule)
+- sysml2-behaviour-patterns (package-level assignment gotcha added)
+- sysml2-language-architecture (cross-link at the Model Interchange
+  conformance level)
+
+Pages repaginated: 52, carrying 131 in-text pointers, 52 frontmatter
+citations, and 12 body release labels. 54 pages bumped to 2026-08-14.
+Routing resynced: sysml2-modelling. INDEX regenerated.
+
+## [2026-08-14] index | routing resync
+
+Pages indexed: 159. Routing blocks regenerated: 1. Routing rows 213 to
+214. Layers stay 12 and referencing skills stay 20. ToC drift: 0.

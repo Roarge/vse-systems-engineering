@@ -16,7 +16,7 @@ related:
   - sysml2-state-machines
 confidence: high
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 
