@@ -7,8 +7,9 @@
 // StoryMeta on each story is recorded as a doc comment because the
 // `@StoryMeta { ... }` body-form invocation depends on the
 // methodology library packaging forecast in §0.8, which has not yet
-// shipped. Until that packaging lands, the renderer pipeline
-// extracts StoryMeta from the doc comment below.
+// shipped. Until that packaging lands, tooling such as the story
+// well-formedness gate extracts StoryMeta from the doc comment
+// below.
 
 package SmartSensor_StakeholderStories {
 

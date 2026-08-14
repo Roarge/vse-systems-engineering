@@ -46,6 +46,11 @@ DREW=0
 while IFS= read -r renderer; do
     [ -z "$renderer" ] && continue
     case "$renderer" in
+        *..*)
+            echo "[post-merge] Skipping renderer with unsafe path: ${renderer}" >&2
+            echo "[post-merge] Renderer paths shall not contain .. segments." >&2
+            continue
+            ;;
         tools/render/*) ;;
         *)
             echo "[post-merge] Skipping renderer with unsafe path: ${renderer}" >&2
