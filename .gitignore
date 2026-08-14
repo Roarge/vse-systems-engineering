@@ -5,6 +5,11 @@ dev_docs/
 # Wiki lint scratch output (contributor-side, never committed)
 wiki/LINT_REPORT.md
 
+# Python bytecode cache. The renderer scripts suppress it at runtime,
+# but py_compile and manual imports still write it.
+__pycache__/
+*.pyc
+
 # OS artifacts
 .DS_Store
 Thumbs.db

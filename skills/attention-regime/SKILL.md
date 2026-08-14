@@ -159,7 +159,7 @@ The `baselined_paths` list shown is the `standard` default. `light` ships an emp
 
 The schema stays flat and at most two levels deep so the shipped hooks can parse it with awk rather than taking a YAML dependency. Push project-specific behaviour into this file rather than into the scripts.
 
-The `renderers:` block ships commented out. Uncomment it when the project authors those scripts under `tools/render/`, because a configured path to a script that does not exist makes `post-merge` report a failure the project cannot act on.
+The `renderers:` block ships active with the three renderer scripts `@project-setup` installs under `tools/render/`. The remaining §9.8 artefacts have no renderer yet, so their keys stay commented until the project authors those scripts, because a configured path to a script that does not exist leaves that artefact silently unregenerated.
 
 ## Judgment Calls
 
