@@ -1574,5 +1574,5 @@ Routing resynced: sysml2-modelling. INDEX regenerated.
 
 ## [2026-08-14] index | routing resync
 
-Pages indexed: 159. Routing blocks regenerated: 1. Routing rows 213 to
-214. Layers stay 12 and referencing skills stay 20. ToC drift: 0.
+Pages indexed: 159. Routing blocks regenerated: 1. Routing rows 212 to
+213. Layers stay 12 and referencing skills stay 20. ToC drift: 0.
