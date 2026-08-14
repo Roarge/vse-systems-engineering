@@ -6,7 +6,7 @@ layer: sysml2
 summary: "How an action reaches its surrounding part: inline access, explicit context, redefining this, individual features"
 tags: [actions, context, this, ports, reuse, behaviour]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Sections 26.9 to 26.9.4, pages 195 to 202."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Sections 26.9 to 26.9.4, pages 195 to 202."
     raw: sysmlv2.pdf
 related:
   - sysml2-occurrence-context-and-variables
@@ -16,7 +16,7 @@ related:
   - sysml2-state-machines
 confidence: high
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 

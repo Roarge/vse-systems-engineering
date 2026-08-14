@@ -6,7 +6,7 @@ layer: sysml2
 summary: Syntax for the three standard case kinds, that is use case, analysis case, and verification case
 tags: [cases, use-cases, analysis-cases, verification-cases, syntax]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 33, pages 276 to 290."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 33, pages 277 to 291."
     raw: sysmlv2.pdf
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. VerdictKind enumeration."
     raw: 2-OMG_Systems_Modeling_Language.pdf
@@ -16,7 +16,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-cases]
 ---
 
@@ -39,12 +39,12 @@ the conceptual frame and shared features, see
 
 Use cases describe the behaviour of a system from an outside
 perspective. The use case concept is older than SysML, but became
-more formally defined in SysML 2.0 (Ch 33, p 279).
+more formally defined in SysML 2.0 (Ch 33, p 280).
 
 A use case definition models interactions between one or more actors
 and the system or component. The case definition may carry a
 specific arrangement around the system, such as a test configuration
-or a sample environment, to illustrate the use case (Ch 33, p 276).
+or a sample environment, to illustrate the use case (Ch 33, p 277).
 
 ```sysml
 use case def 'Provide Transportation' {
@@ -60,20 +60,20 @@ use case def 'Provide Transportation' {
 
 Case definitions fit nicely with part definitions. A part definition
 can model a specific arrangement of the subject and its environment
-that frames a use case (Ch 33, pp 276 to 277, Figure 33.1).
+that frames a use case (Ch 33, pp 277 to 278, Figure 33.1).
 
 ## Analysis cases
 
 Analysis cases capture parametric analysis. They enable computation
 over system properties to evaluate outcomes such as energy
 consumption, cost, or performance metrics under defined conditions
-(Ch 33, p 284).
+(Ch 33, p 285).
 
 An analysis case invokes behaviour of its subject and binds results
 through parametric relationships to analyse system performance or
 properties. The analysis case body uses calculations and constraint
 bindings to compute the result that the case returns
-(Ch 33, p 284). See [[sysml2-expressions-constraints]] for the
+(Ch 33, p 285). See [[sysml2-expressions-constraints]] for the
 constraint binding mechanism.
 
 ```sysml
@@ -107,11 +107,11 @@ input nor an output parameter, which a solver can treat as a free
 variable and set so that the constraints are satisfied. The two
 `assert` constraints formalise the relationship between the
 parameters, and a solver can compute `vmax` from them
-(Ch 33, pp 285 to 286, Figure 33.10).
+(Ch 33, pp 286 to 287, Figure 33.10).
 
 If the primary goal is to evaluate the satisfaction of requirements
 rather than to calculate a value that satisfies one, use a
-verification case instead (Ch 33, p 285).
+verification case instead (Ch 33, p 286).
 
 ### Trade studies
 
@@ -120,19 +120,19 @@ contains the specialised analysis case `TradeStudy`. The concepts
 that `TradeStudy` defines and uses include a calculation
 `EvaluationFunction`, a requirement `TradeStudyObjective`, and two
 specialised requirements, `MinimizedObjective` and
-`MaximizedObjective` (Ch 33, p 288).
+`MaximizedObjective` (Ch 33, p 289).
 
 ## Verification cases
 
 Verification cases model the verification of requirements. They
-specify how a requirement is to be verified (Ch 33, p 289).
+specify how a requirement is to be verified (Ch 33, p 290).
 
 A verification case includes a verification definition that
 specifies the verification task. The verification definition binds
 the subject to the element being verified. A verification case may
 include a `verify` clause that explicitly declares which requirement
 is being verified. The subject of the verification case is bound to
-the subject of the requirement being verified (Ch 33, p 289).
+the subject of the requirement being verified (Ch 33, p 290).
 
 ```sysml
 verification def VehicleMassTest {
@@ -146,13 +146,13 @@ verification def VehicleMassTest {
 
 A verification case may declare `verify` against a requirement only
 when the case subject matches the requirement subject. Mismatched
-subjects produce an invalid verification model (Ch 33, p 289).
+subjects produce an invalid verification model (Ch 33, p 290).
 
 ## Verdict semantics
 
 Verification cases always return a **verdict**, which signals whether
 the requirement was found to be satisfied in that specific case. The
-verdict is not a Boolean but an enumeration (Ch 33, p 289).
+verdict is not a Boolean but an enumeration (Ch 33, p 290).
 
 | Value | Meaning |
 |---|---|
@@ -179,7 +179,7 @@ verification def PowerUpTest {
 
 The chapter enumerates the four values and shows `PassIf` in use, but
 it carries no dedicated section on how verdicts combine across nested
-cases (Ch 33, pp 289 to 290, Figure 33.14). For that specific
+cases (Ch 33, pp 290 to 291, Figure 33.14). For that specific
 question the OMG Systems Modeling Language v2.0 formal specification
 (March 2023, formal/2025-01-01) remains the reference.
 
@@ -188,10 +188,10 @@ question the OMG Systems Modeling Language v2.0 formal specification
 Cases can reuse other cases through `include` relationships. An
 include use case is a kind of perform action usage, so it is a
 referential event usage that must happen during the including case
-(Ch 33, p 280).
+(Ch 33, p 281).
 
 Keyword combinations matter, and some of them have unexpected
-meanings (Ch 33, pp 282 to 283, Figure 33.7).
+meanings (Ch 33, pp 283 to 284, Figure 33.7).
 
 ```sysml
 use case uc2 {
@@ -212,8 +212,8 @@ The book suggests modelling the behaviour of use cases with event
 occurrences, perform actions, exhibit states, and include use cases.
 All are referential event usages that a later design can realise by
 specialising the use case, redefining the events, and adding a
-reference subsetting to the realising behaviour (Ch 33, pp 282 to
-284). For those composition patterns see [[sysml2-case-patterns]].
+reference subsetting to the realising behaviour (Ch 33, pp 283 to
+285). For those composition patterns see [[sysml2-case-patterns]].
 
 ## See also
 

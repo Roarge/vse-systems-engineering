@@ -437,6 +437,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
 | Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
 | Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| Systems Modeling API and Services | pages/sysml2/sysml2-api-and-services.md | The Systems Modeling API and Services, its PIM data structures and services for tool-independent model access |
 | SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | pages/sysml2/sysml2-domain-libraries-causation-geometry.md | The Cause and Effect, Requirement Derivation, and Geometry domain libraries |
 | SysML 2.0 Domain Libraries: Metadata and Analysis | pages/sysml2/sysml2-domain-libraries-metadata-analysis.md | The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies |
 | SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist | pages/sysml2/sysml2-grammar-and-validation.md | SysML 2.0 grammar excerpts, well-formedness rules, and a model validation checklist |

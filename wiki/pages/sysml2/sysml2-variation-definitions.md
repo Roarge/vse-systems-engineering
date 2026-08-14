@@ -6,7 +6,7 @@ layer: sysml2
 summary: The two declaration forms for variations and the variant usages they own
 tags: [variants, syntax, definitions]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 293 to 295."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 35, pages 294 to 296."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview
@@ -14,7 +14,7 @@ related:
   - sysml2-quick-ref-keywords
 confidence: high
 created: 2026-05-04
-updated: 2026-08-13
+updated: 2026-08-14
 referenced_by: [sysml2-variants]
 ---
 
@@ -57,7 +57,7 @@ Each variant part usage implicitly subsets the variation. The
 variation acts as a placeholder. Anywhere the variation is used in a
 parent context, one of the variants must be insertable in its place.
 Variants must therefore be specialisations of the variation
-(Ch 35, p 294).
+(Ch 35, p 295).
 
 ## Variation as a definition
 
@@ -65,7 +65,7 @@ The same variation structure can be expressed as a definition
 element. The variants are usages defined by the variation definition.
 Because a variation may only own variants and annotations, the
 variation definition typically subclassifies a part definition that
-actually specifies the subject (Ch 35, p 295).
+actually specifies the subject (Ch 35, p 296).
 
 ```sysml
 variation part def Battery :> DronePartsCatalogue::Battery {

@@ -6,7 +6,7 @@ layer: sysml2
 summary: The VSE_Library package of shared metadata definitions and enumerations used across the skills
 tags: [vse-library, risk, configitem, baseline, variant-scope, iso29110]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 38 (Risks), Chapter 41 (Extending SysML v2)."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 38 (Risks), Chapter 41 (Extending SysML v2)."
     raw: sysmlv2.pdf
   - citation: "ISO/IEC TR 29110-5-6-2:2014. Lifecycle profiles for Very Small Entities (VSEs)."
     raw: null
@@ -17,7 +17,7 @@ related:
   - sysmod-vamos-method
 confidence: high
 created: 2026-05-04
-updated: 2026-08-13
+updated: 2026-08-14
 referenced_by: [sysml2-metadata]
 ---
 
@@ -91,7 +91,7 @@ documentation at delivery.
 Define a metadata with `status`, `priority`, and
 `responsiblePerson` and annotate elements as they move through the
 lifecycle. A filtered view can then produce a list of elements
-that still need review (Ch 36, pp 299 to 300).
+that still need review (Ch 36, pp 300 to 301).
 
 ### Smart package through filter
 
@@ -99,7 +99,7 @@ Use a `filter` clause in a package to define its contents
 declaratively. A parts catalogue that collects all approved part
 usages from other packages uses the reflective
 `@SysML::PartUsage` check together with a project-specific
-approval metadata (Ch 36, pp 303 to 304). See
+approval metadata (Ch 36, pp 304 to 305). See
 [[sysml2-filter-conditions]].
 
 ### Reflective abstract-type check
@@ -107,7 +107,7 @@ approval metadata (Ch 36, pp 303 to 304). See
 Use the `@@` operator together with the SysML reflective library
 to test whether a model element is a part definition, an abstract
 definition, or any other meta type. Useful in model validation
-scripts and automated checks (Ch 36, pp 302 to 303). See
+scripts and automated checks (Ch 36, pp 303 to 304). See
 [[sysml2-reflection-and-classification]].
 
 ### Risk annotation
@@ -140,19 +140,19 @@ occurrence navigationSubsystem` rather than the long form. See
 Apply more than one user-defined keyword to a single element when
 the keywords capture orthogonal aspects, such as `#critical
 #function navigation` to mark a function as both a function and a
-critical element (Ch 41, p 328).
+critical element (Ch 41, p 329).
 
 ### View-filtered import
 
 Combine a package-level import with a metadata filter to produce a
 view-specific namespace. Only elements carrying the required
-metadata appear in the filtered view (Ch 36, p 304; Ch 37, p 307).
+metadata appear in the filtered view (Ch 36, p 305; Ch 37, p 308).
 See [[sysml2-filter-conditions]].
 
 ## Pending material
 
 Chapter 84 (Metadata in Part V SysML Reference) is pending in the
-2026-06 release. Chapter 112.4 (Risk metadata domain library) is
+2026-07 release. Chapter 112.4 (Risk metadata domain library) is
 referenced as the canonical home of the risk language extension.
 The plugin will track upstream changes and refresh this page when
 those chapters publish.

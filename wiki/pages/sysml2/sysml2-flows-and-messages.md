@@ -6,7 +6,7 @@ layer: sysml2
 summary: Transferring items, signals, and values between behavioural elements with flows and messages
 tags: [flows, messages, ports, streaming-flow, succession-flow, event-occurrence]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 29, pages 220 to 232."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 29, pages 220 to 232."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -15,7 +15,7 @@ related:
   - sysml2-event-occurrences
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 

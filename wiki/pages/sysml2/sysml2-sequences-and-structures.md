@@ -6,7 +6,7 @@ layer: sysml2
 summary: Multiplicity as sequences, ordering and uniqueness, and modelling complex structured values
 tags: [sequences, structures, indexing, feature-chains, constructor]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 30, pages 238 to 242."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 30, pages 238 to 242."
     raw: sysmlv2.pdf
 related:
   - sysml2-expressions-overview
@@ -14,7 +14,7 @@ related:
   - sysml2-occurrences-4d
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-expressions]
 ---
 

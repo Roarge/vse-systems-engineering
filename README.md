@@ -142,7 +142,7 @@ Knowledge is extracted from these sources, consulted in priority order:
 5. **INCOSE SE Handbook 4e**, scaled for VSEs.
 6. **AMBSE source methodology**: Douglass (2016) *Agile Systems Engineering* and Douglass (2021) *Agile MBSE Cookbook*. The plugin's methodology adapts the source arc per §0.4 of the spec. Where it disagrees, the spec wins.
 7. **The Weilkiens methodology family**: *SYSMOD* 3rd edition (Base Architecture and System Context concepts adopted in §2 and §3), *Variant Modeling with SysML* (VAMOS), and *The New Engineering Game*.
-8. **SysML 2.0**: the OMG specification, *The SysML v2 Book* (Weilkiens and Molnár, 2026-06 release), and Sensmetry Syside notes.
+8. **SysML 2.0**: the OMG specification, *The SysML v2 Book* (Weilkiens and Molnár, 2026-07 release), and Sensmetry Syside notes.
 9. **Domain guides**: INCOSE Needs and Requirements, Verification and Validation, and the HSI Primer.
 
 Source PDFs are private (gitignored) and not distributed with the plugin. Every wiki page carries a citation that stands on its own.

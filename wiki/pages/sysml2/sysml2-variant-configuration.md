@@ -6,7 +6,7 @@ layer: sysml2
 summary: Cross-variation constraints, materialising a configuration, and binding to an external feature model
 tags: [variants, configuration, constraints, feature-binding]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 35, pages 296 to 298."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 35, pages 297 to 299."
     raw: sysmlv2.pdf
 related:
   - sysml2-variations-overview
@@ -15,7 +15,7 @@ related:
   - sysmod-vamos-binding-and-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-13
+updated: 2026-08-14
 referenced_by: [sysml2-variants]
 ---
 
@@ -39,7 +39,7 @@ declaration syntax itself, see [[sysml2-variation-definitions]].
 When a model carries more than one variation, valid combinations of
 variant selections are expressed as `assert constraint` bodies. This
 is the SysML 2.0 mechanism for capturing constraints that would
-otherwise live in a PLE feature model (Ch 35, pp 295 to 296).
+otherwise live in a PLE feature model (Ch 35, pp 296 to 297).
 
 ```sysml
 part def Drone {
@@ -75,7 +75,7 @@ validation per configuration, are at
 To specify a concrete configuration, specialise the owner of the
 variations and redefine all variations by setting the variant. The
 redefining part rewires references to the selected variant in place
-of the variation placeholder (Ch 35, pp 296 to 297).
+of the variation placeholder (Ch 35, pp 297 to 298).
 
 ```sysml
 package 'Delivery Drone Product' {
@@ -104,14 +104,14 @@ model. The PLEML language extension introduces a product line
 feature element and binds features to variations in a SysML model.
 The feature model is usually stored in a separate repository.
 Feature bindings link external features to internal variations and
-variants (Ch 35, p 297).
+variants (Ch 35, p 298).
 
 In the SysML v2 book's example, a mission feature is bound to the
 engine variation. Because an `assert constraint` already links
 engines to batteries, the battery variation is implicitly driven by
 the same feature. If a long-range mission is selected, the
 `sixEngines` variant applies, and the constraint implies that the
-`powerBattery` variant is selected as well (Ch 35, p 297).
+`powerBattery` variant is selected as well (Ch 35, p 298).
 
 The PLEML extension is not part of core SysML 2.0. Tool support is
 required from the modelling environment vendor. For VSE-scale

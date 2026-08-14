@@ -6,7 +6,7 @@ layer: sysml2
 summary: Practical behaviour-modelling patterns and the recurring mistakes that show up in review
 tags: [behaviour, patterns, gotchas, vse]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 26, pages 165 to 202; Chapter 28, pages 207 to 219; Chapter 29, pages 220 to 232."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 26, pages 165 to 202; Chapter 28, pages 207 to 219; Chapter 29, pages 220 to 232."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -19,7 +19,7 @@ related:
   - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 
@@ -150,6 +150,14 @@ the entire new set of values in one atomic operation. There is no
 rollback, and the result is undefined if the action is interrupted
 (Ch 26, p 180).
 
+### Assigning to a package-level usage is always an error
+
+Package-level usages are features of the type `Anything`, which is not
+an occurrence, so they are never variables and cannot be given a new
+value. An assignment that targets one fails with a message saying
+the referent feature of the assignment must be time varying
+(Ch 26, p 180).
+
 ### Control nodes are primarily for clarity
 
 Fork, join, decision, and merge nodes are largely aesthetic. Most
@@ -186,7 +194,7 @@ sequence is evaluated only once at loop start (Ch 26, p 188).
 ### Termination semantics are not formally specified
 
 The terminate action ends an occurrence, but the precise semantics
-are not formally specified in the 2026-06 release (Ch 26, p 184).
+are not formally specified in the 2026-07 release (Ch 26, p 184).
 
 ### A message modelled directly between parts triggers on the wrong events
 

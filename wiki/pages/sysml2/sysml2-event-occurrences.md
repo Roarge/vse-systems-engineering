@@ -6,7 +6,7 @@ layer: sysml2
 summary: Referring to an occurrence that must happen during the owner's life, the basis of perform, exhibit, and messages
 tags: [occurrences, event-occurrence, reference-subsetting, messages, behaviour]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Section 25.9, pages 161 to 162."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Section 25.9, pages 161 to 162."
     raw: sysmlv2.pdf
 related:
   - sysml2-occurrence-context-and-variables
@@ -18,7 +18,7 @@ related:
   - sysml2-case-kinds
 confidence: high
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 

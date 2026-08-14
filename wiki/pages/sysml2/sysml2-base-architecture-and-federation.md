@@ -6,7 +6,7 @@ layer: sysml2
 summary: Reusing a Base Architecture and federating models when a project is not greenfield
 tags: [base-architecture, federation, reuse, shared-model, subsystem-model]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 14, pages 59 to 62."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 14, pages 59 to 62."
     raw: sysmlv2.pdf
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Elsevier. Chapter 8.3 and Figures 3.12, 3.14, 8.2, 8.4."
     raw: "Agile Systems Engineering.pdf"
@@ -19,7 +19,7 @@ related:
   - sysmod-architecture-kinds-and-coupling
 confidence: high
 created: 2026-05-04
-updated: 2026-08-13
+updated: 2026-08-14
 referenced_by: [sysml2-model-structure]
 ---
 
@@ -68,7 +68,7 @@ package.
 ## Specialisation operators for reuse
 
 SysML 2.0 provides two operators for reuse (Ch 14.2,
-pp 56 to 58):
+pp 60 to 62):
 
 | Operator | Applies to | Meaning |
 |---|---|---|

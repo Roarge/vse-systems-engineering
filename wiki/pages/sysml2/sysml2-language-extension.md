@@ -6,7 +6,7 @@ layer: sysml2
 summary: Choosing between model libraries and user-defined keywords when extending SysML 2.0
 tags: [extension, language-extension]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 41, pages 322 to 328."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 41, pages 323 to 329."
     raw: sysmlv2.pdf
 related:
   - sysml2-domain-model-libraries
@@ -16,7 +16,7 @@ related:
   - sysml2-vse-library-metadata
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-14
 referenced_by: [sysml2-extension]
 ---
 
@@ -36,7 +36,7 @@ more efficient in a concrete domain. SysML 2.0 can be extended to
 include important domain concepts, whether to enhance the language
 with new features, to introduce methodology-specific terminology,
 or to use it as a customised domain-specific language (Ch 41,
-p 291).
+p 323).
 
 The language offers two extension strategies that can be used
 independently or together. This page is the hub. It frames the

@@ -6,7 +6,7 @@ layer: sysml2
 summary: State machines model behaviour through persistent conditions (states)
 tags: [states, transitions, state-machine, entry, do, exit, parallel-state, exhibit-state, communicating]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 28, pages 207 to 219."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 28, pages 207 to 219."
     raw: sysmlv2.pdf
 related:
   - sysml2-actions
@@ -17,7 +17,7 @@ related:
   - sysml2-actions-vs-states
 confidence: high
 created: 2026-05-04
-updated: 2026-08-10
+updated: 2026-08-14
 referenced_by: [sysml2-behaviour]
 ---
 

@@ -6,7 +6,7 @@ layer: sysml2
 summary: A binding connector is a binary relationship that requires the usages at the ends to have the same values
 tags: [binding-connectors, connectors, equality, value-binding]
 sources:
-  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-06 release. MBSE4U. Chapter 21, pages 131 to 132."
+  - citation: "Weilkiens T and Molnár V (2026). The SysML v2 Book, 2026-07 release. MBSE4U. Chapter 21, pages 131 to 132."
     raw: sysmlv2.pdf
 related:
   - sysml2-allocations-overview
@@ -14,7 +14,7 @@ related:
   - sysml2-self-and-that
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-08-14
 referenced_by: [sysml2-allocations]
 ---
 
