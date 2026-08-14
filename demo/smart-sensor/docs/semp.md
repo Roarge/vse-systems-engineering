@@ -40,7 +40,7 @@ disagree, the methodology wins.
   files). Stakeholder stories US_001 to US_004 and system stories
   SYS_001 and SYS_002 with `require constraint` benefits per §5.
 - **Validation approach:** stakeholder review of the story register
-  plus validation cases VAL_001 and VAL_002 for stakeholder-side
+  plus validation cases VAL_001 to VAL_004 for stakeholder-side
   checks.
 
 ### 2.2 Architectural Design
@@ -71,7 +71,7 @@ build-versus-buy decisions are open in the current release scope.
 - **Verification methods:** verification cases VC_001 and VC_002
   (`model/core/verification-validation/verification-cases/`), one
   per acceptance criterion, methods per §9 scale mapping.
-- **Validation approach:** validation cases VAL_001 and VAL_002
+- **Validation approach:** validation cases VAL_001 to VAL_004
   against stakeholder stories, exercised at release boundaries.
 
 ## 3. Data Model
