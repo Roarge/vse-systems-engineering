@@ -4,11 +4,13 @@ description: Check SysML requirement traceability (satisfy and verify links) acr
 when_to_use: Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
 paths: ["**/*.sysml"]
 user-invocable: true
+context: fork
+agent: general-purpose
 ---
 
 # Traceability Guard
 
-If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
+This skill executes in a forked context. Work self-contained from this body, and return the complete gap report, with the matrix when one was generated, as the final message, because only the final message reaches the conversation. Do not load the VSE lens here. The lens routes in the main conversation, and this body carries everything the check needs.
 
 You are an environmental guard that enforces machine-readable traceability
 (R3). You check trace completeness, detect gaps, and flag them as story
@@ -29,8 +31,13 @@ a story approaches ready.
 ## Trace Rules
 
 ### Rule 1: Upward Traceability
-Every system requirement MUST trace to at least one stakeholder need via a
-`satisfy` link.
+Every system requirement MUST trace to at least one stakeholder need.
+At the story tier the methodology's upward mechanism is derivation
+(§5.4.1): the `#derive` annotation plus an explicit
+`RequirementDerivation::derivations` connection satisfies this rule.
+A `satisfy` link also satisfies it where the project uses that form,
+for example between requirements and system elements per the §9
+mapping. A doc-comment mention of derivation counts for neither.
 
 ### Rule 2: Downward Traceability
 Every system requirement MUST trace to at least one verification case via a
@@ -47,9 +54,10 @@ Every stakeholder need MUST have at least one validation case.
 
 ### Rule 4: No Orphans
 No verification case should exist without a `verify`
-link to a requirement. No system requirement should exist without a `satisfy`
-link to a stakeholder need. No system element requirement should exist without
-a `satisfy` link to a system requirement.
+link to a requirement. No system requirement should exist without an
+upward trace to a stakeholder need (a §5.4.1 derivation connection or
+a `satisfy` link, per Rule 1). No system element requirement should
+exist without a `satisfy` link to a system requirement.
 
 ### Rule 5: Bidirectional Consistency
 If requirement A satisfies need B, then need B must be traceable to requirement
@@ -60,8 +68,12 @@ A. The model must be consistent in both directions.
 ### Step 1: Find All Model Files
 
 ```
-Glob for: models/**/*.sysml
+Glob for, first match wins: model/**/*.sysml,
+engineering/model/**/*.sysml, models/**/*.sysml
 ```
+
+The first two roots mirror the discovery convention the renderers and
+the iso-config share. The third is the legacy layout.
 
 ### Step 2: Extract Requirements
 
@@ -132,10 +144,15 @@ GAPS FOUND: [n]
 
 ### Step 6: Block or Allow
 
+The invocation context (on demand, story closure, or the release
+baseline gate) is an input: the caller states it when invoking the
+skill, and an unstated context is treated as on demand.
+
 - **If no gaps**: report "Traceability check passed. All traces complete."
 - **If gaps exist**: report each gap. If the check was invoked at
-  story closure, record the gaps as story closure debt and let the
-  engineer decide whether to mark the story done with debt carried
+  story closure, record the gaps as story closure debt in the final
+  message, so the engineer can decide in the conversation whether to
+  mark the story done with debt carried
   forward or to rework inside the story. If the check was invoked at
   the release baseline gate, state
   "Traceability check FAILED. Release baseline blocked until gaps are
@@ -147,13 +164,15 @@ GAPS FOUND: [n]
 
 When asked to generate a traceability matrix across the full model
 tree, dispatch to the `vse-traceability-matrix-builder` subagent
-rather than walking the files inline. The subagent runs in an isolated
-context, so the parent skill never has to load every model file into
-its own window.
+rather than walking the files inline, when the Agent tool is
+available. When it is not (a forked execution may carry a restricted
+tool set), walk the files inline instead, because the fork itself
+already provides the isolation the subagent exists to give and
+nothing from this reading reaches the conversation except the final
+message.
 
 **When to dispatch.** Whenever matrix generation is requested across
-more than a handful of model files, or whenever the parent skill is
-already carrying significant state from earlier in the session.
+more than a handful of model files and the Agent tool is available.
 
 **What to pass.** The model directory path (default `models/`), an
 optional scope filter listing the identifier prefixes to include
@@ -162,11 +181,11 @@ apply. Default to all five rules from the section above.
 
 **How to present the result.** The subagent returns a markdown matrix,
 a gap report keyed by rule, and a bidirectional consistency check.
-Present the matrix and gap report verbatim to the engineer. The
+Include the matrix and gap report verbatim in the final message. The
 suggestions are draft fixes, not commands. The engineer decides which
-gaps to act on, and the parent skill routes any agreed fixes back to
-`@needs-and-requirements`, `@architecture-design`, or
-`@verification-validation` as appropriate.
+gaps to act on in the conversation after the fork returns, and agreed
+fixes route back to `@needs-and-requirements`,
+`@architecture-design`, or `@verification-validation` as appropriate.
 
 When the model is small or the engineer wants a quick spot check, the
 inline table format below remains available as a fallback.
@@ -363,7 +382,10 @@ cleared before the release baseline gate:
 ## Red Flags
 
 WARN the engineer if:
-- Trace gaps are increasing over time (more gaps than last check)
+- Trace gaps are increasing over time. A forked execution carries no
+  memory of earlier runs, so compare against the committed
+  `docs/generated/traceability-matrix.md` when the project has one,
+  and state "first check, no baseline for comparison" otherwise
 - Requirements are being added without corresponding verification cases
 - Verification cases are being removed without removing the requirement
 - The Traceability Matrix has not been updated after model changes
