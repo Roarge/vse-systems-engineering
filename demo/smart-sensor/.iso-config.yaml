@@ -5,7 +5,7 @@
 # what to enforce.
 
 # Plugin version recorded at /vse-setup time.
-plugin_version: "3.0.1"
+plugin_version: "3.0.2"
 
 # Project rigour profile per methodology section 0.10.
 # One of: light | standard | full. Absent means standard.

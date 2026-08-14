@@ -31,8 +31,12 @@ working branch as a local plugin and running the command inside
 tool surface declared in frontmatter, default `Read`, `Glob`, `Grep`.
 Never grant `Write`, `Edit`, or any file-modifying tool. Subagents
 return suggestion-shaped markdown to a dispatching skill, which
-surfaces the proposal to the engineer. Each subagent has exactly one
-orchestrating skill, documented in its description. Prefer
+surfaces the proposal to the engineer. Every skill that dispatches a
+subagent is named in the subagent's description, so the routing stays
+discoverable. Prefer exactly one orchestrating skill, and share a
+subagent across dispatchers only when the dispatched work is identical
+for every caller (vse-traceability-matrix-builder is the sanctioned
+example, serving traceability-guard and project-audit). Prefer
 parallelisable, context-heavy work for subagents, and test a subagent
 by triggering its parent skill inside `demo/smart-sensor/` with the
 branch installed as a local plugin.
