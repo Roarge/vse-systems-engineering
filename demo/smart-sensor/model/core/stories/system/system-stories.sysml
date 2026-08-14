@@ -16,13 +16,14 @@ package SmartSensor_SystemStories {
     private import SmartSensor_StakeholderStories::*;
     private import VSE_Library::*;
     private import ScalarValues::*;
+    private import RequirementDerivation::*;
 
     // SYS_001 derives from US_001_SeeReadingsOnDashboard.
     // Sharpens "within 5 seconds" to a constraint on the cloud
     // delivery latency that §6 trade studies can score against.
+    #derive
     requirement def SYS_001_DashboardLatency :> UserStory {
-        doc /* StoryMeta: points=5, priority=high, status=ready.
-               #derive from US_001_SeeReadingsOnDashboard. */
+        doc /* StoryMeta: points=5, priority=high, status=ready. */
 
         subject system : SmartSensor_System;
         stakeholder role : Operator;
@@ -58,9 +59,9 @@ package SmartSensor_SystemStories {
     // SYS_002 derives from US_002_AcknowledgeAlertsBatched.
     // Sharpens "within 1 second" to a system-internal latency
     // constraint that lives at the dashboard service.
+    #derive
     requirement def SYS_002_BatchAcknowledgement :> UserStory {
-        doc /* StoryMeta: points=8, priority=high, status=ready.
-               #derive from US_002_AcknowledgeAlertsBatched. */
+        doc /* StoryMeta: points=8, priority=high, status=ready. */
 
         subject system : SmartSensor_System;
         stakeholder role : Operator;
@@ -89,5 +90,18 @@ package SmartSensor_SystemStories {
                    shown, when the operator selects "Acknowledge all",
                    then all N transition within 1 second. */
         }
+    }
+
+    // Explicit derivation connections (spec §9.6.2, methodology §5.4.1).
+    // The standard library's Derivation connection has two ends,
+    // originalRequirements and derivedRequirements, bound by
+    // reference subsetting at the connection site.
+    connection sys001Derives : RequirementDerivation::derivations {
+        end ::> US_001_SeeReadingsOnDashboard;     // original
+        end ::> SYS_001_DashboardLatency;          // derived
+    }
+    connection sys002Derives : RequirementDerivation::derivations {
+        end ::> US_002_AcknowledgeAlertsBatched;   // original
+        end ::> SYS_002_BatchAcknowledgement;      // derived
     }
 }
