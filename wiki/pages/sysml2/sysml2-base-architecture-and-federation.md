@@ -68,7 +68,7 @@ package.
 ## Specialisation operators for reuse
 
 SysML 2.0 provides two operators for reuse (Ch 14.2,
-pp 56 to 58):
+pp 60 to 62):
 
 | Operator | Applies to | Meaning |
 |---|---|---|

@@ -45,7 +45,7 @@ definition. It indicates that a target element is responsible for
 fulfilling some or all of the intent of a source element. The
 mapping is directed: there is always a source whose intent is to
 be fulfilled and a target that takes the responsibility (Ch 34,
-p 245). See [[sysml2-allocation-definitions]] for the declaration
+p 292). See [[sysml2-allocation-definitions]] for the declaration
 syntax.
 
 A single allocation can be refined by nesting additional allocation

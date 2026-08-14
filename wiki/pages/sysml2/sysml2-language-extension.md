@@ -36,7 +36,7 @@ more efficient in a concrete domain. SysML 2.0 can be extended to
 include important domain concepts, whether to enhance the language
 with new features, to introduce methodology-specific terminology,
 or to use it as a customised domain-specific language (Ch 41,
-p 291).
+p 323).
 
 The language offers two extension strategies that can be used
 independently or together. This page is the hub. It frames the

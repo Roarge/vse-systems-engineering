@@ -35,8 +35,8 @@ mistakes for SysML 2.0 allocations. For declaration syntax, see
 ## Cross-architecture mapping patterns
 
 Allocations enable several standard mapping patterns that arise in
-VSE systems-engineering workflows (Ch 34, p 245; Ch 41, pp 265
-to 267).
+VSE systems-engineering workflows (Ch 34, p 292; Ch 41, pp 323
+to 325).
 
 ### Functional to logical
 

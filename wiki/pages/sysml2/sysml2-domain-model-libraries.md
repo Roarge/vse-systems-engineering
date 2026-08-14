@@ -47,7 +47,7 @@ SysML 2.0, and where user libraries fit alongside them.
 
 A library is published in a `library package`, a package modifier
 that signals to readers and tools that the contents are intended
-for reuse rather than to model a specific system (Ch 41.1, p 292,
+for reuse rather than to model a specific system (Ch 41.1, p 324,
 and see Section 16.2). The `library` keyword precedes `package` in
 the declaration:
 
