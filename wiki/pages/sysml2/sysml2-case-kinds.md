@@ -212,8 +212,8 @@ The book suggests modelling the behaviour of use cases with event
 occurrences, perform actions, exhibit states, and include use cases.
 All are referential event usages that a later design can realise by
 specialising the use case, redefining the events, and adding a
-reference subsetting to the realising behaviour (Ch 33, pp 282 to
-284). For those composition patterns see [[sysml2-case-patterns]].
+reference subsetting to the realising behaviour (Ch 33, pp 283 to
+285). For those composition patterns see [[sysml2-case-patterns]].
 
 ## See also
 

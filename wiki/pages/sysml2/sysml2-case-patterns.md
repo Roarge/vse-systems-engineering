@@ -145,8 +145,8 @@ an unnamed include use case usage referring to `uc1`. Adding a name
 without `references`, as in `include use case uc1;`, parses into a
 **use case usage named `uc1`** that does not refer to the `uc1` in
 the outer scope at all. To name the including usage, write
-`include use case include_uc1 references uc1;` (Ch 33, pp 282 to
-283). See [[sysml2-case-kinds]] for the full set of combinations.
+`include use case include_uc1 references uc1;` (Ch 33, pp 283 to
+284). See [[sysml2-case-kinds]] for the full set of combinations.
 
 ## Pending material in the source
 

@@ -154,9 +154,9 @@ rollback, and the result is undefined if the action is interrupted
 
 Package-level usages are features of the type `Anything`, which is not
 an occurrence, so they are never variables and cannot be given a new
-value. An assignment that targets one fails with a message saying the
-referent feature of the assignment must be time varying (Ch 26,
-p 180).
+value. An assignment that targets one fails with a message saying
+the referent feature of the assignment must be time varying
+(Ch 26, p 180).
 
 ### Control nodes are primarily for clarity
 
