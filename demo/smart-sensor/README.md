@@ -74,7 +74,7 @@ Inside Claude Code, with the plugin installed:
 /vse-audit
 ```
 
-The audit reports any gaps in story well-formedness, trace integrity, ISO 29110 artefact presence, and version drift. The demo is intended to pass the audit with a few warnings (concerns coverage and StoryMeta on a couple of mid-state stories), surfaced for the reader to inspect.
+The audit reports any gaps in story well-formedness, trace integrity, ISO/IEC 29110 artefact presence, and version drift. The demo is intended to pass the audit with a few warnings (concerns coverage and StoryMeta on a couple of mid-state stories), surfaced for the reader to inspect.
 
 ## Methodology version
 

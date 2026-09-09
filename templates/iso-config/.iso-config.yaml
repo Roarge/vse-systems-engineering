@@ -1,4 +1,4 @@
-# .iso-config.yaml: ISO 29110 hook configuration
+# .iso-config.yaml: ISO/IEC 29110 hook configuration
 #
 # This file drives the project-side and lifecycle hooks shipped by the
 # vse-systems-engineering plugin. Place at the project root (or under

@@ -1,6 +1,6 @@
 ---
 name: release-orchestrator
-description: Plan, baseline, or report on a release (a group of stories tagged release-vN.M) per §8.4.3 release branches and §10 Project Management. Anchored on the Project Plan, the baseline tag, and ISO 29110 PM.4 closure.
+description: Plan, baseline, or report on a release (a group of stories tagged release-vN.M) per §8.4.3 release branches and §10 Project Management. Anchored on the Project Plan, the baseline tag, and ISO/IEC 29110 PM.4 closure.
 when_to_use: Use when the user says "plan a release", "baseline a release", "tag the release", "release status", or "what is in the next release", or invokes /vse-release.
 user-invocable: true
 ---
@@ -124,7 +124,7 @@ Walk the engineer through:
 
 6. **Update the Justification Document.** Hand off to `@document-export` (or its renderer) to regenerate `docs/justification-document.md` from `model/variations/trade-studies/`, ADRs in `docs/decisions/`, and V&V Reports.
 
-7. **Sign the §10.6.1 Acceptance Record.** Surface `docs/product-acceptance-record.md` in the form of ISO 29110 product 11. The Acquirer's git identity (or an authorised proxy) commits the signed record. Tie this to the PM.4 closure event.
+7. **Sign the §10.6.1 Acceptance Record.** Surface `docs/product-acceptance-record.md` in the form of ISO/IEC 29110 product 11. The Acquirer's git identity (or an authorised proxy) commits the signed record. Tie this to the PM.4 closure event.
 
 8. **Append a Progress Status Record entry** at the release boundary per §10.4.1, summarising release scope, deviations from Plan, and any closure debt carried.
 
@@ -150,7 +150,7 @@ Each entry names a rule and the section it comes from, states the concrete risk 
 
 Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press. The `report` operation runs at every profile regardless of what follows.
 
-- **No Project Plan.** The Plan is the ISO 29110 PM.O1 artefact and the authority for schedule and deliverables. At `light` the Plan is recommended rather than required (§0.10.3), so offer the one-page element set (Objectives, Scope, Deliverables, Milestones, known risks), then proceed on confirmation. At `standard`, recommend the core set and wait for explicit confirmation before baselining without it. At `full` this is a hard stop: a baseline with no PM.O1 artefact behind it is not auditable, so route to `@project-plan` and stop the `baseline` operation there.
+- **No Project Plan.** The Plan is the ISO/IEC 29110 PM.O1 artefact and the authority for schedule and deliverables. At `light` the Plan is recommended rather than required (§0.10.3), so offer the one-page element set (Objectives, Scope, Deliverables, Milestones, known risks), then proceed on confirmation. At `standard`, recommend the core set and wait for explicit confirmation before baselining without it. At `full` this is a hard stop: a baseline with no PM.O1 artefact behind it is not auditable, so route to `@project-plan` and stop the `baseline` operation there.
 
 - **Story not `done`.** A story reaches a baseline through its final-review merge per §8.5.4. A baseline containing a story that never passed review misrepresents what was reviewed. Name every offending story by ID. At `light`, report and proceed. At `standard`, wait for explicit confirmation. At `full` this is a hard stop, because baseline integrity is what the conformance claim rests on.
 
@@ -179,7 +179,7 @@ Hand off to a sibling skill when the release work crosses into that skill's auth
 - To `@change-request` (`/vse-cr`) when scope adjustments imply edits to baselined artefacts. The CR Issue is opened first, the Acquirer agrees, then the implementing PR follows.
 - To `@traceability-guard` when the §8.6.3 trace integrity check fails during baseline. The guard surfaces dangling `derive`, `frame concern`, or `verify` links for repair.
 - To `@verification-validation` when V&V coverage fails during baseline. The skill authors the missing verification cases or populates empty bodies.
-- To `@document-export` when the release demands rendered ISO 29110 documents (Stakeholder Requirements Specification, System Requirements Specification, IVV Plan, IVV Procedures, Traceability Matrix, Justification Document, Product Acceptance Record).
+- To `@document-export` when the release demands rendered ISO/IEC 29110 documents (Stakeholder Requirements Specification, System Requirements Specification, IVV Plan, IVV Procedures, Traceability Matrix, Justification Document, Product Acceptance Record).
 
 ## Outputs
 
@@ -187,7 +187,7 @@ The skill produces:
 
 - `docs/releases/<tag>.md`, the release plan, authored in `plan` mode.
 - Annotated git tag `release-vN.M`, applied in `baseline` mode by the engineer on the skill's instruction.
-- Updated `docs/generated/`, rendered ISO 29110 documents, regenerated in `baseline` mode via `@document-export`.
+- Updated `docs/generated/`, rendered ISO/IEC 29110 documents, regenerated in `baseline` mode via `@document-export`.
 - Updated `docs/justification-document.md`, regenerated from trade studies, ADRs, and V&V Reports per §10.5.3.
 - Updated `docs/product-acceptance-record.md`, signed at PM.4 closure per §10.6.1.
 - Appended `docs/progress-status-record.md` entry at the release boundary per §10.4.1.
@@ -216,7 +216,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
-| AMBSE Workflow Mapping to ISO/IEC 29110 | pages/ambse/ambse-iso29110-mapping.md | Cross-reference table from AMBSE activities to ISO 29110 process activities |
+| AMBSE Workflow Mapping to ISO/IEC 29110 | pages/ambse/ambse-iso29110-mapping.md | Cross-reference table from AMBSE activities to ISO/IEC 29110 process activities |
 | AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
 | AMBSE Risk Management and SE Metrics | pages/ambse/ambse-risk-and-metrics.md | AMBSE risk management practice and the systems engineering metrics worth tracking in a VSE |
 | INCOSE Architecture and V&V for VSEs | pages/incose-vse/incose-vse-architecture-and-vv.md | INCOSE architecture definition and verification and validation processes scaled to VSE scope |
@@ -225,13 +225,13 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | INCOSE Requirements Engineering for VSEs | pages/incose-vse/incose-vse-requirements-engineering.md | Transforming stakeholder needs into system requirements and allocating them to system elements |
 | INCOSE Stakeholder Needs Definition for VSEs | pages/incose-vse/incose-vse-stakeholder-needs.md | The INCOSE stakeholder needs process: from concerns to validated stakeholder requirements, VSE-scaled |
 | ISO/IEC 29110 VSE Systems Engineering Profile Overview | pages/iso29110/iso29110-overview.md | What ISO/IEC TR 29110-5-6-2 covers and how the Basic Profile applies to a VSE |
-| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO 29110 process gates |
-| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
-| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO 29110 Project Management activity |
-| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO 29110 roles and the PM and SR work products each role produces |
-| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO 29110 System Definition and Realization activities SR.1 to SR.6 |
-| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO 29110 System Definition and Realization activity |
-| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO 29110 phase to the markdown template file it produces |
+| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO/IEC 29110 process gates |
+| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO/IEC 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
+| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO/IEC 29110 Project Management activity |
+| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO/IEC 29110 roles and the PM and SR work products each role produces |
+| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO/IEC 29110 System Definition and Realization activities SR.1 to SR.6 |
+| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO/IEC 29110 System Definition and Realization activity |
+| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO/IEC 29110 phase to the markdown template file it produces |
 | ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
 | Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
 | Project Management workflow (§10) | pages/methodology/project-management-workflow.md | The §10 workflow with a living Project Plan, iteration-cadence status, and change requests as pull requests |

@@ -117,7 +117,7 @@ hook.
 model/            SysML 2.0 source (core, variations, library)
 docs/             PM and SR work products, ADRs, releases
 methodology/      Project-local methodology specification
-.iso-config.yaml  ISO 29110 hook configuration
+.iso-config.yaml  ISO/IEC 29110 hook configuration
 ```
 
 The authoritative tree is documented in `CLAUDE.md` (per §8.3).

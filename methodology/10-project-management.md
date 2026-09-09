@@ -4,18 +4,18 @@
 
 This section specifies the Project Management (PM) process compliant
 with ISO/IEC TR 29110‑5‑6‑2:2014 §7. It produces and maintains the
-artefact set required by ISO 29110 PM objectives PM.O1–PM.O8, and
+artefact set required by ISO/IEC 29110 PM objectives PM.O1–PM.O8, and
 integrates with the git-based execution discipline of §8.
 
 The methodology's PM process is *iteration-aware*: the Project Plan
 is a living artefact under version control, the Progress Status
 Record is updated at the cadence of iterations rather than at fixed
 phase gates, and Change Requests are PR-shaped. The activities
-themselves match ISO 29110 PM.1–PM.4 in name and purpose.
+themselves match ISO/IEC 29110 PM.1–PM.4 in name and purpose.
 
 ## 10.2 Process structure
 
-The PM process has four activities, in compliance with ISO 29110 §7.7:
+The PM process has four activities, in compliance with ISO/IEC 29110 §7.7:
 
 - **PM.1 Project Planning** (§10.3) — produces the Project Plan and
   initial Project Repository.
@@ -63,7 +63,7 @@ subsections below point back to it where the answer varies by profile.
 ## 10.3 PM.1 Project Planning
 
 **Inputs:** Statement of Work (SOW); project initiation conditions
-(team assigned, infrastructure available — ISO 29110 §6 entry
+(team assigned, infrastructure available — ISO/IEC 29110 §6 entry
 conditions).
 
 **Outputs:** Project Plan; Systems Engineering Management Plan (SEMP);
@@ -74,9 +74,9 @@ Project Repository.
 The Project Plan is a Markdown document committed to the repository at
 `docs/project-plan.md`. It is the canonical reference for the project's
 scope, schedule, resources, and discipline. Its structure follows
-ISO 29110 PM.1 task list (Table 6) item-by-item:
+ISO/IEC 29110 PM.1 task list (Table 6) item-by-item:
 
-| Element | ISO 29110 task | Notes |
+| Element | ISO/IEC 29110 task | Notes |
 |---|---|---|
 | Reference to the SOW | PM.1.14 | Link or appendix reference |
 | Objectives | PM.1.14 | What the project shall achieve |
@@ -97,7 +97,7 @@ ISO 29110 PM.1 task list (Table 6) item-by-item:
 | Delivery Instructions | PM.1.2 | What is delivered, how, when |
 
 **Scaled plan sets.** The seventeen elements above are the `full`
-obligation, and they are the ISO 29110 PM.1 task list in full. Lighter
+obligation, and they are the ISO/IEC 29110 PM.1 task list in full. Lighter
 profiles produce a documented subset per §0.10.5, named here by the
 table's own element names.
 
@@ -116,7 +116,7 @@ table's own element names.
   Configuration Management Strategy elaborated per §10.7, §10.9, and
   §10.8. Required.
 
-The full set is the ISO 29110 PM.1 obligation. The lighter sets are
+The full set is the ISO/IEC 29110 PM.1 obligation. The lighter sets are
 documented tailoring in the sense of §0.10.5, recorded on the project's
 tailoring line, and they are not a partial-conformance claim.
 
@@ -127,7 +127,7 @@ tag on acceptance.
 
 ### 10.3.2 The Systems Engineering Management Plan (SEMP)
 
-The SEMP (ISO 29110 product 21) is either a top-level section of the
+The SEMP (ISO/IEC 29110 product 21) is either a top-level section of the
 Project Plan or a separate document at `docs/semp.md`, project-
 determined. It describes the engineering management approach and is
 where this methodology spec is *referenced* — i.e., the SEMP cites
@@ -162,7 +162,7 @@ Initial population at PM.1.18 includes:
   `.git/hooks/` or `core.hooksPath`-managed equivalents,
   `.claude/settings.json` for Claude Code hooks).
 
-The Project Repository Backup (ISO 29110 product 15) is a mirror of
+The Project Repository Backup (ISO/IEC 29110 product 15) is a mirror of
 the git repository on a second remote, with a backup verification
 schedule documented in the CM Strategy (§10.8).
 
@@ -245,9 +245,9 @@ itself.
 ### 10.4.3 Meeting Records
 
 PM.2.3, PM.2.4 (review meetings with Work Team and Acquirer/
-Stakeholders). The Meeting Record (ISO 29110 product 10) is committed
+Stakeholders). The Meeting Record (ISO/IEC 29110 product 10) is committed
 to `docs/meetings/<YYYY-MM-DD>-<topic>.md`. The minimal content per
-ISO 29110 §10 product 10 is:
+ISO/IEC 29110 §10 product 10 is:
 
 - Purpose;
 - Attendees;
@@ -331,7 +331,7 @@ Generation: a renderer (in `tools/`) walks these sources and produces
 on merge.
 
 The renderer also establishes traceability between the rationale and
-the related SE artefacts (per ISO 29110 PM.3.3) by following
+the related SE artefacts (per ISO/IEC 29110 PM.3.3) by following
 `derive`, `frame concern`, `verify`, and `allocation` relations.
 
 ## 10.6 PM.4 Project Closure
@@ -343,7 +343,7 @@ PM.4.1 (formalise project completion). Implementation:
 1. The Acquirer reviews the deliverables listed in the Plan against
    the Delivery Instructions.
 2. The Product Acceptance Record is authored at
-   `docs/product-acceptance-record.md` with the structure of ISO 29110
+   `docs/product-acceptance-record.md` with the structure of ISO/IEC 29110
    §10 product 11, signed (committed by Acquirer's git identity or
    recorded by an authorised proxy).
 3. The closing tag `release-vN.M` is pushed.
@@ -366,7 +366,7 @@ Plan; execution is a separate subsequent activity.
 
 ## 10.7 Risk Management Approach
 
-ISO 29110 PM.O5 requires a Risk Management Approach within the Plan.
+ISO/IEC 29110 PM.O5 requires a Risk Management Approach within the Plan.
 Minimum content:
 
 | Element | Form |
@@ -389,7 +389,7 @@ PM.2 / PM.3.
 
 ## 10.8 Configuration Management Strategy
 
-ISO 29110 PM.O6 requires a Product Management Strategy. Implementation:
+ISO/IEC 29110 PM.O6 requires a Product Management Strategy. Implementation:
 
 ```yaml
 # Configuration Management Strategy (excerpt — full version in Plan)
@@ -441,7 +441,7 @@ The Strategy is a section of the Project Plan or a referenced file at
 
 ## 10.9 Disposal Management Approach
 
-ISO 29110 PM.O8 requires a Disposal Management Approach. Minimum
+ISO/IEC 29110 PM.O8 requires a Disposal Management Approach. Minimum
 content:
 
 | Element | Notes |
@@ -462,15 +462,15 @@ stories (§4.3.4 / §5.4.1).
 ## 10.10 Document templates produced as out-of-scope deliverables
 
 Projects requiring the Basic Profile beyond §9.2 scope (notably
-Construction and Delivery) shall produce additional ISO 29110
+Construction and Delivery) shall produce additional ISO/IEC 29110
 artefacts. Templates for these are kept in `docs/templates/`:
 
-- `system-operation-guide.md` — ISO 29110 product 26
-- `system-user-manual.md` — ISO 29110 product 29
-- `system-maintenance-document.md` — ISO 29110 product 25
-- `system-training-specifications.md` — ISO 29110 product 28
-- `integration-report.md` — ISO 29110 product 6
-- `purchase-order.md` — ISO 29110 product 17
+- `system-operation-guide.md` — ISO/IEC 29110 product 26
+- `system-user-manual.md` — ISO/IEC 29110 product 29
+- `system-maintenance-document.md` — ISO/IEC 29110 product 25
+- `system-training-specifications.md` — ISO/IEC 29110 product 28
+- `integration-report.md` — ISO/IEC 29110 product 6
+- `purchase-order.md` — ISO/IEC 29110 product 17
 
 These are *templates* — their production is a downstream activity
 governed by the construction/delivery process selected by the project

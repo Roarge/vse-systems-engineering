@@ -95,7 +95,7 @@ engineer opts in. Contains a `doc` comment citing Project Plan
 Section 9, an initial `BL-INIT` baseline item def, and a
 placeholder scope list.
 
-### ISO 29110 activity mapping
+### ISO/IEC 29110 activity mapping
 
 | Activity | Model-level action |
 |---|---|
@@ -167,7 +167,7 @@ backbone. Risk links are advisory in this release. Full
 enforcement lands with the follow-up `risk-management` workflow
 skill.
 
-### ISO 29110 activity mapping
+### ISO/IEC 29110 activity mapping
 
 | Activity | Model-level action |
 |---|---|

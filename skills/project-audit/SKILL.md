@@ -1,6 +1,6 @@
 ---
 name: project-audit
-description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO 29110 artefact presence. Read-only except for the audit report it produces.
+description: Audit an existing VSE project for structural completeness, version drift, methodology conformance, and ISO/IEC 29110 artefact presence. Read-only except for the audit report it produces.
 when_to_use: Use when checking project health, verifying layout per §8.3, checking story well-formedness per §1.9, validating trace integrity (derive, frame, satisfy, verify), or detecting drift between plugin, methodology, and project versions.
 user-invocable: true
 context: fork
@@ -44,7 +44,7 @@ Each check produces a finding with one of these severities:
 
 Findings include the rule reference (for example "§1.9 rule 3"), the file path, and a one-sentence explanation. The skill does not propose fixes inside findings. Remediation is the engineer's decision and is delegated through hand-offs (see below).
 
-Several checks are tiered by the project's rigour profile (§0.10). Read `project_profile` from `.iso-config.yaml` before running them, defaulting to `standard` when the key is absent, and report an obligation only where the project's own profile owes it. Check 12 (ISO 29110 artefact presence) is the one this changes most: the artefact set is the §0.10.3 column for the recorded profile, not the `full` column.
+Several checks are tiered by the project's rigour profile (§0.10). Read `project_profile` from `.iso-config.yaml` before running them, defaulting to `standard` when the key is absent, and report an obligation only where the project's own profile owes it. Check 12 (ISO/IEC 29110 artefact presence) is the one this changes most: the artefact set is the §0.10.3 column for the recorded profile, not the `full` column.
 
 ### 1. Layout Audit (§8.3)
 
@@ -126,7 +126,7 @@ Inspect `model/core/context/`:
 
 Walk every `derive`, `frame concern`, `satisfy`, `verify`, and `allocate` relation in the model. Confirm that each end-point resolves to a defined element. Dispatch the `vse-traceability-matrix-builder` subagent for the heavy walk when the Agent tool is available, in line with the dispatching pattern documented for that subagent. When it is not (a forked execution may carry a restricted tool set), perform the walk inline, because the fork itself already provides the context isolation the subagent exists to give. Either way the audit surfaces the matrix and adds an ERROR finding for every unresolved reference.
 
-### 12. ISO 29110 Artefact Presence (§9.5)
+### 12. ISO/IEC 29110 Artefact Presence (§9.5)
 
 Check `<project>/docs/` for the following information products, filtered by the §0.10.3 column for the project's recorded profile. An artefact the profile marks as omitted is not a finding at all. An artefact the profile marks as recommended emits WARN when absent. An artefact the profile marks as required emits ERROR if the project has progressed beyond project initiation, otherwise WARN:
 
@@ -194,7 +194,7 @@ The skill never edits files in the project, never installs hooks, never copies t
 
 The audit produces findings. Remediation is delegated to other skills:
 
-- Missing scaffolding directories or absent ISO 29110 templates, hand off to `@project-setup`.
+- Missing scaffolding directories or absent ISO/IEC 29110 templates, hand off to `@project-setup`.
 - Story well-formedness gaps under §1.9, hand off to `@story-orchestrator`.
 - Trace integrity errors, hand off to `@traceability-guard`.
 - Baseline state suggesting an unfinished release, hand off to `@release-orchestrator`.
@@ -223,5 +223,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
 | VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
 | VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
-| SYSMOD in an ISO 15288 process landscape | pages/sysmod/sysmod-iso15288-landscape.md | Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO 29110 story |
+| SYSMOD in an ISO 15288 process landscape | pages/sysmod/sysmod-iso15288-landscape.md | Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO/IEC 29110 story |
 <!-- wiki-routing:end -->

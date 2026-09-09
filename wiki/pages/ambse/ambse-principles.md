@@ -141,5 +141,5 @@ for VSEs:
   0, Architecture 0, and effort estimation.
 - [[ambse-risk-and-metrics]] for risk management and SE
   metrics.
-- [[ambse-iso29110-mapping]] for the AMBSE-to-ISO 29110
+- [[ambse-iso29110-mapping]] for the AMBSE-to-ISO/IEC 29110
   activity mapping.

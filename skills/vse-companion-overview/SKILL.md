@@ -1,6 +1,6 @@
 ---
 name: vse-companion-overview
-description: Story-driven AMBSE methodology lens for VSE projects, ISO 29110 compliant. Load this skill first in every VSE project session, before responding and before invoking any other VSE skill. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
+description: Story-driven AMBSE methodology lens for VSE projects, ISO/IEC 29110 compliant. Load this skill first in every VSE project session, before responding and before invoking any other VSE skill. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
 when_to_use: Use whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, or how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together.
 user-invocable: true
 ---
@@ -42,7 +42,7 @@ The project follows a story-driven adaptation of agile MBSE. Three ideas carry t
 **Git workflow (§8).** Every change reaches `main` through a story branch and a pull request, and §8 is the specification for all of it: branch names, draft-PR timing, the author and reviewer checklists, and release tagging.
 Read §8 before answering a git-workflow question rather than answering from this page, because the obligations there are tiered by profile in §8.6.4 and §0.10.3.
 
-**ISO 29110 compliance (§9).** Compliance is mechanical. ISO products are mostly *generated* from the model rather than authored separately (see §9.5 artefact mapping and §9.8 model-derived artefacts). Git hooks and CI generators specified in `iso-29110-hooks-guide.md` enforce artefact well-formedness, story lifecycle, and traceability matrix consistency, and produce ISO documents on merge to `main`.
+**ISO/IEC 29110 compliance (§9).** Compliance is mechanical. ISO products are mostly *generated* from the model rather than authored separately (see §9.5 artefact mapping and §9.8 model-derived artefacts). Git hooks and CI generators specified in `iso-29110-hooks-guide.md` enforce artefact well-formedness, story lifecycle, and traceability matrix consistency, and produce ISO documents on merge to `main`.
 
 ## Story-Centric Routing
 

@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 Project Management Process (PM.1 to PM.4)"
 slug: iso29110-pm-process
 type: reference
 layer: iso29110
-summary: The four ISO 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs
+summary: The four ISO/IEC 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs
 tags: [iso29110, pm, project-management, planning, execution, closure]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Chapter on Project Management Process."

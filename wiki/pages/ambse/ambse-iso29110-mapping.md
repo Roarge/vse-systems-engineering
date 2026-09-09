@@ -3,7 +3,7 @@ title: "AMBSE Workflow Mapping to ISO/IEC 29110"
 slug: ambse-iso29110-mapping
 type: reference
 layer: ambse
-summary: Cross-reference table from AMBSE activities to ISO 29110 process activities
+summary: Cross-reference table from AMBSE activities to ISO/IEC 29110 process activities
 tags: [iso29110, mapping, workflow, lifecycle]
 sources:
   - citation: "Douglass, B.P. (2016) and Douglass, B.P. (2021), AMBSE workflow against ISO/IEC TR 29110-5-6-2:2014 process activities."
@@ -22,15 +22,15 @@ referenced_by: [release-orchestrator]
 
 This page is the cross-reference table from AMBSE activities
 (see [[ambse-principles]] and [[methodology-overview]])
-to ISO 29110 process activities. For the underlying ISO 29110
+to ISO/IEC 29110 process activities. For the underlying ISO/IEC 29110
 catalogue, see [[iso29110-pm-process]] and
 [[iso29110-sr-process]]. For the git operationalisation that
 runs alongside this mapping, see
 [[story-branch-pr-workflow]].
 
-## AMBSE-to-ISO 29110 activity mapping
+## AMBSE-to-ISO/IEC 29110 activity mapping
 
-| AMBSE activity | ISO 29110 activity | Notes |
+| AMBSE activity | ISO/IEC 29110 activity | Notes |
 |---|---|---|
 | Iteration 0 (project setup) | PM.1 + SR.1 | SEMP, environment, initial backlog |
 | Stakeholder requirements elicitation | SR.2.1-SR.2.3 | Use case driven, per iteration |
@@ -59,7 +59,7 @@ operational form the plugin enforces. See
 
 ## Reading note
 
-ISO 29110 says **what** activities a project must perform. The
+ISO/IEC 29110 says **what** activities a project must perform. The
 AMBSE mapping above says **when** and **at what cadence** those
 activities happen, when AMBSE is the chosen lifecycle. SR.1 and
 SR.6 remain single-pass per project. PM and the SR.2-SR.5 core
@@ -75,7 +75,7 @@ plugin's hooks and CI.
   AMBSE methodology.
 - [[iso29110-pm-process]], [[iso29110-sr-process]],
   [[iso29110-pm-task-checklists]], [[iso29110-sr-task-checklists]]
-  for the ISO 29110 activity catalogue.
+  for the ISO/IEC 29110 activity catalogue.
 - [[story-branch-pr-workflow]] for the git-flow mapping that
   runs the iteration cadence.
 - [[methodology-overview]] for the

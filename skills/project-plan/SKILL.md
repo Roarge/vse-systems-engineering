@@ -7,7 +7,7 @@ user-invocable: true
 
 # project-plan
 
-Author or revise the Project Plan and its companion artefacts (SEMP, Risk Register, CM Strategy, Disposal Management Approach) per §10.3 of the methodology specification at `<project>/methodology/10-project-management.md`. The Plan is the ISO 29110 PM.O1 artefact and is baselined by an annotated git tag `plan-baseline-vN.M`.
+Author or revise the Project Plan and its companion artefacts (SEMP, Risk Register, CM Strategy, Disposal Management Approach) per §10.3 of the methodology specification at `<project>/methodology/10-project-management.md`. The Plan is the ISO/IEC 29110 PM.O1 artefact and is baselined by an annotated git tag `plan-baseline-vN.M`.
 
 ## When this skill triggers
 

@@ -7,7 +7,7 @@ user-invocable: true
 
 # Change Request
 
-This skill is the smallest of the orchestration skills. It exists for one task: author a Change Request artefact in the §10.4.2 form and move it through the issue and PR lifecycle that ISO 29110 PM.O3 requires.
+This skill is the smallest of the orchestration skills. It exists for one task: author a Change Request artefact in the §10.4.2 form and move it through the issue and PR lifecycle that ISO/IEC 29110 PM.O3 requires.
 
 The Change Request artefact is the GitHub Issue thread. The implementation artefact is the PR thread. Both are preserved indefinitely as audit trail. This skill writes the issue, helps manage the lifecycle labels, and hands off to other skills for the implementing work. It does not perform the engineering change itself.
 
@@ -51,7 +51,7 @@ Collect, with one question per missing field at most:
 
 ### 3. Draft the impact analysis
 
-The impact analysis is required by §10.4.2 and ISO 29110 PM.2.2. It covers four dimensions. Each one may be flagged as "negligible" with a one-sentence justification, rather than left blank. The brief form is what `standard` calls for, and `full` calls for each axis assessed in substance (§0.10.3).
+The impact analysis is required by §10.4.2 and ISO/IEC 29110 PM.2.2. It covers four dimensions. Each one may be flagged as "negligible" with a one-sentence justification, rather than left blank. The brief form is what `standard` calls for, and `full` calls for each axis assessed in substance (§0.10.3).
 
 | Dimension | What to assess |
 |---|---|

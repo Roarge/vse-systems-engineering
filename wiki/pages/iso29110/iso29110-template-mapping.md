@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 Phase to Template Mapping"
 slug: iso29110-template-mapping
 type: reference
 layer: iso29110
-summary: Quick reference linking each ISO 29110 phase to the markdown template file it produces
+summary: Quick reference linking each ISO/IEC 29110 phase to the markdown template file it produces
 tags: [iso29110, templates, work-products, project-setup]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, work-product catalogue, plus the plugin's templates/common/ scaffolding."
@@ -21,7 +21,7 @@ referenced_by: [project-setup, release-orchestrator]
 
 # ISO/IEC 29110 Phase to Template Mapping
 
-Quick reference linking each ISO 29110 phase to the markdown
+Quick reference linking each ISO/IEC 29110 phase to the markdown
 template file it produces. The plugin's `@project-setup` skill
 scaffolds these templates under `docs/pm/` and `docs/sr/` (or
 `engineering/docs/pm/` and `engineering/docs/sr/` in brownfield

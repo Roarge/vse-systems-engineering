@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6)"
 slug: iso29110-sr-task-checklists
 type: process
 layer: iso29110
-summary: Actionable task checklists for every ISO 29110 System Definition and Realization activity
+summary: Actionable task checklists for every ISO/IEC 29110 System Definition and Realization activity
 tags: [iso29110, sr, task-checklist, work-products]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, System Definition and Realization task tables."
@@ -31,7 +31,7 @@ referenced_by: [project-setup, release-orchestrator]
 - SR.6 Product Delivery
 - See also
 
-Actionable task checklists for every ISO 29110 System Definition
+Actionable task checklists for every ISO/IEC 29110 System Definition
 and Realization activity. Each task lists its responsible roles,
 and each phase declares the work products created and used. For
 role abbreviations and work-product catalogue, see

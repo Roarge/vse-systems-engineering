@@ -643,7 +643,7 @@ the project's intent. Record any override on the tailoring line
 ### 0.10.5 ISO/IEC 29110 conformance
 
 The `full` profile is the complete §9 mapping. A project that runs at
-`full` and keeps its artefacts current satisfies the ISO 29110‑5‑6‑2
+`full` and keeps its artefacts current satisfies the ISO/IEC 29110‑5‑6‑2
 Basic Profile objectives within the scope §9.2 declares, and §9.12 states
 what that claim does and does not cover. Projects intending formal
 assessment per ISO/IEC TR 29110‑3 select `full`.
@@ -659,7 +659,7 @@ obligation set through the tailoring record (§0.10.2) rather than through
 a Change Request, because the deviation is a property of the process the
 project chose, not a change to a baselined artefact.
 
-A project at `light` or `standard` does not claim ISO 29110 conformance.
+A project at `light` or `standard` does not claim ISO/IEC 29110 conformance.
 It claims to follow this methodology at a recorded profile. Raising the
 profile to `full` is the act that opens the conformance claim, and the
 work it adds is the artefact set in the `full` column of §0.10.3.

@@ -1,6 +1,6 @@
 # Risk Register
 
-Per methodology §10.7 and ISO 29110 PM.O5. The Risk Management Approach prose lives in the Project Plan. This file is the live register.
+Per methodology §10.7 and ISO/IEC 29110 PM.O5. The Risk Management Approach prose lives in the Project Plan. This file is the live register.
 
 Each entry has the columns below. Likelihood and impact are scored against a project-determined scale. Priority is the product. Status moves through `open`, `mitigating`, `monitoring`, `closed`. Where a risk's mitigation becomes engineering work, the mitigation is captured as a story rather than an action item here.
 

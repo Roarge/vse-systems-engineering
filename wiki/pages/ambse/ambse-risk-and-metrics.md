@@ -106,7 +106,7 @@ and accurately capture the property of interest.
 - [[ambse-principles]] for the SE-versus-software distinction.
 - [[methodology-overview]] for the planning hierarchy that
   generates the work items risk and metrics consume.
-- [[ambse-iso29110-mapping]] for the AMBSE-to-ISO 29110 table
+- [[ambse-iso29110-mapping]] for the AMBSE-to-ISO/IEC 29110 table
   that maps risk and metric activities to PM.2 / PM.3.
 - [[sysml2-model-cm-and-risks]] for the model-level risk
   register pattern.

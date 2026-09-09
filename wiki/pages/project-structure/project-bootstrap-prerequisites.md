@@ -39,7 +39,7 @@ This page collects, in one place, what shall exist before stakeholder requiremen
 
 Before any technical workflow stage runs, the Project Plan and the Project Repository must exist. This is the ISO/IEC 29110 PM.1 (Project Planning) obligation, satisfying objective PM.O1.
 
-- **Project Plan** at `docs/project-plan.md`, structured per §10.3 (the seventeen elements aligned to ISO 29110 PM.1.1 to PM.1.14). The Plan is reviewed and accepted via a normal pull-request cycle, then tagged on the merge commit as `plan-baseline-v1.0`. See [[project-management-workflow]].
+- **Project Plan** at `docs/project-plan.md`, structured per §10.3 (the seventeen elements aligned to ISO/IEC 29110 PM.1.1 to PM.1.14). The Plan is reviewed and accepted via a normal pull-request cycle, then tagged on the merge commit as `plan-baseline-v1.0`. See [[project-management-workflow]].
 - **Systems Engineering Management Plan (SEMP)** is either a top-level section of the Project Plan or a separate document at `docs/semp.md`, per §10.3.2.
 - **Project Repository** initialised on a `main` branch with the canonical directory tree per §10.3.3 and [[vse-canonical-project-layout]]. The protected-branch policy and CODEOWNERS are configured here.
 
@@ -57,7 +57,7 @@ The Base Architecture and the System Context are foundational artefacts. They ar
 
 ## How the two viewpoints meet
 
-ISO 29110 places the Base Architecture and System Context inside SR (System definition and Realization), specifically inside SR.2 System Requirements Engineering, where SR.2.1 lists "analyse system context" as one of its activities. The methodology distinguishes the two foundational sections (§2 Base Architecture, §3 System Context) precisely so that they are authored deliberately, ahead of stakeholder elicitation, rather than being wrapped into the elicitation step itself.
+ISO/IEC 29110 places the Base Architecture and System Context inside SR (System definition and Realization), specifically inside SR.2 System Requirements Engineering, where SR.2.1 lists "analyse system context" as one of its activities. The methodology distinguishes the two foundational sections (§2 Base Architecture, §3 System Context) precisely so that they are authored deliberately, ahead of stakeholder elicitation, rather than being wrapped into the elicitation step itself.
 
 In practice, the bootstrap order on a fresh project is:
 
@@ -80,7 +80,7 @@ For greenfield projects, all three artefacts (Plan, Base Architecture, System Co
 
 ## ISO/IEC 29110 mapping
 
-| Bootstrap artefact | ISO 29110 task | Methodology section |
+| Bootstrap artefact | ISO/IEC 29110 task | Methodology section |
 |---|---|---|
 | Project Plan | PM.1 (PM.1.1–PM.1.14) | §10.3 |
 | SEMP | PM.1 | §10.3.2 |

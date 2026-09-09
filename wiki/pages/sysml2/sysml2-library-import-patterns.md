@@ -3,7 +3,7 @@ title: "SysML 2.0 Library Import Patterns and VSE Selection Guide"
 slug: sysml2-library-import-patterns
 type: pattern
 layer: sysml2
-summary: Import patterns for the domain libraries, organised by use case and ISO 29110 phase
+summary: Import patterns for the domain libraries, organised by use case and ISO/IEC 29110 phase
 tags: [imports, vse, selection-guide, patterns, lifecycle-phase]
 sources:
   - citation: "OMG (2023). OMG Systems Modeling Language v2.0, formal/2025-01-01. Chapter 9."
@@ -30,7 +30,7 @@ referenced_by: [sysml2-modelling]
 - See also
 
 This page collects practical import patterns for the SysML 2.0
-domain libraries, organised by use case and ISO 29110 phase.
+domain libraries, organised by use case and ISO/IEC 29110 phase.
 
 ## Common import patterns
 
@@ -103,7 +103,7 @@ resolve imports at edit time.
 ## VSE library selection by lifecycle phase
 
 Not every project needs every library. Use this decision guide to
-select only what the current ISO 29110 phase requires.
+select only what the current ISO/IEC 29110 phase requires.
 
 | Phase | Recommended libraries | Rationale |
 |---|---|---|

@@ -388,7 +388,7 @@ WARN the engineer if:
 - Requirements and architecture are collapsed into one package.
 - Verification cases are scattered across architecture packages.
 - Interfaces are embedded inside subsystem packages.
-- No `{{sc}}_Risks` package exists (ISO 29110 PM.O5 non-compliance).
+- No `{{sc}}_Risks` package exists (ISO/IEC 29110 PM.O5 non-compliance).
 - The model follows the SysML v2 Book Chapter 16 eleven-package drone
   layout verbatim (phase-sequential, does not suit AMBSE concurrency).
 - Federation has been applied prematurely (a single VSE team does not

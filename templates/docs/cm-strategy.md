@@ -1,6 +1,6 @@
 # Configuration Management Strategy
 
-Per methodology §10.8 and ISO 29110 PM.O6. This file is the project's Configuration Management Strategy. It may be a section of `docs/project-plan.md` or a separate document referenced from the Plan, project-determined.
+Per methodology §10.8 and ISO/IEC 29110 PM.O6. This file is the project's Configuration Management Strategy. It may be a section of `docs/project-plan.md` or a separate document referenced from the Plan, project-determined.
 
 ```yaml
 # Configuration Management Strategy

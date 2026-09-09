@@ -135,7 +135,7 @@ feedback._
 ### 5.1 Task List
 
 > Identify all tasks needed to produce deliverables, including V&V and review
-> tasks. Reference TASKS.md for the full ISO 29110 task checklist.
+> tasks. Reference TASKS.md for the full ISO/IEC 29110 task checklist.
 
 ### 5.2 Schedule
 

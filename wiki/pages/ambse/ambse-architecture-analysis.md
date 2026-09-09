@@ -34,11 +34,11 @@ referenced_by: [architecture-design]
 Architecture in AMBSE has two distinct activities:
 
 - **Architectural analysis**: evaluate candidate architectures
-  and select the best fit through trade studies (ISO 29110
+  and select the best fit through trade studies (ISO/IEC 29110
   SR.3, early). See [[ambse-trade-studies]].
 - **Architectural design**: implement the selected architecture
   by identifying subsystems, allocating requirements, and
-  defining interfaces (ISO 29110 SR.3). See
+  defining interfaces (ISO/IEC 29110 SR.3). See
   [[ambse-architectural-design]].
 
 Both activities are performed incrementally, **per iteration**.
@@ -46,7 +46,7 @@ Each iteration refines and extends the architecture as new use
 cases are specified. For the underlying AMBSE iteration model
 see [[methodology-overview]]. For the SysML 2.0 package
 layout the architecture lands in, see
-[[sysml2-canonical-model-layout]]. For the ISO 29110 SR.3
+[[sysml2-canonical-model-layout]]. For the ISO/IEC 29110 SR.3
 activity catalogue, see [[iso29110-sr-process]].
 
 ## Architectural analysis workflow
@@ -107,8 +107,8 @@ properties that demand them.
 - [[ambse-interfaces-and-handoff]] for interface specification
   and the handoff to downstream engineering.
 - [[ambse-architecture-vv-and-iso29110]] for V&V at the
-  architecture level and the ISO 29110 mapping.
+  architecture level and the ISO/IEC 29110 mapping.
 - [[sysml2-canonical-model-layout]] for the AMBSE package
   layout the architecture lands in.
-- [[iso29110-sr-process]] for the ISO 29110 SR.3 activity
+- [[iso29110-sr-process]] for the ISO/IEC 29110 SR.3 activity
   catalogue.

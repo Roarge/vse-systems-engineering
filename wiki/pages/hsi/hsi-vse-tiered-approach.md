@@ -139,7 +139,7 @@ embed HSI thinking into existing SE activities. For the ISO
 29110 SR-process activity definitions, see
 [[iso29110-sr-process]].
 
-| SE activity (ISO 29110) | HSI action |
+| SE activity (ISO/IEC 29110) | HSI action |
 |---|---|
 | Stakeholder requirements (SR.2.1) | Identify user groups. Capture HSI needs. Specify usability targets. |
 | System requirements (SR.2.4 to SR.2.5) | Include function allocation, safety, and human performance requirements. |
@@ -206,5 +206,5 @@ be affected by this system?"
 - [[hsi-domains]] for the full 13-perspective catalogue.
 - [[hsi-in-requirements]] and [[hsi-in-architecture]] for how
   HSI enters specific SE activities.
-- [[iso29110-sr-process]] for the ISO 29110 SR-process activity
+- [[iso29110-sr-process]] for the ISO/IEC 29110 SR-process activity
   catalogue this section integrates with.

@@ -1,4 +1,4 @@
-# ISO 29110 Compliance Hooks Guide
+# ISO/IEC 29110 Compliance Hooks Guide
 
 *A companion to the methodology specification — implementation
 guidance for automating ISO/IEC TR 29110‑5‑6‑2:2014 compliance with
@@ -6,7 +6,7 @@ git hooks and Claude Code hooks.*
 
 ## 1. Purpose
 
-This guide specifies how to automate the ISO 29110 compliance
+This guide specifies how to automate the ISO/IEC 29110 compliance
 discipline established in §9 (compliance mapping) and §10 (Project
 Management) of the methodology. The goal is to make compliance
 *ambient* rather than periodic — the right things happen because the
@@ -29,7 +29,7 @@ the repository. Claude Code hooks are the *guidance* layer — they
 keep the agent and its operator aligned with ISO obligations during
 authoring.
 
-## 2. ISO 29110 obligations covered by hooks
+## 2. ISO/IEC 29110 obligations covered by hooks
 
 | ISO obligation | Hook(s) that cover it |
 |---|---|
@@ -96,7 +96,7 @@ is right and this guide is wrong. The coverage table above describes the
 │       └── plan-complete.py
 ├── .github/workflows/            # CI for things hooks alone can't do
 │   └── compliance.yml
-└── docs/                         # ISO 29110 artefacts
+└── docs/                         # ISO/IEC 29110 artefacts
     ├── project-plan.md
     ├── progress-status-record.md
     ├── correction-register.md
@@ -247,7 +247,7 @@ python3 tools/render/traceability-matrix.py --check || {
     exit 1
 }
 
-echo "✅ pre-commit ISO 29110 checks passed."
+echo "✅ pre-commit ISO/IEC 29110 checks passed."
 ```
 
 ### 4.2 `commit-msg`
@@ -403,7 +403,7 @@ set -euo pipefail
 # Only run on main
 [[ "$(git rev-parse --abbrev-ref HEAD)" == "main" ]] || exit 0
 
-echo "Regenerating ISO 29110 derived artefacts…"
+echo "Regenerating ISO/IEC 29110 derived artefacts…"
 python3 tools/render/traceability-matrix.py     > docs/traceability-matrix.md
 python3 tools/render/stakeholder-reqs-doc.py    > docs/generated/stakeholders-requirements.md
 python3 tools/render/system-reqs-doc.py         > docs/generated/system-requirements.md
@@ -495,7 +495,7 @@ in flight, and what's overdue.
 #!/usr/bin/env bash
 set -euo pipefail
 cat <<EOF
-=== ISO 29110 Project Status ===
+=== ISO/IEC 29110 Project Status ===
 
 Branch:           $(git branch --show-current)
 Project Plan:     $(git tag -l 'plan-baseline-*' | tail -1 || echo "not yet baselined")
@@ -569,7 +569,7 @@ prompt=$(jq -r '.prompt // .user_message // ""')
 # Heuristic: edits + plausibly baselined artefact references
 if echo "$prompt" | grep -qiE '(change|edit|modify|update|delete).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture)'; then
     cat <<EOF
-[ISO 29110 reminder]
+[ISO/IEC 29110 reminder]
 This prompt may involve changes to baselined or load-bearing artefacts.
 Per PM.O3 (Change Request handling) and §10.4.2:
 - Confirm with the user whether a Change Request issue exists.
@@ -581,7 +581,7 @@ fi
 # Heuristic: meeting/review mentions
 if echo "$prompt" | grep -qiE '(meeting|reviewed with|sync|standup) (today|yesterday|this morning)'; then
     cat <<EOF
-[ISO 29110 reminder]
+[ISO/IEC 29110 reminder]
 A synchronous review may have occurred. Per PM.O4:
 - Capture a Meeting Record in docs/meetings/<YYYY-MM-DD>-<topic>.md.
 - Include attendees, agreements, open issues, next meeting.
@@ -594,7 +594,7 @@ fi
 # (§2.1 corollary 2; §2.6 rule 7).
 if echo "$prompt" | grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)'; then
     cat <<EOF
-[ISO 29110 reminder — agent-collaboration discipline]
+[ISO/IEC 29110 reminder — agent-collaboration discipline]
 This prompt may be asking for stories, stakeholders, or concerns to be
 synthesised from pre-existing context (Base Architecture, legacy
 system, existing infrastructure). Per §2.1 corollary 2 and §2.6 rule
@@ -660,7 +660,7 @@ if python3 tools/lint/is-baselined.py "$target"; then
         cat <<EOF
 {
   "decision": "block",
-  "reason": "File '$target' is a baselined ISO 29110 artefact. Per PM.O3, modifications require an open Change Request. Open a CR issue first, then reference 'CR #<n>' in your commits."
+  "reason": "File '$target' is a baselined ISO/IEC 29110 artefact. Per PM.O3, modifications require an open Change Request. Open a CR issue first, then reference 'CR #<n>' in your commits."
 }
 EOF
         exit 0
@@ -670,7 +670,7 @@ fi
 # For story files: enforce template completeness will-be-met
 if [[ "$target" =~ /stories/.*\.sysml$ ]]; then
     cat <<EOF
-[ISO 29110 reminder] Editing a story file. Required fields per §1.9:
+[ISO/IEC 29110 reminder] Editing a story file. Required fields per §1.9:
   - subject (typed)
   - role (typed by part def from core/stakeholders/ or component scope)
   - capability (narrative string)
@@ -736,7 +736,7 @@ case "$target" in
     */stories/*.sysml)
         story_id=$(basename "$target" .sysml)
         cat <<EOF
-[ISO 29110 follow-up] Story $story_id changed. Consider:
+[ISO/IEC 29110 follow-up] Story $story_id changed. Consider:
   - Update the verification case verifying its acceptance (SR.O7).
   - Check that StoryMeta.status reflects the new state.
   - If the change introduced a new constraint, regenerate the Traceability Matrix.
@@ -744,14 +744,14 @@ EOF
         ;;
     */concerns/*.sysml)
         cat <<EOF
-[ISO 29110 follow-up] Concern changed. Consider:
+[ISO/IEC 29110 follow-up] Concern changed. Consider:
   - Check that all framing stories still satisfy the concern.
   - Update stakeholder communications if the concern's scope shifted.
 EOF
         ;;
     */logical-architecture/*.sysml)
         cat <<EOF
-[ISO 29110 follow-up] Architecture changed. Consider:
+[ISO/IEC 29110 follow-up] Architecture changed. Consider:
   - Update allocations if subsystem responsibilities shifted (SR.O3).
   - Re-render Traceability Matrix.
   - If decision was non-trivial, write an ADR in docs/decisions/.
@@ -759,7 +759,7 @@ EOF
         ;;
     docs/project-plan.md)
         cat <<EOF
-[ISO 29110 follow-up] Project Plan changed. Per PM.O1:
+[ISO/IEC 29110 follow-up] Project Plan changed. Per PM.O1:
   - This change requires Acquirer review and approval.
   - Reference the corresponding Change Request issue.
   - On merge, tag a new plan-baseline.
@@ -804,7 +804,7 @@ recent_changes=$(git status --porcelain)
 # Architecture decision indicators
 if echo "$recent_changes" | grep -qE '^.M (model/variations/|model/core/logical-architecture/)'; then
     cat <<EOF
-[ISO 29110 prompt — end of session]
+[ISO/IEC 29110 prompt — end of session]
 Architectural changes detected. Per PM.3.3 and §10.5.3, consider:
   - Writing an ADR in docs/decisions/ if a non-trivial decision was made.
   - Updating the trade-study analysis def if a variant was selected.
@@ -814,7 +814,7 @@ fi
 # V&V execution indicators (verification report files modified)
 if echo "$recent_changes" | grep -qE '^.M docs/.*verification-report'; then
     cat <<EOF
-[ISO 29110 prompt — end of session]
+[ISO/IEC 29110 prompt — end of session]
 Verification activity detected. Per SR.O7:
   - Ensure the Verification Report references its IVV procedure.
   - Update the relevant story's StoryMeta if verification passed/failed.
@@ -914,7 +914,7 @@ that their results are visible on the PR.
 `.github/workflows/compliance.yml`:
 
 ```yaml
-name: ISO 29110 Compliance
+name: ISO/IEC 29110 Compliance
 on:
   pull_request:
     branches: [main, 'release/**']
@@ -1027,7 +1027,7 @@ land non-compliant state on a protected reference.
 A single project-level configuration file drives the hook behaviour:
 
 ```yaml
-# .iso-config.yaml — ISO 29110 hook configuration
+# .iso-config.yaml — ISO/IEC 29110 hook configuration
 
 # Project rigour profile per methodology section 0.10.
 # One of: light | standard | full. Absent means standard.
@@ -1091,7 +1091,7 @@ useful. A project under formal assessment adds it back explicitly.
 
 ## 9. Setup checklist
 
-For a new project adopting this methodology + ISO 29110 compliance:
+For a new project adopting this methodology + ISO/IEC 29110 compliance:
 
 - [ ] Repository scaffolded per §8.3 of methodology.
 - [ ] `.githooks/` populated with scripts from §4 of this guide;
@@ -1167,7 +1167,7 @@ scope.
 
 - Specific implementations of the lint and render scripts. The
   contracts are stable; the implementations are project-determined.
-- Tooling for ISO 29110 *assessment* per ISO/IEC TR 29110‑3. The
+- Tooling for ISO/IEC 29110 *assessment* per ISO/IEC TR 29110‑3. The
   hooks here keep the project compliant; an external assessor still
   performs the formal audit.
 - Migration from a non-hook-driven legacy project. Adoption strategy

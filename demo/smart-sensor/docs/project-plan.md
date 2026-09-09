@@ -18,7 +18,7 @@ The Base Architecture (the parent product line's reference platform) is the ESP3
 
 ## Stakeholders and roles
 
-For the demo, one contributor fills every ISO 29110 role. In a real project, this section enumerates the Work Team members and lists which person holds which role. Roles per §10.11.
+For the demo, one contributor fills every ISO/IEC 29110 role. In a real project, this section enumerates the Work Team members and lists which person holds which role. Roles per §10.11.
 
 ## Tailoring record
 

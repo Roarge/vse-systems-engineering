@@ -1,9 +1,9 @@
 ---
-title: "AMBSE Architecture-Level V&V and ISO 29110 Mapping"
+title: "AMBSE Architecture-Level V&V and ISO/IEC 29110 Mapping"
 slug: ambse-architecture-vv-and-iso29110
 type: reference
 layer: ambse
-summary: Architecture-level V&V across the three verification timeframes, and its mapping to ISO 29110
+summary: Architecture-level V&V across the three verification timeframes, and its mapping to ISO/IEC 29110
 tags: [verification, validation, definition-of-done, iso29110, mapping]
 sources:
   - citation: "Douglass, B.P. (2016). Agile Systems Engineering. Chapter 8."
@@ -23,7 +23,7 @@ updated: 2026-05-04
 referenced_by: [architecture-design]
 ---
 
-# AMBSE Architecture-Level V&V and ISO 29110 Mapping
+# AMBSE Architecture-Level V&V and ISO/IEC 29110 Mapping
 
 ## Contents
 
@@ -31,7 +31,7 @@ referenced_by: [architecture-design]
 - Use case driven validation
 - SysML 2.0 verification modelling
 - Definition of done for SE velocity
-- Mapping AMBSE architecture to ISO 29110
+- Mapping AMBSE architecture to ISO/IEC 29110
 - See also
 
 V&V in AMBSE operates at all three verification timeframes
@@ -121,12 +121,12 @@ following are satisfied:
 - Logical validation cases to ensure the use case satisfies
   stakeholder needs.
 
-## Mapping AMBSE architecture to ISO 29110
+## Mapping AMBSE architecture to ISO/IEC 29110
 
-For the underlying ISO 29110 SR.3 catalogue see
+For the underlying ISO/IEC 29110 SR.3 catalogue see
 [[iso29110-sr-process]].
 
-| AMBSE activity | ISO 29110 activity | Notes |
+| AMBSE activity | ISO/IEC 29110 activity | Notes |
 |---|---|---|
 | Identify key system functions | SR.3.1 | From requirements specified so far |
 | Define candidate solutions | SR.3.2 | At least two alternatives |

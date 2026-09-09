@@ -48,9 +48,9 @@ downstream models.
 
 | Definition | Kind | Source |
 |---|---|---|
-| `RiskInfo` | `metadata def` | ISO 29110 PM.O5 via Chapter 38 risk pattern |
-| `ConfigItem` | `metadata def` | ISO 29110 PM.1.13 |
-| `Baseline` | `metadata def` | ISO 29110 PM.2.5 |
+| `RiskInfo` | `metadata def` | ISO/IEC 29110 PM.O5 via Chapter 38 risk pattern |
+| `ConfigItem` | `metadata def` | ISO/IEC 29110 PM.1.13 |
+| `Baseline` | `metadata def` | ISO/IEC 29110 PM.2.5 |
 | `CIState` | `enum def` | Draft, Baselined, UnderChange, Superseded, Retired |
 | `Severity` | `enum def` | Five-level risk severity scale |
 | `Likelihood` | `enum def` | Five-level risk likelihood scale |

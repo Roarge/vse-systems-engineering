@@ -87,7 +87,7 @@ Optional packages, scaffolded on opt-in inside `@project-setup`:
 Starter files live at `${CLAUDE_PLUGIN_ROOT}/templates/common/models/`
 and are copied into the project by `@project-setup`. Each file is
 heavily commented with citations back to Douglass 2016, Cookbook
-2021, Ch 14-16, Ch 35, VAMOS 2016, and ISO 29110.
+2021, Ch 14-16, Ch 35, VAMOS 2016, and ISO/IEC 29110.
 
 For the full pattern walk-through, including base-architecture reuse,
 federation, variant configurations, model-level CM, and the risk
@@ -443,7 +443,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SysML 2.0 Grammar Excerpts, Well-Formedness, and Validation Checklist | pages/sysml2/sysml2-grammar-and-validation.md | SysML 2.0 grammar excerpts, well-formedness rules, and a model validation checklist |
 | SysML 2.0 Language Architecture: KerML, Definition/Usage, Implicit Specialisation | pages/sysml2/sysml2-language-architecture.md | The two-layer KerML and SysML architecture, the definition and usage pattern, and implicit specialisation |
 | SysML 2.0 Library Architecture: Systems Model Library and Domain Libraries | pages/sysml2/sysml2-libraries-architecture.md | The implicit Systems Model Library and the Domain Libraries a project imports explicitly |
-| SysML 2.0 Library Import Patterns and VSE Selection Guide | pages/sysml2/sysml2-library-import-patterns.md | Import patterns for the domain libraries, organised by use case and ISO 29110 phase |
+| SysML 2.0 Library Import Patterns and VSE Selection Guide | pages/sysml2/sysml2-library-import-patterns.md | Import patterns for the domain libraries, organised by use case and ISO/IEC 29110 phase |
 | SysML 2.0 Quantities and Units (ISQ and SI) | pages/sysml2/sysml2-quantities-and-units.md | A quantity is an attribute whose value carries physical meaning |
 | SysML 2.0 Requirements Semantics: Subject, Assume/Require, Satisfaction, Verification | pages/sysml2/sysml2-requirements-semantics.md | Semantic rules for the requirement family, covering subject, assume, require, satisfaction, verification |
 | SysML 2.0 Specialisation, Typing, Composition, and Feature Values | pages/sysml2/sysml2-specialisation-and-typing.md | Semantic rules for how types relate to each other and how usages bind values |
