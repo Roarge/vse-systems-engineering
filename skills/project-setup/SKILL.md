@@ -322,13 +322,21 @@ Create the following at `<ENG_ROOT>`:
 
   Sources for the generated files:
 
-  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the one-line tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` Where the project deviates from the tier defaults, name the deviation on that same line.
-  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`.
+  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}` and `{{SYSML_TOOLCHAIN}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` followed by the Toolchain line. Where the project deviates from the tier defaults, name the deviation on the Profile line.
+  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`. Substitute `{{SYSML_TOOLCHAIN_NAME}}` and `{{SYSML_TOOLCHAIN_VERSION}}` in the modelling-tool bullet and the development-tools table.
   - `docs/risk-register.md` from the risk-register template per §10.7.
   - `docs/cm-strategy.md` from the cm-strategy template per §10.8.
   - `docs/correction-register.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/correction-register.md`.
   - `docs/progress-status-record.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/progress-status.md`.
   - `docs/disposal-management-approach.md`, the §10.9 stub.
+
+  The toolchain placeholders in those two templates come from the `sysml_toolchain` key in `.iso-config.yaml`. `{{SYSML_TOOLCHAIN}}` is the recorded key value, or `syside (implicit, key not recorded)` when the project made no choice. The other two follow from it:
+
+  | `sysml_toolchain` | `{{SYSML_TOOLCHAIN_NAME}}` | `{{SYSML_TOOLCHAIN_VERSION}}` |
+  |---|---|---|
+  | `syside` | Sensmetry Syside | 0.10.3 (the project pins its own) |
+  | `omg-pilot` | OMG SysML v2 Pilot Implementation | release 2026-07 (kernel 0.61.0) |
+  | `opensysml` | Open-MBEE OpenSysML | v0.6.0 |
 
   The four directories written at every tier are empty and carry a `.gitkeep`. `docs/generated/` holds renderer outputs and is tracked, per the Contract 3 committed-copy design stated in Step 4.
 
@@ -338,7 +346,7 @@ Create the following at `<ENG_ROOT>`:
 
 `CLAUDE.md` lives at `<ENG_ROOT>` so the harness picks it up when the user works inside the engineering subdirectory. The content is generated from `${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md` and frames the VSE companion guidance for the project.
 
-Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), and `{{PROFILE}}` (the tier chosen in Step 1). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`.
+Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), `{{PROFILE}}` (the tier chosen in Step 1), and `{{SYSML_TOOLCHAIN}}` (the recorded toolchain in the Step 7 form). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`, and the Toolchain line does the same for the SysML v2 validator.
 
 The template is delimited by the marker pair it ships with, which is the pair the merge logic below matches on:
 

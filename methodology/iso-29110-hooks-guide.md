@@ -402,18 +402,32 @@ set -euo pipefail
 
 # Only run on main
 [[ "$(git rev-parse --abbrev-ref HEAD)" == "main" ]] || exit 0
+cd "$(git rev-parse --show-toplevel)"
 
-echo "Regenerating ISO/IEC 29110 derived artefacts…"
-python3 tools/render/traceability-matrix.py     > docs/traceability-matrix.md
-python3 tools/render/stakeholder-reqs-doc.py    > docs/generated/stakeholders-requirements.md
-python3 tools/render/system-reqs-doc.py         > docs/generated/system-requirements.md
-python3 tools/render/ivv-plan.py                > docs/generated/ivv-plan.md
-python3 tools/render/justification-doc.py       > docs/generated/justification-document.md
-
-if git diff --quiet -- docs/; then
-    echo "✓ Derived artefacts already current."
+# The directory that holds .iso-config.yaml is the engineering root: the
+# project root in a greenfield layout, engineering/ in a brownfield one.
+if [ -f .iso-config.yaml ]; then
+    ENG_ROOT="."
+elif [ -f engineering/.iso-config.yaml ]; then
+    ENG_ROOT="engineering"
 else
-    echo "⚠ Derived artefacts regenerated; commit the updates."
+    exit 0
+fi
+
+# Run every renderer named under renderers: from the engineering root.
+# Each one writes its own destination under docs/generated/.
+echo "Regenerating ISO/IEC 29110 derived artefacts..."
+(
+    cd "$ENG_ROOT"
+    python3 tools/render/traceability-matrix.py   # docs/generated/traceability-matrix.md
+    python3 tools/render/stakeholder-reqs-doc.py  # docs/generated/stakeholder-requirements.md
+    python3 tools/render/system-reqs-doc.py       # docs/generated/system-requirements.md
+)
+
+if git diff --quiet -- "$ENG_ROOT/docs/"; then
+    echo "Derived artefacts already current."
+else
+    echo "Derived artefacts regenerated. Commit the updates or run CI."
 fi
 ```
 
@@ -1035,6 +1049,10 @@ A single project-level configuration file drives the hook behaviour:
 # defaults carry lighter baselined_paths and storymeta sets
 # (methodology section 0.10.3).
 project_profile: full
+
+# SysML v2 toolchain for the lint gate and CI: syside | omg-pilot | opensysml.
+# Absent means syside. Hooks fall back along that order when the tool is unavailable.
+sysml_toolchain: syside
 
 # Optional per-gate overrides: block | warn | info | off.
 # Unset keys follow the profile default (section 0.10.4).

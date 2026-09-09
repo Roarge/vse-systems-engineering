@@ -130,6 +130,10 @@ The hooks read this file to determine what to enforce. Schema per §8 of the hoo
 # One of: light | standard | full. Absent means standard.
 project_profile: standard
 
+# SysML v2 toolchain for the lint gate and CI: syside | omg-pilot | opensysml.
+# Absent means syside. Hooks fall back along that order when the tool is unavailable.
+sysml_toolchain: syside
+
 # Optional per-gate overrides: block | warn | info | off.
 # Unset keys follow the profile default (section 0.10.4).
 # gate_overrides:
