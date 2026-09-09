@@ -26,9 +26,11 @@ those obligations in SysML v2.
 
 ## 9.2 Scope of compliance
 
-ISO/IEC 29110‑5‑6‑2 covers the systems engineering lifecycle from project
-initiation through disposal. This methodology covers a defined subset
-of that lifecycle. The boundary is:
+ISO/IEC TR 29110-5-6-2 covers two processes, Project Management (PM.1
+to PM.4) and System Definition and Realisation (SR.1 to SR.6), from
+project planning to product delivery. It does not cover the full life
+cycle of ISO/IEC/IEEE 15288:2023. This methodology covers a defined
+subset of the two processes. The boundary is:
 
 | ISO/IEC 29110 activity | Methodology coverage |
 |---|---|
