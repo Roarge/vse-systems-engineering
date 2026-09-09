@@ -3,7 +3,7 @@ title: "SYSMOD in an ISO 15288 process landscape"
 slug: sysmod-iso15288-landscape
 type: reference
 layer: sysmod
-summary: Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO 29110 story
+summary: Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO/IEC 29110 story
 tags: [sysmod, iso15288, iso29110, process-coverage, compliance, boundary]
 sources:
   - citation: "Weilkiens, T. (2020). SYSMOD - The Systems Modeling Toolbox, 3rd edition. MBSE4U. Appendix A (Mapping ISO 15288 to SYSMOD)"

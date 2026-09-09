@@ -31,7 +31,7 @@ The plugin ships 28 skills in five groups.
 |---|---|
 | vse-companion-overview | Set the methodology lens and route to specialist skills (loads first in any VSE session) |
 | story-orchestrator | Open and advance user stories per §1 and §8.4–§8.5 (story branch, draft PR, StoryMeta lifecycle) |
-| release-orchestrator | Plan, baseline, and report on releases per §10 (story groups, baseline tag, ISO 29110 PM.4 closure) |
+| release-orchestrator | Plan, baseline, and report on releases per §10 (story groups, baseline tag, ISO/IEC 29110 PM.4 closure) |
 | change-request | Author and process Change Requests per §10.4.2 (PM.O3) |
 | project-plan | Author or revise the Project Plan, SEMP, Risk Register, CM Strategy, Disposal Approach per §10.3 |
 
@@ -49,8 +49,8 @@ The plugin ships 28 skills in five groups.
 | Skill | Purpose |
 |---|---|
 | project-setup | Bootstrap a VSE project per §8.3 layout, ask the rigour-profile question once, copy the methodology into the project, optional brownfield `engineering/` subdirectory |
-| project-audit | Audit project layout, story well-formedness, trace integrity, ISO 29110 artefact presence, hook installation, version drift (read-only apart from its audit report) |
-| attention-regime | Configure the ISO 29110 hook surface and install profile-scaled project-side git hooks (per `methodology/iso-29110-hooks-guide.md`) |
+| project-audit | Audit project layout, story well-formedness, trace integrity, ISO/IEC 29110 artefact presence, hook installation, version drift (read-only apart from its audit report) |
+| attention-regime | Configure the ISO/IEC 29110 hook surface and install profile-scaled project-side git hooks (per `methodology/iso-29110-hooks-guide.md`) |
 | session-journal | Manage cross-session continuity journal |
 | document-export | Export work products to docx, pptx, or pdf |
 
@@ -125,7 +125,7 @@ The tool surface for every subagent is restricted to `Read`, `Glob`, and `Grep`.
 
 The plugin's reference content sits in three surfaces:
 
-- **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
+- **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO/IEC 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
 - **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`. Each reference-bearing skill carries a generated routing table naming the pages it is expected to need (title, path, and a one-line read-when trigger) and reads those pages on demand with the Read tool, one page at a time. Nothing is concatenated and nothing is front-loaded. `wiki/INDEX.md` is the generated catalogue for anything a routing table does not cover.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
@@ -136,7 +136,7 @@ See `wiki/INDEX.md` for the page catalogue and totals (158 atomic pages across 1
 Knowledge is extracted from these sources, consulted in priority order:
 
 1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
-2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
+2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs. ISO/IEC 29110-5-6-2 is at FDIS stage and is expected to be published as an international standard in 2026.
 3. **PHAS-EAI framework**: Georgsen (2026) doctoral thesis, Georgsen (2023) on LLM peer review in VSE engineering, and Georgsen (2026) on guiding attention in purposeful human activity systems.
 4. **Galinier et al.** on SME engineering practices.
 5. **INCOSE SE Handbook 4e**, scaled for VSEs.
@@ -205,7 +205,7 @@ After adding the marketplace, you might need to restart Claude Code so it discov
 
 ### Hooks
 
-The plugin ships an ISO 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
+The plugin ships an ISO/IEC 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
 - **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status including the rigour profile, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up. Lifecycle hooks are advisory at every profile.
 - **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh`. They cover SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
@@ -229,7 +229,7 @@ Open the project directory in Claude Code. The `SessionStart` hook detects the `
 
 ### Demo walkthrough
 
-The `demo/smart-sensor/` directory contains a worked example: a Wi-Fi-connected environmental sensor with stakeholder and system stories, a resolved trade study, verification and validation cases, and the full ISO 29110 work-product set at the `standard` profile. It is the plugin's dogfood ground and is kept level with the shipped version by a CI check.
+The `demo/smart-sensor/` directory contains a worked example: a Wi-Fi-connected environmental sensor with stakeholder and system stories, a resolved trade study, verification and validation cases, and the full ISO/IEC 29110 work-product set at the `standard` profile. It is the plugin's dogfood ground and is kept level with the shipped version by a CI check.
 
 ## Versioning
 

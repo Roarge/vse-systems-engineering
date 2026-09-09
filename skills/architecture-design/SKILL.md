@@ -269,7 +269,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 |---|---|---|
 | AMBSE Architectural Design and Use Case Allocation | pages/ambse/ambse-architectural-design.md | Decomposing a selected architecture into subsystems, allocating requirements, and defining interfaces |
 | AMBSE Architectural Analysis and Five Architecture Views | pages/ambse/ambse-architecture-analysis.md | The two AMBSE architecture activities and the five architecture views that structure them |
-| AMBSE Architecture-Level V&V and ISO 29110 Mapping | pages/ambse/ambse-architecture-vv-and-iso29110.md | Architecture-level V&V across the three verification timeframes, and its mapping to ISO 29110 |
+| AMBSE Architecture-Level V&V and ISO/IEC 29110 Mapping | pages/ambse/ambse-architecture-vv-and-iso29110.md | Architecture-level V&V across the three verification timeframes, and its mapping to ISO/IEC 29110 |
 | AMBSE Interface Specification and Handoff to Downstream Engineering | pages/ambse/ambse-interfaces-and-handoff.md | Interfaces are the most critical architectural artefact for system integration |
 | AMBSE Trade Study Methodology | pages/ambse/ambse-trade-studies.md | Trade studies are the primary mechanism for making defensible architectural decisions |
 | Architectural Analysis and Trade Studies workflow (§6) | pages/methodology/architectural-analysis-workflow.md | Turning a System User Story set into a resolved architecture through trade studies, per §6 |

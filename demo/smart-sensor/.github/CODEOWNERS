@@ -1,6 +1,6 @@
 # CODEOWNERS for the Smart Sensor demo.
 #
-# Maps ISO 29110 roles (§10.11) to a single demo-owner identity.
+# Maps ISO/IEC 29110 roles (§10.11) to a single demo-owner identity.
 # A real project distributes these across the Work Team.
 
 # Project Manager (PJM)

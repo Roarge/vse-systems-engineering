@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4)"
 slug: iso29110-pm-task-checklists
 type: process
 layer: iso29110
-summary: Actionable task checklists for every ISO 29110 Project Management activity
+summary: Actionable task checklists for every ISO/IEC 29110 Project Management activity
 tags: [iso29110, pm, task-checklist, work-products]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Project Management task tables."
@@ -29,7 +29,7 @@ referenced_by: [project-setup, release-orchestrator]
 - PM.4 Project Closure
 - See also
 
-Actionable task checklists for every ISO 29110 Project Management
+Actionable task checklists for every ISO/IEC 29110 Project Management
 activity. Each task lists its responsible roles, and each phase
 declares the work products created and used. Use these checklists
 to generate project-specific TASKS.md files and to track progress

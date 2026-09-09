@@ -83,7 +83,7 @@ scaffolded only when the project needs them.
 | Package | Purpose | Source |
 |---|---|---|
 | `{{sc}}_Actors` | Actor part defs, external systems, operators | Cookbook 2021 Fig 1.35 |
-| `{{sc}}_StakeholderNeeds` | Stakeholder needs with `subject` pointing at the system of interest | ASE 2016 Fig 3.13, ISO 29110 SR.2.1 |
+| `{{sc}}_StakeholderNeeds` | Stakeholder needs with `subject` pointing at the system of interest | ASE 2016 Fig 3.13, ISO/IEC 29110 SR.2.1 |
 | `{{sc}}_UseCases` | Use cases and use case diagrams | Cookbook 2021 Fig 1.35 |
 | `{{sc}}_Requirements` | System requirements with `satisfy` links to stakeholder needs | ASE 2016 Fig 3.13 |
 | `{{sc}}_FunctionalAnalysis` | One nested package per use case analysis | ASE 2016 Fig 3.13 |
@@ -91,7 +91,7 @@ scaffolded only when the project needs them.
 | `{{sc}}_ArchDesign` | The selected architecture, one nested package per subsystem | ASE 2016 Fig 3.13 |
 | `{{sc}}_Interfaces` | Logical interfaces and the logical data schema | ASE 2016 Fig 3.13 |
 | `{{sc}}_Verification` | Verification cases with `verify` links | Plugin traceability chain |
-| `{{sc}}_Risks` | Risk register with `RiskInfo` metadata applied | ISO 29110 PM.O5, PM.1.11 |
+| `{{sc}}_Risks` | Risk register with `RiskInfo` metadata applied | ISO/IEC 29110 PM.O5, PM.1.11 |
 
 The short-code prefix `{{sc}}_` is the namespace-hygiene
 discipline. A VSE project for a hydrogen sensor uses `HS_Actors`,

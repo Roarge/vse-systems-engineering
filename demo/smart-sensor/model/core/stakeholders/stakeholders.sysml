@@ -7,16 +7,19 @@
 
 package SmartSensor_Stakeholders {
 
-    // Customer-facing user who reads dashboard data and acknowledges
-    // alerts. Interacting stakeholder, appears as actor in §3.
-    part def Operator;
+    part def Operator {
+        doc /* Customer-facing user who reads dashboard data and acknowledges
+               alerts. Interacting stakeholder, appears as actor in §3. */
+    }
 
-    // Field technician who installs the device, calibrates it, and
-    // services it. Interacting stakeholder, appears as actor in §3.
-    part def MaintenanceTechnician;
+    part def MaintenanceTechnician {
+        doc /* Field technician who installs the device, calibrates it, and
+               services it. Interacting stakeholder, appears as actor in §3. */
+    }
 
-    // External authority. Non-interacting stakeholder, holds
-    // concerns about data retention and equipment certification.
-    // Does not appear as actor in §3.
-    part def Regulator;
+    part def Regulator {
+        doc /* External authority. Non-interacting stakeholder, holds
+               concerns about data retention and equipment certification.
+               Does not appear as actor in §3. */
+    }
 }

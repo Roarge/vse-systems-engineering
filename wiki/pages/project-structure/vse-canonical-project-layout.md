@@ -66,7 +66,7 @@ directory.
 |---|---|
 | `.lsp.json` | Syside language server config |
 | `syside.toml` | Syside formatting and linting |
-| `TASKS.md` | ISO 29110 task checklist |
+| `TASKS.md` | ISO/IEC 29110 task checklist |
 
 In brownfield mode these live under `engineering/`.
 
@@ -92,7 +92,7 @@ Required fields under `current_iteration`:
 - `mission` (string, action-first description)
 - `branch` (string, `vse/iter-NN-<slug>` form)
 - `status` (enum: `open`, `closing`, `merged`)
-- `centre_of_gravity` (list of ISO 29110 task IDs, see
+- `centre_of_gravity` (list of ISO/IEC 29110 task IDs, see
   [[methodology-overview]])
 - `opened` (ISO date string)
 - `macrocycle_target` (string, e.g. `v0.1.0`)

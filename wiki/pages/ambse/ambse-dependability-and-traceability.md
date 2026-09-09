@@ -98,7 +98,7 @@ INCOSE) see [[requirements-traceability-and-attributes]].
 
 ## VSE requirements modelling workflow
 
-Step-by-step procedure combining AMBSE with ISO 29110 SR.2:
+Step-by-step procedure combining AMBSE with ISO/IEC 29110 SR.2:
 
 1. **Identify stakeholders** using the 16-type checklist (see
    [[ambse-requirements-as-models]]), map to named people.

@@ -17,7 +17,7 @@ referenced_by: []
 
 A **glossary** page carries a set of term definitions scoped to a single
 layer or concern. Use this type for term clusters that belong together
-(SysML 2.0 behaviour vocabulary, ISO 29110 roles, PHAS-EAI constructs),
+(SysML 2.0 behaviour vocabulary, ISO/IEC 29110 roles, PHAS-EAI constructs),
 not for isolated single terms.
 
 ## When to use this type

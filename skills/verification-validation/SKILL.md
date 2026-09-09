@@ -9,7 +9,7 @@ user-invocable: true
 
 If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
-This skill owns the discipline of binding acceptance criteria to executable cases and turning the resulting `verification def` set into the IVV Plan, the IVV Procedures, and the Verification and Validation Reports specified by ISO 29110.
+This skill owns the discipline of binding acceptance criteria to executable cases and turning the resulting `verification def` set into the IVV Plan, the IVV Procedures, and the Verification and Validation Reports specified by ISO/IEC 29110.
 
 The methodology distinguishes two activities that share the SysML v2 `verification def` syntax. *Verification* asks whether the system, as modelled, meets its system stories per §5.4.6. *Validation* asks whether the realised system meets stakeholder intent per §4.3.6. Both produce `verification def` instances. The distinction lies in which acceptance the `objective { verify ... }` clause binds, and in which folder the file lives.
 

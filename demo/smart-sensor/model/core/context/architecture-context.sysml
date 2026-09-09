@@ -17,17 +17,17 @@ package SmartSensor_Context {
         port cloud       : CloudIngestPort;
     }
 
-    // External system actor: the operator dashboard delivered by
-    // the cloud service. The Operator interacts with the system
-    // through this dashboard.
     part def CloudDashboard {
+        doc /* External system actor: the operator dashboard delivered by
+               the cloud service. The Operator interacts with the system
+               through this dashboard. */
         port operatorPort : DashboardPort;
         port mqttIngest   : MqttIngestPort;
     }
 
-    // Environmental effect: the deployment-site climate the device
-    // measures.
     part def AmbientClimate {
+        doc /* Environmental effect: the deployment-site climate the device
+               measures. */
         attribute siteTemperature : TemperatureCelsius;
         attribute siteHumidity    : RelativeHumidity;
     }

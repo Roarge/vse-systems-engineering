@@ -1,6 +1,6 @@
 ---
 name: attention-regime
-description: Configure the ISO 29110 hook surface and install the project-side git hooks at the project rigour profile.
+description: Configure the ISO/IEC 29110 hook surface and install the project-side git hooks at the project rigour profile.
 when_to_use: Use when setting up environmental hooks, installing pre-commit, configuring `.iso-config.yaml`, choosing or changing a rigour profile, overriding a single gate disposition, wiring `core.hooksPath`, or reviewing why a hook fired.
 user-invocable: true
 ---
@@ -17,7 +17,7 @@ This skill has read-write behaviour. It writes into the user project under `.git
 
 ## When This Skill Triggers
 
-- The user asks to "set up hooks", "install pre-commit", "configure ISO 29110 hooks", "install project hooks", or "wire core.hooksPath".
+- The user asks to "set up hooks", "install pre-commit", "configure ISO/IEC 29110 hooks", "install project hooks", or "wire core.hooksPath".
 - The user asks to change the rigour profile, tighten one gate, or loosen one gate.
 - The user asks for a hook health check or asks why a hook is firing.
 - `@project-setup` routes here once scaffolding completes.

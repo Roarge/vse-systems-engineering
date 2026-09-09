@@ -126,7 +126,7 @@ mechanisms:
    gap between what the standard requires and what teams
    actually do.
 3. **Machine-readable traceability (H14) supports quality
-   evidence.** ISO 29110 certification requires documented
+   evidence.** ISO/IEC 29110 certification requires documented
    evidence of process execution. SysML 2.0 models and automated
    checks generate this evidence as a by-product of normal work,
    rather than as separate documentation effort.
@@ -136,7 +136,7 @@ mechanisms:
    toolchain, designed reserve compensates for the expertise gap
    without requiring additional hires.
 5. **Patterned Practices translate process into action.** They
-   function as implementation guides that convert ISO 29110
+   function as implementation guides that convert ISO/IEC 29110
    activity descriptions into operational routines suited to the
    team context.
 

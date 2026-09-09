@@ -1,6 +1,6 @@
 # CODEOWNERS for {{PROJECT_NAME}}
 #
-# Maps ISO 29110 roles (§10.11 of the methodology) to git identities.
+# Maps ISO/IEC 29110 roles (§10.11 of the methodology) to git identities.
 # Multiple roles per identity are permitted and expected at VSE scale.
 # A single CODEOWNERS line can list multiple owners when a path is
 # jointly owned.

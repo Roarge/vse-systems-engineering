@@ -47,7 +47,7 @@ Rule 7 of the well-formedness rules in §2.6 is a methodology-level instruction 
 - Such artefacts may be added only on explicit human request, with explicit confirmation of intent.
 - The default agent posture is forward-going work.
 
-Rule 7 is not enforced by CI. It is preserved through the project's `CLAUDE.md` (or equivalent project memory), through the `UserPromptSubmit` hook reminders documented in the ISO 29110 hooks guide, and through the refusal lists in the story orchestrator and the needs-and-requirements skills. Agents that detect a request which would violate rule 7 shall surface the conflict, ask for explicit confirmation of intent, and decline to proceed silently.
+Rule 7 is not enforced by CI. It is preserved through the project's `CLAUDE.md` (or equivalent project memory), through the `UserPromptSubmit` hook reminders documented in the ISO/IEC 29110 hooks guide, and through the refusal lists in the story orchestrator and the needs-and-requirements skills. Agents that detect a request which would violate rule 7 shall surface the conflict, ask for explicit confirmation of intent, and decline to proceed silently.
 
 ## Subject convention (§2.6 rule 5)
 

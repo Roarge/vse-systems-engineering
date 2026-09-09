@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 Roles and Work Products"
 slug: iso29110-roles-and-work-products
 type: reference
 layer: iso29110
-summary: The ISO 29110 roles and the PM and SR work products each role produces
+summary: The ISO/IEC 29110 roles and the PM and SR work products each role produces
 tags: [iso29110, roles, work-products, pm, sr]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Roles and Work Products tables."

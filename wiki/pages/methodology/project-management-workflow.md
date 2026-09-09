@@ -33,11 +33,11 @@ referenced_by: [project-plan, release-orchestrator, change-request, project-setu
 - Disposal Management Approach (§10.9)
 - Roles in the PM process (§10.11)
 
-The Project Management (PM) process is the ISO/IEC TR 29110-5-6-2:2014 §7 backbone of the methodology, adapted so that the Project Plan is a living artefact under git version control, the Progress Status Record advances at iteration cadence rather than at fixed phase gates, and Change Requests take the shape of pull requests. The activities themselves match ISO 29110 PM.1 to PM.4 in name and purpose, and produce the artefact set required by PM.O1 to PM.O8. See [[methodology-overview]] for how PM sits alongside the technical activities, [[story-branch-pr-workflow]] for the git-execution discipline that PM.2 rides on, and [[iso-29110-compliance-mapping]] for the per-task evidence trail.
+The Project Management (PM) process is the ISO/IEC TR 29110-5-6-2:2014 §7 backbone of the methodology, adapted so that the Project Plan is a living artefact under git version control, the Progress Status Record advances at iteration cadence rather than at fixed phase gates, and Change Requests take the shape of pull requests. The activities themselves match ISO/IEC 29110 PM.1 to PM.4 in name and purpose, and produce the artefact set required by PM.O1 to PM.O8. See [[methodology-overview]] for how PM sits alongside the technical activities, [[story-branch-pr-workflow]] for the git-execution discipline that PM.2 rides on, and [[iso-29110-compliance-mapping]] for the per-task evidence trail.
 
 ## Process structure (§10.2)
 
-PM has four activities, in compliance with ISO 29110 §7.7.
+PM has four activities, in compliance with ISO/IEC 29110 §7.7.
 
 - **PM.1 Project Planning** produces the Project Plan and the initial Project Repository.
 - **PM.2 Project Plan Execution** implements the Plan, monitors progress, processes Change Requests, and maintains Meeting Records.
@@ -48,9 +48,9 @@ The activities are not strictly sequential. PM.1 establishes the baseline. PM.2 
 
 ## PM.1 Planning (§10.3)
 
-The Project Plan is a Markdown document committed to the repository at `docs/project-plan.md`. It is the canonical reference for scope, schedule, resources, and engineering discipline. Its structure follows the ISO 29110 PM.1 task list (Table 6) item by item, with the seventeen elements below.
+The Project Plan is a Markdown document committed to the repository at `docs/project-plan.md`. It is the canonical reference for scope, schedule, resources, and engineering discipline. Its structure follows the ISO/IEC 29110 PM.1 task list (Table 6) item by item, with the seventeen elements below.
 
-| Element | ISO 29110 task |
+| Element | ISO/IEC 29110 task |
 |---|---|
 | Reference to the SOW | PM.1.14 |
 | Objectives | PM.1.14 |
@@ -70,7 +70,7 @@ The Project Plan is a Markdown document committed to the repository at `docs/pro
 | Configuration Management Strategy | PM.1.13 |
 | Delivery Instructions | PM.1.2 |
 
-The Systems Engineering Management Plan (SEMP, ISO 29110 product 21) is either a top-level section of the Project Plan or a separate document at `docs/semp.md`. A minimal SEMP states the methodology and version, the engineering tools, the engineering interfaces with adjacent projects and certifying authorities, the mission assurance and review cadence, and the Technical Performance Management measure set.
+The Systems Engineering Management Plan (SEMP, ISO/IEC 29110 product 21) is either a top-level section of the Project Plan or a separate document at `docs/semp.md`. A minimal SEMP states the methodology and version, the engineering tools, the engineering interfaces with adjacent projects and certifying authorities, the mission assurance and review cadence, and the Technical Performance Management measure set.
 
 Plan acceptance (§10.3.4) reuses the same review and merge discipline as any other artefact. The Plan is authored on a feature branch, opened as a pull request that includes a completeness checklist derived from the seventeen elements, reviewed by Acquirer and Stakeholders, passed through CI lint, squash-merged to `main`, and tagged on the merge commit as `plan-baseline-vN.M`. Subsequent revisions follow the Change Request workflow with a new tag on each acceptance.
 
@@ -90,7 +90,7 @@ Plan acceptance (§10.3.4) reuses the same review and merge discipline as any ot
 
 The Issue thread is the Change Request artefact. The PR thread is the implementation record. Both are preserved indefinitely as audit trail. Change Requests against baselined artefacts require explicit Acquirer agreement recorded in the Issue before the implementing PR is merged.
 
-**Meeting Records (§10.4.3).** Meeting Records (ISO 29110 product 10) land at `docs/meetings/<YYYY-MM-DD>-<topic>.md` with purpose, attendees, date and place, reference to previous minutes, what was accomplished, issues raised, open issues, agreements, and next meeting. Asynchronous PR reviews count as Meeting Records when they involve substantive Acquirer or Stakeholder agreement, in which case the PR URL plus a brief summary is sufficient.
+**Meeting Records (§10.4.3).** Meeting Records (ISO/IEC 29110 product 10) land at `docs/meetings/<YYYY-MM-DD>-<topic>.md` with purpose, attendees, date and place, reference to previous minutes, what was accomplished, issues raised, open issues, agreements, and next meeting. Asynchronous PR reviews count as Meeting Records when they involve substantive Acquirer or Stakeholder agreement, in which case the PR URL plus a brief summary is sufficient.
 
 **Configuration Management execution (§10.4.4).** PM.2.5 implements the CM Strategy of §10.8. State transitions of items under configuration are events visible in git history. Repository management and recovery testing (PM.2.6 and PM.2.7) are git-native, with continuous mirroring to a backup remote and a periodic restore test from that mirror into a scratch clone.
 

@@ -9,28 +9,30 @@ engineering — Lifecycle profiles for Very Small Entities (VSEs) — Part
 5‑6‑2: Systems engineering — Management and engineering guide: Generic
 profile group: Basic profile*. It provides:
 
-- the objective-by-objective coverage matrix for both ISO 29110
+- the objective-by-objective coverage matrix for both ISO/IEC 29110
   processes (Project Management and System Definition and Realization);
-- the artefact mapping from our SysML v2 model elements to ISO 29110
+- the artefact mapping from our SysML v2 model elements to ISO/IEC 29110
   product types;
 - the role mapping;
 - a gap analysis with stated remediations;
 - the lifecycle interpretation that reconciles our iteration-driven,
-  user-story-first approach with the ISO 29110 process structure.
+  user-story-first approach with the ISO/IEC 29110 process structure.
 
-The methodology is not a literal restatement of ISO 29110. It uses
-ISO 29110 as a normative reference for the process and artefact set
+The methodology is not a literal restatement of ISO/IEC 29110. It uses
+ISO/IEC 29110 as a normative reference for the process and artefact set
 that a VSE-scale systems engineering effort shall produce. Our
 contribution is the user-story-first, model-driven realisation of
 those obligations in SysML v2.
 
 ## 9.2 Scope of compliance
 
-ISO 29110‑5‑6‑2 covers the systems engineering lifecycle from project
-initiation through disposal. This methodology covers a defined subset
-of that lifecycle. The boundary is:
+ISO/IEC TR 29110-5-6-2 covers two processes, Project Management (PM.1
+to PM.4) and System Definition and Realisation (SR.1 to SR.6), from
+project planning to product delivery. It does not cover the full life
+cycle of ISO/IEC/IEEE 15288:2023. This methodology covers a defined
+subset of the two processes. The boundary is:
 
-| ISO 29110 activity | Methodology coverage |
+| ISO/IEC 29110 activity | Methodology coverage |
 |---|---|
 | PM.1 Project Planning | §10 (full) |
 | PM.2 Project Plan Execution | §10 + §8 (full) |
@@ -78,11 +80,11 @@ construction and delivery process appropriate to its product type.
 
 ## 9.5 Artefact mapping
 
-The methodology produces SysML v2 model elements; ISO 29110 specifies
+The methodology produces SysML v2 model elements; ISO/IEC 29110 specifies
 information products. Many ISO products are *generated* from the model
 rather than authored separately. The mapping:
 
-| ISO 29110 product | Source in methodology | Form |
+| ISO/IEC 29110 product | Source in methodology | Form |
 |---|---|---|
 | Statement of Work | Project initiation; outside the formal model | Markdown / customer-supplied document |
 | Project Plan | §10.3 | Markdown document referencing model packages |
@@ -120,7 +122,7 @@ rather than authored separately. The mapping:
 
 ## 9.6 Role mapping
 
-| ISO 29110 role | Methodology equivalent | Notes |
+| ISO/IEC 29110 role | Methodology equivalent | Notes |
 |---|---|---|
 | Acquirer (ACQ) | Stakeholder typed by part def in `core/stakeholders/`, distinguished by participation in PM/PR review | Distinguished operationally, not as a separate type |
 | Stakeholder (STK) | Any `part def` in `core/stakeholders/`; also actors via §3 | One-to-one |
@@ -132,7 +134,7 @@ rather than authored separately. The mapping:
 | Supplier (SUP) | Out of scope; engaged at handoff for purchased system elements | — |
 | Work Team (WT) | Aggregate role: SYS + DES + IVV (+ DEV/SUP when in scope) | Used in PM tasks |
 
-ISO 29110 emphasises that "several roles may be played by a single
+ISO/IEC 29110 emphasises that "several roles may be played by a single
 person and one role may be assumed by several persons." The
 methodology preserves this: in a small VSE the PJM, SYS, and DES roles
 are routinely performed by one person; CODEOWNERS reflects the
@@ -142,7 +144,7 @@ distinct individual.
 ## 9.7 Gap analysis
 
 The methodology was originally drafted without explicit reference to
-ISO 29110. The compliance pass identifies the following gaps and
+ISO/IEC 29110. The compliance pass identifies the following gaps and
 their resolutions:
 
 | Gap | Resolution |
@@ -160,7 +162,7 @@ their resolutions:
 
 ## 9.8 Model-derived artefacts
 
-ISO 29110 expects certain artefacts as documents. The methodology is
+ISO/IEC 29110 expects certain artefacts as documents. The methodology is
 model-driven; several ISO documents are *generated* from the model
 rather than authored. The generators read SysML v2 relations and
 produce the document.
@@ -185,7 +187,7 @@ Two consequences:
   `tools/` (per §8.3) and is reviewed under the same PR discipline as
   the model.
 
-The Traceability Matrix in particular: ISO 29110 product description
+The Traceability Matrix in particular: ISO/IEC 29110 product description
 27 specifies it as *the* artefact documenting the relationship between
 engineering and IVV artefacts. In our methodology this is *not*
 authored — it is queried from the model. A typical render shows for
@@ -200,9 +202,9 @@ each requirement:
 The matrix is regenerated on every commit that touches the model
 (§9.10 hook automation).
 
-## 9.9 Lifecycle interpretation — agile within ISO 29110
+## 9.9 Lifecycle interpretation — agile within ISO/IEC 29110
 
-ISO 29110‑5‑6‑2 §6 explicitly states the Basic Profile is intended to
+ISO/IEC 29110‑5‑6‑2 §6 explicitly states the Basic Profile is intended to
 be used with "any lifecycles such as: waterfall, iterative,
 incremental, evolutionary or agile." It is methodology-neutral. The
 compliance question is therefore *not* whether our iterative
@@ -237,14 +239,14 @@ This methodology meets the objectives as follows:
   cases (§9.10 hooks); execution-time V&V occurs at construction
   (out of scope).
 
-ISO 29110 does not require "all requirements baselined before any
+ISO/IEC 29110 does not require "all requirements baselined before any
 design" — it requires that each requirement, when present, is
 analysed, approved, baselined, and traced. Iterative authoring is
 fully consistent with this.
 
 ## 9.10 Compliance automation
 
-The methodology is designed for ISO 29110 compliance to be
+The methodology is designed for ISO/IEC 29110 compliance to be
 mechanically enforced rather than periodically audited. The set of
 hooks specified in `iso-29110-hooks-guide.md` covers:
 
@@ -280,19 +282,19 @@ required retention period:
 
 These are operational concerns met by standard repository hygiene
 (disabling force-push on `main`, retaining CI logs, etc.); they are
-not specific to ISO 29110 but are *prerequisites* for using a git
+not specific to ISO/IEC 29110 but are *prerequisites* for using a git
 repository as the audit record.
 
 ## 9.12 Limitations of this compliance claim
 
 This section documents *methodology* compliance — it asserts that a
 project executed in accordance with §0–§8 and §10 can satisfy the
-ISO 29110‑5‑6‑2 Basic Profile objectives within the scope declared in
+ISO/IEC 29110‑5‑6‑2 Basic Profile objectives within the scope declared in
 §9.2. It does *not*:
 
 - guarantee that any specific project's artefacts are ISO-compliant
   at any given moment;
-- substitute for an ISO 29110 assessment per ISO/IEC TR 29110‑3;
+- substitute for an ISO/IEC 29110 assessment per ISO/IEC TR 29110‑3;
 - cover the parts of the standard outside the scope of §9.2 (notably
   SR.4 Construction and SR.6 Product Delivery).
 

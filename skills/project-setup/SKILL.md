@@ -1,7 +1,7 @@
 ---
 name: project-setup
 description: Bootstrap a new VSE systems engineering project per the methodology §8 layout. Enters Plan Mode before any file system change.
-when_to_use: Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding, placing work under an engineering/ subdirectory, or producing an ISO 29110 compliant layout.
+when_to_use: Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding, placing work under an engineering/ subdirectory, or producing an ISO/IEC 29110 compliant layout.
 user-invocable: true
 ---
 
@@ -21,7 +21,7 @@ Mode is detected automatically in Step 0.
 ## When This Skill Triggers
 
 - The user runs `/vse-setup`.
-- The user asks to "bootstrap a new project", "scaffold a VSE project", "start a new MBSE project", "set up an ISO 29110 project layout", or "VSE-ify an existing repo".
+- The user asks to "bootstrap a new project", "scaffold a VSE project", "start a new MBSE project", "set up an ISO/IEC 29110 project layout", or "VSE-ify an existing repo".
 - `vse-companion-overview` routes here when no `methodology/` folder is present at the project root or under the chosen engineering root.
 
 ## Operating Mode and Prerequisites
@@ -116,12 +116,12 @@ Create or extend the following at `<PROJECT_ROOT>`:
 - `CHANGELOG.md`. Greenfield writes a fresh empty Keep-a-Changelog skeleton. Brownfield leaves any existing file alone.
 - `.github/pull_request_template.md`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`. Embeds the §8.6 review checklists.
 - `.github/CODEOWNERS`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/CODEOWNERS` (created in Phase 7) as a placeholder. The user customises it later.
-- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the five edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
+- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the five edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO/IEC 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
   1. Substitute the `{{PLUGIN_VERSION}}` placeholder with the installed plugin version read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, so `@project-audit` can detect version drift later.
   2. Set `project_profile` to the tier chosen in Step 1.
   3. Set `baselined_paths` to that tier's default from the §0.10.3 obligation table. The template ships the `standard` list and carries the other two as comments. `light` is the empty list `[]`, which keeps the Change Request machinery dormant. `full` is the five-entry list. `methodology/` is deliberately absent at every tier.
   4. Set `storymeta.required_fields` to that tier's default: `[status]` at `light`, `[status, priority]` at `standard`, `[points, priority, status]` at `full`.
-  5. Leave the `renderers:` block active with the three keys the template ships, matching the three scripts copied to `<ENG_ROOT>/tools/render/` in the bullet below. The three commented keys stay commented, because those scripts do not ship yet. One exception: when `<ENG_ROOT>` is not `<PROJECT_ROOT>`, comment the block out and note it in the tailoring record. The post-merge hook resolves renderer paths from the project root and rejects any path that does not start with `tools/render/`, so a scaffold under `engineering/` has no path that both satisfies the constraint and reaches the scripts. The project regenerates by running the scripts from `<ENG_ROOT>` until that is resolved.
+  5. Leave the `renderers:` block active with the three keys the template ships, matching the three scripts copied to `<ENG_ROOT>/tools/render/` in the bullet below. The three commented keys stay commented, because those scripts do not ship yet. The block stays active in both layouts. The post-merge hook resolves renderer paths from the directory that holds this file, that is `<ENG_ROOT>`, and rejects any path that does not start with `tools/render/`, so the shipped paths reach the scripts whether `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`.
 
   Leave the commented `gate_overrides` block commented. A project raises or lowers a single gate later by uncommenting one key, and an override written at setup that nobody asked for is a surprise the engineer meets at their first blocked commit.
 - `tools/render/`. Copy all four files from `${CLAUDE_PLUGIN_ROOT}/templates/tools/render/` to `<ENG_ROOT>/tools/render/` and set the executable bit on each. The three renderer scripts (`traceability-matrix.py`, `stakeholder-reqs-doc.py`, `system-reqs-doc.py`) are the entries named in the `renderers:` block, and `sysml_model.py` is the shared model reader they import. They are invoked with no arguments from the directory that holds `model/`, they discover the model per the `model/` then `engineering/model/` convention, and they write to `docs/generated/`. They need Python 3 and nothing else. This populates the §9.8 renderer half of `tools/`, which Step 7 otherwise leaves for the project to fill.
@@ -303,7 +303,7 @@ Create the following at `<ENG_ROOT>`:
 
 - `sketches/`. Empty. Holds diagrams, hand sketches, and images per §8.2.
 - `tools/`. Already carries `tools/render/` from Step 4. Add a `README.md` listing the renderer and lint scripts described in `methodology/iso-29110-hooks-guide.md` §3.1, recording the three shipped renderers as installed and the lint scripts as deferred.
-- `docs/`. Scaffold the ISO 29110 work products and supporting folders. **The artefact set is scaled by the profile chosen in Step 1**, per the §0.10.3 obligation table. Write the artefacts marked for the project's tier and omit the rest. An omitted artefact is available on demand later through the skill that owns it, so omission costs the project nothing except the empty file it does not have to look at.
+- `docs/`. Scaffold the ISO/IEC 29110 work products and supporting folders. **The artefact set is scaled by the profile chosen in Step 1**, per the §0.10.3 obligation table. Write the artefacts marked for the project's tier and omit the rest. An omitted artefact is available on demand later through the skill that owns it, so omission costs the project nothing except the empty file it does not have to look at.
 
   | Artefact | Home section | light | standard | full |
   |---|---|---|---|---|
@@ -398,13 +398,13 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Page | Path | Read when |
 |---|---|---|
 | ISO/IEC 29110 VSE Systems Engineering Profile Overview | pages/iso29110/iso29110-overview.md | What ISO/IEC TR 29110-5-6-2 covers and how the Basic Profile applies to a VSE |
-| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO 29110 process gates |
-| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
-| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO 29110 Project Management activity |
-| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO 29110 roles and the PM and SR work products each role produces |
-| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO 29110 System Definition and Realization activities SR.1 to SR.6 |
-| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO 29110 System Definition and Realization activity |
-| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO 29110 phase to the markdown template file it produces |
+| ISO/IEC 29110 Phase Gate Checklists | pages/iso29110/iso29110-phase-gates.md | Phase-to-phase transition checklists for the ISO/IEC 29110 process gates |
+| ISO/IEC 29110 Project Management Process (PM.1 to PM.4) | pages/iso29110/iso29110-pm-process.md | The four ISO/IEC 29110 Project Management activities PM.1 to PM.4, with purpose, inputs, and outputs |
+| ISO/IEC 29110 PM Task Checklists (PM.1 to PM.4) | pages/iso29110/iso29110-pm-task-checklists.md | Actionable task checklists for every ISO/IEC 29110 Project Management activity |
+| ISO/IEC 29110 Roles and Work Products | pages/iso29110/iso29110-roles-and-work-products.md | The ISO/IEC 29110 roles and the PM and SR work products each role produces |
+| ISO/IEC 29110 System Definition and Realization Process (SR.1 to SR.6) | pages/iso29110/iso29110-sr-process.md | The six ISO/IEC 29110 System Definition and Realization activities SR.1 to SR.6 |
+| ISO/IEC 29110 SR Task Checklists (SR.1 to SR.6) | pages/iso29110/iso29110-sr-task-checklists.md | Actionable task checklists for every ISO/IEC 29110 System Definition and Realization activity |
+| ISO/IEC 29110 Phase to Template Mapping | pages/iso29110/iso29110-template-mapping.md | Quick reference linking each ISO/IEC 29110 phase to the markdown template file it produces |
 | Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
 | ISO/IEC TR 29110-5-6-2 compliance mapping | pages/methodology/iso-29110-compliance-mapping.md | The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014 |
 | Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |

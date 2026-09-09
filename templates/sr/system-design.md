@@ -129,7 +129,7 @@ System Function
 <!-- VSE-TASK: SR.3.7 -->
 
 > If applicable, provide a preliminary outline of the user manual. This is
-> optional per ISO 29110 but recommended.
+> optional per ISO/IEC 29110 but recommended.
 
 ## 6. Verification Record
 

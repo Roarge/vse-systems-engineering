@@ -71,7 +71,7 @@ architectural-analysis context see [[ambse-architecture-analysis]].
   lightweight decision record (the `@architecture-design` skill
   carries an ADR template).
 
-The Justification Document is also the ISO 29110 PM.3.3 output
+The Justification Document is also the ISO/IEC 29110 PM.3.3 output
 (see [[iso29110-pm-task-checklists]]); a trade study is one of
 the events that updates it.
 

@@ -32,11 +32,11 @@ referenced_by: [project-setup, project-audit, release-orchestrator, project-plan
 - Compliance automation (§9.10)
 - Limitations of the compliance claim (§9.12)
 
-The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014. It covers Project Management in full and the SR.1 to SR.3 activities of System Definition and Realization in full, plus the V&V *specification* portion of SR.5. SR.4 (Construction) and SR.6 (Product Delivery) are out of scope and shall be supplied by a separate, project-determined process. The methodology is a user-story-first, model-driven realisation of ISO 29110 obligations expressed in SysML v2, not a literal restatement of the standard. See [[methodology-overview]] for the broader frame.
+The VSE methodology declares partial compliance with the Basic Profile of ISO/IEC TR 29110-5-6-2:2014. It covers Project Management in full and the SR.1 to SR.3 activities of System Definition and Realization in full, plus the V&V *specification* portion of SR.5. SR.4 (Construction) and SR.6 (Product Delivery) are out of scope and shall be supplied by a separate, project-determined process. The methodology is a user-story-first, model-driven realisation of ISO/IEC 29110 obligations expressed in SysML v2, not a literal restatement of the standard. See [[methodology-overview]] for the broader frame.
 
 ## Scope of compliance (§9.2)
 
-| ISO 29110 activity | Methodology coverage |
+| ISO/IEC 29110 activity | Methodology coverage |
 |---|---|
 | PM.1 Project Planning | Full |
 | PM.2 Project Plan Execution | Full |
@@ -76,9 +76,9 @@ All eight PM objectives are satisfied in full:
 
 ## Artefact mapping (§9.5)
 
-The methodology produces SysML v2 model elements. ISO 29110 specifies information products. Many ISO products are *generated* from the model rather than authored separately, which is a deliberate property of the methodology rather than an exception:
+The methodology produces SysML v2 model elements. ISO/IEC 29110 specifies information products. Many ISO products are *generated* from the model rather than authored separately, which is a deliberate property of the methodology rather than an exception:
 
-| ISO 29110 product | Source in methodology | Form |
+| ISO/IEC 29110 product | Source in methodology | Form |
 |---|---|---|
 | Project Plan | §10.3 | Markdown referencing model packages |
 | Stakeholders Requirements Specification | Stakeholder story register and concerns | SysML v2 packages, rendered to Markdown |
@@ -101,7 +101,7 @@ The Stakeholders Requirements Spec, System Requirements Spec, Justification Docu
 
 ## Lifecycle interpretation (§9.9)
 
-ISO 29110-5-6-2 §6 states that the Basic Profile is intended to be used with any lifecycle, including waterfall, iterative, incremental, evolutionary, and agile. The standard is methodology-neutral. The compliance question is therefore whether the ISO process objectives are met across iterations, not whether iteration is permitted.
+ISO/IEC 29110-5-6-2 §6 states that the Basic Profile is intended to be used with any lifecycle, including waterfall, iterative, incremental, evolutionary, and agile. The standard is methodology-neutral. The compliance question is therefore whether the ISO process objectives are met across iterations, not whether iteration is permitted.
 
 The methodology meets the objectives across iterations as follows:
 
@@ -110,11 +110,11 @@ The methodology meets the objectives across iterations as follows:
 - Each release tags a baselined snapshot. Tagged releases are System Configurations in ISO terms.
 - **SR.O3** is performed at each iteration that completes a trade study or decomposition. The resolved architecture is the baseline, updated through Change Requests when subsequent iterations reopen a decision.
 
-ISO 29110 does not require all requirements to be baselined before any design, only that each requirement, when present, is analysed, approved, baselined, and traced. Iterative authoring is fully consistent with the standard. See [[story-branch-pr-workflow]] and [[project-management-workflow]] for the operational shape of this loop.
+ISO/IEC 29110 does not require all requirements to be baselined before any design, only that each requirement, when present, is analysed, approved, baselined, and traced. Iterative authoring is fully consistent with the standard. See [[story-branch-pr-workflow]] and [[project-management-workflow]] for the operational shape of this loop.
 
 ## Compliance automation (§9.10)
 
-ISO 29110 compliance is mechanically enforced rather than periodically audited. The hook set documented in `iso-29110-hooks-guide.md` covers:
+ISO/IEC 29110 compliance is mechanically enforced rather than periodically audited. The hook set documented in `iso-29110-hooks-guide.md` covers:
 
 - **Pre-commit gates** that, in the full profile, block commits violating artefact well-formedness, StoryMeta lifecycle rules, or Traceability Matrix consistency, with the former pre-push checks carried by CI contracts.
 - **Claude Code session and tool hooks** that nudge author and reviewer behaviour toward ISO-compliant authoring patterns, including Change Request creation before edits to baselined artefacts, V&V case authoring after story changes, and Meeting Record creation after synchronous reviews.
@@ -124,9 +124,9 @@ The hooks guide is the operational complement to this compliance section.
 
 ## Limitations of the compliance claim (§9.12)
 
-This section documents *methodology* compliance. It asserts that a project executed in accordance with the methodology can satisfy the ISO 29110 Basic Profile objectives within the scope declared above. It does *not*:
+This section documents *methodology* compliance. It asserts that a project executed in accordance with the methodology can satisfy the ISO/IEC 29110 Basic Profile objectives within the scope declared above. It does *not*:
 
 - guarantee that any specific project's artefacts are ISO-compliant at any given moment,
-- substitute for an ISO 29110 assessment per ISO/IEC TR 29110-3, or cover the parts of the standard outside the declared scope (notably SR.4 Construction and SR.6 Product Delivery).
+- substitute for an ISO/IEC 29110 assessment per ISO/IEC TR 29110-3, or cover the parts of the standard outside the declared scope (notably SR.4 Construction and SR.6 Product Delivery).
 
 A VSE seeking certification per ISO/IEC TR 29110-3 shall (1) adopt this methodology for SR.1 to SR.3 and PM, (2) extend it with a construction and delivery process appropriate to the product type, and (3) submit to formal assessment. Methodology compliance, project compliance, and formal assessment are three separate claims and shall not be conflated.

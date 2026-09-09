@@ -56,7 +56,7 @@ plugin. It exercises the installed plugin in a realistic story-driven
 AMBSE workflow against a small IoT sensor product: a Wi-Fi-connected
 environmental sensor reporting temperature and humidity to a cloud
 dashboard, with threshold alerts and in-field calibration. For the
-demo, one contributor fills every ISO 29110 role.
+demo, one contributor fills every ISO/IEC 29110 role.
 
 ## Project structure (per §8.3)
 
@@ -94,7 +94,7 @@ docs/
   decisions/                ADRs
   meetings/                 Meeting Records
   releases/                 Release plans
-.iso-config.yaml            ISO 29110 hook configuration
+.iso-config.yaml            ISO/IEC 29110 hook configuration
 ```
 
 ## SysML 2.0 naming conventions

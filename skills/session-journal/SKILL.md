@@ -89,7 +89,7 @@ Triggered when the engineer explicitly requests a progress save.
    - **Story**: the open story, taken from the current
      `story/<US_id>_<short>` branch name and confirmed against the matching
      story file. Record `(none)` when the work is not on a story branch
-   - **Activities**: which ISO 29110 sub-activities were worked on (use codes
+   - **Activities**: which ISO/IEC 29110 sub-activities were worked on (use codes
      like SR.2.3, PM.1.5, etc.)
    - **Summary**: 1-3 sentences describing what was accomplished
    - **Work products changed**: list file paths of created or modified work
@@ -163,7 +163,7 @@ sessions:
 
 ## Activity Code Reference
 
-When mapping conversation actions to ISO 29110 activity codes, use this
+When mapping conversation actions to ISO/IEC 29110 activity codes, use this
 reference:
 
 | Code | Activity |

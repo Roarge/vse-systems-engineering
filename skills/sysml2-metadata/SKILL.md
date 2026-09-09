@@ -231,7 +231,7 @@ the identify-assess-mitigate-monitor loop is flagged as a follow-up.
 See the `syside-core-api` and `syside-expression-evaluation` atomic pages
 under `wiki/pages/syside/` for the Automator API.
 
-### ISO 29110 Framing
+### ISO/IEC 29110 Framing
 
 PM.O5 (Risk identified and monitored) becomes a model query rather
 than a spreadsheet update. PM.1.11 writes the Risk Management
@@ -388,7 +388,7 @@ and baseline data that Automator can query and that
 baseline declared in `{{sc}}_CM`, and the tag message points back at
 Section 9 for the governance authority.
 
-### ISO 29110 Framing
+### ISO/IEC 29110 Framing
 
 PM.1.13 (Document the Configuration Management Strategy) writes the
 Project Plan Section 9 prose and additionally scaffolds the
@@ -485,7 +485,7 @@ delivery.
    `Baseline`, `VariantScope`, and `VerificationScope` from
    `VSE_Library` rather than redefine them.
 5. **Every `RiskInfo` application has a named owner and a status.**
-   An unowned or status-free risk is a silent debt under ISO 29110
+   An unowned or status-free risk is a silent debt under ISO/IEC 29110
    PM.3.1.
 6. **Every `ConfigItem` application names a `baselineId` that resolves
    to a `Baseline` item def in `{{sc}}_CM`.** An unresolvable

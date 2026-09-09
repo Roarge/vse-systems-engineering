@@ -3,7 +3,7 @@ title: "ISO/IEC 29110 Phase Gate Checklists"
 slug: iso29110-phase-gates
 type: process
 layer: iso29110
-summary: Phase-to-phase transition checklists for the ISO 29110 process gates
+summary: Phase-to-phase transition checklists for the ISO/IEC 29110 process gates
 tags: [iso29110, phase-gate, transition, checklist, pm, sr]
 sources:
   - citation: "ISO/IEC TR 29110-5-6-2:2014, Phase Gate transition criteria."

@@ -165,7 +165,7 @@ package VSE_Library {
     }
 
     // =================================================================
-    // Risk metadata (ISO 29110 PM.O5, PM.1.11, PM.2.3, PM.3.1)
+    // Risk metadata (ISO/IEC 29110 PM.O5, PM.1.11, PM.2.3, PM.3.1)
     // =================================================================
 
     metadata def RiskInfo {
@@ -184,7 +184,7 @@ package VSE_Library {
     }
 
     // =================================================================
-    // Configuration management metadata (ISO 29110 PM.1.13, PM.2.5)
+    // Configuration management metadata (ISO/IEC 29110 PM.1.13, PM.2.5)
     // =================================================================
 
     metadata def ConfigItem {

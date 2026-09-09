@@ -107,7 +107,7 @@ if [ -z "$ENG_ROOT" ]; then
         echo "  @sysml2-extension"
         echo ""
         echo "To upgrade this repository to a full VSE project (methodology"
-        echo "spec, ISO 29110 process backbone, story-driven workflow,"
+        echo "spec, ISO/IEC 29110 process backbone, story-driven workflow,"
         echo "traceability enforcement), run /vse-setup."
     fi
     exit 0

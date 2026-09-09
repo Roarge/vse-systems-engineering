@@ -7,7 +7,10 @@ Per methodology §10.3.
 - **Project:** Smart Sensor
 - **Acquirer:** dogfood (internal demo)
 - **Date created:** 2026-05-05
-- **Plan baseline:** `plan-baseline-v0.1` (initial)
+- **Plan baseline:** `plan-baseline-v0.1` (initial). The tag is not
+  present in this repository, because the demo is nested inside the
+  plugin repository and the tag would have to live in the plugin
+  repository.
 - **Plan owner:** Project Manager (PJM)
 
 ## Scope and product description
@@ -18,7 +21,7 @@ The Base Architecture (the parent product line's reference platform) is the ESP3
 
 ## Stakeholders and roles
 
-For the demo, one contributor fills every ISO 29110 role. In a real project, this section enumerates the Work Team members and lists which person holds which role. Roles per §10.11.
+For the demo, one contributor fills every ISO/IEC 29110 role. In a real project, this section enumerates the Work Team members and lists which person holds which role. Roles per §10.11.
 
 ## Tailoring record
 
@@ -28,6 +31,12 @@ Profile: standard. Tailoring per methodology §0.10 defaults, except
 (recorded 2026-08-13). The standard default baselines
 `docs/project-plan.md` alone, so the first two additions adopt
 full-profile items early and the last two are project-specific.
+
+`storymeta.required_fields` is `[points, priority, status]`, the
+full-profile value from §0.10.3 rather than the standard default
+`[status, priority]`, because every demo story carries an estimate and
+the demo is meant to exercise the complete StoryMeta form (recorded
+2026-09-09).
 
 ## Methodology reference
 
