@@ -74,6 +74,8 @@ Run from the project root, after `@project-setup` has scaffolded the repository.
 | `templates/github/document-export.yml` | `.github/workflows/document-export.yml` | no | no | yes (renders documents on release, never blocks) |
 | Branch protection on `main` | repository settings | not configured | recommended | required |
 
+At `standard` the copied `traceability-check.yml` is made advisory by uncommenting the `continue-on-error: true` line of its `Validate models` step, at `full` the line stays commented so the step blocks, which is what the matrix's advisory and blocking cells mean.
+
 `lib/` installs at every profile even where no installed hook reads it yet, so raising the profile later adds hook files only, with no second install step and no partial state.
 
 Set the scripts executable and activate:
