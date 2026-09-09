@@ -36,27 +36,56 @@ jobs:
             pandoc "$f" -o "build/${filename}.docx" --from markdown --to docx
           done
 
+      - name: Resolve the SysML toolchain
+        id: toolchain
+        run: |
+          # The same flat key the project-side hooks read: sysml_toolchain
+          # in .iso-config.yaml, absent means syside. No YAML library.
+          CONFIG=""
+          for candidate in .iso-config.yaml engineering/.iso-config.yaml; do
+              if [ -f "$candidate" ]; then CONFIG="$candidate"; break; fi
+          done
+          TOOLCHAIN=""
+          if [ -n "$CONFIG" ]; then
+              TOOLCHAIN=$(sed -n 's/^sysml_toolchain:[[:space:]]*//p' "$CONFIG" | head -n 1 | sed 's/[[:space:]]*#.*$//' | tr -d "\"' ")
+          fi
+          case "$TOOLCHAIN" in
+              syside|omg-pilot|opensysml) ;;
+              *) TOOLCHAIN=syside ;;
+          esac
+          echo "SysML toolchain: ${TOOLCHAIN}"
+          echo "toolchain=${TOOLCHAIN}" >> "$GITHUB_OUTPUT"
+          echo "VSE_SYSML_TOOLCHAIN=${TOOLCHAIN}" >> "$GITHUB_ENV"
+
       - name: Set up Java 21 (for diagrams)
+        if: steps.toolchain.outputs.toolchain == 'syside'
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Install Syside CLI
+        if: steps.toolchain.outputs.toolchain == 'syside'
         run: |
           mkdir -p ~/.local/bin
           # tar -xf syside-*.tar.xz -C ~/.local
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
         continue-on-error: true
 
       - name: Generate diagrams (Syside)
-        if: hashFiles('syside.toml') != ''
+        if: steps.toolchain.outputs.toolchain == 'syside' && (hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != '')
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
         run: |
           sudo apt-get install -y xvfb
-          xvfb-run -a syside viz view models/ --output-dir build/diagrams
+          MODEL_DIR=model
+          if [ -d engineering/model ]; then MODEL_DIR=engineering/model; fi
+          xvfb-run -a syside viz view "$MODEL_DIR/" --output-dir build/diagrams
         continue-on-error: true
+
+      - name: Generate diagrams (skipped)
+        if: steps.toolchain.outputs.toolchain != 'syside'
+        run: echo "Diagram generation skipped. ${{ steps.toolchain.outputs.toolchain }} has no diagram renderer in this workflow."
 
       - name: Upload artefacts
         uses: actions/upload-artifact@v4

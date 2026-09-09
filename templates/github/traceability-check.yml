@@ -30,33 +30,128 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve the SysML toolchain
+        id: toolchain
+        run: |
+          # The same flat key the project-side hooks read: sysml_toolchain
+          # in .iso-config.yaml, absent means syside. No YAML library.
+          CONFIG=""
+          for candidate in .iso-config.yaml engineering/.iso-config.yaml; do
+              if [ -f "$candidate" ]; then CONFIG="$candidate"; break; fi
+          done
+          TOOLCHAIN=""
+          if [ -n "$CONFIG" ]; then
+              TOOLCHAIN=$(sed -n 's/^sysml_toolchain:[[:space:]]*//p' "$CONFIG" | head -n 1 | sed 's/[[:space:]]*#.*$//' | tr -d "\"' ")
+          fi
+          case "$TOOLCHAIN" in
+              syside|omg-pilot|opensysml) ;;
+              *) TOOLCHAIN=syside ;;
+          esac
+          echo "SysML toolchain: ${TOOLCHAIN}"
+          echo "toolchain=${TOOLCHAIN}" >> "$GITHUB_OUTPUT"
+          echo "VSE_SYSML_TOOLCHAIN=${TOOLCHAIN}" >> "$GITHUB_ENV"
+
       - name: Set up Java 21
+        # Syside and the OMG pilot run on a JVM. OpenSysML is a static binary.
+        if: steps.toolchain.outputs.toolchain != 'opensysml'
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install Syside CLI
+      - name: Cache the OMG SysML v2 Pilot Implementation
+        # Installed for omg-pilot, and as the runner-side fallback for
+        # syside (a Solo licence does not cover CI). 126 MB, so cached.
+        if: steps.toolchain.outputs.toolchain != 'opensysml'
+        id: pilot-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/sysml-pilot
+          key: sysml-pilot-2026-07-jupyter-sysml-kernel-0.61.0
+
+      - name: Install the OMG SysML v2 Pilot Implementation (release 2026-07)
+        if: steps.toolchain.outputs.toolchain != 'opensysml' && steps.pilot-cache.outputs.cache-hit != 'true'
         run: |
-          # Download and extract syside CLI.
-          # Adjust the URL and version for your installation.
+          set -euo pipefail
+          PILOT_HOME="$HOME/.local/share/sysml-pilot"
+          mkdir -p "$PILOT_HOME"
+          curl -fsSL -o "$PILOT_HOME/jupyter-sysml-kernel-0.61.0.zip" \
+            https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation/releases/download/2026-07/jupyter-sysml-kernel-0.61.0.zip
+          # The release publishes no checksum file. Computed from the
+          # 126,125,572-byte artefact on 2026-09-09.
+          echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $PILOT_HOME/jupyter-sysml-kernel-0.61.0.zip" | sha256sum -c -
+          unzip -q -o "$PILOT_HOME/jupyter-sysml-kernel-0.61.0.zip" -d "$PILOT_HOME"
+          rm -f "$PILOT_HOME/jupyter-sysml-kernel-0.61.0.zip"
+
+      - name: Install OpenSysML v0.6.0
+        if: steps.toolchain.outputs.toolchain == 'opensysml'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/opensysml-linux-amd64.tar.gz \
+            https://github.com/Open-MBEE/OpenSysML/releases/download/v0.6.0/opensysml-linux-amd64.tar.gz
+          # From the release's SHA256SUMS.txt.
+          echo "15d4a2d12a0adaadcbb1ed53946061a113c793e60a9e159b790936938323fc38  /tmp/opensysml-linux-amd64.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf /tmp/opensysml-linux-amd64.tar.gz -C "$HOME/.local/bin" sysml sysml-lsp
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install Syside CLI
+        if: steps.toolchain.outputs.toolchain == 'syside'
+        run: |
+          # Download and extract the syside CLI. Adjust the URL and
+          # version for your licence. Without it the validation step
+          # falls back to the pilot installed above and says so.
           mkdir -p ~/.local/bin
           # tar -xf syside-*.tar.xz -C ~/.local
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Validate models (Syside)
-        if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
+      - name: Validate models
+        # One call site for all three toolchains: the library the
+        # pre-commit hook sources, in its executable form. It runs the
+        # recorded preference, falls back along the fixed order, and
+        # prints why. Blocking as written (full profile). A standard
+        # install makes it advisory by uncommenting continue-on-error.
+        # continue-on-error: true
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
-        run: syside check --warnings-as-errors --stats
-        continue-on-error: true
+          VSE_TC_TAG: ci
+        run: |
+          set -euo pipefail
+          LIB=""
+          for candidate in .githooks/lib/sysml-toolchain.sh hooks/lib/sysml-toolchain.sh; do
+              if [ -x "$candidate" ]; then LIB="$candidate"; break; fi
+          done
+          if [ -z "$LIB" ]; then
+              echo "::warning::.githooks/lib/sysml-toolchain.sh is not installed (run @attention-regime). Model validation skipped."
+              exit 0
+          fi
+          FILES=()
+          while IFS= read -r f; do
+              case "$f" in */sandbox/*|sandbox/*|*.draft.sysml|build/*) continue ;; esac
+              FILES+=("$f")
+          done < <(git ls-files -- '*.sysml')
+          if [ "${#FILES[@]}" -eq 0 ]; then
+              echo "No .sysml files tracked. Nothing to validate."
+              exit 0
+          fi
+          rc=0
+          "$LIB" validate "${FILES[@]}" || rc=$?
+          case "$rc" in
+              0) echo "Model validation clean (${#FILES[@]} files)." ;;
+              1) echo "::error::Model validation reported findings (see the lines above)."; exit 1 ;;
+              *) echo "::error::No SysML toolchain ran on the runner (see the reasons above)."; exit 1 ;;
+          esac
 
       - name: Check formatting (Syside)
-        if: hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != ''
+        if: steps.toolchain.outputs.toolchain == 'syside' && (hashFiles('syside.toml') != '' || hashFiles('engineering/syside.toml') != '')
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
         run: syside format --check
         continue-on-error: true
+
+      - name: Check formatting (skipped)
+        if: steps.toolchain.outputs.toolchain != 'syside'
+        run: echo "Formatting check skipped. ${{ steps.toolchain.outputs.toolchain }} has no formatter (only Syside ships one)."
 
       - name: Run project-side pre-commit checks
         # Invokes the project-side pre-commit hook from .githooks/, which
@@ -159,7 +254,7 @@ jobs:
           if git diff --exit-code -- "$ENG_ROOT/docs/generated/"; then
               echo "Derived artefacts are current."
           else
-              echo "::error::Derived artefacts under docs/generated/ are stale. Regenerate them with the scripts in tools/render/ and commit the result (methodology §9.8, hooks guide Contract 3)."
+              echo "::error::Derived artefacts under the engineering root's docs/generated/ are stale. Regenerate them with the scripts in the engineering root's tools/render/ and commit the result (methodology §9.8, hooks guide Contract 3)."
               exit 1
           fi
 
@@ -167,4 +262,4 @@ jobs:
         if: failure()
         run: |
           echo "::error::Model validation or traceability check failed."
-          echo "Run 'syside check' and '@traceability-guard' locally to identify and fix issues."
+          echo "Run '.githooks/lib/sysml-toolchain.sh validate <files>' and '@traceability-guard' locally to identify and fix issues."
