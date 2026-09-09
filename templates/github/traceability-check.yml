@@ -87,11 +87,19 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The directory that holds the config is the engineering root,
+          # which is either the repository root or engineering/ under a
+          # brownfield scaffold. Renderer paths, renderer working
+          # directory, and derived artefacts all resolve from there, as
+          # they do in the project-side post-merge hook.
           ISO_CONFIG=""
+          ENG_ROOT=""
           if [ -f ".iso-config.yaml" ]; then
               ISO_CONFIG=".iso-config.yaml"
+              ENG_ROOT="."
           elif [ -f "engineering/.iso-config.yaml" ]; then
               ISO_CONFIG="engineering/.iso-config.yaml"
+              ENG_ROOT="engineering"
           fi
 
           if [ -z "$ISO_CONFIG" ]; then
@@ -128,10 +136,12 @@ jobs:
                       continue
                       ;;
               esac
-              if [ -x "$renderer" ]; then
+              if [ -x "$ENG_ROOT/$renderer" ]; then
                   DREW=1
                   echo "Running ${renderer}"
-                  "$renderer"
+                  # The renderer discovers model/ relative to its working
+                  # directory, so run it from the engineering root.
+                  ( cd "$ENG_ROOT" && "./$renderer" )
               else
                   echo "::warning::Configured renderer ${renderer} is absent or not executable."
               fi
@@ -144,9 +154,9 @@ jobs:
 
           # Record any artefact that is new in this run, so that a first
           # rendering counts as a difference rather than passing unseen.
-          git add --intent-to-add -- docs/generated/ 2>/dev/null || true
+          git add --intent-to-add -- "$ENG_ROOT/docs/generated/" 2>/dev/null || true
 
-          if git diff --exit-code -- docs/generated/; then
+          if git diff --exit-code -- "$ENG_ROOT/docs/generated/"; then
               echo "Derived artefacts are current."
           else
               echo "::error::Derived artefacts under docs/generated/ are stale. Regenerate them with the scripts in tools/render/ and commit the result (methodology §9.8, hooks guide Contract 3)."

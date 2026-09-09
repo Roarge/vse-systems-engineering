@@ -15,12 +15,18 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-# Locate iso-config to find renderer paths.
+# Locate iso-config to find renderer paths. The directory that holds it
+# is the engineering root, which is either the project root or
+# engineering/ under a brownfield scaffold. Renderer paths, renderer
+# working directory, and derived artefacts all resolve from there.
 ISO_CONFIG=""
+ENG_ROOT=""
 if [ -f ".iso-config.yaml" ]; then
     ISO_CONFIG=".iso-config.yaml"
+    ENG_ROOT="."
 elif [ -f "engineering/.iso-config.yaml" ]; then
     ISO_CONFIG="engineering/.iso-config.yaml"
+    ENG_ROOT="engineering"
 fi
 
 if [ -z "$ISO_CONFIG" ]; then
@@ -58,16 +64,18 @@ while IFS= read -r renderer; do
             continue
             ;;
     esac
-    if [ -x "$renderer" ]; then
+    if [ -x "$ENG_ROOT/$renderer" ]; then
         DREW=1
-        # Run the renderer. Output goes to docs/generated/ by convention.
-        # The renderer is responsible for its own destination path.
-        "$renderer" > /dev/null 2>&1 || true
+        # Run the renderer from the engineering root, because it discovers
+        # model/ relative to its working directory. Output goes to
+        # docs/generated/ under that same directory by convention. The
+        # renderer is responsible for its own destination path.
+        ( cd "$ENG_ROOT" && "./$renderer" ) > /dev/null 2>&1 || true
     fi
 done <<< "$RENDERERS"
 
 if [ "$DREW" -eq 1 ]; then
-    if ! git diff --quiet -- docs/ 2>/dev/null; then
+    if ! git diff --quiet -- "$ENG_ROOT/docs/" 2>/dev/null; then
         echo "[post-merge] Derived artefacts regenerated. Commit the updates or run CI."
     else
         echo "[post-merge] Derived artefacts already current."
