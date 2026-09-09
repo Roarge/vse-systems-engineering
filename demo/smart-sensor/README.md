@@ -63,7 +63,7 @@ Empty `model/core/{functional-architecture,parametrics,product-architecture,proc
 ## What this demo does NOT do
 
 - It does not exercise a full subsystem decomposition. The §7 work is intentionally shallow so the reader can follow the trace from a stakeholder concern to a verification case without losing the thread.
-- It does not run the renderer pipeline. The `docs/generated/` directory is empty. A real project's CI would populate it from the model on merge to `main`.
+- The `docs/generated/` directory holds the three renderer outputs (Stakeholders Requirements Specification, System Requirements Specification, Traceability Matrix), and CI regenerates them from the model and fails if they differ.
 - It does not exercise SR.4 (Construction) or SR.6 (Product Delivery). Those activities are out of scope for the methodology per §9.2.
 
 ## Validating the demo
