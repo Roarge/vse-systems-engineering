@@ -25,8 +25,7 @@ iso_ref: "PM.1"
      methodology §0.10.2. -->
 
 Profile: {{PROFILE}}. Tailoring per methodology §0.10 defaults.
-Toolchain: {{SYSML_TOOLCHAIN}} (SysML v2 validator for the hooks and CI,
-recorded {{DATE}}).
+Toolchain: {{SYSML_TOOLCHAIN}} (SysML v2 validator for the hooks and CI, recorded {{DATE}}).
 
 <!-- VSE-TASK: PM.1.15 -->
 

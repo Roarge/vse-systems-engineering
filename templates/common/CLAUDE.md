@@ -13,8 +13,7 @@ story-driven agile MBSE methodology, ISO/IEC 29110 aligned.
 - **Date created:** {{DATE}}
 - **Engineering root:** {{ENGINEERING_ROOT}}
 - **Profile:** {{PROFILE}} (rigour profile per methodology §0.10)
-- **Toolchain:** {{SYSML_TOOLCHAIN}} (SysML v2 validator per
-  `.iso-config.yaml` `sysml_toolchain`)
+- **Toolchain:** {{SYSML_TOOLCHAIN}} (SysML v2 validator per `.iso-config.yaml` `sysml_toolchain`)
 
 ## Methodology
 
