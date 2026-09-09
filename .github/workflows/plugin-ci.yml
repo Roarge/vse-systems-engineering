@@ -43,23 +43,25 @@ jobs:
           claude plugin validate --strict .claude-plugin/plugin.json
           claude plugin validate --strict .claude-plugin/marketplace.json
 
-      - name: Lint hook scripts
+      - name: Lint hook and test scripts
         run: |
           if command -v shellcheck >/dev/null 2>&1; then
-            shellcheck hooks/*.sh hooks/lib/*.sh
+            shellcheck hooks/*.sh hooks/lib/*.sh tests/hooks/*.sh
           else
             echo "shellcheck not found, installing..."
             sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
-            shellcheck hooks/*.sh hooks/lib/*.sh
+            shellcheck hooks/*.sh hooks/lib/*.sh tests/hooks/*.sh
           fi
 
-      - name: Check hook script conventions
+      - name: Check hook and test script conventions
         run: |
-          # Every script in hooks/ must be executable and carry the
-          # shebang and failure mode the hook conventions require. A
-          # non-executable or unguarded hook fails silently at runtime.
+          # Every script in hooks/, hooks/lib/ and tests/hooks/ must be
+          # executable and carry the shebang and failure mode the hook
+          # conventions require. A non-executable or unguarded hook
+          # fails silently at runtime, and a test script that does not
+          # stop on the first error reports a pass it did not earn.
           EXIT_CODE=0
-          for hook_file in hooks/*.sh; do
+          for hook_file in hooks/*.sh hooks/lib/*.sh tests/hooks/*.sh; do
             if [ ! -x "$hook_file" ]; then
               echo "::error::$hook_file is not executable"
               EXIT_CODE=1
@@ -214,4 +216,62 @@ jobs:
             exit 1
           else
             echo "Demo plugin_version pin matches plugin.json ($PLUGIN_VERSION)."
+          fi
+          if grep -qE '^sysml_toolchain:' templates/iso-config/.iso-config.yaml; then
+            echo "templates/iso-config/.iso-config.yaml records a sysml_toolchain."
+          else
+            echo "::error::templates/iso-config/.iso-config.yaml does not record a sysml_toolchain"
+            exit 1
+          fi
+          DEMO_TOOLCHAIN=$(sed -n 's/^sysml_toolchain:[[:space:]]*//p' demo/smart-sensor/.iso-config.yaml)
+          case "$DEMO_TOOLCHAIN" in
+            syside|omg-pilot|opensysml)
+              echo "Demo sysml_toolchain is $DEMO_TOOLCHAIN."
+              ;;
+            *)
+              echo "::error::demo/smart-sensor/.iso-config.yaml records sysml_toolchain '$DEMO_TOOLCHAIN', which is not one of syside, omg-pilot, opensysml"
+              exit 1
+              ;;
+          esac
+
+      - name: Check the SysML toolchain library
+        run: |
+          # Every toolchain is stubbed by the test, so the assertions
+          # hold on this runner, which carries no SysML tool. The
+          # real-tool section prints SKIPPED for each toolchain the
+          # runner does not have installed.
+          if ! bash tests/hooks/check-toolchain.sh; then
+            echo "::error::tests/hooks/check-toolchain.sh reported a failing case"
+            exit 1
+          fi
+
+      - name: Test the hook scripts
+        run: |
+          if ! bash tests/hooks/test-pre-commit.sh; then
+            echo "::error::tests/hooks/test-pre-commit.sh reported a failing case"
+            exit 1
+          fi
+          if ! bash tests/hooks/test-session-start.sh; then
+            echo "::error::tests/hooks/test-session-start.sh reported a failing case"
+            exit 1
+          fi
+
+      - name: Check the demo's generated artefacts
+        run: |
+          # Methodology section 9.8 Contract 3: the demo's
+          # model-derived artefacts are regenerated here and shall
+          # match what is committed. The renderers run from
+          # demo/smart-sensor, because each one resolves the model
+          # relative to the directory that holds the demo
+          # configuration. The comparison runs from the repository
+          # root, where the committed outputs live.
+          (
+            cd demo/smart-sensor
+            python3 tools/render/traceability-matrix.py
+            python3 tools/render/stakeholder-reqs-doc.py
+            python3 tools/render/system-reqs-doc.py
+          )
+          if ! git diff --exit-code -- demo/smart-sensor/docs/generated/; then
+            echo "::error::demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."
+            exit 1
           fi
