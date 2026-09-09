@@ -68,34 +68,43 @@ package VSE_Library {
 
     requirement def UserStory :> StakeholderNeed {
         doc /* Per §1.2, the canonical stakeholder-intent artefact.
+               A story is a requirement USAGE typed by this definition:
+                   requirement US_042_AckFromDashboard : UserStory { ... }
                A UserStory:
                  - declares a primary stakeholder via `role`,
                  - describes a desired `capability` (narrative string),
                  - articulates a `benefit` (narrative string,
-                   optionally formalised as a require constraint per
-                   §1.4.3 to feed §6 trade studies, §0.3),
-                 - carries one or more `acceptance` subrequirements,
+                   optionally formalised as a nested requirement with a
+                   require constraint per §1.4.3 to feed §6 trade
+                   studies, §0.3),
+                 - carries one or more `acceptance` criteria,
                  - may `frame` one or more `concern def` instances
                    (per §1.4.6).
-               §1.9 well-formedness rules apply: typed role, declared
+               §1.9 well-formedness rules apply: typed role, typed
                subject, at least one acceptance before `ready`,
                retained narrative capability and benefit. */
+
+        // The subject is declared first because the language requires
+        // the subject to be the first parameter of a requirement
+        // definition. Both parameters are left untyped here and are
+        // redefined with project types by every story:
+        //   subject :>> system : <ProjectSystemPartDef>;
+        //   stakeholder :>> role : <StakeholderPartDef>;
+        subject system;
+        stakeholder role;
 
         attribute capability : ScalarValues::String[0..1];
         attribute benefit    : ScalarValues::String[0..1];
 
-        // The `stakeholder role` declaration and `subject` clause
-        // are declared by concrete stories. The SysML 2.0 parser
-        // requires `subject` to appear before `stakeholder` inside
-        // the same body, so a stakeholder feature cannot be declared
-        // in the abstract base without first declaring a subject.
-        // Concrete stories therefore use the form
-        //   subject system : SmartSensor_System;
-        //   stakeholder role : Operator;
-        // (declaration, not `:>>` redefinition). The methodology's
-        // §1.7 examples that show `stakeholder :>> role` predate this
-        // parser constraint and are tracked for revision in a future
-        // methodology branch.
+        // Acceptance criteria. A story redefines this member with its
+        // Given/When/Then text (`requirement :>> acceptance { doc ... }`).
+        // A story with several separately verifiable criteria nests
+        // them inside the redefinition, one named requirement each, so
+        // that `verify <story>.acceptance` covers all of them and
+        // `verify <story>.acceptance.<criterion>` covers one.
+        requirement acceptance[0..*] {
+            doc /* One acceptance criterion in Given/When/Then form. */
+        }
     }
 
     requirement def Feature :> StakeholderNeed {
@@ -116,7 +125,7 @@ package VSE_Library {
                project-determined.
 
                Example:
-                   @StoryMeta { points = 5; priority = high; status = ready; }
+                   @StoryMeta { points = 5; priority = Priority::high; status = StoryStatus::ready; }
              */
         attribute points   : Integer[0..1];
         attribute priority : Priority[0..1];
