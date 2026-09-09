@@ -136,7 +136,7 @@ See `wiki/INDEX.md` for the page catalogue and totals (158 atomic pages across 1
 Knowledge is extracted from these sources, consulted in priority order:
 
 1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
-2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs.
+2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs. ISO/IEC 29110-5-6-2 is at FDIS stage and is expected to be published as an international standard in 2026.
 3. **PHAS-EAI framework**: Georgsen (2026) doctoral thesis, Georgsen (2023) on LLM peer review in VSE engineering, and Georgsen (2026) on guiding attention in purposeful human activity systems.
 4. **Galinier et al.** on SME engineering practices.
 5. **INCOSE SE Handbook 4e**, scaled for VSEs.
