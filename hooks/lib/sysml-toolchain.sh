@@ -116,7 +116,8 @@ vse_tc_preference() {
 # in the fixed order.
 vse_tc_candidates() {
     local pref tool
-    pref="$(vse_tc_preference)"
+    pref="${1:-}"
+    [ -n "$pref" ] || pref="$(vse_tc_preference)"
     printf '%s\n' "$pref"
     for tool in $VSE_TC_ORDER; do
         [ "$tool" = "$pref" ] || printf '%s\n' "$tool"
@@ -160,7 +161,21 @@ vse_tc_pilot_paths() {
     home="$(vse_tc_pilot_home)"
     VSE_TC_PILOT_JAR=""
     VSE_TC_PILOT_LIB=""
-    jar="$(find "${home}/sysml" -maxdepth 1 -name 'jupyter-sysml-kernel-*-all.jar' 2>/dev/null | sort | tail -n 1)"
+    # Highest kernel version wins when several jars sit side by side.
+    # Compared numerically per component, because a lexical sort ranks
+    # 0.9.0 above 0.61.0.
+    jar="$(find "${home}/sysml" -maxdepth 1 -name 'jupyter-sysml-kernel-*-all.jar' 2>/dev/null | awk '
+        {
+            v = $0
+            sub(/^.*jupyter-sysml-kernel-/, "", v)
+            sub(/-all\.jar$/, "", v)
+            n = split(v, parts, ".")
+            key = ""
+            for (i = 1; i <= 4; i++) key = key sprintf("%06d", (i <= n) ? parts[i] + 0 : 0)
+            if (key > best) { best = key; bestpath = $0 }
+        }
+        END { if (bestpath != "") print bestpath }
+    ')"
     if [ -z "$jar" ] || [ ! -r "$jar" ]; then
         VSE_TC_REASON="pilot jar not found under ${home}/sysml (run /vse-toolchain to install)"
         return 1
@@ -400,7 +415,7 @@ _vse_tc_run_impl() {
     cands=()
     while IFS= read -r tool; do
         cands+=("$tool")
-    done < <(vse_tc_candidates)
+    done < <(vse_tc_candidates "$pref")
     staged=()
     if [ -n "${VSE_TC_STAGED_ONLY:-}" ]; then
         while IFS= read -r f; do
@@ -470,7 +485,7 @@ vse_tc_run() {
 # unless staged.
 vse_tc_run_staged() {
     local -a context
-    local staged_list="" f rc=0
+    local staged_list=$'\n' f rc=0
     [ "$#" -gt 0 ] || return 0
     for f in "$@"; do
         staged_list="${staged_list}${f}"$'\n'
@@ -482,7 +497,7 @@ vse_tc_run_staged() {
             */sandbox/*|sandbox/*|*.draft.sysml|build/*) continue ;;
         esac
         case "$staged_list" in
-            *"${f}"$'\n'*) continue ;;
+            *$'\n'"${f}"$'\n'*) continue ;;
         esac
         context+=("$f")
     done < <(git ls-files -- '*.sysml' 2>/dev/null || true)
@@ -510,7 +525,7 @@ vse_tc_status_line() {
             fallback="$tool"
             break
         fi
-    done < <(vse_tc_candidates)
+    done < <(vse_tc_candidates "$pref")
     if [ -n "$fallback" ]; then
         printf 'Toolchain:   %s (preferred) unavailable: %s. Hooks fall back to %s. Run /vse-toolchain to install or switch.\n' "$pref" "$pref_reason" "$fallback"
     else
@@ -545,7 +560,8 @@ _vse_tc_main() {
         validate)
             if [ "${1:-}" = "--tool" ]; then
                 tool="${2:-}"
-                shift 2 || true
+                [ -n "$tool" ] || { echo "usage: sysml-toolchain.sh validate [--tool <tool>] <file>..." >&2; return 64; }
+                shift 2
             fi
             [ "$#" -gt 0 ] || { echo "usage: sysml-toolchain.sh validate [--tool <tool>] <file>..." >&2; return 64; }
             if [ -n "$tool" ]; then
