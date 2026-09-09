@@ -459,11 +459,10 @@ disposal (data sensitivity, safety, environmental), the constraints
 are propagated into stakeholder concerns (§4.3.2) and addressed by
 stories (§4.3.4 / §5.4.1).
 
-## 10.10 Document templates produced as out-of-scope deliverables
+## 10.10 Document templates produced as conditional deliverables
 
-Projects requiring the Basic Profile beyond §9.2 scope (notably
-Construction and Delivery) shall produce additional ISO/IEC 29110
-artefacts. Templates for these are kept in `docs/templates/`:
+These documents are produced when the Delivery Instructions approved
+in PM.1.2 list them. Templates for these are kept in `docs/templates/`:
 
 - `system-operation-guide.md` — ISO/IEC 29110 product 26
 - `system-user-manual.md` — ISO/IEC 29110 product 29
@@ -472,10 +471,10 @@ artefacts. Templates for these are kept in `docs/templates/`:
 - `integration-report.md` — ISO/IEC 29110 product 6
 - `purchase-order.md` — ISO/IEC 29110 product 17
 
-These are *templates* — their production is a downstream activity
-governed by the construction/delivery process selected by the project
-set. The methodology declares them out of scope (per §9.2) but
-provides the templates so adoption is mechanical when needed.
+The methodology's own scope (§9.2) does not include the activities
+that produce these documents. The templates are provided so that a
+project whose Delivery Instructions list them can produce them without
+further tooling.
 
 ## 10.11 Roles in the PM process
 
