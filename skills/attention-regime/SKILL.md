@@ -48,6 +48,7 @@ These scripts are copied from the plugin into the user project under `.githooks/
 - **post-merge**: when `main` advances, regenerate the model-derived artefacts per §4.5 and report drift. Never auto-commits. Informational at every profile.
 - **post-checkout**: on branch checkout, print methodology and branch status per §4.6. Informational at every profile.
 - **lib/iso-profile.sh**: shared library, sourced by the gates above. Resolves the profile and the per-gate dispositions from `.iso-config.yaml`. Git never invokes it directly.
+- **lib/sysml-toolchain.sh**: shared library sourced by pre-commit and session-start. Resolves the recorded SysML toolchain, probes availability, validates, and falls back along syside, omg-pilot, opensysml with a notice.
 
 Two hooks are deliberately absent. **No local `pre-push` hook ships.** Its four obligations (story state on `main`, V&V coverage on `done` stories, traceability matrix freshness, baseline integrity on release tags) need a gate a workstation cannot reach, so §4.4 of the hooks guide documents them as continuous-integration contracts. **`post-receive`** is server-side per §4.7 and is documented in the project README rather than installed under `.githooks/`.
 
@@ -55,13 +56,14 @@ Two hooks are deliberately absent. **No local `pre-push` hook ships.** Its four 
 
 Run from the project root, after `@project-setup` has scaffolded the repository.
 
-**1. Read the profile.** Take `project_profile` from `.iso-config.yaml` at the engineering root (the project root, or `engineering/` in a brownfield layout). An absent key means `standard`, per methodology §0.10.2. If the file does not exist yet, install it from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` first and ask which profile the project wants, using the §0.10.2 two-question heuristic: more than one person, and an external acquirer, audit, or safety obligation. Two answers of no suggest `light`, either answer of yes suggests `standard`, and a project needing sign-off on the process itself selects `full`.
+**1. Read the profile.** Take `project_profile` from `.iso-config.yaml` at the engineering root (the project root, or `engineering/` in a brownfield layout). An absent key means `standard`, per methodology §0.10.2. If the file does not exist yet, install it from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` first and ask which profile the project wants, using the §0.10.2 two-question heuristic: more than one person, and an external acquirer, audit, or safety obligation. Two answers of no suggest `light`, either answer of yes suggests `standard`, and a project needing sign-off on the process itself selects `full`. Also read `sysml_toolchain`. If it is absent, say the hooks treat it as `syside` and that `@sysml-toolchain` records a choice and installs what is missing. Do not ask here, one skill owns that question.
 
 **2. Install the tier set.** The per-tier install matrix is §3.4 of the hooks guide. Copy from `${CLAUDE_PLUGIN_ROOT}/hooks/` into `<project>/.githooks/`, dropping the `.sh` suffix on the git entry points because git invokes hooks by exact filename. The delegate keeps its suffix because git never calls it. The canonical copy list is the installation example in `${CLAUDE_PLUGIN_ROOT}/hooks/README.md`.
 
 | Source in the plugin | Destination in the project | light | standard | full |
 |---|---|---|---|---|
 | `hooks/lib/iso-profile.sh` | `.githooks/lib/iso-profile.sh` | yes | yes | yes |
+| `hooks/lib/sysml-toolchain.sh` | `.githooks/lib/sysml-toolchain.sh` | yes | yes | yes |
 | `hooks/prepare-commit-msg.sh` | `.githooks/prepare-commit-msg` | yes | yes | yes |
 | `hooks/post-checkout.sh` | `.githooks/post-checkout` | yes | yes | yes |
 | `hooks/pre-commit.sh` | `.githooks/pre-commit` | no | yes | yes |
@@ -109,7 +111,7 @@ Record the override on the tailoring line in the Project Plan, per §0.10.2. Edi
 
 **6. Update `.gitignore`.** Append `.iso-config.local.yaml` so engineers may keep machine-local overrides without committing them.
 
-**7. Verify.** Make a no-op commit on a non-baselined file and confirm the installed hooks fire at the expected disposition. Open a Claude Code session in the project root and confirm the SessionStart output appears with the right `Profile:` line.
+**7. Verify.** Make a no-op commit on a non-baselined file and confirm the installed hooks fire at the expected disposition. Open a Claude Code session in the project root and confirm the SessionStart output appears with the right `Profile:` line. Run `.githooks/lib/sysml-toolchain.sh status` and confirm the line names the preferred tool as available, or names the fallback and its reason.
 
 ## Workflow: Change the Profile
 
@@ -120,6 +122,10 @@ Record the override on the tailoring line in the Project Plan, per §0.10.2. Edi
 5. Raising to `full` also brings the `full` column of the §0.10.3 obligation table, which is the real cost of the change. Say so before the engineer commits to it.
 
 A profile change needs no Change Request unless the project has put `.iso-config.yaml` on its own `baselined_paths` list.
+
+## Workflow: Upgrade the Hook Set
+
+A project scaffolded before 4.0.0 has no `.githooks/lib/sysml-toolchain.sh`, so its SysML lint gate cannot resolve the recorded toolchain. Re-running the install workflow above copies any library file missing from `.githooks/lib/`, which is all the upgrade needs. The `.iso-config.yaml` already in place is left alone, because an absent `sysml_toolchain` key means `syside`.
 
 ## Configuration via `.iso-config.yaml`
 
@@ -179,12 +185,13 @@ The pattern for every item below: name the rule and the section it comes from, s
 - **To `@change-request`** when a baselined-artefact finding fires, so the engineer can open a CR issue and reference it in subsequent commits.
 - **To `@release-orchestrator`** when post-merge regeneration drift suggests a release boundary needs a new `plan-baseline-*` or `release-*` tag.
 - **To `@traceability-guard`** or `/vse-trace` when the traceability gate reports a gap, because the gate only sees the requirements this commit touched.
+- **To `@sysml-toolchain`** when the lint gate prints a fallback notice or "No SysML toolchain is available".
 
 ## Outputs
 
 After a successful run, the following exist in the user project:
 
-- `<project>/.githooks/` populated with the profile's hook set from the §3.4 matrix, plus `lib/iso-profile.sh` at every profile, all executable.
+- `<project>/.githooks/` populated with the profile's hook set from the §3.4 matrix, plus `lib/iso-profile.sh` and `lib/sysml-toolchain.sh` at every profile, all executable.
 - `<project>/.iso-config.yaml` carrying `project_profile`, any `gate_overrides`, and the project-specific values.
 - `<project>/.gitignore` updated to ignore `.iso-config.local.yaml`.
 - `core.hooksPath` set to `.githooks` in the local git config.
