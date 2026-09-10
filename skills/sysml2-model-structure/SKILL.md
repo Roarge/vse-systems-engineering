@@ -334,6 +334,7 @@ package HS_Requirements {
     private import VSE_Library::ConfigItem;
     private import VSE_Library::CIState;
     private import VSE_Library::UserStory;
+    private import ScalarValues::String;
 
     requirement SR_SampleRate : UserStory {
         @ConfigItem {

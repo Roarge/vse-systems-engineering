@@ -34,7 +34,7 @@ Locate `.iso-config.yaml` at the project root, then under `engineering/`. If `sy
 
 Run, from the project root, `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh status`, then `detect syside`, `detect omg-pilot`, `detect opensysml`, and `java`. Each `detect` exits 0 when the tool is usable and 2 with the reason on stderr otherwise. The Syside probe runs a real `syside check` on a one-line scratch model under a temporary directory, because `syside --version` and `syside check --help` succeed on an expired licence and only a real check reveals `License check failed`.
 
-Present one table: Tool, Found, Version, Status, Reason. Version commands: `syside --version` (works without a licence), `java -version 2>&1 | head -n 1`, `sysml -version | head -n 1` (a build from `go install` prints `sysml dev`, which is accepted), and `ls ~/.local/share/sysml-pilot/sysml/jupyter-sysml-kernel-*-all.jar`. Also report the `command` in `.lsp.json` if the file exists, whether `syside.toml` exists, and whether `.githooks/lib/sysml-toolchain.sh` exists beside `.githooks/lib/iso-profile.sh`.
+Present one table: Tool, Found, Version, Status, Reason. Version commands: `syside --version` (succeeds on an expired licence), `java -version 2>&1 | head -n 1`, `sysml -version | head -n 1` (a build from `go install` prints `sysml dev`, which is accepted), and `ls ~/.local/share/sysml-pilot/sysml/jupyter-sysml-kernel-*-all.jar`. Also report the `command` in `.lsp.json` if the file exists, whether `syside.toml` exists, and whether `.githooks/lib/sysml-toolchain.sh` exists beside `.githooks/lib/iso-profile.sh`.
 
 With the argument `status`, stop after the table.
 
@@ -181,7 +181,7 @@ generation, and custom automation. Install the Automator with
 disable the Editor extension when the Modeler is active, to avoid
 conflicts.
 
-Additionally:
+Related tooling:
 - **Sysand**: open-source SysML v2 package manager for reusable
   libraries. Read `pages/tooling/syside-sysand-package-management.md`.
 

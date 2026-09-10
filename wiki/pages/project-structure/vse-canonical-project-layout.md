@@ -102,7 +102,7 @@ means `syside`). Each toolchain adds these files:
 | File | Toolchain | Greenfield location | Brownfield location |
 |---|---|---|---|
 | `syside.toml` | `syside` | Project root | Project root (`project-setup` copies it to the project root in both layouts) |
-| `.lsp.json` | `syside`, `opensysml` | Project root | Project root (the IDE reads the workspace root, not `engineering/`) |
+| `.lsp.json` | `syside`, `opensysml`, and `omg-pilot` when OpenSysML is installed beside it | Project root | Project root (the IDE reads the workspace root, not `engineering/`) |
 | none | `omg-pilot` | the jar and library live under `~/.local/share/sysml-pilot`, outside the project | same |
 
 The shipped CI workflow template looks for `syside.toml` at the project

@@ -41,15 +41,16 @@ referenced_by: [sysml-toolchain, sysml2-modelling, project-setup]
 
 ## The two configuration files
 
-A VSE project bootstrapped through `project-setup` carries two distinct
-configuration files in its root. They serve different consumers and
+A VSE project bootstrapped through `project-setup` on the `syside`
+toolchain carries two distinct configuration files in its root. They serve different consumers and
 must not be conflated. `syside.toml` is read by Syside itself. The
 Modeler, the `syside` CLI, and the Automator share one loader.
 `.lsp.json` is read by the Claude Code IDE.
 
 The annotated `syside.toml` template lives at
 `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` and is copied into
-every new project at `project-setup` Step 4.
+a new project at `project-setup` Step 4 when the recorded toolchain is
+`syside` or no toolchain was chosen.
 
 Reference: https://docs.sensmetry.com/modeler/cli/configuration.html
 
