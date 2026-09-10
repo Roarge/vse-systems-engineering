@@ -131,6 +131,12 @@ tc_pilot_uninstall
 case_mode2 "nothing available" syside \
     "Toolchain:   syside (preferred) unavailable: syside not on PATH. No fallback installed. Run /vse-toolchain."
 
+# State 4: the recorded value is not one of the three. The preference
+# falls back to syside, and the banner says so, so that a typo in the
+# configuration does not read back as a deliberate choice.
+case_mode2 "unrecognised value" cameo \
+    "recorded 'cameo' is not recognised, treated as syside"
+
 # --------------------------------------------- the probe budget
 
 # The library defaults VSE_TC_PROBE_TIMEOUT to 20 seconds at source

@@ -265,11 +265,13 @@ _tc_capture() {
 }
 
 # Sandboxed run inside $REPO. The stub directory shadows /usr/bin, HOME
-# and the pilot home are scratch, and the three variables an installer
-# might carry are removed.
+# and the pilot home are scratch, and every variable an installer or an
+# outer run might carry into the sandbox is removed, including the probe
+# budget, so a case that pins it sets it deliberately.
 _tc_sandboxed() {
     _tc_capture env -C "$REPO" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
+        -u VSE_TC_PROBE_TIMEOUT \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \
@@ -333,6 +335,7 @@ tc_run_in() {
     shift
     _tc_capture env -C "$dir" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
+        -u VSE_TC_PROBE_TIMEOUT \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \

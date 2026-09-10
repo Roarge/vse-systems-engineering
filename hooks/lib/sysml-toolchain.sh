@@ -143,7 +143,11 @@ vse_tc_java() {
             VSE_TC_JAVA="$candidate"
             return 0
         fi
-        VSE_TC_REASON="java at ${candidate} is major ${major:-unknown}, need 21 or later"
+        if [ -n "$major" ]; then
+            VSE_TC_REASON="java at ${candidate} is major ${major}, need 21 or later"
+        else
+            VSE_TC_REASON="java at ${candidate} did not report a version: $("$candidate" -version 2>&1 | head -n 1)"
+        fi
     done
     [ -n "$VSE_TC_REASON" ] || VSE_TC_REASON="java not found (install Java 21 or later, or set JAVA_HOME or VSE_JAVA)"
     return 1
@@ -284,7 +288,7 @@ _vse_tc_validate_syside() {
 # not resolve across blocks). An offset table maps the pilot's
 # "(1.sysml line : N column : C)" back to file:line.
 _vse_tc_validate_pilot() {
-    local dir out rc=0 diag
+    local dir out rc=0 diag reason
     vse_tc_java || return 2
     vse_tc_pilot_paths || return 2
     dir="$(mktemp -d "${TMPDIR:-/tmp}/vse-tc.XXXXXX")"
@@ -293,7 +297,7 @@ _vse_tc_validate_pilot() {
     { printf '%%\n'; awk '1' "$@"; printf '\n%%\n%%exit\n'; } > "${dir}/block.sysml"
     out="$(_vse_tc_timeout "$VSE_TC_TIMEOUT" "$VSE_TC_JAVA" -cp "$VSE_TC_PILOT_JAR" \
             org.omg.sysml.interactive.SysMLInteractive "$VSE_TC_PILOT_LIB" \
-            < "${dir}/block.sysml" 2>/dev/null)" || rc=$?
+            < "${dir}/block.sysml" 2> "${dir}/stderr")" || rc=$?
     case "$rc" in
         0) ;;
         124)
@@ -302,8 +306,12 @@ _vse_tc_validate_pilot() {
             return 2
             ;;
         *)
+            # A JVM that never starts writes its complaint to stderr and
+            # nothing to stdout, so the reason is taken from stderr first.
+            reason="$(grep -v '^log4j' "${dir}/stderr" 2>/dev/null | tail -n 1)"
+            [ -n "$reason" ] || reason="$(printf '%s\n' "$out" | grep -v '^Reading ' | tail -n 1)"
             rm -rf "$dir"
-            VSE_TC_REASON="pilot JVM exit ${rc}: $(printf '%s\n' "$out" | grep -v '^Reading ' | tail -n 1)"
+            VSE_TC_REASON="pilot JVM exit ${rc}: ${reason}"
             return 2
             ;;
     esac
@@ -509,11 +517,18 @@ vse_tc_run_staged() {
 
 # One banner line for SessionStart. Always returns 0.
 vse_tc_status_line() {
-    local pref tool rc=0 pref_reason fallback=""
-    pref="$(vse_tc_preference)"
+    local pref tool rc=0 pref_reason fallback="" raw label
+    pref="$(vse_tc_preference 2>/dev/null)"
+    raw="${VSE_SYSML_TOOLCHAIN:-}"
+    [ -n "$raw" ] || raw="$(_vse_tc_scalar sysml_toolchain)"
+    label="$pref"
+    case "$raw" in
+        syside|omg-pilot|opensysml|"") : ;;
+        *) label="${pref} (recorded '${raw}' is not recognised, treated as ${pref})" ;;
+    esac
     vse_tc_detect "$pref" 2>/dev/null || rc=$?
     if [ "$rc" -eq 0 ]; then
-        printf 'Toolchain:   %s (preferred, available)\n' "$pref"
+        printf 'Toolchain:   %s (preferred, available)\n' "$label"
         return 0
     fi
     pref_reason="$VSE_TC_REASON"
@@ -527,9 +542,9 @@ vse_tc_status_line() {
         fi
     done < <(vse_tc_candidates "$pref")
     if [ -n "$fallback" ]; then
-        printf 'Toolchain:   %s (preferred) unavailable: %s. Hooks fall back to %s. Run /vse-toolchain to install or switch.\n' "$pref" "$pref_reason" "$fallback"
+        printf 'Toolchain:   %s (preferred) unavailable: %s. Hooks fall back to %s. Run /vse-toolchain to install or switch.\n' "$label" "$pref_reason" "$fallback"
     else
-        printf 'Toolchain:   %s (preferred) unavailable: %s. No fallback installed. Run /vse-toolchain.\n' "$pref" "$pref_reason"
+        printf 'Toolchain:   %s (preferred) unavailable: %s. No fallback installed. Run /vse-toolchain.\n' "$label" "$pref_reason"
     fi
     return 0
 }
@@ -565,7 +580,12 @@ _vse_tc_main() {
             fi
             [ "$#" -gt 0 ] || { echo "usage: sysml-toolchain.sh validate [--tool <tool>] <file>..." >&2; return 64; }
             if [ -n "$tool" ]; then
-                vse_tc_validate "$tool" "$@"
+                local vrc=0
+                vse_tc_validate "$tool" "$@" || vrc=$?
+                if [ "$vrc" -eq 2 ]; then
+                    echo "[${VSE_TC_TAG}] ${tool} unavailable (${VSE_TC_REASON})" >&2
+                fi
+                return "$vrc"
             else
                 vse_tc_run "$@"
             fi

@@ -125,6 +125,40 @@ tc_env
 tc_run_lib java
 tc_assert_eq "${STUBS}/java" "$OUT" "java: PATH is the last resort"
 
+# A java that never gets far enough to print a version banner. The
+# resolution order has to fall off the end for the reason it recorded to
+# be the one reported, so the candidate is the only java in reach: the
+# PATH below mirrors the machine's tools with java left out.
+tc_nojava_path() {
+    local dir d
+    dir="$(tc_mktemp_d)"
+    for d in /usr/bin /bin; do
+        [ -d "$d" ] || continue
+        ln -s "$d"/* "${dir}/" 2>/dev/null || true
+    done
+    rm -f "${dir}/java"
+    printf '%s\n' "$dir"
+}
+
+mkdir -p "${STUBS}/deadjava"
+cat > "${STUBS}/deadjava/java" <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo 'Error occurred during initialization of VM' >&2
+echo 'Could not reserve enough space for object heap' >&2
+exit 1
+EOF
+chmod +x "${STUBS}/deadjava/java"
+
+NOJAVA="$(tc_nojava_path)"
+tc_env "VSE_JAVA=${STUBS}/deadjava/java" "PATH=${NOJAVA}"
+tc_run_lib java
+tc_assert_rc 2 "java: a JVM that never starts is rejected"
+tc_assert_grep "did not report a version: Error occurred during initialization of VM" \
+    "$ERR" "java: the reason quotes the first line the binary printed"
+
+tc_env
+
 # ---------------------------------------------- 4. detect omg-pilot
 
 tc_pilot_uninstall
@@ -305,7 +339,51 @@ tc_assert_match '^  syside: ' "$ERR" "fallback: the syside reason is listed"
 tc_assert_match '^  omg-pilot: ' "$ERR" "fallback: the omg-pilot reason is listed"
 tc_assert_match '^  opensysml: ' "$ERR" "fallback: the opensysml reason is listed"
 
-# ---------------------------------------------- 10. staged context
+# ------------------------------------ 10. validate --tool reports why
+
+# validate --tool runs one named tool and hands back its exit code. An
+# unavailable tool is exit 2, and a caller that sees only the code has
+# nothing to act on, so the reason reaches stderr on that path too.
+tc_config standard omg-pilot
+tc_stub_java "21.0.12"
+EMPTY_PILOT_HOME="$(tc_mktemp_d)"
+tc_env "VSE_SYSML_PILOT_HOME=${EMPTY_PILOT_HOME}"
+tc_run_lib validate --tool omg-pilot a.sysml
+tc_assert_rc 2 "validate --tool: an uninstalled pilot is exit 2"
+tc_assert_grep "omg-pilot unavailable (pilot jar not found" "$ERR" \
+    "validate --tool: the reason names what is missing"
+
+# A JVM that refuses to start writes its complaint to stderr and leaves
+# stdout empty, so the reason comes from the stderr the run keeps. The
+# log4j line the pilot's own logging emits is not the complaint.
+tc_stub_dead_jvm() {
+    tc_stub java <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+if [ "${1:-}" = "-version" ]; then
+    echo 'openjdk version "21.0.12" 2026-07-21' >&2
+    exit 0
+fi
+cat > /dev/null
+echo 'Could not reserve enough space for code cache' >&2
+echo 'log4j:WARN Please initialize the log4j system properly.' >&2
+exit 1
+EOF
+}
+
+tc_stub_dead_jvm
+tc_pilot_install
+tc_env
+tc_run_lib validate --tool omg-pilot a.sysml
+tc_assert_rc 2 "validate --tool: a JVM that will not run is exit 2"
+tc_assert_grep "pilot JVM exit 1: Could not reserve enough space for code cache" "$ERR" \
+    "validate --tool: the reason quotes the JVM's own stderr"
+
+tc_env
+tc_reset_stubs
+tc_pilot_uninstall
+
+# ---------------------------------------------- 11. staged context
 
 # vse_tc_run_staged widens the context to every tracked .sysml file so
 # that cross-file names resolve, minus the directories that hold
@@ -353,7 +431,7 @@ tc_assert_not_grep "engineering/build/x.sysml" "$(cat "$STAGED_ARGS")" \
 tc_env
 tc_reset_stubs
 
-# --------------------------------------------------- 11. real tools
+# --------------------------------------------------- 12. real tools
 
 # The three sections below run the installed toolchains. Each is
 # guarded by the library's own detect, so a runner with no SysML tool
