@@ -170,7 +170,7 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 
 3. **Dropping the narrative attributes.** The narrative `capability` and `benefit` strings are retained throughout the story's lifecycle (per §1.7.2 and §1.9 rule 6), because the typed bindings that replace them are readable to a tool and not to a stakeholder. The edit is reversible through git. At `light`, name the rule once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
-4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` criterion in Given/When/Then form before it leaves `backlog` (per §1.4.4 and §1.9 rule 4). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
+4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` criterion in Given/When/Then form before it reaches `ready` (per §1.4.4 and §1.9 rule 4). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
 ## Hand-offs
 

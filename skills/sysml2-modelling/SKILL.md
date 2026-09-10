@@ -108,8 +108,9 @@ often asks about several link types in a single session.
 // Satisfaction (requirement satisfies a need)
 satisfy requirement StakeholderNeeds::NeedName;
 
-// Verification (case verifies a requirement)
-verify requirement SystemRequirements::ReqName;
+// Verification (a case verifies a member of a story usage, by dot
+// notation, inside a `verification def` objective, per §5.4.6)
+objective { verify SystemStories::SYS_001_StoryName.acceptance; }
 
 // Allocation (function allocated to physical element)
 allocate FunctionalArch::FunctionName to PhysicalArch::ElementName;

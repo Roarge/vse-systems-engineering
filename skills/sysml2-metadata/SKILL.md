@@ -456,7 +456,7 @@ package HS_Verification {
             configurations = ("HighCapacity",);
         }
         objective {
-            verify requirement SR_BatteryLifetime;
+            verify SR_BatteryLifetime.acceptance;
         }
     }
 }

@@ -234,6 +234,10 @@ documentation extraction. Automator ships with the paid Syside Pro Suite,
 so on a project whose `sysml_toolchain` is `omg-pilot` or `opensysml` the
 grep procedure above is the only path.
 
+The scripts in this section are unverified since the licence lapsed. The
+grep procedure above is the verified path, and it is the one to report
+from when the two disagree.
+
 ### Check Automator Availability
 
 ```bash
@@ -267,20 +271,38 @@ def check_traceability(model_dir: str = "model/") -> list[str]:
     satisfy_count = 0
     verify_count = 0
 
-    # Check all requirement usages. Stories are package-level usages
-    # typed by UserStory, not requirement definitions.
+    # A satisfy relation is a SatisfyRequirementUsage node elsewhere in
+    # the model, not a child of the story, so collect the requirements
+    # they satisfy once and test each story against that set.
+    # `satisfied_requirement` is the accessor for the target of the
+    # relation. Unverified against a licensed Syside.
+    satisfied = set()
+    for sat in model.nodes(syside.SatisfyRequirementUsage):
+        if sat.document.document_tier is not syside.DocumentTier.Project:
+            continue
+        target = sat.satisfied_requirement
+        if target is not None:
+            satisfied.add(target.qualified_name)
+
+    # Check all story usages. A story is a package-level requirement
+    # usage typed by UserStory, not a requirement definition. Its
+    # nested acceptance, sla and benefit usages are members of the
+    # story rather than stories of their own, so the walk keeps only
+    # usages whose owner is a package. `element.owner` is the parent
+    # accessor the wiki page `syside-core-api` documents. Unverified
+    # against a licensed Syside.
     for req in model.nodes(syside.RequirementUsage):
         if req.document.document_tier is not syside.DocumentTier.Project:
             continue
+        if req.owner is None or req.owner.try_cast(syside.Package) is None:
+            continue
         req_count += 1
-        has_satisfy = False
+        has_satisfy = req.qualified_name in satisfied
         has_verify = False
+        if has_satisfy:
+            satisfy_count += 1
 
         for child in req.owned_elements.collect():
-            # Check for satisfy relationships
-            if child.try_cast(syside.RequirementUsage) is not None:
-                has_satisfy = True
-                satisfy_count += 1
             # Check for verification case references
             if child.try_cast(syside.VerificationCaseUsage) is not None:
                 has_verify = True
