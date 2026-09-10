@@ -102,6 +102,11 @@ package VerificationCases {
 }
 ```
 
+`MeasureTemperature` and `TemperatureResponseTime` are story usages
+declared in the imported `SystemRequirements` package, each typed by
+`VSE_Library::UserStory`, so `.acceptance` reaches the acceptance
+criterion the story redefines.
+
 ## Definition of done for SE velocity
 
 A use case is "done" (counted in SE velocity) when all of the

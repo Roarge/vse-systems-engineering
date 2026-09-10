@@ -1806,3 +1806,33 @@ ambse-architecture-vv-and-iso29110. The other pages already carried
 back identical, because no title or summary changed. Totals stay at
 165 pages across 12 layers, routed to by 23 skills over 245 rows, and
 contents-block drift stays 0.
+
+## [2026-09-10] refactor | undeclared story usages and a stale layout row
+
+Layer: sysml2, ambse, project-structure. Review of the previous commit
+found two verification examples verifying a story that no page
+declares, and a layout row for a file the plugin no longer ships.
+
+Pages updated:
+
+- sysml2-case-kinds (the drone power-up example now declares
+  `DronePowerUp` as a usage typed by `VSE_Library::UserStory` with a
+  `Drone` subject, so `verify DronePowerUp.acceptance` resolves)
+- ambse-architecture-vv-and-iso29110 (a sentence after the block says
+  that `MeasureTemperature` and `TemperatureResponseTime` are story
+  usages in the imported `SystemRequirements` package, and that
+  `.acceptance` reaches the redefined criterion)
+- vse-canonical-project-layout (the "Greenfield-only root files"
+  section is removed, because `TASKS.md` was its only row and neither
+  `templates/common/` nor `@project-setup` ships or copies that file
+  any more, and the `## Contents` block drops the heading with it)
+
+Neither `verification def` on ambse-architecture-vv-and-iso29110 gained
+a `subject`, because the surrounding example declares no system part
+def to conform to.
+
+`updated:` was bumped on no page, because all three already carried
+2026-09-10. INDEX and every routing block were regenerated and came
+back identical, because no title or summary changed. Totals stay at
+165 pages across 12 layers, routed to by 23 skills over 245 rows, and
+contents-block drift stays 0.

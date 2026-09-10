@@ -25,7 +25,6 @@ referenced_by: [project-setup, project-audit]
 
 - Layouts
 - Root files (both layouts)
-- Greenfield-only root files
 - CLAUDE.md marker block
 - .vse-iteration.yml schema (version 1)
 - Toolchain configuration
@@ -62,14 +61,6 @@ directory.
 | `.gitignore` | Excludes `build/`, generated files | Yes |
 | `.lsp.json` | Language server wiring for the Claude Code IDE (Syside or OpenSysML) | When a language server is configured |
 | `syside.toml` | Syside formatting and linting | When the toolchain is `syside` |
-
-## Greenfield-only root files
-
-| File | Purpose |
-|---|---|
-| `TASKS.md` | ISO/IEC 29110 task checklist |
-
-In brownfield mode this lives under `engineering/`.
 
 ## CLAUDE.md marker block
 

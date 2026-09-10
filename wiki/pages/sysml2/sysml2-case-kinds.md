@@ -164,6 +164,9 @@ verdict is not a Boolean but an enumeration (Ch 33, p 290).
 The verdict is typically bound from a library helper.
 
 ```sysml
+// A story usage typed by VSE_Library::UserStory (see the methodology layer).
+requirement DronePowerUp : UserStory { subject :>> system : Drone; }
+
 verification def PowerUpTest {
     subject drone : Drone;
     objective checkPowerUp {
