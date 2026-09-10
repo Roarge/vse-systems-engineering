@@ -23,7 +23,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 ## Skills
 
-The plugin ships 28 skills in five groups.
+The plugin ships 29 skills in five groups.
 
 ### Core orchestration skills
 
@@ -53,6 +53,7 @@ The plugin ships 28 skills in five groups.
 | attention-regime | Configure the ISO/IEC 29110 hook surface and install profile-scaled project-side git hooks (per `methodology/iso-29110-hooks-guide.md`) |
 | session-journal | Manage cross-session continuity journal |
 | document-export | Export work products to docx, pptx, or pdf |
+| sysml-toolchain | Choose, install, switch, and run the SysML v2 toolchain (Syside, OMG pilot, OpenSysML), including the automatic fallback when a licence expires |
 
 ### SysML 2.0 specialist skills
 
@@ -88,7 +89,7 @@ only (`disable-model-invocation`), so they never activate on their own.
 
 ## Slash commands
 
-The plugin ships twelve `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
+The plugin ships thirteen `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
 
 | Command | Delegates to | Use case |
 |---|---|---|
@@ -100,6 +101,7 @@ The plugin ships twelve `/vse-*` slash commands as quick entry points. Each comm
 | `/vse-trace` | `traceability-guard` | Run a traceability check and report gaps |
 | `/vse-audit` | `project-audit` | Audit project structure, story well-formedness, version drift |
 | `/vse-journal` | `session-journal` | Open or append the cross-session continuity journal |
+| `/vse-toolchain` | `sysml-toolchain` | Install, switch, or run the SysML v2 toolchain |
 | `/vse-wiki-ingest` | `vse-wiki-ingest` | Ingest one source into the wiki (contributor) |
 | `/vse-wiki-lint` | `vse-wiki-lint` | Health-check the wiki (contributor) |
 | `/vse-wiki-refactor` | `vse-wiki-refactor` | Editorial sweep of the wiki (contributor) |
@@ -129,7 +131,7 @@ The plugin's reference content sits in three surfaces:
 - **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`. Each reference-bearing skill carries a generated routing table naming the pages it is expected to need (title, path, and a one-line read-when trigger) and reads those pages on demand with the Read tool, one page at a time. Nothing is concatenated and nothing is front-loaded. `wiki/INDEX.md` is the generated catalogue for anything a routing table does not cover.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and totals (158 atomic pages across 12 layers, routed to by 20 skills at the 3.0.0 release) and `wiki/CLAUDE.md` for the authoring schema.
+See `wiki/INDEX.md` for the page catalogue and totals (165 atomic pages across 12 layers, routed to by 23 skills at the 4.0.0 release) and `wiki/CLAUDE.md` for the authoring schema.
 
 ## Sources
 
@@ -142,40 +144,34 @@ Knowledge is extracted from these sources, consulted in priority order:
 5. **INCOSE SE Handbook 4e**, scaled for VSEs.
 6. **AMBSE source methodology**: Douglass (2016) *Agile Systems Engineering* and Douglass (2021) *Agile MBSE Cookbook*. The plugin's methodology adapts the source arc per §0.4 of the spec. Where it disagrees, the spec wins.
 7. **The Weilkiens methodology family**: *SYSMOD* 3rd edition (Base Architecture and System Context concepts adopted in §2 and §3), *Variant Modeling with SysML* (VAMOS), and *The New Engineering Game*.
-8. **SysML 2.0**: the OMG specification, *The SysML v2 Book* (Weilkiens and Molnár, 2026-07 release), and Sensmetry Syside notes.
+8. **SysML 2.0**: the OMG specification, *The SysML v2 Book* (Weilkiens and Molnár, 2026-07 release), and toolchain notes (Syside, the OMG pilot, OpenSysML).
 9. **Domain guides**: INCOSE Needs and Requirements, Verification and Validation, and the HSI Primer.
 
 Source PDFs are private (gitignored) and not distributed with the plugin. Every wiki page carries a citation that stands on its own.
 
 ## Tooling
 
-The recommended modelling toolchain is [Sensmetry Syside](https://sensmetry.com), current release 0.10.3 (July 2026).
+The plugin supports three SysML v2 toolchains. A project records its choice as `sysml_toolchain` in `.iso-config.yaml` (`syside`, `omg-pilot`, or `opensysml`, absent means `syside`), `/vse-setup` asks once, and `/vse-toolchain` installs or switches later. When the recorded tool is missing or its licence has expired, the pre-commit lint gate falls back in the fixed order Syside, then the OMG pilot, then OpenSysML, prints a notice, and keeps the recorded preference until the engineer changes it.
 
-| Workflow | Product | Licence |
-|---|---|---|
-| Learning SysML v2, quick edits, validation, navigation | **Syside Editor** (VS Code extension, SysML v2 Essential) | Free |
-| Model writing with diagrams, grid views, scripting, CI validation | **Syside Pro Suite** (Modeler plus Automator with the `syside` CLI) | Paid |
-| The Pro Suite in a browser, Claude Code preinstalled | **Syside Cloud** | Paid |
+| Toolchain | Licence | Install | Validate | Format | Language server |
+|---|---|---|---|---|---|
+| [Sensmetry Syside](https://sensmetry.com) 0.10.3 | Proprietary, the Editor is free and the `syside` CLI needs a Solo or Business plan | `pip install syside` (Automator), Syside Editor from the VS Code marketplace | `syside check --warnings-as-errors` | `syside format` | `syside lsp` |
+| [OMG SysML v2 Pilot Implementation](https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation) 2026-07 | EPL-2.0 | Java 21 plus the `jupyter-sysml-kernel-0.61.0.zip` release asset unpacked under `~/.local/share/sysml-pilot` | `SysMLInteractive` in batch, verdict parsed from stdout | none | none |
+| [OpenSysML](https://github.com/Open-MBEE/OpenSysML) v0.6.0 | Apache-2.0 | Release tarball into `~/.local/bin`, `brew install Open-MBEE/tap/opensysml`, or `go install github.com/Open-MBEE/OpenSysML/cmd/sysml@v0.6.0` | `sysml -validate -strict` | none | `sysml-lsp` |
 
-Additionally:
-
-- **Sysand** (open source, v0.2.0) for SysML v2 package management: manifests, lock file, KPAR packaging, and CI publishing.
-- Configuration via `syside.toml` in the project root (three-level discovery, read by Syside itself).
-- IDE language server wiring via `.lsp.json` in the project root, copied by `project-setup` so Claude Code launches `syside lsp` automatically for `.sysml` and `.kerml` files.
-
-The earlier open-source `sysml-2ls` language server was archived in October 2025 as "SysIDE Editor Legacy" and is no longer maintained. Use Syside Editor.
+Sysand (open source, v0.2.0) handles SysML v2 package management under every toolchain. `syside.toml` configures Syside, `.lsp.json` wires the language server of the recorded toolchain (Syside or OpenSysML), and the OMG pilot has no editor integration. The archived `sysml-2ls` language server is not supported. See the pages under `wiki/pages/tooling/` for installation, exit contracts, and the forms the reference implementations enforce.
 
 ### Automator capabilities
 
-The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `satisfy` and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/tooling/` for the API surface the plugin's skills rely on.
+The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `satisfy` and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/tooling/` for the API surface the plugin's skills rely on. `traceability-guard` and `document-export` fall back to grep-based and pandoc-based procedures when the Automator is absent.
 
 ## Getting started
 
 ### Prerequisites
 
 - [Claude Code](https://claude.com/claude-code) CLI installed.
-- (Recommended) Syside Editor for `.sysml` file editing, validation, and navigation.
-- (Optional) Syside Pro Suite for diagrams and programmatic model analysis (`pip install syside`, Python 3.12+).
+- One SysML v2 toolchain: Syside (Editor for editing, Pro Suite for the `syside` CLI), the OMG SysML v2 Pilot Implementation (needs a Java 21 runtime, a headless JRE suffices), or OpenSysML (a static binary). `/vse-toolchain` detects what is missing and shows the install commands.
+- (Optional) Syside Pro Suite for diagrams, formatting, and the Automator Python API (`pip install syside`, Python 3.12+).
 
 ### Installation from a local clone
 
@@ -208,9 +204,9 @@ After adding the marketplace, you might need to restart Claude Code so it discov
 The plugin ships an ISO/IEC 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
 - **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status including the rigour profile, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up. Lifecycle hooks are advisory at every profile.
-- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh`. They cover SysML lint, story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
+- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh` and `lib/sysml-toolchain.sh`. They cover SysML lint (through the recorded toolchain, with automatic fallback), story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
 
-Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_profile`, `gate_overrides`, `baselined_paths`, and the other keys per §8 of the hooks guide). The schema is reproduced in the `attention-regime` skill body.
+Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_profile`, `sysml_toolchain`, `gate_overrides`, `baselined_paths`, and the other keys per §8 of the hooks guide). The schema is reproduced in the `attention-regime` skill body.
 
 ### Starting a new project
 
@@ -233,4 +229,4 @@ The `demo/smart-sensor/` directory contains a worked example: a Wi-Fi-connected 
 
 ## Versioning
 
-The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **3.0.0**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.
+The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **4.0.0**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.

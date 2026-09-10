@@ -30,6 +30,8 @@
         "incose",
         "phas-eai",
         "syside",
+        "opensysml",
+        "omg-pilot",
         "very-small-entity"
       ]
     }
