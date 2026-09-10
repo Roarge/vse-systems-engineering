@@ -15,12 +15,13 @@
 package {{PROJECT_NAME}}_TradeStudies {
 
     private import ScalarValues::*;
+    private import TradeStudies::*;
     private import {{PROJECT_NAME}}_DecisionPoints::*;
     private import {{PROJECT_NAME}}_CandidateVariants::*;
     private import {{PROJECT_NAME}}_SystemStories::*;
     private import {{PROJECT_NAME}}_Domain::*;
 
-    analysis def AlarmStorageTradeStudy {
+    analysis def AlarmStorageTradeStudy :> TradeStudy {
         subject decision : AlarmStorageStrategy;
 
         // Criteria sourced directly from story benefit constraints.
@@ -28,10 +29,18 @@ package {{PROJECT_NAME}}_TradeStudies {
         attribute slaWeight : Rational = 0.5;
         // Add further criteria attributes here, weights normalising to 1.0.
 
-        // Utility curves and the evaluation function go here.
-        // calc def evaluation : EvaluationFunction { ... }
+        // Utility curves and the evaluation function go here. The
+        // analysis def inherits evaluationFunction and objective from
+        // the standard library TradeStudy, so the block redefines them
+        // rather than declaring new ones. Declare latencyUtility, or
+        // whatever utility curve the criterion needs, beside the
+        // candidate variants.
+        // calc :>> evaluationFunction {
+        //     in ref :>> alternative : AlarmStorageStrategy;
+        //     return :>> result = slaWeight * latencyUtility(alternative.writeLatency);
+        // }
 
         // Objective drives the selection step.
-        // objective : MaximiseObjective { ... }
+        // objective : MaximizeObjective;
     }
 }
