@@ -74,11 +74,11 @@ The Base Architecture is a SysML v2 `library package` (spec §7.4 — model
 libraries) declaring:
 
 - one or more `part def` representing the architectural givens
-  (platforms, infrastructure, devices, protocols);
+  (platforms, infrastructure, devices, protocols).
 - attributes and value properties on those part defs that the project
-  cannot redefine;
-- `require constraint` clauses capturing immutable architectural
-  constraints;
+  cannot redefine.
+- requirement definitions capturing immutable architectural constraints,
+  each with the constrained part def as its `subject`.
 - enumerations and item definitions that downstream packages depend on
   for type compatibility.
 
@@ -130,22 +130,29 @@ library package <BA> Aiwell_BaseArchitecture {
 
         port modbusTCP : ModbusTCPPort;
         port digitalIO : DigitalIOPort[16];
-
-        require constraint maxChannelsConstraint {
-            doc /* Configured I/O channel count shall not exceed
-                   maxIOChannels. */
-        }
     }
 
-    part def CommunicationProtocol abstract;
+    // A `require constraint` is only legal inside a requirement, concern,
+    // viewpoint or objective body, never directly inside a part def. The
+    // immutable constraint is a sibling requirement definition whose
+    // subject is the platform.
+    requirement def MaxChannelsConstraint {
+        subject platform : AC5000_Platform;
+        doc /* Configured I/O channel count shall not exceed
+               platform.maxIOChannels. */
+    }
+
+    abstract part def CommunicationProtocol;
     part def ModbusTCP :> CommunicationProtocol;
     part def OPCUA    :> CommunicationProtocol;
 }
 ```
 
 Constraints expressed here are *immutable* in the sense that the
-project shall not redefine them. They may be inherited by specialising
-parts but not weakened.
+project shall not redefine them. The requirement definition applies to
+every part typed by the platform or by a specialisation of it. A
+specialisation may add constraints of its own, but it may not relax
+this one.
 
 ### 2.3.3 Establish the relationship to the project system
 
@@ -200,20 +207,21 @@ specialisations thereof).
 | Pattern | Form |
 |---|---|
 | Library package | `library package <BA> Project_BaseArchitecture { … }` |
-| Architectural given | `part def Name { attribute … ; port … ; require constraint … }` |
+| Architectural given | `part def Name { attribute … ; port … }` |
 | Specialisation | `part def ProjectSystem :> BasePart { … }` |
 | Allocation | `allocation <name> allocate ProjectSystem to BasePart;` |
-| Immutable constraint | `require constraint <name> { doc /* … */ }` |
+| Immutable constraint | `requirement def Name { subject <p> : PartDef; doc /* … */ }` |
 
 ## 2.6 Well-formedness rules
 
 1. The Base Architecture shall reside in a `library package` and shall
    not import any package outside `library/`, `core/domain/`, or
    external libraries.
-2. Every `require constraint` in the Base Architecture shall remain
-   satisfied by every specialising part. CI-side validation shall flag
-   a specialising part that overrides an inherited constraint with a
-   weaker one.
+2. Every requirement definition that constrains the Base Architecture
+   applies to every part typed by the platform or by a specialisation of
+   it, and shall remain satisfied by all of them. A specialisation may
+   add constraints of its own. CI-side validation shall flag a
+   specialisation that relaxes a Base Architecture constraint.
 3. The project's system part def shall have exactly one relationship
    to the Base Architecture: either specialisation or allocation, not
    both. (A system that genuinely is both — instance of one platform,

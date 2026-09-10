@@ -71,33 +71,37 @@ return an "Empty model" report and stop.
 
 1. **Discover model files.** Use `Glob` to enumerate every `.sysml`
    file under the model directory. Report the count.
-2. **Extract requirements.** For each `requirement def` declaration,
-   capture the identifier, the documentation body (truncated to 80
-   characters), the package it lives in, and any `satisfy` or `verify`
-   relationship statements in its body. Use `Grep` to locate
-   declarations and `Read` to extract context.
+2. **Extract requirements.** For each story usage
+   (`requirement <ID> : UserStory`), for each legacy `requirement def`,
+   and for every other requirement declaration, capture the identifier,
+   the documentation body (truncated to 80 characters), the package it
+   lives in, and any `satisfy` or `verify` relationship statements in
+   its body. Use `Grep` to locate declarations and `Read` to extract
+   context.
 3. **Extract verification and validation cases.** For each
    `verification def` declaration, capture the identifier, the method
    attribute if present, and any `verify` link target.
 4. **Cross-link.** Build the matrix by joining requirements to their
    parent stakeholder needs (via §5.4.1 derivation, that is the
-   `#derive` annotation plus `RequirementDerivation::derivations`
-   connections, or via `satisfy` links where the project uses that
-   form) and to their verification or validation cases (via `verify`
-   links). Extract derivation connections alongside the relationship
-   statements in step 2.
+   `#derive` prefix on the derived story usage plus a
+   `#derivation connection` whose ends are tagged `#original` and
+   `#derive`, or via `satisfy` links where the project uses that form)
+   and to their verification or validation cases (via `verify` links,
+   which name a member of the story usage by dot notation). Extract
+   derivation connections alongside the relationship statements in
+   step 2.
 5. **Identify gaps** against the rule set:
-   - Rule 1: system requirement with neither a derivation connection
-     nor a `satisfy` link upward (a doc-comment mention counts for
-     neither)
+   - Rule 1: system requirement that is the `#derive` end of no
+     `#derivation connection` and carries no `satisfy` link upward (a
+     doc-comment mention counts for neither)
    - Rule 2: requirement without `verify` link (downward orphan)
    - Rule 2a: element requirement without `satisfy` to a system
      requirement, or without a verification case
    - Rule 3: stakeholder need without a validation case
    - Rule 4: verification case without a `verify` link
-   - Rule 5: bidirectional inconsistency, where a `satisfy`, `verify`,
-     or derivation connection end references an identifier that does
-     not exist in any model file
+   - Rule 5: bidirectional inconsistency, where a `satisfy` link, a
+     `verify` target, or an `#original` or `#derive` end references an
+     identifier that does not exist in any model file
 6. **Suggest fixes.** For every gap, suggest the specific edit using
    the fix table from the traceability-guard skill. Phrase fixes as
    recommendations, never as commands.
@@ -127,7 +131,7 @@ skill will present this verbatim to the engineer for editing.
 
 | ID | Rule | Direction | Suggested fix |
 |---|---|---|---|
-| [REQ-005] | Rule 2 | downward | "Create a verification case with `verify requirement REQ-005;`" |
+| [REQ-005] | Rule 2 | downward | "Create a verification case with `verify REQ-005.acceptance;`" |
 | ... | ... | ... | ... |
 
 ### Bidirectional Consistency Check
@@ -151,5 +155,6 @@ architecture-design, or verification-validation as appropriate.
 - Do not write any files. Do not propose to modify any model file.
   The parent skill is responsible for routing fixes.
 - If the model has syntax errors that prevent reliable parsing, report
-  the affected files and recommend running Syside validation before
-  trusting the matrix.
+  the affected files and recommend validating with the project's
+  configured SysML v2 toolchain (Syside, the OMG pilot implementation,
+  or OpenSysML) before trusting the matrix.

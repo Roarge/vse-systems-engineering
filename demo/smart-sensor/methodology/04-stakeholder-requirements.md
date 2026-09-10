@@ -29,8 +29,8 @@ story as the use case's `objective`).
   roles, residing in `core/stakeholders/`.
 - Stakeholder concern register — `concern def` instances residing in
   `core/concerns/`.
-- Stakeholder story register — `UserStory` specialisations residing in
-  `core/stories/stakeholder/`.
+- Stakeholder story register: story usages typed by `UserStory`, residing
+  in `core/stories/stakeholder/`.
 - Use case set (optional) — `use case def` instances elaborating
   capability where useful, residing in `core/use-cases/`. Each such use
   case declares a stakeholder story as its `objective`.
@@ -134,40 +134,40 @@ they are working notes captured in PR descriptions or sandbox files.
 
 ### 4.3.4 Generate stakeholder user stories
 
-For each prioritised capability theme, author one or more `UserStory`
-specialisations per §1. Stories enter the model in §1.7.1 minimal form
-and progress through the lifecycle as detail emerges.
+For each prioritised capability theme, author one or more story usages
+typed by `UserStory` per §1. Stories enter the model in §1.7.1 minimal
+form and progress through the lifecycle as detail emerges.
 
 A stakeholder story:
 
-- declares its `subject` referencing a part def from §2 (Base
-  Architecture) or §3 (System Context), typically the project's system
-  part def;
-- redefines `role` with a part def from `core/stakeholders/`;
-- declares `capability` and `benefit` as narrative strings;
-- frames one or more concerns from `core/concerns/` (§1.4.6);
-- declares at least one `acceptance` subrequirement before transitioning
-  to `ready` (§1.9 rule 3).
+- redefines `subject` (first) with a part def from §2 (Base Architecture)
+  or §3 (System Context), typically the project's system part def.
+- redefines `role` with a part def from `core/stakeholders/`.
+- declares `capability` and `benefit` as narrative strings.
+- applies `@StoryMeta` with qualified enumeration values (§1.5).
+- frames one or more concerns from `core/concerns/` (§1.4.6).
+- declares at least one `acceptance` criterion before transitioning
+  to `ready` (§1.9 rule 4).
 
 ```sysml
 package <SS> Aiwell_StakeholderStories {
     private import Aiwell_Stakeholders::*;
     private import Aiwell_Concerns::*;
     private import Aiwell_OnlineSentralContext::*;
-    private import MBSEMethodology::UserStory;
+    private import VSE_Library::*;
 
-    requirement def US_042_AckFromDashboard :> UserStory {
-        @StoryMeta { points = 5; priority = high; status = ready; }
+    requirement US_042_AckFromDashboard : UserStory {
+        @StoryMeta { points = 5; priority = Priority::high; status = StoryStatus::ready; }
 
-        subject sys : Aiwell_OnlineSentral;
-        stakeholder role : Operator;
+        subject :>> system : Aiwell_OnlineSentral;
+        stakeholder :>> role : Operator;
 
-        capability = "acknowledge alarms from the dashboard";
-        benefit    = "the queue clears without opening each device";
+        attribute :>> capability = "acknowledge alarms from the dashboard";
+        attribute :>> benefit    = "the queue clears without opening each device";
 
         frame concern : FastIncidentResponse;
 
-        requirement acceptance[1] {
+        requirement :>> acceptance {
             doc /* Given N unacknowledged alarms shown,
                    when the operator selects "Ack all",
                    then all N transition to acknowledged within 1 s. */
@@ -185,17 +185,22 @@ the story remains the carrier of stakeholder intent.
 
 ```sysml
 package <UC> Aiwell_UseCases {
+    private import Aiwell_Stakeholders::*;
+    private import Aiwell_OnlineSentralContext::*;
+
     use case def AcknowledgeAlarms {
         subject sys : Aiwell_OnlineSentral;
         actor performer : Operator;
 
-        objective realisesUS042 : Aiwell_StakeholderStories::US_042_AckFromDashboard;
+        objective realisesUS042 :> Aiwell_StakeholderStories::US_042_AckFromDashboard {
+            subject :>> system = sys;
+        }
 
         // Action body: detail the steps of the use case
         first start;
-        action filter alarms;
-        action select scope;
-        action confirm acknowledgement;
+        then action filterAlarms;
+        then action selectScope;
+        then action confirmAcknowledgement;
         then done;
     }
 }
@@ -225,7 +230,7 @@ package <VAL> Aiwell_ValidationCases {
         subject sys : Aiwell_OnlineSentral;
 
         objective {
-            verify US_042_AckFromDashboard::acceptance;
+            verify US_042_AckFromDashboard.acceptance;
         }
 
         // Verification action body
@@ -265,10 +270,10 @@ The packages live inside the component folder per §8.3.2.
 |---|---|---|
 | Stakeholder part | `part def StakeholderName;` | §7.11 |
 | Concern | `concern def Name { subject … ; stakeholder … ; require constraint … }` | §7.20.3 |
-| Story (per §1) | `requirement def US_NNN :> UserStory { … }` | §1, §7.20.2 |
+| Story (per §1) | `requirement US_NNN_Short : UserStory { … }` | §1, §7.20.2 |
 | Frame concern | `frame concern : ConcernPath::ConcernName;` | §7.20.3 |
-| Use case with story as objective | `use case def Name { … objective <name> : StoryName; }` | §7.21, §7.24 |
-| Validation case | `verification def VAL_Name { subject … ; objective { verify <accept>; } }` | §7.23 |
+| Use case with story as objective | `use case def Name { subject sys : S; actor … ; objective <n> :> StoryName { subject :>> system = sys; } }` | §7.21, §7.24 |
+| Validation case | `verification def VAL_Name { subject … ; objective { verify <story>.acceptance; } }` | §7.23 |
 
 ## 4.6 Well-formedness rules
 

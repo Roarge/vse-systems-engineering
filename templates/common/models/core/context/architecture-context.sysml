@@ -45,7 +45,7 @@ package {{PROJECT_NAME}}_Context {
     // Composite System Context part.
     part def {{PROJECT_NAME}}_Context_Composite {
         part system   : {{PROJECT_NAME}}_System;
-        part operator : Operator;
+        part operator : Operator { port systemPort : OperatorPort; }
         part weather  : WeatherService;
         part ambient  : AmbientWeather;
 

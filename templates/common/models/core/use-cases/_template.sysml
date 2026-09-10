@@ -16,8 +16,11 @@ package {{PROJECT_NAME}}_UseCases {
         subject sys : {{PROJECT_NAME}}_System;
         actor performer : Operator;
 
-        // The story this use case elaborates.
-        objective realisesUS001 : US_001_Example;
+        // The story this use case elaborates. The objective subsets the
+        // story and binds the story subject to the use case subject.
+        objective realisesUS001 :> US_001_Example {
+            subject :>> system = sys;
+        }
 
         // Action body. Use one of three §5.4.3 approaches:
         // flow-based (action def with item flows), scenario-based

@@ -14,7 +14,7 @@ related:
   - stakeholder-stories-workflow
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-09-10
 referenced_by: [story-orchestrator, needs-and-requirements]
 ---
 
@@ -52,16 +52,16 @@ concern def FastIncidentResponse {
     }
 }
 
-requirement def US_042_AckFromDashboard :> UserStory {
+requirement US_042_AckFromDashboard : UserStory {
+    subject :>> system : Aiwell_OnlineSentral;
     stakeholder :>> role : Operator;
-    capability = "acknowledge alarms from the dashboard";
-    benefit    = "the queue clears quickly";
 
-    subject system : Aiwell_OnlineSentral;
+    attribute :>> capability = "acknowledge alarms from the dashboard";
+    attribute :>> benefit    = "the queue clears quickly";
 
     frame concern : OpsConcerns::FastIncidentResponse;
 
-    requirement acceptance[1] { /* ... */ }
+    requirement :>> acceptance { doc /* ... */ }
 }
 ```
 

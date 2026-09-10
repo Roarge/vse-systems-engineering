@@ -33,8 +33,9 @@ a story approaches ready.
 ### Rule 1: Upward Traceability
 Every system requirement MUST trace to at least one stakeholder need.
 At the story tier the methodology's upward mechanism is derivation
-(§5.4.1): the `#derive` annotation plus an explicit
-`RequirementDerivation::derivations` connection satisfies this rule.
+(§5.4.1): a `#derive` prefix on the derived story usage plus a
+`#derivation connection` whose `#original` and `#derive` ends name the
+two stories satisfies this rule.
 A `satisfy` link also satisfies it where the project uses that form,
 for example between requirements and system elements per the §9
 mapping. A doc-comment mention of derivation counts for neither.
@@ -55,8 +56,9 @@ Every stakeholder need MUST have at least one validation case.
 ### Rule 4: No Orphans
 No verification case should exist without a `verify`
 link to a requirement. No system requirement should exist without an
-upward trace to a stakeholder need (a §5.4.1 derivation connection or
-a `satisfy` link, per Rule 1). No system element requirement should
+upward trace to a stakeholder need (a §5.4.1 `#derivation connection`
+whose `#original` and `#derive` ends name the two stories, or a
+`satisfy` link, per Rule 1). No system element requirement should
 exist without a `satisfy` link to a system requirement.
 
 ### Rule 5: Bidirectional Consistency
@@ -81,13 +83,17 @@ the iso-config share. The last two are legacy layouts.
 
 ### Step 2: Extract Requirements
 
-Search for `requirement def` declarations, and for the
-`RequirementDerivation::derivations` connections that record §5.4.1
-derivation. For each requirement, record:
-- The requirement ID (from the `id` attribute)
-- Whether it has an upward trace (a derivation connection naming it
-  as the derived end, or a `satisfy` link)
-- Whether any verification case has a `verify` link to it (downward trace)
+Search for story usages `requirement <ID> : UserStory` (and the legacy
+`requirement def <ID> :> UserStory`, the pre-4.0 form still found in
+older projects), for any other `requirement def` declarations, and for
+the `#derivation connection` blocks that record §5.4.1 derivation. For
+each requirement, record:
+- The requirement ID (the usage name for a story, the `id` attribute
+  where one is declared)
+- Whether it has an upward trace (a `#derivation connection` whose
+  `#derive` end names it, or a `satisfy` link)
+- Whether any verification case has a `verify` link to it, written as
+  dot notation on the story usage (`verify <story>.acceptance`)
 
 ### Step 3: Extract Stakeholder Needs
 
@@ -112,8 +118,8 @@ Search for `verification def` declarations. For each, record:
 
 ### Step 4a: Cross-check bidirectional consistency (Rule 5)
 
-For each `satisfy` link found in a requirement, and for each end of
-every derivation connection:
+For each `satisfy` link found in a requirement, and for each
+`#original` and `#derive` end of every `#derivation connection`:
 - Verify the target stakeholder need or system requirement exists in the model
 - Verify that the target entity is reachable (not in a missing file)
 
@@ -213,18 +219,24 @@ For each gap, suggest the specific fix:
 
 | Gap Type | Suggestion |
 |----------|-----------|
-| Requirement without satisfy | "Add `satisfy requirement [need-id];` to this requirement" |
-| Requirement without verify | "Create a verification case with `verify requirement [req-id];`" |
+| Requirement without satisfy | "Add `satisfy [story] by [element];`" |
+| Requirement without verify | "Create a verification case with `verify [story].acceptance;`" |
 | Need without requirement | "Derive a system requirement from this stakeholder need" |
 | Need without validation | "Create a validation case for this stakeholder need" |
 | Orphan verification case | "Add a `verify` link or remove this unused case" |
 
-## Automator-Enhanced Checking
+## Syside Automator (paid toolchain only)
 
 When the Syside Automator Python library is available (`pip install syside`),
 use it for **semantic trace checking** instead of grep-based text matching.
 This provides accurate relationship traversal, broken link detection, and
-documentation extraction.
+documentation extraction. Automator ships with the paid Syside Pro Suite,
+so on a project whose `sysml_toolchain` is `omg-pilot` or `opensysml` the
+grep procedure above is the only path.
+
+The scripts in this section are unverified since the licence lapsed. The
+grep procedure above is the verified path, and it is the one to report
+from when the two disagree.
 
 ### Check Automator Availability
 
@@ -259,19 +271,38 @@ def check_traceability(model_dir: str = "model/") -> list[str]:
     satisfy_count = 0
     verify_count = 0
 
-    # Check all requirement definitions
-    for req in model.nodes(syside.RequirementDefinition):
+    # A satisfy relation is a SatisfyRequirementUsage node elsewhere in
+    # the model, not a child of the story, so collect the requirements
+    # they satisfy once and test each story against that set.
+    # `satisfied_requirement` is the accessor for the target of the
+    # relation. Unverified against a licensed Syside.
+    satisfied = set()
+    for sat in model.nodes(syside.SatisfyRequirementUsage):
+        if sat.document.document_tier is not syside.DocumentTier.Project:
+            continue
+        target = sat.satisfied_requirement
+        if target is not None:
+            satisfied.add(target.qualified_name)
+
+    # Check all story usages. A story is a package-level requirement
+    # usage typed by UserStory, not a requirement definition. Its
+    # nested acceptance, sla and benefit usages are members of the
+    # story rather than stories of their own, so the walk keeps only
+    # usages whose owner is a package. `element.owner` is the parent
+    # accessor the wiki page `syside-core-api` documents. Unverified
+    # against a licensed Syside.
+    for req in model.nodes(syside.RequirementUsage):
         if req.document.document_tier is not syside.DocumentTier.Project:
             continue
+        if req.owner is None or req.owner.try_cast(syside.Package) is None:
+            continue
         req_count += 1
-        has_satisfy = False
+        has_satisfy = req.qualified_name in satisfied
         has_verify = False
+        if has_satisfy:
+            satisfy_count += 1
 
         for child in req.owned_elements.collect():
-            # Check for satisfy relationships
-            if child.try_cast(syside.RequirementUsage) is not None:
-                has_satisfy = True
-                satisfy_count += 1
             # Check for verification case references
             if child.try_cast(syside.VerificationCaseUsage) is not None:
                 has_verify = True
@@ -328,7 +359,7 @@ When Automator is available, the gap report can include requirement
 documentation for context:
 
 ```python
-for req in model.nodes(syside.RequirementDefinition):
+for req in model.nodes(syside.RequirementUsage):
     if req.document.document_tier is not syside.DocumentTier.Project:
         continue
     for doc in req.documentation.collect():

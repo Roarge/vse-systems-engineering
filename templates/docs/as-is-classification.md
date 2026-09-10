@@ -26,7 +26,7 @@ The survey distinguishes two categories:
   and carry `@ConfigItem { ciState = CIState::Baselined }`.
 - **Contingent** elements are currently used but the project owns the
   choice. They live in `model/core/as-is/` and carry
-  `@ConfigItem { ciState = CIState::Proposed }`. The project may
+  `@ConfigItem { ciState = CIState::Draft }`. The project may
   replace, refine, or retire them through forward-going stories.
 
 A third pile, **Skipped or irrelevant**, records elements the survey
@@ -60,7 +60,7 @@ the Change Request workflow:
    element's `ciId` and the new evidence that establishes the mandate.
 2. Update `model/core/base-architecture/{{PROJECT_NAME}}_BaseArchitecture.sysml`
    to declare the part def under the `library package`. Move attributes
-   and version, and replace `ciState = CIState::Proposed` with
+   and version, and replace `ciState = CIState::Draft` with
    `ciState = CIState::Baselined` against a new
    `baselineId = "BL-BA-AS-IS-x.y"`.
 3. Update

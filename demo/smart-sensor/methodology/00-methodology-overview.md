@@ -83,7 +83,7 @@ entering §6.
 | Source methodology (Harmony aMBSE) | This methodology |
 |---|---|
 | Stakeholder use cases are primary; stakeholder requirements are allocated to them | Stakeholder user stories are primary; their `capability` may be elaborated by a use case (§1.4.5) |
-| Stakeholder requirements text is the deliverable | User Story specializations with typed `role`, `capability`, `benefit`, `acceptance`, optional `frame concern` (§1.4.6) |
+| Stakeholder requirements text is the deliverable | User Story usages (requirement usages typed by `UserStory`) with typed `role`, `capability`, `benefit`, `acceptance`, optional `frame concern` (§1.4.6) |
 | Stakeholder needs implicit in requirement text | Stakeholder needs modelled as `concern def` (sysmlv2 §32.5); stories `frame` the concerns they address |
 | System use cases generated 1:1 from stakeholder use cases | System user stories `derive` from stakeholder user stories (typically 1:N), retaining role-actor binding |
 | Three alternative use case analysis approaches (flow-based, scenario-based, state-based) | Same three approaches, applied to the *capability* of a system story rather than to a use case directly |
@@ -120,9 +120,9 @@ Appendix examples are deferred until the project example domain is fixed.
 ### 0.6.1 §1 — User Stories (foundation, drafted)
 
 The canonical artefact specification. Drafted in `01-user-stories.md`. Defines
-the `UserStory` requirement specialisation with `role`, `capability`,
-`benefit`, `acceptance`, and optional `frame concern`. All workflow stages
-(§4–§7) consume and produce User Story specialisations.
+the `UserStory` requirement definition and the story usages typed by it, with
+`role`, `capability`, `benefit`, `acceptance`, and optional `frame concern`.
+All workflow stages (§4–§7) consume and produce story usages.
 
 ### 0.6.2 §2 — Base Architecture
 
@@ -238,7 +238,7 @@ shared reference for all stories' `subject` declarations and for any
    concern can be addressed. Prioritise by importance, urgency, project
    risk, and information availability.
 4. **Generate stakeholder user stories.** Apply §1 to author one or more
-   `UserStory` specializations per capability theme. Each story `frame`s
+   story usages typed by `UserStory` per capability theme. Each story `frame`s
    the concern(s) it addresses (per §1.4.6). Stories enter the model in
    §1.7.1 minimal form and progress as detail emerges.
 5. **Elaborate story scenarios (optional).** Where a story's capability is
@@ -254,7 +254,7 @@ shared reference for all stories' `subject` declarations and for any
 
 - `part def` set for stakeholder types
 - `concern def` set (the stakeholder needs register)
-- `UserStory` specialisation set with `frame concern` links
+- Story usage set typed by `UserStory`, with `frame concern` links
 - `use case def` set (where capabilities have been elaborated)
 - `verification def` set scoped to validation
 
@@ -301,7 +301,7 @@ shared reference for all stories' `subject` declarations and for any
 
 **Artefacts produced:**
 
-- System `UserStory` set with `derive` links to stakeholder stories
+- System story usage set with `#derivation` connections to stakeholder stories
 - `action def` / `use case def` / `state def` set per chosen analysis path
 - Extended logical data schema (`item def`, flow types)
 - Dependability concerns and stories
@@ -433,6 +433,9 @@ packaged as a SysML v2 `library package` named `MBSEMethodology` (working
 title), so that downstream projects can adopt the methodology by `import`
 rather than by re-declaration.
 
+The shipped realisation is `VSE_Library` (`model/library/vse-library.sysml`).
+The `MBSEMethodology` name remains reserved for the standalone package.
+
 Two SysML v2 mechanisms support this packaging (sysmlv2 Ch 41):
 
 1. **Model libraries.** Methodology elements are declared once in a
@@ -441,8 +444,8 @@ Two SysML v2 mechanisms support this packaging (sysmlv2 Ch 41):
    `#userStory`, `#stakeholderStory`, `#systemStory`, `#subsystemStory`
    may be declared as `Metaobjects::SemanticMetadata` specialisations,
    each redefining `baseType` to point at the corresponding methodology
-   element. Projects then write `#userStory requirement def US_042 { … }`
-   without explicit `:> UserStory`.
+   element. Projects then write `#userStory requirement US_042 { … }`
+   without explicit `: UserStory`.
 
 Library packaging is deferred until the foundational sections (§1–§3) and
 at least one workflow stage are stable. The methodology specification

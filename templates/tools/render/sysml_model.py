@@ -16,22 +16,45 @@ point documented in methodology/iso-29110-hooks-guide.md section 3.1.
 
 Constructs recognised:
 
-* `requirement def <ID> :> UserStory { ... }`, with `subject <n> : <Type>`,
-  `stakeholder <n> : <Role>`, `attribute :>> capability = "..."`,
-  `attribute :>> benefit = "..."`, `frame <n> : <Concern>`,
-  `requirement acceptance[n] { doc /* ... */ }`, and
-  `require constraint <name>`.
-* `connection <name> : RequirementDerivation::derivations { end ::> A;
-  end ::> B; }`, read as original then derived per methodology section
-  5.4.1, corroborated by the `#derive` annotation on the derived story.
-* `verification def <ID> { doc /* ... */ objective { verify <ID>::<member>;
+* `requirement <ID> : UserStory { ... }`, the story usage that is the
+  canonical form from 4.0.0, and the legacy `requirement def <ID> :>
+  UserStory { ... }`, with `subject :>> <n> : <Type>`,
+  `stakeholder :>> <n> : <Role>`, `attribute :>> capability = "..."`,
+  `attribute :>> benefit = "..."`, `frame <n> : <Concern>` and
+  `requirement :>> acceptance { doc /* ... */ }`. A named
+  `requirement <name> { ... }` nested in the acceptance body is an
+  acceptance criterion, and one nested directly in the story body is a
+  formalised benefit carrying a `require constraint`. The pre-4.0
+  spellings `subject <n> : <Type>`, `requirement acceptance[n]` and
+  `require constraint <name>` are read as well.
+* `@StoryMeta { points = 5; priority = Priority::high; status =
+  StoryStatus::ready; }` on a story. Where a story carries no
+  `@StoryMeta`, the legacy `doc /* StoryMeta: points=5, ... */` comment
+  is read instead.
+* `#derivation connection <name> { end #original ::> A; end #derive ::>
+  B; }`, and the legacy `connection <name> :
+  RequirementDerivation::derivations { end ::> A; end ::> B; }` whose
+  untagged ends read as original then derived per methodology section
+  5.4.1. Either form is corroborated by the `#derive` annotation on the
+  derived story.
+* `verification def <ID> { doc /* ... */ objective { verify <ID>.<member>;
   } }`, classified as a verification case or a validation case by
   identifier prefix and, failing that, by the directory the file sits in.
+  The pre-4.0 `verify <ID>::<member>` is read as well.
 * `satisfy <requirement> by <element>;`, recorded when present.
 
 Anything else is skipped rather than reported. The renderers document what
 the model states, and a reader that refused unfamiliar syntax would block
 the very commits the hooks exist to encourage.
+
+One construct per logical line. Continuation lines are joined into a
+single statement, so a declaration that wraps is read whole, but two
+declarations written on the same line are read as one and the second is
+lost. This is a limit of the line-oriented method, not a rule of the
+notation, and it predates the story-usage form. Two layouts that the
+joiner cannot merge are read by the parser instead: `#derivation` on a
+line of its own before `connection <name> {`, and a `@StoryMeta {` block
+whose assignments sit on their own lines.
 
 Determinism
 -----------
@@ -46,7 +69,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Directories searched for the model, in order, relative to the project
 # root. This mirrors the .iso-config.yaml discovery convention used by the
@@ -61,9 +84,15 @@ _RE_DOC_MARKER = re.compile(r"@@VSEDOC(\d+)@@")
 _RE_TRAILING_DOC = re.compile(r"(?:^|[^A-Za-z0-9_])doc\s*$")
 
 _RE_STORY = re.compile(
-    r"\brequirement\s+def\s+(?:<[^>]*>\s*)?"
-    r"([A-Za-z_][A-Za-z0-9_]*)\s*:>\s*([A-Za-z_][A-Za-z0-9_:]*)"
+    r"\brequirement\s+(?:def\s+)?(?:<[^>]*>\s*)?"
+    r"([A-Za-z_][A-Za-z0-9_]*)\s*(?::>|:)\s*([A-Za-z_][A-Za-z0-9_:]*)"
 )
+_RE_DERIVATION_META = re.compile(
+    r"^#derivation\s+connection\s*(?:<[^>]*>\s*)?([A-Za-z_][A-Za-z0-9_]*)?"
+)
+_RE_SUBREQ = re.compile(r"\brequirement\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]*\])?\s*\{")
+_RE_STORYMETA = re.compile(r"@StoryMeta\s*\{([^}]*)\}")
+_RE_STORYMETA_DOC = re.compile(r"StoryMeta:\s*([^.]*)")
 _RE_CASE = re.compile(
     r"\bverification\s+def\s+(?:<[^>]*>\s*)?([A-Za-z_][A-Za-z0-9_]*)"
 )
@@ -72,13 +101,13 @@ _RE_CONNECTION = re.compile(
     r"([A-Za-z_][A-Za-z0-9_:]*)"
 )
 _RE_DERIVATION_TYPE = re.compile(r"(?:^|::)[Dd]erivations?$")
-_RE_ACCEPTANCE = re.compile(r"\brequirement\s+acceptance\s*(\[[^\]]*\])?")
+_RE_ACCEPTANCE = re.compile(r"\brequirement\s+(?::>>\s*)?acceptance\s*(\[[^\]]*\])?")
 _RE_CONSTRAINT = re.compile(r"\brequire\s+constraint\s+([A-Za-z_][A-Za-z0-9_]*)")
 _RE_SUBJECT = re.compile(
-    r"\bsubject\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([A-Za-z_][A-Za-z0-9_:]*)"
+    r"\bsubject\s+(?::>>\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([A-Za-z_][A-Za-z0-9_:]*)"
 )
 _RE_STAKEHOLDER = re.compile(
-    r"\bstakeholder\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([A-Za-z_][A-Za-z0-9_:]*)"
+    r"\bstakeholder\s+(?::>>\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([A-Za-z_][A-Za-z0-9_:]*)"
 )
 _RE_NARRATIVE = re.compile(
     r"\battribute\s*:>>\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"((?:[^\"\\]|\\.)*)\""
@@ -86,8 +115,8 @@ _RE_NARRATIVE = re.compile(
 _RE_FRAME = re.compile(
     r"\bframe\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*([A-Za-z_][A-Za-z0-9_:]*)"
 )
-_RE_END = re.compile(r"\bend\s*::>\s*([A-Za-z_][A-Za-z0-9_:]*)")
-_RE_VERIFY = re.compile(r"\bverify\s+([A-Za-z_][A-Za-z0-9_:]*)")
+_RE_END = re.compile(r"\bend\s*(?:#([A-Za-z_]+)\s*)?(?:[A-Za-z_][A-Za-z0-9_]*\s*)?::>\s*([A-Za-z_][A-Za-z0-9_:]*)")
+_RE_VERIFY = re.compile(r"\bverify\s+(?:requirement\s+)?([A-Za-z_][A-Za-z0-9_:.]*)")
 _RE_SATISFY = re.compile(
     r"\bsatisfy\s+(?:requirement\s+)?([A-Za-z_][A-Za-z0-9_:]*)\s+by\s+"
     r"([A-Za-z_][A-Za-z0-9_:.]*)"
@@ -142,6 +171,7 @@ class Story:
     capability: str = ""
     benefit: str = ""
     derive_annotation: bool = False
+    meta: dict = field(default_factory=dict)
     concerns: List[str] = field(default_factory=list)
     acceptances: List[Acceptance] = field(default_factory=list)
     constraints: List[Constraint] = field(default_factory=list)
@@ -182,14 +212,15 @@ class Case:
         for target, member in self.verifies:
             if target != identifier:
                 continue
-            if member in ("", "acceptance"):
+            if member == "" or member.split(".")[0] == "acceptance":
                 return True
         return False
 
 
 @dataclass
 class Derivation:
-    """A `RequirementDerivation::derivations` connection between stories."""
+    """A derivation between stories, read from a `#derivation connection`
+    or from the legacy `RequirementDerivation::derivations` connection."""
 
     name: str
     source: str
@@ -451,13 +482,16 @@ def _split_target(qualified: str) -> Tuple[str, str]:
     `acceptance` or `dashboardSla` start lower case. The distinction is
     what separates `SYS_001_X::acceptance` from a plain `SYS_001_X`.
     """
-    segments = [segment for segment in qualified.split("::") if segment]
+    segments = [segment for segment in re.split(r"::|\.", qualified) if segment]
     if not segments:
         return "", ""
-    last = segments[-1]
-    if len(segments) >= 2 and last[:1].islower():
-        return segments[-2], last
-    return last, ""
+    # The story is the last segment that starts with a capital letter, and
+    # everything after it is the member path, so `US_001.acceptance.latency`
+    # reads as story `US_001` and member `acceptance.latency`.
+    for index in range(len(segments) - 1, -1, -1):
+        if segments[index][:1].isupper():
+            return segments[index], ".".join(segments[index + 1:])
+    return segments[-1], ""
 
 
 # ---------------------------------------------------------------------------
@@ -508,6 +542,14 @@ def _nearest(stack: List[_Frame], kind: str):
     return None
 
 
+def _read_meta(text: str, meta: Dict[str, str]) -> None:
+    """Read `key = value;` pairs of a `@StoryMeta` body into meta."""
+    for pair in text.replace("}", "").split(";"):
+        if "=" in pair:
+            key, value = pair.split("=", 1)
+            meta[key.strip()] = _last_segment(value.strip())
+
+
 def _attach_doc(line: str, docs: List[str], target) -> bool:
     """Attach any doc body on this line to the given element."""
     match = _RE_DOC_MARKER.search(line)
@@ -529,19 +571,49 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
     stack: List[_Frame] = []
     depth = 0
     pending_derive = False
+    pending_derivation = False
 
     for line in _logical_lines(clean):
         delta = _brace_delta(line)
         opens = delta > 0
         top = stack[-1] if stack else None
 
-        if line.startswith("#"):
-            # A bare annotation such as `#derive` sits above the construct
-            # it annotates.
-            if "derive" in line:
-                pending_derive = True
-            depth += delta
+        # `#derivation` written on its own line applies to the connection
+        # that follows it, and to nothing else.
+        if pending_derivation:
+            pending_derivation = False
+            if re.match(r"connection\b", line):
+                line = "#derivation " + line
+        if line == "#derivation":
+            pending_derivation = True
             continue
+
+        # Inside a wrapped `@StoryMeta {` block every line is a pair.
+        if top is not None and top.kind == "meta":
+            _read_meta(line, top.data.meta)
+            depth += delta
+            while stack and depth < stack[-1].depth:
+                stack.pop()
+            continue
+
+        if line.startswith("#"):
+            meta_match = _RE_DERIVATION_META.match(line)
+            if meta_match:
+                derivation = Derivation(name=meta_match.group(1) or "", source=relative)
+                model.derivations.append(derivation)
+                if opens:
+                    stack.append(_Frame("derivation", depth + delta, derivation))
+                depth += delta
+                continue
+            if re.match(r"#derive\b", line):
+                pending_derive = True
+                line = re.sub(r"^#derive\s*", "", line)
+                if not line:
+                    depth += delta
+                    continue
+            else:
+                depth += delta
+                continue
 
         handled = False
 
@@ -599,6 +671,31 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
                     stack.append(_Frame("acceptance", depth + delta, acceptance))
                 handled = True
 
+        if not handled and top is not None and top.kind == "acceptance":
+            match = _RE_SUBREQ.search(line)
+            if match:
+                acceptance = top.data
+                story = _nearest(stack, "story")
+                criterion = Acceptance(label=match.group(1))
+                if acceptance in story.acceptances and not acceptance.doc.paragraphs:
+                    story.acceptances.remove(acceptance)
+                story.acceptances.append(criterion)
+                _attach_doc(line, docs, criterion)
+                if opens:
+                    stack.append(_Frame("criterion", depth + delta, criterion))
+                handled = True
+
+        if not handled and top is not None and top.kind == "story":
+            match = _RE_SUBREQ.search(line)
+            if match and match.group(1) != "acceptance":
+                story = top.data
+                constraint = Constraint(name=match.group(1))
+                story.constraints.append(constraint)
+                _attach_doc(line, docs, constraint)
+                if opens:
+                    stack.append(_Frame("constraint", depth + delta, constraint))
+                handled = True
+
         if not handled and _nearest(stack, "story") is not None:
             match = _RE_CONSTRAINT.search(line)
             if match:
@@ -625,8 +722,13 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
         if not handled and top is not None and top.kind == "derivation":
             match = _RE_END.search(line)
             if match:
-                identifier = _last_segment(match.group(1))
-                if not top.data.original:
+                role = (match.group(1) or "").lower()
+                identifier = _last_segment(match.group(2))
+                if role == "original":
+                    top.data.original = identifier
+                elif role in ("derive", "derived"):
+                    top.data.derived = identifier
+                elif not top.data.original:
                     top.data.original = identifier
                 elif not top.data.derived:
                     top.data.derived = identifier
@@ -640,6 +742,18 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
                     if target and (target, member) not in case.verifies:
                         case.verifies.append((target, member))
                 handled = True
+
+        if not handled and top is not None and top.kind == "story":
+            match = _RE_STORYMETA.search(line)
+            if match:
+                _read_meta(match.group(1), top.data.meta)
+                handled = True
+            elif opens:
+                match = re.match(r"@StoryMeta\s*\{(.*)$", line)
+                if match:
+                    _read_meta(match.group(1), top.data.meta)
+                    stack.append(_Frame("meta", depth + delta, top.data))
+                    handled = True
 
         if not handled and top is not None:
             story = _nearest(stack, "story")
@@ -673,7 +787,13 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
                 handled = True
 
         if not handled and top is not None:
-            _attach_doc(line, docs, top.data)
+            if _attach_doc(line, docs, top.data) and top.kind == "story" and not top.data.meta:
+                legacy = _RE_STORYMETA_DOC.search(top.data.doc.text)
+                if legacy:
+                    for pair in legacy.group(1).split(","):
+                        if "=" in pair:
+                            key, value = pair.split("=", 1)
+                            top.data.meta[key.strip()] = value.strip()
 
         depth += delta
         while stack and depth < stack[-1].depth:
@@ -689,7 +809,9 @@ def find_model_root(project_root: Optional[Path] = None) -> Path:
             return path
     raise ModelError(
         "no model directory found at model/ or engineering/model/, "
-        "run the renderer from the project root"
+        "run the renderer from the engineering root (the directory "
+        "holding `.iso-config.yaml`, the project root in a greenfield "
+        "layout)"
     )
 
 
@@ -737,8 +859,10 @@ def run(render) -> int:
 
     The render callable receives the model and returns a
     (relative path, document text) pair. Invocation takes no arguments and
-    runs from the project root, which is the contract the post-merge hook
-    and the CI freshness check both rely on.
+    runs from the engineering root (the directory holding
+    `.iso-config.yaml`, the project root in a greenfield layout), which is
+    the contract the post-merge hook and the CI freshness check both rely
+    on.
     """
     script_name = Path(sys.argv[0]).name
     try:

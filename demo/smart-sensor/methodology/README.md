@@ -6,7 +6,9 @@ agile model-based systems engineering (MBSE) process built on three
 substantive changes from Harmony aMBSE (Douglass, 2016, 2021):
 
 1. User stories are the canonical stakeholder-intent artefact at every
-   stage. A `UserStory` specialises `requirement def`.
+   stage. A `UserStory` is a `requirement def` in the shipped
+   `VSE_Library`. Every story is a requirement usage typed by it
+   (`requirement US_042 : UserStory`).
 2. SysML v2 throughout. No SysML v1 stereotypes.
 3. Base Architecture and System Context are foundational artefacts
    that precede stakeholder work.
@@ -30,6 +32,10 @@ mechanism in Claude Code: project-local files win.
 > copy plus skill-side fallback) and the `/vse-setup` copy step arrived
 > with version 2.0.0, which restructured the command, skill, and hook
 > surfaces around the user-story-first methodology. Both are live.
+> Version 4.0.0 moved stories from `requirement def ... :> UserStory` to
+> requirement usages so that models validate under the OMG pilot
+> implementation and OpenSysML as well as Syside. See CHANGELOG 4.0.0 for
+> the migration.
 
 ## Document map
 

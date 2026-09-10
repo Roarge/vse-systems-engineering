@@ -7,6 +7,9 @@
 
 package {{PROJECT_NAME}}_Domain {
 
+    private import ScalarValues::*;
+    private import Time::Iso8601DateTime;
+
     // Item types that cross the system boundary.
     item def AlarmEvent {
         attribute id : AlarmId;
@@ -24,7 +27,7 @@ package {{PROJECT_NAME}}_Domain {
     }
 
     attribute def AlarmId :> Natural;
-    attribute def DateTime :> ISO::ISO8601String;
+    attribute def DateTime :> Iso8601DateTime;
     attribute def TemperatureValue :> Real;
     attribute def PrecipitationValue :> Real;
 }

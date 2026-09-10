@@ -11,11 +11,14 @@
 
 package {{PROJECT_NAME}}_DecisionPoints {
 
-    // Example: a decision over alarm storage strategy.
+    private import {{PROJECT_NAME}}_CandidateVariants::*;
+
+    // Example: a decision over alarm storage strategy. Each variant part
+    // is typed by the candidate part defs in candidate-variants/.
     variation part def AlarmStorageStrategy {
-        variant part inMemoryRingBuffer;
-        variant part embeddedSQLite;
-        variant part externalTSDB;
+        variant part inMemoryRingBuffer : InMemoryRingBuffer;
+        variant part embeddedSQLite     : EmbeddedSQLite;
+        variant part externalTSDB       : ExternalTSDB;
     }
 
     // Cross-decision constraints (per §6.3.3) live on the

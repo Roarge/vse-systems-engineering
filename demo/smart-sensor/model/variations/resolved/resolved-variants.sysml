@@ -16,6 +16,7 @@ package SmartSensor_Resolved {
 
     private import SmartSensor_Context::*;
     private import SmartSensor_DecisionPoints::*;
+    private import SmartSensor_SystemStories::*;
 
     // The configurable specialisation of the system part def adds a
     // variation slot for every architectural decision the project
@@ -30,5 +31,17 @@ package SmartSensor_Resolved {
     // ADR at docs/decisions/2026-04-15-alert-history.md.
     part def SmartSensor_System_v1 :> SmartSensor_System_Configurable {
         part :>> alertHistory = AlertHistoryStorageStrategy::cloudTimeSeries;
+    }
+
+    // Deployment of the resolved architecture. The `satisfy` statements
+    // record which system stories the selected variant set answers for,
+    // which is the §7 allocation trace the Traceability Matrix reads as
+    // the System Element column.
+    part smartSensorDeployment {
+        part system : SmartSensor_System_v1;
+        satisfy SYS_001_DashboardLatency by system;
+        satisfy SYS_002_BatchAcknowledgement by system;
+        satisfy SYS_003_CalibrationOffsetCommit by system;
+        satisfy SYS_004_AlertRetentionWindow by system;
     }
 }

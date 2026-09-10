@@ -2,12 +2,14 @@
 """Render the Stakeholders Requirements Specification from the model.
 
 Writes docs/generated/stakeholder-requirements.md. Takes no arguments and
-runs from the project root, which is the contract the post-merge git hook
-and the Contract 3 freshness check in CI both rely on (see
-methodology/iso-29110-hooks-guide.md sections 4.4 and 4.5).
+runs from the engineering root (the directory holding `.iso-config.yaml`,
+the project root in a greenfield layout), which is the contract the
+post-merge git hook and the Contract 3 freshness check in CI both rely on
+(see methodology/iso-29110-hooks-guide.md sections 4.4 and 4.5).
 
 The source is the stakeholder story register, that is every
-`requirement def <ID> :> UserStory` under `stories/stakeholder/`, per the
+`requirement <ID> : UserStory` story usage, and every legacy
+`requirement def <ID> :> UserStory`, under `stories/stakeholder/`, per the
 methodology section 9.5 artefact mapping.
 """
 
@@ -90,7 +92,7 @@ def render(model):
     lines.append("")
     lines.append(
         "Each section below is one stakeholder story, that is one "
-        "`requirement def` specialising `UserStory`. The role, capability, "
+        "`requirement` usage typed by `UserStory`. The role, capability, "
         "and benefit are the agile-canonical members required by "
         "methodology section 1.2, the framed concerns are the `concern def` "
         "elements the story addresses under section 1.4.6, and the "

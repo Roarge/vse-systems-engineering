@@ -1,6 +1,6 @@
 ---
 name: needs-and-requirements
-description: Elicit stakeholder needs and derive system requirements as `UserStory` specialisations linked through `derive` and `frame concern`.
+description: Elicit stakeholder needs and derive system requirements as `UserStory` usages linked through `derive` and `frame concern`.
 when_to_use: Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
 user-invocable: true
 ---
@@ -11,7 +11,7 @@ If the VSE lens (vse-companion-overview) is not yet loaded this session, load it
 
 You guide the engineer through the user-story-driven workflow stages of the methodology: §4 Stakeholder Requirements Engineering and §5 System Requirements Definition and Analysis. The §1 user-story authoring discipline runs through both stages and you enforce it in every story you help author. You also run the §3 System Context completeness checks that bound the stakeholder set, and you route structural follow-up work to the right specialist skill.
 
-The canonical artefact is the `UserStory` specialisation declared in §1. Stakeholder requirements (StRS) and system requirements (SyRS) are rendered downstream from `model/core/stories/stakeholder/` and `model/core/stories/system/` rather than authored as free-standing documents.
+The canonical artefact is the requirement usage typed by `UserStory` declared in §1. Stakeholder requirements (StRS) and system requirements (SyRS) are rendered downstream from `model/core/stories/stakeholder/` and `model/core/stories/system/` rather than authored as free-standing documents.
 
 ## When This Skill Triggers
 
@@ -66,13 +66,13 @@ Themes are working notes, not modelled SysML elements. Prioritisation is recorde
 
 ### Step 4: Generate stakeholder user stories
 
-For each prioritised theme, author one or more `UserStory` specialisations per §1. Each stakeholder story shall:
+For each prioritised theme, author one or more story usages (`requirement US_<n>_<Short> : UserStory`) per §1. Each stakeholder story shall:
 
-- declare its `subject` referencing a part def from §2 (Base Architecture) or §3 (System Context), typically the project's system part def,
-- redefine `role` with a part def from `model/core/stakeholders/` (per §1.4.1 / §1.9 rule 4),
+- redefine its `subject` (`subject :>> system : <PartDef>`) with a part def from §2 (Base Architecture) or §3 (System Context), typically the project's system part def, declared before `role` (per §1.9 rule 2),
+- redefine `role` with a part def from `model/core/stakeholders/` (`stakeholder :>> role : <PartDef>`, per §1.4.1 / §1.9 rule 3),
 - declare narrative `capability` and `benefit` strings,
 - `frame` one or more concerns from `model/core/concerns/` (per §1.4.6),
-- declare at least one `acceptance` subrequirement in Given/When/Then form before transitioning to `ready` (per §1.4.4 / §1.9 rule 3).
+- declare at least one `acceptance` criterion in Given/When/Then form, in `requirement :>> acceptance`, before transitioning to `ready` (per §1.4.4 / §1.9 rule 4).
 
 Stories enter the model in §1.7.1 minimal form and progress through the lifecycle as detail emerges. The narrative `capability` and `benefit` strings are retained throughout (per §1.7.2 / §1.9 rule 6).
 
@@ -94,7 +94,7 @@ Hand off the use-case body authoring to `@sysml2-cases`.
 
 ### Step 6: Validation plan
 
-For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/` whose `objective` includes a `verify` clause naming the acceptance subrequirement. Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
+For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/` whose `objective` includes a `verify` clause naming the member of the story usage by dot notation (`verify <story>.acceptance`). Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
 
 Hand off the verification-case body detail to `@verification-validation`.
 
@@ -102,7 +102,7 @@ Hand off the verification-case body detail to `@verification-validation`.
 
 ### Step 1: Derive system stories
 
-For each stakeholder story in scope, derive one or more system stories in `model/core/stories/system/`. The derivation is recorded with both the `#derive` annotation on the derived requirement and an explicit `Derivation` connection to the original story (per §5.4.1 / spec §9.6).
+For each stakeholder story in scope, derive one or more system stories in `model/core/stories/system/`. The derivation is recorded with both the `#derive` prefix on the derived story usage and a `#derivation connection` whose ends are tagged `#original` and `#derive`, naming the original story and the derived one (per §5.4.1 / spec §9.6).
 
 A system story shall keep the **same** `role` as the stakeholder story (per §5.3). What changes is:
 
@@ -144,7 +144,7 @@ The hazard-identification sub-workflow (FMEA, FTA, STPA, security threat models)
 
 ### Step 6: Verification plan
 
-For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/` whose `objective` verifies the acceptance subrequirement (per §5.4.6). Verification cases at this level exercise system internals, distinct from §4 validation cases.
+For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/` whose `objective` verifies the acceptance by dot notation (`verify <story>.acceptance`, per §5.4.6). Verification cases at this level exercise system internals, distinct from §4 validation cases.
 
 Hand off verification-case detail to `@verification-validation`.
 
@@ -170,7 +170,7 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 
 3. **Dropping the narrative attributes.** The narrative `capability` and `benefit` strings are retained throughout the story's lifecycle (per §1.7.2 and §1.9 rule 6), because the typed bindings that replace them are readable to a tool and not to a stakeholder. The edit is reversible through git. At `light`, name the rule once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
-4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` subrequirement in Given/When/Then form before it leaves `backlog` (per §1.4.4 and §1.9 rule 3). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
+4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` criterion in Given/When/Then form before it reaches `ready` (per §1.4.4 and §1.9 rule 4). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
 ## Hand-offs
 
@@ -190,7 +190,7 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 - `model/core/stakeholders/<role>.sysml`. One `part def` per stakeholder role.
 - `model/core/concerns/<concern>.sysml`. One `concern def` per concern, with `subject`, `stakeholder`, and `require constraint`.
 - `model/core/stories/stakeholder/<US_id>_<short>.sysml`. Stakeholder stories per §1, with `frame concern` to the concern register.
-- `model/core/stories/system/<US_id>_<short>.sysml`. System stories with `#derive` annotation and explicit `Derivation` connection back to the originating stakeholder story.
+- `model/core/stories/system/<US_id>_<short>.sysml`. System stories with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
 - `model/core/use-cases/<name>.sysml`. Optional use-case elaborations whose `objective` names the story.
 - `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that verify acceptance criteria exercising stakeholder intent.
 - `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that verify acceptance criteria exercising system internals.

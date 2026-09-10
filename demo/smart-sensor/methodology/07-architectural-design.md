@@ -103,18 +103,20 @@ package <ALLOC> Aiwell_RequirementAllocations {
     private import Aiwell_LogicalArchitecture::*;
     private import Aiwell_SystemStories::*;
 
+    part la : Aiwell_OnlineSentral_LogicalArchitecture;
+
     // Single allocation
     allocation alarmsBatchOwner
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::alarms;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.alarms;
 
     // Joint allocation (latency budget shared)
     allocation latencyBudget1
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::alarms;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.alarms;
     allocation latencyBudget2
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::operatorUI;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.operatorUI;
 }
 ```
 
@@ -124,25 +126,41 @@ that derive from the system constraint:
 ```sysml
 // Subsystem story decomposes the system constraint
 package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
-    private import MBSEMethodology::UserStory;
+    private import VSE_Library::*;
+    private import ScalarValues::*;
     private import Aiwell_LogicalArchitecture::*;
+    private import RequirementDerivation::*;
 
-    requirement def ALM_001_BatchCommit :> UserStory {
-        subject sub : AlarmManagementSubsystem;
-        stakeholder role : OperatorUISubsystem;
+    #derive
+    requirement ALM_001_BatchCommit : UserStory {
+        subject :>> system : AlarmManagementSubsystem;
+        stakeholder :>> role : OperatorUISubsystem;
 
-        capability = "commit a batch of alarm acknowledgements
-                      atomically and notify the persistence layer";
-        benefit    = "the operator UI can report success within
-                      its latency budget";
+        attribute :>> capability = "commit a batch of alarm acknowledgements atomically and notify the persistence layer";
+        attribute :>> benefit    = "the operator UI can report success within its latency budget";
 
-        attribute commitLatency : DurationValue;
-        require constraint commitBudget {
-            commitLatency <= 200 [ms]
+        attribute commitLatency : Rational = 200.0;
+
+        requirement commitBudget {
+            doc /* The batch commit completes within commitLatency milliseconds. */
+            require constraint { commitLatency <= 200.0 }
         }
+    }
+
+    // The second story of the section 7.3.3 decomposition. It is
+    // declared here in minimal form so that the derivation resolves.
+    // Its capability, benefit, and acceptance are written when the
+    // operator UI subsystem is specified in its own turn.
+    #derive
+    requirement UI_017_BatchSelectionUX : UserStory {
+        subject :>> system : OperatorUISubsystem;
+        stakeholder :>> role : AlarmManagementSubsystem;
     }
 }
 ```
+
+At subsystem level the subject member keeps its name `system` and is
+redefined with the subsystem part def.
 
 The `OperatorUISubsystem` is the *role* in the subsystem story
 because, at the subsystem boundary, it is the entity calling the
@@ -161,14 +179,13 @@ stories are allocated to subsystems first. Subsystem-level stories are
 then *extracted* from the allocated behaviour.
 
 ```sysml
-// Top-down example
-#RequirementDerivation::derivation connection {
-    end #RequirementDerivation::original
-        ::> SYS_142_BatchAcknowledgement;
-    end #RequirementDerivation::derive
-        ::> ALM_001_BatchCommit;
-    end #RequirementDerivation::derive
-        ::> UI_017_BatchSelectionUX;
+// Top-down example, in the §1.9 rule 8 form: the `#derive` prefix on
+// each derived story usage and one `#derivation connection` naming the
+// original and both derived stories.
+#derivation connection sys142Decomposes {
+    end #original ::> SYS_142_BatchAcknowledgement;
+    end #derive   ::> ALM_001_BatchCommit;
+    end #derive   ::> UI_017_BatchSelectionUX;
 }
 ```
 
@@ -242,19 +259,22 @@ package <ALM_CON> AlarmManagementSubsystem_Concerns {
     }
 }
 
-package <ALM_STR> AlarmManagementSubsystem_Stories {
-    requirement def ALM_002_DurableAcknowledgement :> UserStory {
-        subject sub : AlarmManagementSubsystem;
-        stakeholder role : OperatorUISubsystem;
+package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
+    // Extends the package introduced in section 7.3.2.
+    private import VSE_Library::*;
+    private import Aiwell_LogicalArchitecture::*;
+    private import AlarmManagementSubsystem_Concerns::*;
 
-        capability = "ensure acknowledged state survives subsystem
-                      restart without loss or duplication";
-        benefit    = "the operator does not see re-emerging
-                      already-cleared alarms after restart";
+    requirement ALM_002_DurableAcknowledgement : UserStory {
+        subject :>> system : AlarmManagementSubsystem;
+        stakeholder :>> role : OperatorUISubsystem;
+
+        attribute :>> capability = "ensure acknowledged state survives subsystem restart without loss or duplication";
+        attribute :>> benefit    = "the operator does not see re-emerging already-cleared alarms after restart";
 
         frame concern : AlarmDataIntegrity;
 
-        requirement acceptance[1] {
+        requirement :>> acceptance {
             doc /* After kill -9 mid-commit, on restart, no alarm
                    shall be in an indeterminate state. */
         }
@@ -330,7 +350,7 @@ Manual review remains valuable. The questions reviewers ask:
 | Allocation | `allocation <name> allocate <source> to <target>;` | §7.15 |
 | Inter-subsystem interface | `interface def Name { end … ; flow … ; }` | §7.14 |
 | Connection wiring | `interface <name> : InterfaceDef connect <part>.<port> to <part>.<port>;` | §7.13 |
-| Subsystem story | `requirement def NNN :> UserStory { subject sub : Subsystem; … }` | §1, §7.20 |
+| Subsystem story | `requirement NNN : UserStory { subject :>> system : Subsystem; … }` | §1, §7.20 |
 | Control law | `constraint def Name { attribute … ; <expr> }` allocated via `allocation` | §7.19 |
 
 ## 7.5 Well-formedness rules

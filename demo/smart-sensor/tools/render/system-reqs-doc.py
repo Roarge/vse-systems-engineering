@@ -2,15 +2,18 @@
 """Render the System Requirements Specification from the model.
 
 Writes docs/generated/system-requirements.md. Takes no arguments and runs
-from the project root, which is the contract the post-merge git hook and
-the Contract 3 freshness check in CI both rely on (see
+from the engineering root (the directory holding `.iso-config.yaml`, the
+project root in a greenfield layout), which is the contract the post-merge
+git hook and the Contract 3 freshness check in CI both rely on (see
 methodology/iso-29110-hooks-guide.md sections 4.4 and 4.5).
 
 The source is the system story register, that is every
-`requirement def <ID> :> UserStory` under `stories/system/`, per the
+`requirement <ID> : UserStory` story usage, and every legacy
+`requirement def <ID> :> UserStory`, under `stories/system/`, per the
 methodology section 9.5 artefact mapping. System stories carry the
-`require constraint` clauses that formalise the sharpened benefit and
-feed the section 6 trade studies.
+nested requirement usages, each with a `require constraint`, that
+formalise the sharpened benefit and feed the section 6 trade studies
+(the pre-4.0 `require constraint <name>` form is read as well).
 """
 
 import os
@@ -95,7 +98,7 @@ def render(model):
     lines.append("")
     lines.append(
         "Each section below is one system story, that is one "
-        "`requirement def` specialising `UserStory` and derived from a "
+        "`requirement` usage typed by `UserStory` and derived from a "
         "stakeholder story under methodology section 5.4.1. The required "
         "constraints are the `require constraint` clauses that formalise "
         "the sharpened benefit under section 5.4.2, and they are the "

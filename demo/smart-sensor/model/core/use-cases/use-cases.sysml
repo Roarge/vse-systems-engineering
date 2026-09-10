@@ -4,7 +4,7 @@
 // more user stories, not a parallel artefact. It expresses a longer
 // scenario whose narrative is awkward to compress into a single
 // `acceptance` body. The use case lives at the same level as the
-// story it elaborates and points back to it via `derive`.
+// story it elaborates and names it as its `objective`.
 //
 // Smart Sensor uses one elaboration: the alert-acknowledgement
 // scenario for US_002 / SYS_002, which has multiple steps and a
@@ -51,13 +51,15 @@ package SmartSensor_UseCases {
                acknowledged state both in the cloud store and on the
                device. */
 
-        subject system     : SmartSensor_System;
+        subject sys        : SmartSensor_System;
         actor operator     : Operator;
         actor dashboard    : CloudDashboard;
 
         // Per methodology §1.4.5, the use case declares the story it
         // elaborates as its `objective`. This couples the actor to
         // the stakeholder by shared typing of `Operator`.
-        objective realisesUS002 : US_002_AcknowledgeAlertsBatched;
+        objective realisesUS002 :> US_002_AcknowledgeAlertsBatched {
+            subject :>> system = sys;
+        }
     }
 }

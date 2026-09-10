@@ -89,10 +89,17 @@ package HS_UseCases {
 
 ```sysml
 package HS_Requirements {
+    private import VSE_Library::*;
     private import HS_StakeholderNeeds::SN_WaterLevelVisibility;
-    requirement def SR_SampleRate {
-        attribute id : String = "SR-0001";
-        attribute verificationMethod : String = "Test";
+    requirement SR_SampleRate : UserStory {
+        subject :>> system : SensorSystem;
+        stakeholder :>> role : Operator;
+        attribute :>> capability = "sample the water level every 5 s";
+        attribute :>> benefit    = "the operator sees a current level";
+        requirement :>> acceptance {
+            doc /* Given the sensor is powered, when 5 s elapse,
+                   then a new reading is published. */
+        }
         satisfy requirement SN_WaterLevelVisibility;
     }
 }
@@ -129,7 +136,7 @@ package HS_Verification {
     verification def VC_SampleRateTest {
         attribute id : String = "VC-0001";
         objective {
-            verify requirement SR_SampleRate;
+            verify SR_SampleRate.acceptance;
         }
     }
 }
@@ -242,7 +249,7 @@ package HS_Verification {
 
     verification def VC_SampleRateTest {
         objective {
-            verify requirement SR_SampleRate;
+            verify SR_SampleRate.acceptance;
         }
     }
 }
@@ -326,7 +333,7 @@ A `ConfigItem` applied to a requirement elsewhere in the model:
 package HS_Requirements {
     private import Metadata::ConfigItem;
 
-    requirement def SR_SampleRate {
+    requirement SR_SampleRate : UserStory {
         @ConfigItem {
             ciId = "REQ-SYS-001";
             baselineId = "BL-SRS-0.3";

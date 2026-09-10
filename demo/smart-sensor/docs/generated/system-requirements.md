@@ -4,7 +4,7 @@
 
 This specification is rendered from the system story register in the SysML 2.0 model under `model/` by `tools/render/system-reqs-doc.py`. Edit the model, then regenerate. Editing this file directly is lost work, because the next merge on `main` overwrites it.
 
-Each section below is one system story, that is one `requirement def` specialising `UserStory` and derived from a stakeholder story under methodology section 5.4.1. The required constraints are the `require constraint` clauses that formalise the sharpened benefit under section 5.4.2, and they are the criteria a section 6 trade study scores against. The derivation itself is tabulated in the Traceability Matrix.
+Each section below is one system story, that is one `requirement` usage typed by `UserStory` and derived from a stakeholder story under methodology section 5.4.1. The required constraints are the `require constraint` clauses that formalise the sharpened benefit under section 5.4.2, and they are the criteria a section 6 trade study scores against. The derivation itself is tabulated in the Traceability Matrix.
 
 ## SYS_001_DashboardLatency
 
@@ -29,3 +29,27 @@ Each section below is one system story, that is one `requirement def` specialisi
 **Acceptance criteria**
 
 1. Given N unacknowledged alerts (N up to 1000) are shown, when the operator selects "Acknowledge all", then all N transition within 1 second.
+
+## SYS_003_CalibrationOffsetCommit
+
+- **Stakeholder role:** MaintenanceTechnician
+- **Capability:** accept a reference measurement on the maintenance port, derive a calibration offset, persist it across power cycles, and apply it to every subsequent reading
+- **Benefit:** the technician confirms a corrected reading before leaving the deployment site
+- **Framed concerns:** DeviceServiceability
+- **Required constraints:** calibrationCommitSla
+
+**Acceptance criteria**
+
+1. Given a calibration command carrying a reference value, when the device accepts it on the maintenance port, then the stored offset survives a power cycle and the next reading published to the cloud carries the corrected value.
+
+## SYS_004_AlertRetentionWindow
+
+- **Stakeholder role:** Regulator
+- **Capability:** write every raised alert to an append-only store with an integrity digest and keep the record queryable for the mandated retention period
+- **Benefit:** an audit query at any instant inside the retention period returns the complete alert set together with its integrity evidence
+- **Framed concerns:** DataRetentionCompliance
+- **Required constraints:** retentionWindowSla
+
+**Acceptance criteria**
+
+1. Given an alert raised at time t, when an audit query runs at any instant between t and t plus the retention period, then the store returns that alert with a digest that matches the value recorded at t.

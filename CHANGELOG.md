@@ -6,6 +6,223 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Release train for 4.0.0. rc numbers are assigned at merge time and
+recorded here.
+
+### Changed (story form, breaking)
+
+- **Stories are requirement usages typed by the library definitions.**
+  A story is written `requirement US_042_AckFromDashboard : UserStory`
+  where 3.x wrote `requirement def US_042_AckFromDashboard :>
+  UserStory`. The reason is that `verify`, `satisfy` and the
+  derivation connection all address a usage, and both open-source
+  reference implementations refuse `verify Def::member` against the
+  definition form, so a 3.x model validates under Syside alone.
+  `VSE_Library::UserStory` therefore declares the two parameters every
+  story redefines, the subject first because the language requires it,
+  and carries the acceptance member a verification case reaches by dot
+  notation. Inside a story body, `subject :>> system : <SystemPartDef>`
+  and `stakeholder :>> role : <StakeholderPartDef>` redefine those
+  parameters, acceptance is `requirement :>> acceptance`, and a
+  formalised benefit is a nested requirement usage holding the
+  `require constraint`, so that `verify <story>.<name>` has a usage to
+  target. Derivation is the `#derive` prefix on the derived story plus
+  a named `#derivation connection` whose ends are tagged `#original`
+  and `#derive`, in place of the `RequirementDerivation::derivations`
+  connection. A use case names its story as an `objective` that
+  subsets the story and binds the story subject to the case subject,
+  without which the pilot reports that only one subject is allowed.
+  `@StoryMeta` is applied as metadata with qualified enumeration
+  values such as `Priority::high` and `StoryStatus::ready`, and the
+  doc-comment form it replaces survives only as legacy input.
+  Methodology §1.3, §1.4, §1.7, §1.8, §1.9, §4.3, §4.5, §5.4, §5.6 and
+  §7.3 carry the new form, and so do the seven wiki methodology pages
+  that taught the old one: `user-story-canonical-artefact`,
+  `role-actor-coupling`, `frame-concern-pattern`,
+  `benefit-as-criterion`, `methodology-library-packaging`,
+  `system-stories-workflow` and `stakeholder-stories-workflow`. §5.4.3
+  joins that list with a change of shape rather than of story form: a
+  scenario is a `use case def` whose body sequences the interactions as
+  performed actions, because `subject` and `actor` are legal only in a
+  requirement or case body, and the §4.3.5, §5.4.3.1 and §7.3.2 example
+  blocks are repaired alongside it. §2.2, §2.3.2, §2.5 and §2.6 rule 2
+  write an immutable Base Architecture constraint as a sibling
+  `requirement def` whose subject is the platform, which is what the
+  shipped template does and what both reference implementations accept,
+  where a `require constraint` nested directly in a part def is
+  refused. The skills, the traceability matrix-builder agent and the
+  pre-commit gate read the new form, and `project-audit` gained story
+  checks that report each pre-4.0 construct as WARN rather than as an
+  error, so a 3.x model still audits while its migration is staged.
+
+  The ISO/IEC 29110 obligations in §9 are unchanged. What moves is the
+  SysML 2.0 notation the story artefacts are written in, not which
+  artefacts a Basic Profile project owes an assessor.
+
+  **Migration to 4.0.0 for 3.x projects.**
+
+  1. Rewrite each story header. `requirement def <ID> :> UserStory {`
+     becomes `requirement <ID> : UserStory {`.
+  2. Redefine the library parameters in the body. `subject <n> : T`
+     becomes `subject :>> system : T`, and `stakeholder role : T`
+     becomes `stakeholder :>> role : T`, with the subject first.
+  3. Redefine acceptance. `requirement acceptance[1] {` becomes
+     `requirement :>> acceptance {`, with separately verifiable
+     criteria nested inside it as named requirement usages.
+  4. Wrap a formalised benefit. `require constraint <name> { doc }`
+     becomes `requirement <name> { doc require constraint { <expr> } }`.
+  5. Rewrite each derivation. `connection x :
+     RequirementDerivation::derivations { end ::> A; end ::> B; }`
+     becomes `#derivation connection x { end #original ::> A; end
+     #derive ::> B; }`, and the derived story usage takes the
+     `#derive` prefix.
+  6. Rewrite every verify target from `verify X::m` to `verify X.m`.
+  7. Rewrite each use-case objective. `objective r : Story;` becomes
+     `objective r :> Story { subject :>> system = <caseSubject>; }`.
+  8. Qualify every `@StoryMeta` literal, and replace a doc-comment
+     StoryMeta with the metadata usage.
+  9. Copy the new `model/library/vse-library.sysml` from
+     `templates/common/library/`. It is a `baselined_paths` entry at
+     the `full` rigour profile, so that copy goes through a Change
+     Request.
+
+  Run `/vse-audit` after upgrading, and see
+  `tooling-reference-implementation-rules` for the accepted forms.
+
+### Fixed (scaffold and demo)
+
+- The model scaffold `@project-setup` lays down did not validate once
+  the placeholders were substituted, and every defect below was
+  reproduced under both open-source reference implementations before
+  it was fixed. `require constraint` sat directly inside a part def in
+  the Base Architecture template, where it is legal only inside a
+  requirement, concern, viewpoint or objective body, and becomes a
+  sibling `requirement def MaxChannelsConstraint` whose subject is the
+  platform. `abstract` was written postfix on `part def
+  CommunicationProtocol`, which is prefix in the concrete syntax.
+  `ScalarValues` imports were missing from the Base Architecture,
+  domain, system story, candidate variant and trade study templates.
+  The domain template specialised `ISO::ISO8601String`, which the
+  standard library does not declare, and now specialises
+  `Time::Iso8601DateTime`. The candidate variant template used
+  undeclared `ms` and `us` units, and now declares both locally over
+  `DurationUnit` and drops its placeholder `DurationValue`, which ISQ
+  already declares. The variation specialised enumeration-style
+  variant literals and now types its variant parts by the candidate
+  part defs. The trade study template carried a tuple-valued `subject
+  alternatives` and now declares `subject decision`, with the
+  criterion referenced as `ref requirement slaCriterion ::>
+  SYS_001_Example.sla`. The context composite connected
+  `operator.systemPort`, a port it never declared, and five imports
+  named packages the scaffold does not create, now commented out with
+  a guidance comment each. `@StoryMeta` literals were unqualified, and
+  `stakeholder :>> role` redefined a role the story never declared.
+  `CIState::Proposed` is not a literal of `CIState` and becomes
+  `CIState::Draft` in five places: the as-is template, its `.tmpl`, the
+  as-is classification document, `@project-setup`, and the wiki page
+  `base-architecture-corollaries`. The substituted scaffold validates
+  clean under the OMG SysML v2 Pilot Implementation (kernel 0.61.0) and
+  under OpenSysML v0.6.0, nineteen root packages, no diagnostic and
+  exit 0.
+- The `@StoryMeta` example in the `vse-library.sysml` doc comment used
+  unqualified enumeration literals, which is the form the same release
+  now reports as WARN everywhere else.
+- In the demo model, `Alert::readingRef` was an `attribute` typed by
+  an `item def` and is now `ref item readingRef : Reading`. The
+  sixteen-file demo validates clean under both tools, and the demo
+  README carries the command and the result for each.
+- The demo's retention figure matches its own decision record.
+  `SYS_004_AlertRetentionWindow` demanded 1825 days from a store the
+  2026-04-15 alert-history decision record chose for 730, so the
+  attribute, its `require constraint` and the `VC_004` pass criterion
+  now read 730 and cite the record.
+- The hooks guide §4.5 side-effects list named a stale
+  `docs/traceability-matrix.md`, a misspelt
+  `stakeholders-requirements.md` and two renderers the plugin never
+  shipped, and its §6 CI step repeated all three and passed `--check`
+  to a renderer that takes no arguments. The list, the tree, the
+  `renderers:` config sample and the CI step now carry the three
+  shipped renderers, and the CI step regenerates and diffs the way the
+  shipped Contract 3 step does. The §9.5 Verification and Validation
+  Report rows cite `templates/sr/verification-report.md` and
+  `templates/sr/validation-report.md`, no longer a §10.10 template that
+  §10.10 does not list, and no longer claim a copy into
+  `docs/templates/` that no skill performs.
+
+### Added (renderer and demo)
+
+- The renderers read the 4.0.0 story form alongside the 3.x one, so a
+  project migrates its model without changing its tooling. The shared
+  reader `sysml_model.py` accepts `requirement <ID> : UserStory` with
+  or without a display short name beside the legacy `requirement def
+  <ID> :> UserStory`, `#derive` standing alone or prefixing a story on
+  the same line, `#derivation connection` frames whose ends are read
+  by their `#original` and `#derive` tags while untagged ends keep the
+  positional reading of the legacy form, the `:>>` prefix on
+  acceptance, subject and stakeholder, a named requirement nested in a
+  story as a formalised benefit constraint and one nested in
+  acceptance as a criterion, `verify` in dot or `::` notation with or
+  without the `requirement` keyword, and `@StoryMeta`, falling back to
+  the doc-comment form only where no `@StoryMeta` is present. Two
+  layouts the line joiner cannot merge are read by the parser instead,
+  a `#derivation` tag on a line of its own before the connection it
+  applies to and a `@StoryMeta {` block whose assignments sit on their
+  own lines, so a formatted model keeps its derivations and its story
+  metadata rather than losing them in silence.
+  `traceability-matrix.py` now propagates `satisfy` through
+  derivation, so a satisfy relation declared against a derived system
+  story reaches the stakeholder story row it belongs to. Run against
+  the unmigrated demo, the reader reproduced the committed
+  traceability matrix byte for byte. Eight tracked `__pycache__` files
+  are untracked, both `.gitignore` files having excluded them all
+  along. The four docstrings and the missing-model error say that the
+  scripts run from the engineering root, the directory holding
+  `.iso-config.yaml`.
+- The demo carries the issue #92 items the model can answer for.
+  `SYS_003_CalibrationOffsetCommit` and `SYS_004_AlertRetentionWindow`
+  derive from `US_003_CalibrateInField` and `US_004_RetainAlertHistory`
+  through named derivation connections, each with a nested constraint
+  requirement and a verification case, `VC_003_CalibrationCommitTime`
+  and `VC_004_AlertRetentionWindow`, so all four stakeholder stories
+  now reach a verified system story rather than two of them. The
+  `smartSensorDeployment` part in the resolved variant satisfies all
+  four system stories from a part typed by `SmartSensor_System_v1`, so
+  the System Element column of the generated matrix names an element
+  where it used to read `none`. `MemoryConstraint` is recorded as a
+  library-tier exemption in the demo SEMP rather than as a
+  verification case, because §2.5 writes a Base Architecture immutable
+  constraint as a `requirement def`, which is not a verify target, and
+  §2.6 rule 2 holds it instead through subject typing, every part
+  typed by the platform or by a specialisation of it keeping it
+  satisfied. The demo README gains a validation record naming the tool
+  versions, the command and the result for the pilot and for
+  OpenSysML, and the SEMP, the pull request template and `CLAUDE.md`
+  follow the recorded `omg-pilot` preference. One issue #92 item is
+  deferred rather than resolved here, the §8.3.1 sub-package split of
+  the demo model.
+
+### Fixed (pre-commit)
+
+- `pre-commit-traceability.sh` matched only `verify requirement
+  <name>` and therefore never matched the methodology's own verify
+  form, so every touched verification case was reported as an orphan.
+  It now matches usage and definition story declarations and both the
+  dot and `::` verify forms.
+- The touched set ignores what is not a declaration. Comment bodies
+  are stripped before matching, so a story written inside a `doc`
+  comment or after `//` is read as documentation, and every path with
+  a `library/` directory segment is skipped, so the shipped
+  `model/library/vse-library.sysml` no longer reports `UserStory`,
+  `Feature` and `Epic` as gaps on the first commit of a full-profile
+  project.
+- The gate carries regression tests. `tests/hooks/test-pre-commit.sh`
+  gained four behavioural cases: a covered story, a story whose
+  verification case lost its verify line, a story that exists only
+  inside a comment, and the shipped library staged at the full
+  profile.
+
 ## [3.2.0] - 2026-08-14
 
 ### Added (forked execution)

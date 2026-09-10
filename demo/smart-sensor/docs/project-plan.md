@@ -32,6 +32,10 @@ Profile: standard. Tailoring per methodology §0.10 defaults, except
 `docs/project-plan.md` alone, so the first two additions adopt
 full-profile items early and the last two are project-specific.
 
+Toolchain: omg-pilot (SysML v2 validator for the hooks and CI,
+recorded 2026-09-10). OpenSysML v0.6.0 is the recorded fallback, and
+Sensmetry Syside is optional.
+
 `storymeta.required_fields` is `[points, priority, status]`, the
 full-profile value from §0.10.3 rather than the standard default
 `[status, priority]`, because every demo story carries an estimate and

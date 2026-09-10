@@ -88,9 +88,7 @@ is right and this guide is wrong. The coverage table above describes the
 │   ├── render/                   # model → ISO documents
 │   │   ├── traceability-matrix.py
 │   │   ├── stakeholder-reqs-doc.py
-│   │   ├── system-reqs-doc.py
-│   │   ├── ivv-plan.py
-│   │   └── justification-doc.py
+│   │   └── system-reqs-doc.py
 │   └── lint/
 │       ├── story-wellformed.py
 │       └── plan-complete.py
@@ -241,9 +239,14 @@ if iso::touches_baselined; then
     fi
 fi
 
-# 4. Traceability integrity
-python3 tools/render/traceability-matrix.py --check || {
-    echo "❌ Traceability integrity failed (dangling references)." >&2
+# 4. Derived-artefact freshness (Contract 3)
+python3 tools/render/traceability-matrix.py || {
+    echo "❌ Traceability matrix could not be regenerated." >&2
+    exit 1
+}
+git add --intent-to-add -- docs/generated/
+git diff --exit-code --quiet -- docs/generated/ || {
+    echo "❌ docs/generated/ is stale. Stage the regenerated artefacts (hooks guide Contract 3)." >&2
     exit 1
 }
 
@@ -385,13 +388,12 @@ choice, and configuration-management scope.
 
 **Side-effects performed:**
 
-1. **Traceability Matrix** regenerated to `docs/traceability-matrix.md`.
-2. **Stakeholder/System/Subsystem Requirements Specifications**
-   rendered to `docs/generated/`.
-3. **IVV Plan** rendered to `docs/generated/ivv-plan.md`.
-4. **Justification Document** rendered (aggregating trade studies +
-   ADRs).
-5. **Progress Status Record** entry stub appended when the merge
+1. **Traceability Matrix** regenerated to
+   `docs/generated/traceability-matrix.md`.
+2. **Stakeholder and System Requirements Specifications** rendered to
+   `docs/generated/stakeholder-requirements.md` and
+   `docs/generated/system-requirements.md`.
+3. **Progress Status Record** entry stub appended when the merge
    closes a story or lands a release baseline.
 
 **Sample script (`.githooks/post-merge`):**
@@ -949,7 +951,12 @@ jobs:
       - name: Plan completeness (§10.3.1)
         run: python3 tools/lint/plan-complete.py docs/project-plan.md
       - name: Traceability integrity (§9.8)
-        run: python3 tools/render/traceability-matrix.py --check
+        # The renderer takes no arguments. Regenerate, then diff, the
+        # way the shipped Contract 3 step does.
+        run: |
+          python3 tools/render/traceability-matrix.py
+          git add --intent-to-add -- docs/generated/
+          git diff --exit-code -- docs/generated/
 
   render:
     needs: lint
@@ -959,11 +966,9 @@ jobs:
       - uses: actions/checkout@v4
         with: { token: ${{ secrets.RENDER_BOT_TOKEN }} }
       - run: |
-          python3 tools/render/traceability-matrix.py     > docs/traceability-matrix.md
-          python3 tools/render/stakeholder-reqs-doc.py    > docs/generated/stakeholders-requirements.md
-          python3 tools/render/system-reqs-doc.py         > docs/generated/system-requirements.md
-          python3 tools/render/ivv-plan.py                > docs/generated/ivv-plan.md
-          python3 tools/render/justification-doc.py       > docs/generated/justification-document.md
+          python3 tools/render/traceability-matrix.py   # docs/generated/traceability-matrix.md
+          python3 tools/render/stakeholder-reqs-doc.py  # docs/generated/stakeholder-requirements.md
+          python3 tools/render/system-reqs-doc.py       # docs/generated/system-requirements.md
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: regenerate derived artefacts [skip ci]"
@@ -1088,8 +1093,6 @@ renderers:
   traceability_matrix:    tools/render/traceability-matrix.py
   stakeholder_reqs:       tools/render/stakeholder-reqs-doc.py
   system_reqs:            tools/render/system-reqs-doc.py
-  ivv_plan:               tools/render/ivv-plan.py
-  justification:          tools/render/justification-doc.py
 ```
 
 The hook scripts read this file to determine what to enforce. Two
