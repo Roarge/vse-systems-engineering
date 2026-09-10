@@ -34,7 +34,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_001_SeeReadingsOnDashboard::acceptance;
+            verify US_001_SeeReadingsOnDashboard.acceptance;
         }
     }
 
@@ -59,7 +59,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_003_CalibrateInField::acceptance;
+            verify US_003_CalibrateInField.acceptance;
         }
     }
 
@@ -88,7 +88,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_002_AcknowledgeAlertsBatched::acceptance;
+            verify US_002_AcknowledgeAlertsBatched.acceptance;
         }
     }
 
@@ -120,7 +120,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_004_RetainAlertHistory::acceptance;
+            verify US_004_RetainAlertHistory.acceptance;
         }
     }
 }

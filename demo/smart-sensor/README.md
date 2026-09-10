@@ -27,13 +27,13 @@ model/
     domain/                 Reading, Alert, AcknowledgementCommand item defs
     stories/
       stakeholder/          US_001..004 (operator, maintainer, regulator needs)
-      system/               SYS_001..002 (derived system stories)
+      system/               SYS_001..004 (derived system stories)
     use-cases/              AcknowledgeAlertBatch (elaborates US_002)
     logical-architecture/
       interface-types/      OperatorDashboardInterface, DeviceToCloudInterface
     verification-validation/
-      verification-cases/   VC_001 (P95 latency), VC_002 (batch ack)
-      validation-cases/     VAL_001, VAL_002
+      verification-cases/   VC_001..004 (latency, batch ack, calibration, retention)
+      validation-cases/     VAL_001..004
     core.sysml              top-level package
   variations/
     decision-points/        AlertHistoryStorageStrategy
@@ -41,6 +41,7 @@ model/
     resolved/               System_Configurable + System_v1
   library/                  vse-library.sysml (UserStory, StoryMeta, etc.)
 docs/
+  generated/                Renderer output (two specifications, one matrix)
   project-plan.md           Project Plan (§10.3)
   risk-register.md          Risk Register (§10.7)
   cm-strategy.md            CM Strategy (§10.8)
@@ -67,6 +68,36 @@ Empty `model/core/{functional-architecture,parametrics,product-architecture,proc
 - It does not exercise SR.4 (Construction) or SR.6 (Product Delivery). Those activities are out of scope for the methodology per §9.2.
 
 ## Validating the demo
+
+`.iso-config.yaml` records `sysml_toolchain: omg-pilot`, so the OMG SysML v2 Pilot Implementation is the toolchain the hooks and the audit expect for this project. OpenSysML validates the same tree as a second opinion. Run both from this directory.
+
+Pilot command (the pilot has no batch mode, so the model is fed to the interactive kernel as one `%`-delimited block):
+
+```bash
+PILOT=$HOME/.local/share/sysml-pilot/sysml
+{ printf '%%\n'; cat $(find model -name '*.sysml' | sort); printf '\n%%\n%%exit\n'; } \
+  | java -cp "$PILOT/jupyter-sysml-kernel-0.61.0-all.jar" \
+         org.omg.sysml.interactive.SysMLInteractive "$PILOT/sysml.library"
+```
+
+The model is accepted when the output carries one root `Package` line per file and no `ERROR` or `WARNING` line.
+
+OpenSysML command:
+
+```bash
+sysml -validate $(find model -name '*.sysml' | sort)
+```
+
+The model is accepted when every file reports `✓ package` and the run ends in `no errors` with exit code 0.
+
+Sensmetry Syside is an optional third toolchain. `syside.toml` is retained in the project for readers who use it, and nothing in the demo depends on Syside being installed.
+
+### Validation record
+
+| Date | Tool | Versions | Command | Result |
+|------|------|----------|---------|--------|
+| 2026-09-10 | OMG SysML v2 Pilot Implementation | release 2026-07, kernel 0.61.0, `openjdk version "21.0.12" 2026-07-21` | the pilot command above, over the sixteen model files | Accepted. Sixteen root `Package` lines, no `ERROR` or `WARNING` line. |
+| 2026-09-10 | OpenSysML | v0.6.0 | the OpenSysML command above, over the sixteen model files | Exit code 0. Sixteen `✓ package` lines, then `no errors`. |
 
 Inside Claude Code, with the plugin installed:
 

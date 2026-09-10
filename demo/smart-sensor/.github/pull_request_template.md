@@ -36,7 +36,7 @@ For every story advanced by this PR:
 - [ ] Framed `concern def`s exist in `model/core/concerns/`.
 - [ ] Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
 - [ ] `StoryMeta` points, priority, status are recorded.
-- [ ] `syside check --warnings-as-errors` passes on the latest commit.
+- [ ] The model validates under the project's SysML v2 toolchain, `omg-pilot` here. The commands are in the README validation record.
 - [ ] Cross-references resolve (no dangling type names, no orphan stories).
 
 ## Reviewer checklist (§8.6.3)

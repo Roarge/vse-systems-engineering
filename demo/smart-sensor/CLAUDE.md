@@ -13,6 +13,8 @@ story-driven agile MBSE methodology, ISO/IEC 29110 aligned.
 - **Date created:** 2026-05-05
 - **Engineering root:** .
 - **Profile:** standard (rigour profile per methodology §0.10)
+- **Toolchain:** omg-pilot (SysML v2 validator per `.iso-config.yaml`
+  `sysml_toolchain`)
 
 ## Methodology
 
@@ -71,12 +73,12 @@ model/
     domain/                 Reading, Alert, AcknowledgementCommand
     stories/
       stakeholder/          US_001..US_004
-      system/               SYS_001, SYS_002 (derive from stakeholder)
+      system/               SYS_001..SYS_004 (derive from stakeholder)
     use-cases/              §1.4.5 elaborations
     logical-architecture/
       interface-types/      Reusable interface defs
     verification-validation/
-      verification-cases/   VC_001, VC_002
+      verification-cases/   VC_001..VC_004
       validation-cases/     VAL_001..VAL_004
     core.sysml              top-level package declaration
   variations/               §6 trade-study mechanism
@@ -104,3 +106,6 @@ docs/
 - System story IDs: `SYS_<n>_<ShortName>`.
 - Verification case IDs: `VC_<n>_<ShortName>`.
 - Validation case IDs: `VAL_<n>_<ShortName>`.
+- Stories are requirement usages: `requirement US_<n>_<ShortName> :
+  UserStory { ... }`. Verify targets use dot notation, as in
+  `verify US_<n>_<ShortName>.acceptance`.

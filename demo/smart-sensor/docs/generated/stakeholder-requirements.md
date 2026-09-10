@@ -4,7 +4,7 @@
 
 This specification is rendered from the stakeholder story register in the SysML 2.0 model under `model/` by `tools/render/stakeholder-reqs-doc.py`. Edit the model, then regenerate. Editing this file directly is lost work, because the next merge on `main` overwrites it.
 
-Each section below is one stakeholder story, that is one `requirement def` specialising `UserStory`. The role, capability, and benefit are the agile-canonical members required by methodology section 1.2, the framed concerns are the `concern def` elements the story addresses under section 1.4.6, and the acceptance criteria are the story's `acceptance` sub-requirements.
+Each section below is one stakeholder story, that is one `requirement` usage typed by `UserStory`. The role, capability, and benefit are the agile-canonical members required by methodology section 1.2, the framed concerns are the `concern def` elements the story addresses under section 1.4.6, and the acceptance criteria are the story's `acceptance` sub-requirements.
 
 ## US_001_SeeReadingsOnDashboard
 

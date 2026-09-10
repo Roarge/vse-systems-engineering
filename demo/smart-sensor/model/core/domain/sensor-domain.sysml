@@ -19,7 +19,7 @@ package SmartSensor_Domain {
     item def Alert {
         attribute id : AlertId;
         attribute severity : AlertSeverity;
-        attribute readingRef : Reading;
+        ref item readingRef : Reading;
         attribute raised : DateTime;
     }
 

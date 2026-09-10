@@ -37,8 +37,10 @@ disagree, the methodology wins.
   (`model/core/stakeholders/`) and concerns
   (`model/core/concerns/`).
 - **Specification format:** SysML 2.0 textual notation (`.sysml`
-  files). Stakeholder stories US_001 to US_004 and system stories
-  SYS_001 and SYS_002 with `require constraint` benefits per §5.
+  files). Every story is a requirement usage typed by `UserStory`.
+  Stakeholder stories US_001 to US_004, and system stories SYS_001 to
+  SYS_004 whose sharpened benefit sits in a nested requirement usage
+  carrying a `require constraint` per §5.4.2.
 - **Validation approach:** stakeholder review of the story register
   plus validation cases VAL_001 to VAL_004 for stakeholder-side
   checks.
@@ -51,8 +53,10 @@ disagree, the methodology wins.
   criteria sourced from story benefit constraints (the §0.3
   connective mechanism). Worked instance:
   `model/variations/trade-studies/` (AlertHistoryStorageTrade).
-- **Modelling tool:** Sensmetry Syside (SysML 2.0), configured by
-  `syside.toml`.
+- **Modelling tool:** SysML v2 textual notation, validated with the
+  OMG SysML v2 Pilot Implementation (release 2026-07, kernel 0.61.0)
+  and with OpenSysML v0.6.0. Sensmetry Syside is optional, and
+  `syside.toml` is retained for it.
 - **Constraints:** the Base Architecture (§2) fixes the
   ESP32-WROOM-32E MCU and the managed-cloud MQTT 5.0 broker
   (`model/core/base-architecture/`). Both sit outside trade-study
@@ -68,11 +72,24 @@ build-versus-buy decisions are open in the current release scope.
 
 - **Integration strategy:** incremental, following the story order
   of the release plan (`docs/releases/`).
-- **Verification methods:** verification cases VC_001 and VC_002
+- **Verification methods:** verification cases VC_001 to VC_004
   (`model/core/verification-validation/verification-cases/`), one
-  per acceptance criterion, methods per §9 scale mapping.
+  per system story, each taking that story's sharpened constraint
+  and its acceptance criterion, methods per §9 scale mapping.
 - **Validation approach:** validation cases VAL_001 to VAL_004
   against stakeholder stories, exercised at release boundaries.
+- **Base Architecture constraint exemption:** `MemoryConstraint`
+  (`model/core/base-architecture/`) carries no verification case.
+  Per §2.5 it is written in the library tier as a `requirement def`
+  over the ESP32 platform, and a definition is not a verify target,
+  so a case would have to introduce a usage of it outside the Base
+  Architecture. The constraint is held instead by the §2.6 rule 2
+  route, which is that every specialising part shall keep it
+  satisfied, checked when the firmware image is linked against the
+  platform budget the parent product line fixed in 2024. A
+  verification case is added only if a story drives the image past
+  that budget and the project takes the constraint into its own
+  scope.
 
 ## 3. Data Model
 
@@ -107,7 +124,9 @@ hook.
 
 | Tool | Purpose | Version |
 |------|---------|---------|
-| Sensmetry Syside | SysML 2.0 modelling | per `syside.toml` |
+| OMG SysML v2 Pilot Implementation | SysML v2 validation (preferred, `omg-pilot`) | release 2026-07, kernel 0.61.0 |
+| OpenSysML | SysML v2 validation (fallback) | v0.6.0 |
+| Sensmetry Syside | SysML 2.0 modelling and validation (optional) | per `syside.toml` |
 | Git | Version control, story branches per §8 | system |
 | Claude Code | SE companion (designed cognitive reserve) | with the vse-systems-engineering plugin |
 

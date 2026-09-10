@@ -10,10 +10,10 @@ The relations read are `derive` (stakeholder story to system story, methodology 
 
 | Stakeholder Story | System Story | Verification Case | Validation Case | System Element | Status |
 |---|---|---|---|---|---|
-| US_001_SeeReadingsOnDashboard | SYS_001_DashboardLatency | VC_001_DashboardLatencyP95 | VAL_001_OperatorSeeReadings | none | Complete |
-| US_002_AcknowledgeAlertsBatched | SYS_002_BatchAcknowledgement | VC_002_BatchAckLatency | VAL_003_OperatorBatchAcknowledgement | none | Complete |
-| US_003_CalibrateInField | none | none | VAL_002_TechnicianFieldCalibration | none | Complete |
-| US_004_RetainAlertHistory | none | none | VAL_004_RegulatorRetentionEvidence | none | Complete |
+| US_001_SeeReadingsOnDashboard | SYS_001_DashboardLatency | VC_001_DashboardLatencyP95 | VAL_001_OperatorSeeReadings | system | Complete |
+| US_002_AcknowledgeAlertsBatched | SYS_002_BatchAcknowledgement | VC_002_BatchAckLatency | VAL_003_OperatorBatchAcknowledgement | system | Complete |
+| US_003_CalibrateInField | SYS_003_CalibrationOffsetCommit | VC_003_CalibrationCommitTime | VAL_002_TechnicianFieldCalibration | system | Complete |
+| US_004_RetainAlertHistory | SYS_004_AlertRetentionWindow | VC_004_AlertRetentionWindow | VAL_004_RegulatorRetentionEvidence | system | Complete |
 
 ## Gaps
 
@@ -27,10 +27,10 @@ No gaps detected.
 |---|---|
 | Model files read | 16 |
 | Stakeholder stories | 4 |
-| System stories | 2 |
-| Derivation connections | 2 |
-| Verification cases | 2 |
+| System stories | 4 |
+| Derivation connections | 4 |
+| Verification cases | 4 |
 | Validation cases | 4 |
-| Satisfy relations | 0 |
+| Satisfy relations | 4 |
 | Stakeholder stories with acceptance coverage | 4 of 4 |
-| System stories with a verification case | 2 of 2 |
+| System stories with a verification case | 4 of 4 |
