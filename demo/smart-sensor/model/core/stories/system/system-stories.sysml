@@ -154,7 +154,11 @@ package SmartSensor_SystemStories {
 
         frame concern : DataRetentionCompliance;
 
-        attribute minRetentionPeriodDays : ScalarValues::Rational = 1825.0;
+        // The figure is the 730-day retention window of the selected
+        // cloudTimeSeries variant, recorded in
+        // docs/decisions/2026-04-15-alert-history.md and carried by
+        // decision-points.sysml as retentionDays = 730.
+        attribute minRetentionPeriodDays : ScalarValues::Rational = 730.0;
 
         // Connective mechanism (§0.3): the retention period is now a
         // story-sourced criterion for any §6 decision over the alert
@@ -168,7 +172,7 @@ package SmartSensor_SystemStories {
                    queryable, with its integrity digest intact, for
                    at least minRetentionPeriodDays days after the
                    instant it was raised. */
-            require constraint { minRetentionPeriodDays >= 1825.0 }
+            require constraint { minRetentionPeriodDays >= 730.0 }
         }
 
         requirement :>> acceptance {

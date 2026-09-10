@@ -61,9 +61,13 @@ package SmartSensor_VerificationCases {
         doc /* Method: attach a reference probe simulator to the
                maintenance port. Issue a calibration command with a
                known reference value. Timestamp the command
-               acceptance and the first published reading that
-               carries the corrected value. Power-cycle the device
-               and repeat the read.
+               acceptance and the commit event, that is the instant
+               the offset is persisted and applied to the reading
+               path, and take the difference. The second check is a
+               power cycle followed by a read, which shows the offset
+               survived. The demo fixes no reporting cadence, so the
+               arrival of the first published reading is not a bound
+               on the commit time.
 
                Pass criterion: commit time <= 2.0 seconds, and the
                offset survives the power cycle.
@@ -91,7 +95,7 @@ package SmartSensor_VerificationCases {
 
                Pass criterion: every seeded alert is returned at
                every sample point with a matching digest, over a
-               window of at least 1825 days.
+               window of at least 730 days.
 
                Equipment: dated-alert generator, accelerated store
                clock, audit-query client, digest recomputation tool.

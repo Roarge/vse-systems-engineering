@@ -87,6 +87,7 @@ model/
     resolved/               Selected variant
   library/                  vse-library.sysml (UserStory, etc.)
 docs/
+  generated/                Renderer output (two specifications, one matrix)
   project-plan.md           §10.3 Project Plan
   semp.md                   SR.1 Systems Engineering Management Plan
   risk-register.md          §10.7

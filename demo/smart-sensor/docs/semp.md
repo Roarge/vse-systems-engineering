@@ -86,10 +86,11 @@ build-versus-buy decisions are open in the current release scope.
   Architecture. The constraint is held instead by the §2.6 rule 2
   route, which is that every specialising part shall keep it
   satisfied, checked when the firmware image is linked against the
-  platform budget the parent product line fixed in 2024. A
-  verification case is added only if a story drives the image past
-  that budget and the project takes the constraint into its own
-  scope.
+  platform budget the parent product line fixed in 2024. That link
+  step sits in construction, which is outside this project's scope,
+  so the check is recorded here rather than run here. A verification
+  case is added only if a story drives the image past that budget and
+  the project takes the constraint into its own scope.
 
 ## 3. Data Model
 
@@ -125,6 +126,7 @@ hook.
 | Tool | Purpose | Version |
 |------|---------|---------|
 | OMG SysML v2 Pilot Implementation | SysML v2 validation (preferred, `omg-pilot`) | release 2026-07, kernel 0.61.0 |
+| OpenJDK | Java runtime for the pilot | 21.0.12 |
 | OpenSysML | SysML v2 validation (fallback) | v0.6.0 |
 | Sensmetry Syside | SysML 2.0 modelling and validation (optional) | per `syside.toml` |
 | Git | Version control, story branches per §8 | system |

@@ -80,7 +80,7 @@ PILOT=$HOME/.local/share/sysml-pilot/sysml
          org.omg.sysml.interactive.SysMLInteractive "$PILOT/sysml.library"
 ```
 
-The model is accepted when the output carries one root `Package` line per file and no `ERROR` or `WARNING` line.
+The model is accepted when the output carries one root `Package` or `LibraryPackage` line per file and no `ERROR` or `WARNING` line. The Base Architecture is a `library package`, so the pilot prints `LibraryPackage` for it.
 
 OpenSysML command:
 
@@ -96,7 +96,7 @@ Sensmetry Syside is an optional third toolchain. `syside.toml` is retained in th
 
 | Date | Tool | Versions | Command | Result |
 |------|------|----------|---------|--------|
-| 2026-09-10 | OMG SysML v2 Pilot Implementation | release 2026-07, kernel 0.61.0, `openjdk version "21.0.12" 2026-07-21` | the pilot command above, over the sixteen model files | Accepted. Sixteen root `Package` lines, no `ERROR` or `WARNING` line. |
+| 2026-09-10 | OMG SysML v2 Pilot Implementation | release 2026-07, kernel 0.61.0, `openjdk version "21.0.12" 2026-07-21` | the pilot command above, over the sixteen model files | Accepted. Sixteen root lines, fifteen `Package` and one `LibraryPackage`, no `ERROR` or `WARNING` line. |
 | 2026-09-10 | OpenSysML | v0.6.0 | the OpenSysML command above, over the sixteen model files | Exit code 0. Sixteen `✓ package` lines, then `no errors`. |
 
 Inside Claude Code, with the plugin installed:
