@@ -18,7 +18,7 @@ related:
   - sysmod-stakeholder-identification
 confidence: high
 created: 2026-05-05
-updated: 2026-08-13
+updated: 2026-09-10
 referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
@@ -33,7 +33,7 @@ referenced_by: [needs-and-requirements, story-orchestrator]
 - Recursive application at subsystem level
 - Out of scope
 
-Section 4 of the methodology is the first user-story-driven workflow stage. It captures stakeholder intent and produces the *stakeholder story register*, the set of `UserStory` specialisations that anchors every downstream requirement chain, together with the supporting concern and validation artefacts. The stage adapts the activities of Harmony aMBSE Chapter 4 (Douglass, 2016) to a user-story-first approach in which stakeholder use cases are demoted to optional elaborations introduced via the `objective` link of [[user-story-canonical-artefact]]. See [[methodology-overview]] for how §4 sits inside the overall arc.
+Section 4 of the methodology is the first user-story-driven workflow stage. It captures stakeholder intent and produces the *stakeholder story register*, the set of requirement usages typed by `UserStory` that anchors every downstream requirement chain, together with the supporting concern and validation artefacts. The stage adapts the activities of Harmony aMBSE Chapter 4 (Douglass, 2016) to a user-story-first approach in which stakeholder use cases are demoted to optional elaborations introduced via the `objective` link of [[user-story-canonical-artefact]]. See [[methodology-overview]] for how §4 sits inside the overall arc.
 
 ## Inputs and outputs
 
@@ -47,7 +47,7 @@ The stage produces five artefacts, all SysML 2.0 native:
 
 - A stakeholder taxonomy of `part def` instances under `core/stakeholders/`.
 - A stakeholder concern register of `concern def` instances under `core/concerns/`.
-- A stakeholder story register of `UserStory` specialisations under `core/stories/stakeholder/`.
+- A stakeholder story register of requirement usages typed by `UserStory` under `core/stories/stakeholder/`.
 - An optional use case set of `use case def` instances under `core/use-cases/`, each declaring a stakeholder story as its `objective`.
 - A validation case set of `verification def` instances under `core/verification-validation/validation-cases/`, exercising stakeholder intent rather than system internals.
 
@@ -82,15 +82,16 @@ Themes are prioritised against four factors, all inputs to human judgement rathe
 
 ### Step 4: Generate stakeholder user stories
 
-For each prioritised capability theme, author one or more `UserStory` specialisations per [[user-story-canonical-artefact]]. Stories enter the model in the §1.7.1 minimal form, that is `subject`, redefined `role`, `capability`, `benefit`, and at least one `acceptance` subrequirement before the story may transition to `ready`. They progress through the story lifecycle as detail emerges across later iterations.
+For each prioritised capability theme, author one or more story usages typed by `UserStory`, written `requirement US_NNN_Short : UserStory { ... }`, per [[user-story-canonical-artefact]]. Stories enter the model in the §1.7.1 minimal form, that is a redefined `subject` and `role`, narrative `capability` and `benefit`, and at least one acceptance criterion before the story may transition to `ready`. They progress through the story lifecycle as detail emerges across later iterations.
 
 A stakeholder story:
 
-- declares its `subject` referencing a part def from §2 Base Architecture or §3 System Context, typically the project's system part def,
+- redefines `subject` first, with a part def from §2 Base Architecture or §3 System Context, typically the project's system part def,
 - redefines `role` with a part def from `core/stakeholders/`,
 - declares `capability` and `benefit` as narrative strings,
+- applies `@StoryMeta` with qualified enumeration values,
 - frames one or more concerns from `core/concerns/` per [[frame-concern-pattern]],
-- declares at least one `acceptance` subrequirement before transitioning beyond `backlog`.
+- declares at least one criterion inside `requirement :>> acceptance` before transitioning beyond `backlog`.
 
 The `frame concern` link is the bridge that ties the new story back to the persistent concern register, which is what allows concerns and stories to remain in an n:m relationship across iterations.
 
@@ -100,7 +101,7 @@ Where a story's capability is non-trivial, declare a `use case def` that names t
 
 ### Step 6: Create or update the validation plan
 
-For each acceptance criterion in scope declare a `verification def` (sysmlv2 §7.23) whose `objective` includes a `verify` clause naming the acceptance subrequirement. Validation cases, those that exercise stakeholder intent rather than system internals, reside in `core/verification-validation/validation-cases/`. The validation plan is the union of these verification defs. Where multiple acceptance criteria require the same fixture, a single verification def may verify several criteria. The methodology discipline that separates *validation* of stakeholder intent from *verification* of system internals is editorial rather than syntactic. The SysML construct is the same `verification def`, and it is the directory placement plus the framed concern lineage that mark a case as validation.
+For each acceptance criterion in scope declare a `verification def` (sysmlv2 §7.23) whose `objective` includes a `verify` clause naming the story's acceptance by dot notation, as `verify <story>.acceptance`. Validation cases, those that exercise stakeholder intent rather than system internals, reside in `core/verification-validation/validation-cases/`. The validation plan is the union of these verification defs. Where multiple acceptance criteria require the same fixture, a single verification def may verify several criteria. The methodology discipline that separates *validation* of stakeholder intent from *verification* of system internals is editorial rather than syntactic. The SysML construct is the same `verification def`, and it is the directory placement plus the framed concern lineage that mark a case as validation.
 
 ## Well-formedness rules
 
@@ -109,7 +110,7 @@ Six rules govern the output of the stage.
 1. Every stakeholder story shall frame at least one concern, or carry a documenting comment explaining why no concern is yet modelled. Stories that never frame a concern are unrooted.
 2. Every concern shall have at least one framing story before [[system-stories-workflow]] begins, or be marked `informational-only` via metadata. A concern with no framing story is an unmet stakeholder need.
 3. The same `part def` shall type a stakeholder in `core/stakeholders/` and the corresponding human actor in §3 System Context.
-4. Where a use case declares a stakeholder story as its `objective`, the use case's `subject` shall conform to the story's `subject` type, and the actor representing the story's role shall be typed by the same part def as the story's `role`.
+4. Where a use case declares a stakeholder story as its `objective`, the objective subsets the story and binds the story's subject to the case subject (`objective <n> :> <story> { subject :>> system = <caseSubject>; }`), the use case's `subject` shall conform to the story's `subject` type, and the actor representing the story's role shall be typed by the same part def as the story's `role`.
 5. Validation cases shall verify acceptance criteria that exercise stakeholder intent, not system internals. Verification of system internals belongs to §5.
 6. The required output is forward-going stories, that is stories describing what the project shall *add* to the existing technical context. Context stories that record narrative around pre-existing decisions are an optional human addition per [[base-architecture-corollaries]]. AI agents shall not synthesise such context stories. A stakeholder concern *informed by* a Base Architecture constraint is legitimate and addressed by forward-going stories. The Base Architecture is the constraint, not the subject.
 

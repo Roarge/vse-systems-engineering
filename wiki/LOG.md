@@ -1576,3 +1576,61 @@ Routing resynced: sysml2-modelling. INDEX regenerated.
 
 Pages indexed: 159. Routing blocks regenerated: 1. Routing rows 212 to
 213. Layers stay 12 and referencing skills stay 20. ToC drift: 0.
+
+## [2026-09-10] refactor | methodology pages to the story-usage form
+
+Layer: methodology. Version 4.0.0 moves a User Story from a
+`requirement def` specialising `UserStory` to a requirement usage typed
+by it, written `requirement US_042_AckFromDashboard : UserStory { ... }`.
+The reason is tool conformance rather than taste. Both the OMG pilot
+implementation and OpenSysML reject `verify Def::member` against the
+definition form, so a model written the old way cannot validate outside
+Syside. The methodology was revised for this on the branch, and the wiki
+still taught the definition form in every worked example. These eight
+pages are brought level with `methodology/01-user-stories.md` §1.7 and
+§1.9 as they now stand.
+
+Pages updated:
+
+- user-story-canonical-artefact. Definition rewritten as a usage typed
+  by the shipped `VSE_Library`. Type hierarchy corrected to
+  `abstract requirement def StakeholderNeed;` with the untyped
+  `subject system;` and `stakeholder role;` members. Member list given
+  in redefinition form. Qualified enumeration values added to the
+  StoryMeta section. The identifier named as the usage name, with the
+  optional display short name. Minimal form replaced by the canonical
+  §1.7.1 block. The seven well-formedness rules replaced by the eleven
+  of §1.9.
+- role-actor-coupling. Story and use case in usage form, the objective
+  now subsetting the story and binding its subject to the case subject.
+  A new paragraph records why the redefinition is mandatory and what
+  each reference implementation reports when it is missing or
+  non-conforming. Rule 5 restated to match.
+- frame-concern-pattern. Framing example in usage form, subject first,
+  acceptance as a redefinition.
+- benefit-as-criterion. The worked example invented a `SystemUserStory`
+  type, a `role` keyword, and colon-valued narrative members, none of
+  which exist. Rewritten as a usage carrying a nested `sla` requirement
+  usage, with the trade study referencing it as
+  `ref requirement slaCriterion ::> SYS_142_BatchAcknowledgement.sla;`
+  in place of the old namespace-qualified attribute.
+- methodology-library-packaging. The forecast now records that the
+  shipped realisation is `VSE_Library` at `model/library/vse-library.sysml`
+  and that the `MBSEMethodology` name stays reserved for the standalone
+  package. Keyword example and the fallback spelling moved to the usage
+  form.
+- system-stories-workflow. Derivation described as the `#derive` prefix
+  on the derived story usage plus a `#derivation connection` with ends
+  tagged `#original` and `#derive`. Verification plan moved to dot
+  notation. Register described as usages.
+- stakeholder-stories-workflow. Register and authoring step described as
+  usages, subject redefined first, StoryMeta bullet added, validation
+  plan moved to dot notation, rule 4 restated.
+- base-architecture-corollaries. Unrelated carry-over fix from the same
+  sweep. The contingent as-is elements cited `CIState::Proposed`, which
+  is not a literal of the shipped enumeration (Draft, Baselined,
+  UnderChange, Superseded, Retired). Corrected to `CIState::Draft`.
+
+No `summary:` field changed and no wikilink was added or removed, so
+INDEX and the routing blocks need no regeneration. All eight pages
+bumped to 2026-09-10.

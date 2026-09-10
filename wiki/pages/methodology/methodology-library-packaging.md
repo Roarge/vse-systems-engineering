@@ -14,7 +14,7 @@ related:
   - storymeta-lifecycle
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-09-10
 referenced_by: []
 ---
 
@@ -22,9 +22,9 @@ referenced_by: []
 
 ## Forecast
 
-Section 0.8 of the methodology specification announces a planned, but not yet realised, packaging step. The constructs introduced by this methodology shall be packaged as a SysML v2 `library package` named `MBSEMethodology` (working title), so that downstream projects adopt the methodology by `import` rather than by re-declaration. The constructs in scope are:
+Section 0.8 of the methodology specification announces a packaging step for the constructs this methodology introduces. They shall be packaged as a SysML v2 `library package` named `MBSEMethodology` (working title), so that downstream projects adopt the methodology by `import` rather than by re-declaration. Part of the step is already taken: the shipped realisation is `VSE_Library`, which `@project-setup` copies into a project as `model/library/vse-library.sysml` and which every story imports in order to be typed by `UserStory`. What remains outstanding is the standalone library package, for which the `MBSEMethodology` name stays reserved, together with the user-defined keyword layer described below. The constructs in scope are:
 
-- `UserStory` and its specialisations (see [[user-story-canonical-artefact]]).
+- `UserStory`, the requirement definition that every story usage is typed by (see [[user-story-canonical-artefact]]).
 - `StoryMeta` and the lifecycle status enumeration that drives the branch and pull-request mapping (see [[storymeta-lifecycle]]).
 - `StakeholderNeed` as the upstream tier above stakeholder stories.
 - The role and actor coupling pattern that links `part def` roles to external `actor` types.
@@ -49,7 +49,7 @@ and inherits the full set of methodology constructs without restating their defi
 
 ### Semantic metadata for user-defined keywords
 
-Keywords such as `#userStory`, `#stakeholderStory`, `#systemStory`, and `#subsystemStory` may be declared as `Metaobjects::SemanticMetadata` specialisations. Each metadata definition redefines `baseType` to point at the corresponding methodology element. The keyword then acts as syntactic sugar for the underlying specialisation.
+Keywords such as `#userStory`, `#stakeholderStory`, `#systemStory`, and `#subsystemStory` may be declared as `Metaobjects::SemanticMetadata` specialisations. Each metadata definition redefines `baseType` to point at the corresponding methodology element. The keyword then acts as syntactic sugar for the underlying typing.
 
 ## Worked example
 
@@ -59,7 +59,7 @@ With the library in place, a project model that declares a user story becomes sh
 package SmartSensor::Stories {
     import MBSEMethodology::*;
 
-    #userStory requirement def US_042 {
+    #userStory requirement US_042 {
         doc /* As a maintenance technician, I want to read the
              * sensor's last calibration date, so that I can plan
              * the next calibration window. */
@@ -67,7 +67,7 @@ package SmartSensor::Stories {
 }
 ```
 
-Without the library, the same definition must be written as `requirement def US_042 :> UserStory { ... }` and the engineer must remember to attach the specialisation explicitly. The keyword form removes that burden and makes the methodology classification machine-checkable at parse time.
+Without the keyword, the same story is written `requirement US_042 : UserStory { ... }` against the imported `VSE_Library`, and the engineer must remember to name the type explicitly. The keyword form removes that burden and makes the methodology classification machine-checkable at parse time.
 
 ## Status and dependencies
 
@@ -76,11 +76,11 @@ Library packaging is deferred. The methodology specification states two precondi
 1. The foundational sections (§1 to §3) shall be stable. These cover user stories, base architecture, and system context, which are the primary sources of construct definitions.
 2. At least one workflow stage shall be stable, so that the library reflects constructs that have actually been exercised in a workflow, rather than speculative ones.
 
-Until those preconditions hold, projects continue to adopt the methodology by reading the specification prose and re-declaring the constructs locally. The methodology specification itself is the design input for the library, and the library, once built, is the machine-readable counterpart of that specification. The two artefacts are intended to evolve together, with the prose remaining the authoritative source and the library the import target.
+Until those preconditions hold, projects adopt the constructs by importing their copy of `VSE_Library` rather than by re-declaring them, and the keyword layer stays unbuilt. The methodology specification itself is the design input for the library, and the library, once built, is the machine-readable counterpart of that specification. The two artefacts are intended to evolve together, with the prose remaining the authoritative source and the library the import target.
 
 ## Why this matters for the VSE companion
 
-For the VSE companion, the planned library is a forward-looking reference, not a current dependency. Skill guidance shall, for the present, treat methodology constructs as locally declared in the project model. Once `MBSEMethodology` ships, skills that emit SysML v2 text shall be updated to prefer the keyword form and the library import. The transition is therefore additive, and existing project models built without the library remain valid.
+For the VSE companion, the planned `MBSEMethodology` package is a forward-looking reference rather than a current dependency, because the constructs already reach projects through `VSE_Library`. Skill guidance therefore treats them as imported from the project's copy of that library. Once `MBSEMethodology` ships, skills that emit SysML v2 text shall be updated to prefer the keyword form and the library import. The transition is therefore additive, and existing project models built without the library remain valid.
 
 ## Cross-links
 

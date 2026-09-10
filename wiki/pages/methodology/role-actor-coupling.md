@@ -16,7 +16,7 @@ related:
   - sysmod-system-context-source
 confidence: high
 created: 2026-05-05
-updated: 2026-08-13
+updated: 2026-09-10
 referenced_by: [story-orchestrator, needs-and-requirements]
 ---
 
@@ -24,7 +24,7 @@ referenced_by: [story-orchestrator, needs-and-requirements]
 
 ## Why a pattern is needed
 
-A User Story is a `requirement def` (specifically a specialisation of `StakeholderNeed`, see [[user-story-canonical-artefact]]). A Use Case is a `case def`, ultimately a kind of action. These are different kinds of SysML 2.0 element, and the language does not allow one to be embedded in the other. The narrative wish to "attach a use case to a story", or conversely to nest a story inside a use case, has no direct SysML 2.0 construct.
+A User Story is a requirement usage typed by the `UserStory` requirement definition, itself a specialisation of `StakeholderNeed` (see [[user-story-canonical-artefact]]). A Use Case is a `case def`, ultimately a kind of action. These are different kinds of SysML 2.0 element, and the language does not allow one to be embedded in the other. The narrative wish to "attach a use case to a story", or conversely to nest a story inside a use case, has no direct SysML 2.0 construct.
 
 The pattern below is the methodology's compliant resolution: the use case names the story as its `objective`, and the type identity of the participating part definition couples the actor to the role.
 
@@ -35,29 +35,33 @@ Per SysML 2.0 specification §7.21.2, a `case def` may declare an `objective` cl
 ```sysml
 part def Operator;
 
-requirement def US_042_AckFromDashboard :> UserStory {
-    subject sys : Aiwell_OnlineSentral;
+requirement US_042_AckFromDashboard : UserStory {
+    subject :>> system : Aiwell_OnlineSentral;
     stakeholder :>> role : Operator;
 
-    capability = "acknowledge alarms from the dashboard";
-    benefit    = "the queue clears quickly";
+    attribute :>> capability = "acknowledge alarms from the dashboard";
+    attribute :>> benefit    = "the queue clears quickly";
 }
 
 use case def AcknowledgeAlarms {
     subject sys : Aiwell_OnlineSentral;
     actor performer : Operator;
 
-    objective realisesUS042 : US_042_AckFromDashboard;
+    objective realisesUS042 :> US_042_AckFromDashboard {
+        subject :>> system = sys;
+    }
 }
 ```
 
-The `objective realisesUS042 : US_042_AckFromDashboard` clause makes the story the requirement that the use case is intended to satisfy. No non-conformant nesting, no surrogate trace link, no metadata-only workaround.
+The `objective realisesUS042 :> US_042_AckFromDashboard { subject :>> system = sys; }` clause subsets the story and binds the story's subject to the case subject, which makes the story the requirement that the use case is intended to satisfy. No non-conformant nesting, no surrogate trace link, no metadata-only workaround.
+
+The subject redefinition is not optional. A case already carries an objective subject of its own, so an objective that subsets a story without redefining `system` is refused with `Only one subject is allowed`. A case subject whose type does not conform to the story's subject type is reported as `Bound features should have conforming types`.
 
 ## Two consequences
 
 **Role-actor link by shared typing.** The use case's `actor performer` and the story's `stakeholder role` reference the same `part def`, in this example `Operator`. This typing identity is what couples the actor to the stakeholder. Renaming `Operator` or refining it through specialisation propagates to both sides automatically, because both sides are typed by the same definition. There is no second link to keep in sync.
 
-**Subject conformance.** The `subject` of the use case shall be the same type as the `subject` of the story, or a specialisation of it. This is the well-formedness rule that makes the link checkable. It is codified in §1.9 rule 5 of the methodology specification: where a `use case def` declares a User Story as its `objective`, the use case's `subject` type shall conform to the story's `subject` type, and the use case's `actor` representing the story's role shall be typed by the same part def as the story's `role`. A `traceability-guard` style check can verify rule 5 by reading frontmatter alone.
+**Subject conformance.** The `subject` of the use case shall be the same type as the `subject` of the story, or a specialisation of it. This is the well-formedness rule that makes the link checkable. It is codified in §1.9 rule 5 of the methodology specification: where a `use case def` declares a User Story as its `objective`, the objective subsets the story and binds the story's subject to the case subject (`objective <n> :> <story> { subject :>> system = <caseSubject>; }`), the case subject type shall conform to the story's subject type, and the actor representing the story's role shall be typed by the same part def as the story's `role`. A `traceability-guard` style check can verify rule 5 by reading frontmatter alone.
 
 ## Where no use case is declared
 

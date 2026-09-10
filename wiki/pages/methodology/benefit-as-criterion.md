@@ -18,7 +18,7 @@ related:
   - sysmod-problem-statement-and-objectives
 confidence: high
 created: 2026-05-05
-updated: 2026-08-13
+updated: 2026-09-10
 referenced_by: [architecture-design, needs-and-requirements]
 ---
 
@@ -39,7 +39,7 @@ The methodology's load-bearing structural property is that the `benefit` slot of
 
 A story declares stakeholder intent in the form `as a <role>, I want <capability>, so that <benefit>`. When the benefit is left as informal prose, it carries intent but nothing more. When the benefit is sharpened into a `require constraint` over value properties (per §1.4.3), it becomes a machine-checkable predicate that any candidate architecture either satisfies or violates. That predicate is exactly the shape a trade-study criterion needs.
 
-The architectural trade study in §6 therefore does not invent criteria. It reaches into the system story register, pulls the `require constraint` clauses from the stories whose benefits are sensitive to the decision under study, and uses those constraints directly inside its `analysis def`.
+The architectural trade study in §6 therefore does not invent criteria. It reaches into the system story register, picks the nested requirement usages carrying those `require constraint` clauses on the stories whose benefits are sensitive to the decision under study, and references them directly inside its `analysis def`.
 
 ## Consequence: no drift from stakeholder intent
 
@@ -70,14 +70,18 @@ A system story with a formalised benefit, then a trade-study analysis that sourc
 
 ```sysml
 // §5: a system story whose benefit is now a constraint, not a string
-requirement def SYS_142_BatchAcknowledgement :> SystemUserStory {
-    subject sentral : Aiwell_OnlineSentral;
-    role     operator : Operator;
-    capability : "acknowledge alarm batches in one action";
-    benefit  : "operator workload during alarm storms remains tractable";
+requirement SYS_142_BatchAcknowledgement : UserStory {
+    subject :>> system : Aiwell_OnlineSentral;
+    stakeholder :>> role : Operator;
 
-    require constraint sla {
-        sentral.maxBatchAckLatency <= 1 [s]
+    attribute :>> capability = "acknowledge alarm batches in one action";
+    attribute :>> benefit    = "operator workload during alarm storms remains tractable";
+
+    attribute maxBatchAckLatency : Rational = 1.0;
+
+    requirement sla {
+        doc /* Batch acknowledgement completes within maxBatchAckLatency seconds. */
+        require constraint { maxBatchAckLatency <= 1.0 }
     }
 }
 
@@ -89,9 +93,9 @@ analysis def AlarmStorageTradeStudy :> TradeStudy {
         AlarmStorageStrategy::externalTSDB
     );
 
-    // Criterion sourced directly from the story constraint above
-    attribute slaConstraint = SYS_142_BatchAcknowledgement::sla;
-    attribute slaWeight     : Real = 0.5;
+    // Criterion sourced directly from the story's nested requirement usage
+    ref requirement slaCriterion ::> SYS_142_BatchAcknowledgement.sla;
+    attribute slaWeight : Real = 0.5;
 
     calc def evaluation : EvaluationFunction {
         in alternative : AlarmStorageStrategy;
@@ -103,7 +107,7 @@ analysis def AlarmStorageTradeStudy :> TradeStudy {
 }
 ```
 
-The `slaConstraint` attribute references the story's constraint as a model element. Editing the story edits the criterion. Retiring the story breaks the analysis until the project either retires the analysis with it or substitutes another story-sourced constraint.
+The `slaCriterion` reference subsets the story's own `sla` requirement usage, addressed by dot notation because `sla` is a member of a usage rather than of a definition. Criterion and intent are therefore one model element. Editing the story edits the criterion. Retiring the story breaks the analysis until the project either retires the analysis with it or substitutes another story-sourced constraint.
 
 ## Why this matters
 

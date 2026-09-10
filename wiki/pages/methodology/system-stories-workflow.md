@@ -16,7 +16,7 @@ related:
   - architectural-analysis-workflow
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-09-10
 referenced_by: [needs-and-requirements, story-orchestrator, architecture-design]
 ---
 
@@ -34,13 +34,13 @@ The System Requirements stage translates stakeholder intent into a system-level 
 
 For each stakeholder story in scope for the iteration, derive one or more system stories. The derivation preserves the stakeholder `role` (the stakeholder is unchanged in the §4-to-§5 transition), restates the `capability` in system-internal vocabulary, and sharpens the `benefit` from narrative toward a measurable constraint. The operator's "I want to acknowledge alarms" becomes the system's "the system supports batch acknowledgement of unacknowledged alarms via the operator UI", and the loose benefit becomes a bounded latency target.
 
-The relationship is recorded with SysML v2's `RequirementDerivation` standard library (spec §9.6). The canonical form combines the `#derive` annotation prefix on the derived requirement with an explicit `Derivation` connection between original and derived ends. A system story typically derives from one stakeholder story, but 1:N (one stakeholder story spawning several system stories) and N:1 (several stakeholder stories converging on one system story) are both legitimate.
+The relationship is recorded with SysML v2's `RequirementDerivation` standard library (spec §9.6). The canonical form puts the `#derive` prefix on the derived story usage, which is where it has to sit because the metadata's base type is a usage and cannot annotate a requirement definition, and adds a `#derivation connection <name> { end #original ::> <original>; end #derive ::> <derived>; }` naming both ends. The prefix alone is not a trace, so the connection shall be present. A system story typically derives from one stakeholder story, but 1:N (one stakeholder story spawning several system stories) and N:1 (several stakeholder stories converging on one system story) are both legitimate.
 
 System stories that emerge with no upstream stakeholder story (architectural maintenance, regulatory reporting, self-test) are deferred to Step 2 or Step 5, where they attach to system-side concerns rather than to stakeholder stories.
 
 ## Step 2: Generate system requirements (§5.4.2)
 
-Within each system story, formalise benefit and capability detail as `require constraint` clauses over value properties of the system. The story's attributes declare the value properties (for example `maxBatchAckLatency : DurationValue`), and the constraints declare the relationships those properties must satisfy. This is the connective mechanism specified in §0.3 of [[methodology-overview]]. The same `require constraint` clauses become the trade-study criteria consumed in [[architectural-analysis-workflow]] (§6). A story whose `benefit` remains narrative does not contribute to §6 and applies a methodology pressure to formalise where the architecture decision will need it. See [[benefit-as-criterion]] for the rationale.
+Within each system story, formalise benefit and capability detail as nested requirement usages, each carrying a `require constraint` over value properties of the system. The story's attributes declare the value properties (for example `attribute maxBatchAckLatency : Rational = 1.0;`), and the constraint inside the named requirement usage declares the relationship those properties must satisfy, which is what lets a verification case write `verify <story>.<name>`. This is the connective mechanism specified in §0.3 of [[methodology-overview]]. The same `require constraint` clauses become the trade-study criteria consumed in [[architectural-analysis-workflow]] (§6). A story whose `benefit` remains narrative does not contribute to §6 and applies a methodology pressure to formalise where the architecture decision will need it. See [[benefit-as-criterion]] for the rationale.
 
 Additional system stories appearing at this step typically derive from system-side concerns (introduced in Step 5) rather than from stakeholder stories. They are added to the register here so the verification plan in Step 6 can reach them.
 
@@ -64,11 +64,11 @@ Safety, reliability, and security are introduced as new `concern def` instances 
 
 ## Step 6: Verification plan (§5.4.6)
 
-For each acceptance criterion in scope, declare a `verification def` (spec §7.23) whose `objective` includes a `verify` clause naming the acceptance subrequirement. Verification cases at this level exercise *system internals*, distinct from §4 validation cases that exercise stakeholder intent. A verification case typically declares `setup`, `measure`, and `evaluate` actions documenting fixture, observation, and pass criterion. A verification case may verify multiple acceptance criteria where they share a fixture, and an acceptance criterion may be verified by multiple cases when different conditions warrant it.
+For each acceptance criterion in scope, declare a `verification def` (spec §7.23) whose `objective` includes a `verify` clause naming a member of the story usage by dot notation, as `verify <story>.acceptance` or `verify <story>.acceptance.<criterion>`. The `::` namespace form addresses a definition member and both reference implementations refuse it. Verification cases at this level exercise *system internals*, distinct from §4 validation cases that exercise stakeholder intent. A verification case typically declares `setup`, `measure`, and `evaluate` actions documenting fixture, observation, and pass criterion. A verification case may verify multiple acceptance criteria where they share a fixture, and an acceptance criterion may be verified by multiple cases when different conditions warrant it.
 
 ## Output artefacts
 
-- System story register as `UserStory` specialisations residing in `core/stories/system/`, each with `derive` links to one or more stakeholder stories.
+- System story register as requirement usages typed by `UserStory` residing in `core/stories/system/`, each with a `#derivation connection` back to one or more stakeholder stories.
 - Behavioural elaborations per chosen analysis path: `action def` with item flows, scenario actions, or `state def`.
 - Logical data schema covering everything exchanged across the system boundary or appearing in story analyses.
 - Dependability concerns and stories addressing safety, reliability, and security.
