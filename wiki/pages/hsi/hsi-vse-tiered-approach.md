@@ -16,7 +16,7 @@ related:
   - iso29110-sr-process
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [needs-and-requirements]
 ---
 
@@ -32,7 +32,7 @@ referenced_by: [needs-and-requirements]
 - Key principle for VSEs
 - See also
 
-A VSE (fewer than 25 people) will not have a dedicated HSI team,
+A VSE (up to 25 people) will not have a dedicated HSI team,
 formal HITL simulation facilities, or the budget for full-scale
 human factors evaluation programmes. This page scales the 13
 HSI perspectives (see [[hsi-domains]]) down to what a small team
