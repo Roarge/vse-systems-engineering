@@ -28,9 +28,10 @@ follow `methodology/` directly.
 
 ## Lens
 
-Invoke the `vse-companion-overview` skill at the start of VSE work. It
-sets the methodology lens, routes the request to the right specialist
-skill, and carries the conventions this file does not restate.
+Invoke the `vse-companion-overview` skill at the start of engineering
+work. It sets the methodology lens, routes the request to the right
+specialist skill, and carries the conventions this file does not
+restate.
 
 ## Pointers, not restatements
 

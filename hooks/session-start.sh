@@ -210,7 +210,7 @@ if command -v gh >/dev/null 2>&1; then
     fi
 fi
 
-echo "Lens: load vse-companion-overview before VSE work if not yet loaded this session."
+echo "Lens: load vse-companion-overview before engineering work if not yet loaded this session."
 echo "Agent posture: forward-going stories only (section 2.6 rule 7)."
 
 exit 0
