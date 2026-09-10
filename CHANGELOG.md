@@ -42,11 +42,20 @@ recorded here.
   that taught the old one: `user-story-canonical-artefact`,
   `role-actor-coupling`, `frame-concern-pattern`,
   `benefit-as-criterion`, `methodology-library-packaging`,
-  `system-stories-workflow` and `stakeholder-stories-workflow`. The
-  skills, the traceability matrix-builder agent and the pre-commit
-  gate read the new form, and `project-audit` gained story checks that
-  report each pre-4.0 construct as WARN rather than as an error, so a
-  3.x model still audits while its migration is staged.
+  `system-stories-workflow` and `stakeholder-stories-workflow`. §5.4.3
+  joins that list with a change of shape rather than of story form: a
+  scenario is a `use case def` whose body sequences the interactions as
+  performed actions, because `subject` and `actor` are legal only in a
+  requirement or case body, and the §4.3.5, §5.4.3.1 and §7.3.2 example
+  blocks are repaired alongside it. §2.2, §2.3.2, §2.5 and §2.6 rule 2
+  write an immutable Base Architecture constraint as a sibling
+  `requirement def` whose subject is the platform, which is what the
+  shipped template does and what both reference implementations accept,
+  where a `require constraint` nested directly in a part def is
+  refused. The skills, the traceability matrix-builder agent and the
+  pre-commit gate read the new form, and `project-audit` gained story
+  checks that report each pre-4.0 construct as WARN rather than as an
+  error, so a 3.x model still audits while its migration is staged.
 
   The ISO/IEC 29110 obligations in §9 are unchanged. What moves is the
   SysML 2.0 notation the story artefacts are written in, not which
@@ -111,11 +120,12 @@ recorded here.
   a guidance comment each. `@StoryMeta` literals were unqualified, and
   `stakeholder :>> role` redefined a role the story never declared.
   `CIState::Proposed` is not a literal of `CIState` and becomes
-  `CIState::Draft` in the as-is template, its `.tmpl`, the as-is
-  classification document and `@project-setup`. The substituted
-  scaffold validates clean under the OMG SysML v2 Pilot Implementation
-  (kernel 0.61.0) and under OpenSysML v0.6.0, nineteen root packages,
-  no diagnostic and exit 0.
+  `CIState::Draft` in five places: the as-is template, its `.tmpl`, the
+  as-is classification document, `@project-setup`, and the wiki page
+  `base-architecture-corollaries`. The substituted scaffold validates
+  clean under the OMG SysML v2 Pilot Implementation (kernel 0.61.0) and
+  under OpenSysML v0.6.0, nineteen root packages, no diagnostic and
+  exit 0.
 - The `@StoryMeta` example in the `vse-library.sysml` doc comment used
   unqualified enumeration literals, which is the form the same release
   now reports as WARN everywhere else.
@@ -123,6 +133,23 @@ recorded here.
   an `item def` and is now `ref item readingRef : Reading`. The
   sixteen-file demo validates clean under both tools, and the demo
   README carries the command and the result for each.
+- The demo's retention figure matches its own decision record.
+  `SYS_004_AlertRetentionWindow` demanded 1825 days from a store the
+  2026-04-15 alert-history decision record chose for 730, so the
+  attribute, its `require constraint` and the `VC_004` pass criterion
+  now read 730 and cite the record.
+- The hooks guide §4.5 side-effects list named a stale
+  `docs/traceability-matrix.md`, a misspelt
+  `stakeholders-requirements.md` and two renderers the plugin never
+  shipped, and its §6 CI step repeated all three and passed `--check`
+  to a renderer that takes no arguments. The list, the tree, the
+  `renderers:` config sample and the CI step now carry the three
+  shipped renderers, and the CI step regenerates and diffs the way the
+  shipped Contract 3 step does. The §9.5 Verification and Validation
+  Report rows cite `templates/sr/verification-report.md` and
+  `templates/sr/validation-report.md`, no longer a §10.10 template that
+  §10.10 does not list, and no longer claim a copy into
+  `docs/templates/` that no skill performs.
 
 ### Added (renderer and demo)
 
@@ -138,14 +165,21 @@ recorded here.
   story as a formalised benefit constraint and one nested in
   acceptance as a criterion, `verify` in dot or `::` notation with or
   without the `requirement` keyword, and `@StoryMeta`, falling back to
-  the doc-comment form only where no `@StoryMeta` is present.
+  the doc-comment form only where no `@StoryMeta` is present. Two
+  layouts the line joiner cannot merge are read by the parser instead,
+  a `#derivation` tag on a line of its own before the connection it
+  applies to and a `@StoryMeta {` block whose assignments sit on their
+  own lines, so a formatted model keeps its derivations and its story
+  metadata rather than losing them in silence.
   `traceability-matrix.py` now propagates `satisfy` through
   derivation, so a satisfy relation declared against a derived system
   story reaches the stakeholder story row it belongs to. Run against
   the unmigrated demo, the reader reproduced the committed
   traceability matrix byte for byte. Eight tracked `__pycache__` files
   are untracked, both `.gitignore` files having excluded them all
-  along.
+  along. The four docstrings and the missing-model error say that the
+  scripts run from the engineering root, the directory holding
+  `.iso-config.yaml`.
 - The demo carries the issue #92 items the model can answer for.
   `SYS_003_CalibrationOffsetCommit` and `SYS_004_AlertRetentionWindow`
   derive from `US_003_CalibrateInField` and `US_004_RetainAlertHistory`
