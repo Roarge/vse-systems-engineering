@@ -164,7 +164,8 @@ misreading this guide explicitly rejects.
 
 Model-level checks performed as engineering data is created:
 
-- Syside syntax validation on every save.
+- SysML v2 syntax validation on every save, through the
+  configured toolchain.
 - Constraint evaluation and type checking.
 - Traceability completeness check (`@traceability-guard`
   hook).

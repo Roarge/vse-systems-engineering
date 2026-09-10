@@ -155,6 +155,5 @@ architecture-design, or verification-validation as appropriate.
 - Do not write any files. Do not propose to modify any model file.
   The parent skill is responsible for routing fixes.
 - If the model has syntax errors that prevent reliable parsing, report
-  the affected files and recommend validating with the project's
-  configured SysML v2 toolchain (Syside, the OMG pilot implementation,
-  or OpenSysML) before trusting the matrix.
+  the affected files and recommend running the configured SysML v2
+  validator (`@sysml-toolchain`) before trusting the matrix.

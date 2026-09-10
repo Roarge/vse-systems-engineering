@@ -2,7 +2,7 @@
 title: "Syside Model Modification and Element Reference"
 slug: syside-model-modification
 type: reference
-layer: syside
+layer: tooling
 summary: Adding, removing, and exporting model elements through the Syside API, with an element type reference
 tags: [syside, automator, model-modification, element-types, pretty-print]
 sources:
@@ -19,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-08-07
-referenced_by: [sysml2-modelling, sysml2-metadata]
+referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata]
 ---
 
 # Syside Model Modification and Element Reference

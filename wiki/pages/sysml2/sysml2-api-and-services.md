@@ -11,9 +11,10 @@ sources:
 related:
   - sysml2-language-architecture
   - syside-core-api
+  - tooling-sysml-toolchain-choice
 confidence: high
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-09-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -125,6 +126,13 @@ the OMG API is an interoperability property of a tool. Reach for the
 Automator when scripting against a local model, and for the OMG
 standard when exchanging models between tools or avoiding lock-in.
 
+The OMG SysML v2 Pilot Implementation is the reference implementation
+the plugin drives in batch mode when it is the recorded toolchain or
+when Syside is unavailable, and OpenSysML offers gRPC and language
+clients of its own. Neither is reached through this standard API by the
+plugin today.
+[[tooling-sysml-toolchain-choice]] compares the three.
+
 ## Status in the 2026-07 release
 
 Chapter 42 is an overview, and the book points to Chapter 44 and the
@@ -143,3 +151,5 @@ publish.
   the API is built on.
 - [[syside-core-api]] for the Syside Automator Python library, which
   is a different API.
+- [[tooling-sysml-toolchain-choice]] for the three toolchains the
+  plugin supports, none of which is reached through this API today.

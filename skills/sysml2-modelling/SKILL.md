@@ -1,8 +1,8 @@
 ---
 name: sysml2-modelling
-description: The SysML 2.0 workbench and umbrella router. Owns project layout, Syside tooling, CI validation, and the top-level syntax quick reference, and routes topic authoring to the eight focused siblings.
-when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when configuring Syside and `syside.toml`. Route to the sibling that owns the topic once it is clear.
-paths: ["**/*.sysml", "**/syside.toml"]
+description: The SysML 2.0 workbench and umbrella router. Owns project layout, the validation checklist, and the top-level syntax quick reference, routes toolchain installation and configuration to sysml-toolchain, and routes topic authoring to the focused siblings.
+when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when a toolchain question is not yet specific enough to route to `@sysml-toolchain`. Route to the sibling that owns the topic once it is clear.
+paths: ["**/*.sysml"]
 user-invocable: true
 ---
 
@@ -13,23 +13,26 @@ A `methodology/` folder at the project root, or under `engineering/`, marks a VS
 You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. The full SysML 2.0 reference set
-plus the Syside Python API reference lives in the plugin wiki, as atomic pages
-under the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers.
+plus the toolchain reference (Syside, the OMG pilot, OpenSysML) lives in
+the plugin wiki, as atomic pages under the `wiki/pages/sysml2/` and
+`wiki/pages/tooling/` layers.
 
 ## When This Skill Triggers
 
 - The user asks to create or edit a SysML 2.0 model
 - The user asks about SysML 2.0 syntax at the project level
 - The user wants to navigate or query existing models
-- The user wants tooling integration (Syside, Automator, CI validation)
+- The user asks about validation or CI and the toolchain is not yet the
+  question (toolchain work routes to `@sysml-toolchain`)
 - Any other skill needs to create model elements
 - The user has a SysML question but the topic is not yet clear
 
 ## Routing to Focused Siblings
 
 This skill is the workbench and the router. For topic-specific
-authoring, hand off to one of the eight focused siblings. Keep the
-umbrella active if the engineer moves between topics in one session.
+authoring, hand off to one of the focused siblings, and for toolchain
+work to `@sysml-toolchain`. Keep the umbrella active if the engineer
+moves between topics in one session.
 
 | Topic | Sibling skill | When to route |
 | --- | --- | --- |
@@ -43,8 +46,9 @@ umbrella active if the engineer moves between topics in one session.
 | Metadata, reflection, user-defined keywords, RiskInfo, ConfigItem, Baseline | `@sysml2-metadata` | Tagging, filters, domain keywords, risk library, CM library |
 | Toolchain choice, installation, switching, licence problems, the validator wrapper, `syside.toml`, `.lsp.json` | `@sysml-toolchain` | Choosing or installing Syside, the OMG pilot, or OpenSysML, a licence failure, or running validation by hand |
 
-The umbrella still owns project layout, tooling, CI validation, and the
-high-level quick reference. Siblings own topic authoring.
+The umbrella still owns project layout, the validation checklist, and
+the high-level quick reference. `@sysml-toolchain` owns the toolchains
+themselves.
 
 ## Project Template
 
@@ -136,288 +140,30 @@ When reviewing a .sysml file, check:
 
 When the user asks to find something in the model:
 
-- **Find all requirements**: `Grep for "requirement def" and "requirement <ID> : UserStory" in models/**/*.sysml`
-- **Find all parts**: `Grep for "part def" in models/**/*.sysml`
-- **Find all verification cases**: `Grep for "verification def" in models/**/*.sysml`
-- **Find trace links**: `Grep for "satisfy \|verify " in models/**/*.sysml`
-- **Find a specific element**: `Grep for the element name in models/**/*.sysml`
-
-## Tooling Integration
-
-Toolchain selection, installation and switching (Syside, the OMG
-pilot, OpenSysML) is owned by `@sysml-toolchain`. The hooks read
-`sysml_toolchain` from `.iso-config.yaml` and fall back along syside,
-omg-pilot, opensysml when the preferred tool is unavailable. The rest
-of this section describes the Syside surface.
-
-### Sensmetry Syside product lineup
-
-| Workflow | Product | Licence |
-| --- | --- | --- |
-| Learning, lightweight editing | **Syside Editor: SysML v2 Essential** (VS Code extension) | Free |
-| Model writing, diagrams, grid views | **Syside Pro Suite** (Modeler) | Paid |
-| CI/CD validation, headless diagrams, scripting | **Syside Pro Suite** (Automator and the `syside` CLI) | Paid |
-| The Pro Suite without a local installation | **Syside Cloud** | Paid |
-| Safety and security analysis (ISO 26262, ISO/SAE 21434, FMEA) | **Syside Derisker** | Beta |
-
-**Syside Editor**: syntax highlighting, validation, auto-completion,
-go-to-definition for .sysml and .kerml files.
-
-**Syside Pro Suite**: everything the Editor provides plus synchronised
-diagram visualisation and editable grid views (Modeler), the `syside`
-command-line tool for validation, formatting, and diagram generation,
-and the Automator, a Python 3.12+ library for programmatic model access,
-querying, expression evaluation, requirements import and export, report
-generation, and custom automation. Install the Automator with
-`pip install syside`. One licence key covers the whole suite. You MUST
-disable the Editor extension when the Modeler is active, to avoid
-conflicts.
-
-Additionally:
-- **Sysand**: open-source SysML v2 package manager for reusable
-  libraries. Read `pages/syside/syside-sysand-package-management.md`.
-
-Reference release: 0.10.3 (23 July 2026). Syside is pre-v1.0, so pin the
-version a project depends on. Read
-`pages/syside/syside-tooling-overview.md` for the lineup, the roadmap,
-and the breaking-change window.
-
-### Syside CLI Commands
-
-The CLI is the primary tool for terminal-based model operations. All commands
-operate on the current directory recursively unless paths are specified.
-
-**Prerequisites:** Java 21 runtime, valid Modeler licence. Set the licence via:
-```bash
-export SYSIDE_LICENSE_KEY="your-licence-key"
-```
-
-#### Validate Models
-
-```bash
-# Validate all models in the current directory
-syside check
-
-# Validate specific files
-syside check models/system-requirements.sysml models/verification.sysml
-
-# Fail on warnings (recommended for CI/CD)
-syside check --warnings-as-errors
-
-# Show statistics and timing
-syside check --stats --time
-
-# Exclude draft files
-syside check --exclude "*.draft.sysml"
-```
-
-Exit codes: 0 = valid, non-zero = errors found.
-
-Output format for errors:
-```
-models/system-requirements.sysml:12:5: error (CODE): message
-```
-
-#### Format Models
-
-```bash
-# Format all models in place
-syside format
-
-# Check formatting without modifying (for CI/CD and pre-commit)
-syside format --check
-
-# Custom line width
-syside format --line-width 120
-
-# Use tabs with 2-space width
-syside format --tabs --tab-width 2
-```
-
-Exit codes for `--check` mode: 0 = properly formatted, 1 = needs reformatting,
-2 = syntax errors.
-
-#### Generate Diagrams (Labs, available until 2026-06-01)
-
-**Element diagrams** (by qualified name, no view definition needed):
-
-```bash
-# Generate SVG of a specific element
-syside viz element "SmartSensor::SensorSystem" models/ --output-file build/sensor-system.svg
-
-# PNG with depth control and zoom
-syside viz element "SmartSensor::SensorSystem" models/ --depth=2 --zoom-level 3.0 --output-file build/sensor-system.png
-
-# Full tree rendering
-syside viz element "SmartSensor::SensorSystem" models/ --depth=-1 --rendering tree --output-file build/sensor-tree.svg
-```
-
-**View-based diagrams** (from SysML v2 view definitions in the model):
-
-```bash
-# Render all views to output directory
-syside viz view models/ --output-dir build/diagrams
-
-# Render a specific view
-syside viz view models/ --qualified-name "Views::SystemOverview" --output-dir build/diagrams
-```
-
-Output formats: `.svg`, `.png`, `.pdf` (inferred from file extension).
-
-**Headless Linux** (CI/CD, WSL without display): prefix with `xvfb-run -a`:
-
-```bash
-xvfb-run -a syside viz element "SmartSensor::SensorSystem" models/ --output-file build/sensor.svg
-```
-
-### Configuration
-
-Create `syside.toml` in the project root. The `@project-setup` skill generates
-this from the template at `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml`.
-
-Key sections:
-
-```toml
-# Exclude generated files
-exclude = ["build/**", "*.draft.sysml"]
-
-[format]
-line-width = 100       # Column limit for wrapping
-tab-width = 4          # Spaces per indent
-tabs = false           # Spaces, not tabs
-markdown = true        # Treat comments as Markdown
-empty-brackets = "braces"  # Use {} not ; for empty blocks
-
-[lint]
-standard-library-package = "warning"
-
-[lsp]
-completion-limit = 256
-edit = "project"
-```
-
-See `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` for the full annotated
-configuration.
-
-### Terminal Workflows
-
-**Nanocycle verification** (20-60 minute loops during model editing):
-
-```bash
-# Quick check after editing a model file
-syside check models/system-requirements.sysml
-
-# Format the file you just edited
-syside format models/system-requirements.sysml
-```
-
-**Pre-commit validation** (before committing model changes):
-
-```bash
-# Run both checks
-syside check --warnings-as-errors && syside format --check
-```
-
-**Documentation generation** (at iteration-boundary closure or at macrocycle delivery):
-
-```bash
-mkdir -p build/diagrams
-syside viz view models/ --output-dir build/diagrams
-# On headless Linux:
-xvfb-run -a syside viz view models/ --output-dir build/diagrams
-```
-
-### Syside Automator Python API
-
-The Automator provides programmatic access to SysML v2 models from Python.
-Use it for model queries, expression evaluation, requirements import/export,
-report generation, and custom validation scripts.
-
-**Prerequisites:** Python 3.12+, valid licence (same key as Modeler).
-
-```bash
-pip install syside
-export SYSIDE_LICENSE_KEY="your-licence-key"
-python -c "import syside; print(syside.__version__)"
-```
-
-#### Loading and Querying Models
-
-```python
-import syside
-
-# Load model files
-model, diagnostics = syside.load_model(
-    paths=syside.collect_files_recursively("models/")
-)
-assert not diagnostics.contains_errors(warnings_as_errors=True)
-
-# Query all requirements
-for req in model.nodes(syside.RequirementDefinition):
-    print(req.declared_name, req.qualified_name)
-
-# Query all parts (user-defined only, excluding standard library)
-for part in model.nodes(syside.PartUsage):
-    if part.document.document_tier is syside.DocumentTier.Project:
-        print(part.name)
-
-# Extract documentation
-for doc in model.nodes(syside.Documentation):
-    if doc.owner and doc.owner.qualified_name:
-        print(f"{doc.owner.qualified_name}: {doc.body}")
-```
-
-#### Evaluating Expressions and Constraints
-
-```python
-STDLIB = syside.Environment.get_default().lib
-compiler = syside.Compiler()
-
-# Evaluate an attribute value with unit conversion
-for attr in model.nodes(syside.AttributeUsage):
-    if attr.name == "TotalMass":
-        value, report = compiler.evaluate_feature(
-            feature=attr,
-            scope=attr.owner,
-            stdlib=STDLIB,
-            experimental_quantities=True,
-        )
-        if not report.fatal:
-            print(f"Total mass: {value}")
-```
-
-#### Interactive Exploration
-
-Launch an interactive REPL to explore a model without writing scripts:
-
-```bash
-python -m syside interactive models/system-requirements.sysml
-```
-
-```python
->>> len(list(model.nodes(syside.RequirementDefinition)))
-12
->>> for req in model.nodes(syside.RequirementDefinition):
-...     print(req.declared_name)
-```
-
-#### Key Automator Workflows
-
-| Workflow | Description | Skill |
-| --- | --- | --- |
-| Requirements to Excel | Export requirements as spreadsheet for acquirer review | `@needs-and-requirements` |
-| Requirements from Excel | Import requirements from spreadsheet into SysML | `@needs-and-requirements` |
-| Semantic trace checking | Programmatic verify/satisfy link analysis | `@traceability-guard` |
-| Value rollup | Mass, power, cost budgets with unit conversion | `@architecture-design` |
-| Part hierarchy extraction | Walk ownership tree, filter by type | `@architecture-design` |
-| Variant analysis | Extract and compare configurations | `@architecture-design` |
-| Report generation | Jinja2 templates with model data, traceability matrices | `@document-export` |
-| State machine simulation | Simulate SysML state machines in Python | `@verification-validation` |
-| Constraint checking | Evaluate requirement bounds against model values | `@verification-validation` |
-
-For full API details, read the `syside-tooling-overview`, `syside-core-api`,
-`syside-expression-evaluation`, `syside-model-modification`, and
-`syside-vse-workflows` atomic pages under `wiki/pages/syside/`.
+- **Find all requirements**: `Grep for "requirement def" and "requirement <ID> : UserStory" in model/**/*.sysml`
+- **Find all parts**: `Grep for "part def" in model/**/*.sysml`
+- **Find all verification cases**: `Grep for "verification def" in model/**/*.sysml`
+- **Find trace links**: `Grep for "satisfy \|verify " in model/**/*.sysml`
+- **Find a specific element**: `Grep for the element name in model/**/*.sysml`
+
+## Tooling
+
+The toolchain is a project decision rather than this skill's. A project
+records `sysml_toolchain` in `.iso-config.yaml`, and the hooks and the
+CI read that key, falling back along syside, omg-pilot, opensysml when
+the preferred tool is unavailable. Prefer the recorded tool in every
+command you suggest, and never assume Syside is installed.
+
+| Toolchain | Validate | Format | Language server | Diagrams | Scripting |
+| --- | --- | --- | --- | --- | --- |
+| Syside 0.10.3 (`syside`) | `syside check` | `syside format` | `syside lsp` | `syside viz` (Labs) | Automator Python |
+| OMG SysML v2 Pilot Implementation 2026-07 (`omg-pilot`) | `SysMLInteractive` in batch | none | none | `%viz` in Jupyter only | `SysML2JSON` export |
+| OpenSysML v0.6.0 (`opensysml`) | `sysml -validate -strict` | none | `sysml-lsp` | `-render` to text, Mermaid or Markdown | gRPC, Python, Node, Java, Rust |
+
+For installation, licence setup, the validator wrapper, `syside.toml`,
+`.lsp.json`, each CLI, and the Automator API, route to
+`@sysml-toolchain`. The rules the reference implementations enforce are
+on the `tooling-reference-implementation-rules` page routed below.
 
 ## Red Flags
 
@@ -438,13 +184,6 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
-| Syside Automator Core API | pages/syside/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
-| Syside Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
-| Syside Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
-| Syside Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
-| Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
-| Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
-| Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | Systems Modeling API and Services | pages/sysml2/sysml2-api-and-services.md | The Systems Modeling API and Services, its PIM data structures and services for tool-independent model access |
 | SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | pages/sysml2/sysml2-domain-libraries-causation-geometry.md | The Cause and Effect, Requirement Derivation, and Geometry domain libraries |
 | SysML 2.0 Domain Libraries: Metadata and Analysis | pages/sysml2/sysml2-domain-libraries-metadata-analysis.md | The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies |
@@ -463,4 +202,15 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations | pages/sysml2/sysml2-syntax-structure.md | Cheat sheet for the structural modelling vocabulary |
 | SysML 2.0 Systems Model Library: Base Types and Specialisations | pages/sysml2/sysml2-systems-model-library.md | The Systems Model Library provides the base types that every SysML 2.0 keyword implicitly specialises |
 | SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches | pages/sysml2/sysml2-type-hierarchy.md | The two disjoint root branches of the type system: DataValue and Occurrence, and what each carries |
+| Syside Automator Core API | pages/tooling/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
+| Syside Expression Evaluation and Compiler | pages/tooling/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
+| Syside Model Modification and Element Reference | pages/tooling/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
+| Syside Project Configuration: syside.toml and .lsp.json | pages/tooling/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
+| Sysand Package Management for SysML v2 | pages/tooling/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
+| Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
+| Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| OMG SysML v2 Pilot Implementation: installation and batch validation | pages/tooling/tooling-omg-pilot-batch-validation.md | Installing the OMG SysML v2 Pilot Implementation and validating a model through SysMLInteractive in batch |
+| OpenSysML: installation, CLI validation, and language server | pages/tooling/tooling-opensysml-cli.md | Installing OpenSysML, validating with sysml -validate, its exit codes, and wiring sysml-lsp as the editor server |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
 <!-- wiki-routing:end -->

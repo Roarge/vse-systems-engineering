@@ -16,7 +16,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-14
+updated: 2026-09-10
 referenced_by: [sysml2-cases]
 ---
 
@@ -164,10 +164,13 @@ verdict is not a Boolean but an enumeration (Ch 33, p 290).
 The verdict is typically bound from a library helper.
 
 ```sysml
+// A story usage typed by VSE_Library::UserStory (see the methodology layer).
+requirement DronePowerUp : UserStory { subject :>> system : Drone; }
+
 verification def PowerUpTest {
     subject drone : Drone;
     objective checkPowerUp {
-        verify requirement : DronePowerUpRequirement;
+        verify DronePowerUp.acceptance;
     }
 
     perform drone.powerUp;

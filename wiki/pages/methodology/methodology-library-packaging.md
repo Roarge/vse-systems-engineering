@@ -1,9 +1,9 @@
 ---
-title: "Methodology library packaging (forthcoming work)"
+title: "Methodology library packaging: the shipped VSE_Library and the reserved MBSEMethodology package"
 slug: methodology-library-packaging
 type: concept
 layer: methodology
-summary: The planned section 0.8 packaging of the methodology as a SysML v2 library, not yet realised
+summary: VSE_Library ships today, and the standalone MBSEMethodology library package of section 0.8 remains outstanding
 tags: [library-package, semantic-metadata, user-defined-keywords, sysml2-ch41, deferred]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §0.8 (Forthcoming Work — Methodology Library Packaging)."
@@ -18,7 +18,7 @@ updated: 2026-09-10
 referenced_by: []
 ---
 
-# Methodology library packaging (forthcoming work)
+# Methodology library packaging: the shipped VSE_Library and the reserved MBSEMethodology package
 
 ## Forecast
 

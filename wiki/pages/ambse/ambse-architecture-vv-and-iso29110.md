@@ -19,7 +19,7 @@ related:
   - iso29110-sr-process
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [architecture-design]
 ---
 
@@ -46,7 +46,7 @@ the architecture activities upstream see
 
 | Timeframe | Activity | Plugin mapping |
 |---|---|---|
-| Nanocycle | Syside syntax validation, constraint checking, trace completeness | Pre-commit hook, Syside on save |
+| Nanocycle | SysML v2 syntax validation, constraint checking, trace completeness | Pre-commit lint gate through the configured validator, language server on save |
 | Microcycle | Peer model review, use case walkthrough, iteration acceptance | Phase gate check, iteration review |
 | Macrocycle | System-level V&V, formal acceptance | SR.5 activities, PM.4 |
 
@@ -84,7 +84,9 @@ package VerificationCases {
                and 85 degrees C. Record system readings. Verify all readings
                are within +/- 0.5 degrees C of the source. */
         attribute method = "test";
-        verify requirement SystemRequirements::MeasureTemperature;
+        objective {
+            verify MeasureTemperature.acceptance;
+        }
     }
 
     verification def VerifyTempResponseTime {
@@ -93,10 +95,17 @@ package VerificationCases {
                Procedure: Apply a step change in temperature. Measure time
                from stimulus to reported reading. Verify less than 100 ms. */
         attribute method = "test";
-        verify requirement SystemRequirements::TemperatureResponseTime;
+        objective {
+            verify TemperatureResponseTime.acceptance;
+        }
     }
 }
 ```
+
+`MeasureTemperature` and `TemperatureResponseTime` are story usages
+declared in the imported `SystemRequirements` package, each typed by
+`VSE_Library::UserStory`, so `.acceptance` reaches the acceptance
+criterion the story redefines.
 
 ## Definition of done for SE velocity
 

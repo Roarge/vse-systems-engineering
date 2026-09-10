@@ -13,9 +13,10 @@ related:
   - sysml2-type-hierarchy
   - sysml2-specialisation-and-typing
   - sysml2-requirements-semantics
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -182,7 +183,7 @@ Common validation errors a VSE engineer is likely to encounter:
 | Assert constraint evaluating to false | Assert constraints must subset `trueEvaluations` | Fix the constraint or correct the model values that violate it |
 | Cross-hierarchy specialisation | DataValue and Occurrence are disjoint | Do not specialise an `attribute def` from a `part def` or vice versa |
 | Variation member not a variant | All owned members of a variation must be `variant` usages | Add the `variant` keyword to each member |
-| Missing verify link in verification case | Verification case objective should contain `verify requirement` | Add `verify requirement <name>` inside the `objective` block |
+| Missing verify link in verification case | Verification case objective should contain a `verify` clause | Add `verify <story>.<member>;` inside the `objective` block |
 | Usage specialising a definition | Usages specialise usages, definitions specialise definitions | Use `:` (typing) to type a usage by a definition, not `:>` (specialisation) |
 | Redefinition type mismatch | A redefining feature must be type-compatible with the redefined feature | Ensure the new type is a subtype of the original |
 | Multiple subjects in one requirement | A requirement may have only one subject parameter | Remove the extra subject declarations |
@@ -208,6 +209,9 @@ Before committing a model file, verify the following:
    types and Occurrence types.
 8. **Reserved keywords** used as names are enclosed in single
    quotes.
+9. **A reference implementation accepts the file.** Run the model
+   through the pilot or OpenSysML and check the forms in
+   [[tooling-reference-implementation-rules]].
 
 ## Common modelling mistakes
 
@@ -233,3 +237,6 @@ Before committing a model file, verify the following:
   operators referenced here.
 - [[sysml2-requirements-semantics]] for the requirement family
   validation rules.
+- [[tooling-reference-implementation-rules]] for the forms the OMG
+  pilot and OpenSysML refuse in practice, which go beyond the
+  specification text quoted here.

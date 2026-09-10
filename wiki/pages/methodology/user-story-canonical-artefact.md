@@ -17,6 +17,7 @@ related:
   - stakeholder-stories-workflow
   - system-stories-workflow
   - story-branch-pr-workflow
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-05
 updated: 2026-09-10
@@ -35,6 +36,7 @@ referenced_by: [story-orchestrator, needs-and-requirements]
 - Identifier convention
 - Authoring patterns
 - Well-formedness rules
+- See also
 
 The User Story is the elementary unit of stakeholder intent in the VSE methodology. It is both an agile artefact, readable as a sentence on a card, and a model element, typed and queryable inside the SysML 2.0 model. Every requirement chain in the system specification ultimately traces upward to one or more User Stories. See [[methodology-overview]] for the surrounding artefact taxonomy.
 
@@ -142,3 +144,9 @@ The following eleven rules apply to every User Story.
 9. `StoryMeta` is applied with `@StoryMeta { ... }` and qualified enumeration values.
 10. `satisfy <story> by <element>` names an element typed by the story's subject type or a specialisation of it.
 11. A User Story shall not be typed by a Use Case, Action, Case, or any non-Requirement definition. Requirements specialise from the requirement-kind taxonomy only.
+
+## See also
+
+- [[tooling-reference-implementation-rules]] for the forms the OMG pilot
+  and OpenSysML accept or refuse when these rules are validated, from
+  subject ordering to the dot-notation trace targets.

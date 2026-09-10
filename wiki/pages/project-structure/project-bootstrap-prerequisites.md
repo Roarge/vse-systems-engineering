@@ -23,13 +23,24 @@ related:
   - methodology-overview
   - sysmod-base-architecture-source
   - sysmod-problem-statement-and-objectives
+  - tooling-sysml-toolchain-choice
+  - tooling-validator-fallback-process
 confidence: high
 created: 2026-05-06
-updated: 2026-08-13
+updated: 2026-09-10
 referenced_by: [project-setup, project-audit]
 ---
 
 # Project Bootstrap Prerequisites
+
+## Contents
+
+- The two viewpoints
+- How the two viewpoints meet
+- Greenfield versus brownfield
+- What the `project-setup` skill scaffolds
+- ISO/IEC 29110 mapping
+- When this page does not apply
 
 This page collects, in one place, what shall exist before stakeholder requirements engineering (§4) opens on a new VSE project. Two complementary viewpoints together describe the bootstrap state. Both are required, and both are documented in the methodology specification, but each lives in a different section. This page is the synthesis.
 
@@ -77,6 +88,8 @@ For greenfield projects, all three artefacts (Plan, Base Architecture, System Co
 ## What the `project-setup` skill scaffolds
 
 `/vse-setup` (the `project-setup` skill) creates the directory tree per [[vse-canonical-project-layout]], drops the Project Plan template at `docs/project-plan.md`, and creates empty `model/core/base-architecture/` and `model/core/context/` packages with placeholder `.sysml` files. The skill does not author the content of the Plan, the Base Architecture, or the System Context. Those are project work, not setup work.
+
+**Toolchain.** Before the first model file is validated the project records its SysML v2 toolchain in `.iso-config.yaml` (`sysml_toolchain`) and installs it. `/vse-setup` asks once, `/vse-toolchain` installs or switches later, and `project-audit` warns when the key is absent. See [[tooling-sysml-toolchain-choice]] and [[tooling-validator-fallback-process]].
 
 ## ISO/IEC 29110 mapping
 

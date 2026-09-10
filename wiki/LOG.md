@@ -1678,3 +1678,161 @@ Pages updated:
 No `summary:` field changed and no wikilink was added or removed, so
 INDEX and the routing blocks need no regeneration. All five pages
 carry 2026-09-10.
+
+## [2026-09-10] restructure | syside layer renamed to tooling
+
+The `pages/syside/` layer becomes `pages/tooling/`, a generic layer for
+SysML v2 toolchains, so the OMG SysML v2 Pilot Implementation and
+OpenSysML pages can sit beside the Sensmetry pages without a
+vendor-named directory or a second tooling layer. The seven Syside
+pages move with `git mv`, keep their `syside-` slugs and titles, and
+change only their `layer:` field, because wikilinks resolve by slug
+under `pages/**` and every `related:` entry stays valid. The layer row
+and the directory-tree entry in `wiki/CLAUDE.md` are rewritten, and the
+layer enum on line 5 of all five `wiki/schema/*.md` templates is
+updated in the same commit, closing the gap the sysmod ingest left.
+Routing rows for project-setup, sysml2-metadata and sysml2-modelling
+are regenerated so their Path cells point at `pages/tooling/`, and the
+six hand-written path references in `sysml2-modelling`,
+`sysml2-metadata` and `README.md` are edited by hand. No page content
+changes and no `updated:` field is bumped. INDEX regenerated. Totals
+stay at 159 pages across 12 layers, routed to by 20 skills.
+
+## [2026-09-10] ingest | open-source SysML v2 toolchains
+
+Layer: tooling. Sources are the pilot 2026-07 and OpenSysML v0.6.0
+release pages, the Adoptium and Homebrew installation pages, and the
+plugin's own validation runs of 2026-09-09, so every `raw:` is `null`
+apart from the two plugin files the fallback process page cites, and
+every citation carries its URL and access month.
+
+Pages authored:
+- tooling-sysml-toolchain-choice (new, pattern, `confidence: medium`
+  because both open-source tools are pre-1.0 and licence terms move)
+- tooling-omg-pilot-batch-validation (new)
+- tooling-opensysml-cli (new, `confidence: medium`, pre-1.0 caveat)
+- tooling-java-runtime (new)
+- tooling-reference-implementation-rules (new)
+- tooling-validator-fallback-process (new)
+
+The six pages were corrected against the shipped library and CI
+template before the pull request was opened.
+
+Pages updated:
+- syside-tooling-overview (legacy note narrowed to `sysml-2ls`, two
+  licence-free rows in the tool-choice table, the licence-detection
+  fact, the Automator fallback sentence)
+- syside-project-configuration (`.lsp.json` per toolchain, the two
+  files no longer described as identical for every project or as
+  independent of the hook configuration)
+- syside-vse-workflows (`syside check` is the gate when the recorded
+  toolchain is `syside`, format check skipped elsewhere)
+- syside-core-api, syside-expression-evaluation,
+  syside-model-modification, syside-sysand-package-management
+  (routing only, `updated:` not bumped)
+- sysml2-api-and-services (reference implementation sentence and
+  cross-link)
+- vse-canonical-project-layout (Syside configuration section becomes
+  Toolchain configuration, `.lsp.json` moved to the both-layouts table
+  and its brownfield location corrected to the workspace root)
+- project-bootstrap-prerequisites (toolchain precondition, Contents
+  block added)
+- sysml2-requirements-semantics, sysml2-grammar-and-validation,
+  sysml2-domain-libraries-causation-geometry,
+  sysml2-vse-library-metadata (cross-links to the rules page)
+- methodology-library-packaging (title and summary reframed around the
+  shipped `VSE_Library`, the body already recorded it)
+
+Six pages outside the layer carry Syside in prose (ambse-principles,
+ambse-risk-and-metrics, ambse-use-case-driven-elicitation,
+ambse-architecture-vv-and-iso29110, vv-reporting-and-vse-guidance,
+sysml2-expression-patterns). Each is reworded to the configured
+toolchain in one line and its `updated:` is deliberately not bumped,
+following the 2026-08-07 precedent for branding-only edits.
+
+Routing resynced: sysml-toolchain, sysml2-modelling, sysml2-metadata,
+project-setup, project-audit, attention-regime, document-export,
+traceability-guard, sysml2-cases, needs-and-requirements,
+verification-validation, story-orchestrator. document-export and
+traceability-guard gained their marker pairs in the same change.
+INDEX regenerated.
+
+## [2026-09-10] index | routing resync
+
+Pages indexed: 165. Routing blocks regenerated: 12. Routing rows 213
+to 245. Layers stay 12 (syside renamed to tooling). Referencing skills
+20 to 23. ToC drift: 0.
+
+## [2026-09-10] refactor | dot-notation verify and toolchain corrections
+
+Layer: sysml2, ambse, tooling, project-structure, methodology. The
+skill prose that handed the Syside tool surface to `@sysml-toolchain`
+left three wiki pages still teaching `verify requirement <name>`, which
+both reference implementations refuse against a definition member. The
+form is now `verify <story>.<member>;` inside a `verification def`
+objective, as methodology §5.4.6 fixes it. The remaining edits are
+single-sentence corrections raised in the review of the previous
+commit, where the page overstated what the CI template keys on, where
+`syside.toml` lands, or what a Syside probe proves.
+
+Pages updated:
+
+- sysml2-case-kinds (the drone power-up objective takes a story member
+  by dot notation)
+- sysml2-grammar-and-validation (the missing-verify checklist row)
+- ambse-architecture-vv-and-iso29110 (both verification cases gain an
+  `objective` block and the dot form)
+- syside-project-configuration (the CI template keys on the recorded
+  toolchain, and on `syside.toml` only for the format check)
+- syside-vse-workflows (the format check is skipped when the recorded
+  toolchain is not `syside`, not when Syside is missing)
+- syside-tooling-overview (`syside --version` was exercised on an
+  expired licence, not on a machine with no key)
+- tooling-java-runtime (the Syside diagram export ships a Java
+  component, and no JNI mechanism is recorded)
+- sysml2-requirements-semantics (subject ordering and `#derive` on a
+  definition are pilot-only, the trace-target rule is enforced by both)
+- sysml2-api-and-services (the pilot also runs when it is the recorded
+  toolchain, not only as a Syside fallback)
+- vse-canonical-project-layout (`syside.toml` sits at the project root
+  in both layouts, and the CI template checks both locations)
+- user-story-canonical-artefact, system-stories-workflow (the backlink
+  to `tooling-reference-implementation-rules` the previous commit left
+  one-way)
+
+`updated:` was bumped on sysml2-case-kinds and
+ambse-architecture-vv-and-iso29110. The other pages already carried
+2026-09-10. INDEX and every routing block were regenerated and came
+back identical, because no title or summary changed. Totals stay at
+165 pages across 12 layers, routed to by 23 skills over 245 rows, and
+contents-block drift stays 0.
+
+## [2026-09-10] refactor | undeclared story usages and a stale layout row
+
+Layer: sysml2, ambse, project-structure. Review of the previous commit
+found two verification examples verifying a story that no page
+declares, and a layout row for a file the plugin no longer ships.
+
+Pages updated:
+
+- sysml2-case-kinds (the drone power-up example now declares
+  `DronePowerUp` as a usage typed by `VSE_Library::UserStory` with a
+  `Drone` subject, so `verify DronePowerUp.acceptance` resolves)
+- ambse-architecture-vv-and-iso29110 (a sentence after the block says
+  that `MeasureTemperature` and `TemperatureResponseTime` are story
+  usages in the imported `SystemRequirements` package, and that
+  `.acceptance` reaches the redefined criterion)
+- vse-canonical-project-layout (the "Greenfield-only root files"
+  section is removed, because `TASKS.md` was its only row and neither
+  `templates/common/` nor `@project-setup` ships or copies that file
+  any more, and the `## Contents` block drops the heading with it)
+
+Neither `verification def` on ambse-architecture-vv-and-iso29110 gained
+a `subject`, because the surrounding example declares no system part
+def to conform to.
+
+`updated:` was bumped on no page, because all three already carried
+2026-09-10. INDEX and every routing block were regenerated and came
+back identical, because no title or summary changed. Totals stay at
+165 pages across 12 layers, routed to by 23 skills over 245 rows, and
+contents-block drift stays 0.

@@ -196,8 +196,9 @@ package HS_Requirements {
     private import VSE_Library::Severity;
     private import VSE_Library::Likelihood;
     private import VSE_Library::RiskStatus;
+    private import VSE_Library::UserStory;
 
-    requirement def SR_SampleRate {
+    requirement SR_SampleRate : UserStory {
         @RiskInfo {
             severity = Severity::High;
             likelihood = Likelihood::Low;
@@ -218,7 +219,7 @@ and does not need a standalone entry in the risk register.
 ```python
 from syside import Model
 
-model = Model.load("models/")
+model = Model.load("model/")
 for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
     risk = element.metadata("VSE_Library::RiskInfo")
     if (risk.severity in ("High", "VeryHigh", "Critical")
@@ -226,10 +227,16 @@ for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
         print(f"{element.qualified_name}: {risk.severity} / {risk.status}")
 ```
 
+Note: the loading call in this snippet uses an older API shape. Load
+with `syside.load_model(paths=syside.collect_files_recursively("model/"))`
+as the `syside-core-api` page documents, and treat
+`elements_with_metadata` as illustrative until it is verified against
+the Syside release the project pins.
+
 The query is advisory. A full risk-management workflow skill covering
 the identify-assess-mitigate-monitor loop is flagged as a follow-up.
 See the `syside-core-api` and `syside-expression-evaluation` atomic pages
-under `wiki/pages/syside/` for the Automator API.
+under `wiki/pages/tooling/` for the Automator API.
 
 ### ISO/IEC 29110 Framing
 
@@ -317,12 +324,14 @@ metadata def Baseline {
 package HS_Requirements {
     private import VSE_Library::ConfigItem;
     private import VSE_Library::CIState;
+    private import VSE_Library::UserStory;
+    private import ScalarValues::String;
 
-    requirement def SR_SampleRate {
+    requirement SR_SampleRate : UserStory {
         @ConfigItem {
             ciId = "REQ-SYS-001";
             baselineId = "BL-SRS-0.3";
-            state = CIState::Baselined;
+            ciState = CIState::Baselined;
             owner = "systems";
         }
         attribute id : String = "SR-0001";
@@ -342,7 +351,7 @@ package HS_ArchDesign {
         @ConfigItem {
             ciId = "ARCH-SYS-001";
             baselineId = "BL-ARCH-0.2";
-            state = CIState::Baselined;
+            ciState = CIState::Baselined;
             owner = "systems";
         }
         // part body ...
@@ -355,7 +364,7 @@ package HS_ArchDesign {
 ```python
 from syside import Model
 
-model = Model.load("models/")
+model = Model.load("model/")
 target_baseline = "BL-SRS-0.3"
 baselined = []
 not_yet = []
@@ -363,13 +372,19 @@ for element in model.elements_with_metadata("VSE_Library::ConfigItem"):
     ci = element.metadata("VSE_Library::ConfigItem")
     if ci.baselineId != target_baseline:
         continue
-    if ci.state == "Baselined":
+    if ci.ciState == "Baselined":
         baselined.append((ci.ciId, element.qualified_name))
     else:
-        not_yet.append((ci.ciId, ci.state, element.qualified_name))
+        not_yet.append((ci.ciId, ci.ciState, element.qualified_name))
 print(f"In {target_baseline}: {len(baselined)} baselined,",
       f"{len(not_yet)} not yet at state Baselined")
 ```
+
+Note: the loading call in this snippet uses an older API shape. Load
+with `syside.load_model(paths=syside.collect_files_recursively("model/"))`
+as the `syside-core-api` page documents, and treat
+`elements_with_metadata` as illustrative until it is verified against
+the Syside release the project pins.
 
 The second list is the orphan-CI surface `@traceability-guard`
 checks at iteration-boundary closure. A full model-level CM workflow
@@ -528,14 +543,15 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
-| Syside Automator Core API | pages/syside/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
-| Syside Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
-| Syside Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
-| Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
-| Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | SysML 2.0 Filter Conditions on Imports and Views | pages/sysml2/sysml2-filter-conditions.md | Imports can be restricted with filter conditions that impact which elements are brought into a namespace |
 | SysML 2.0 Metadata Definitions and Annotations | pages/sysml2/sysml2-metadata-definitions.md | Declaring metadata definitions and applying them as annotations |
 | SysML 2.0 Metadata, Reflection, and Annotations Overview | pages/sysml2/sysml2-metadata-overview.md | Metadata definitions, annotations, and reflection: how models describe and query their own structure |
 | SysML 2.0 Reflection: Metaclassification and Meta Operators | pages/sysml2/sysml2-reflection-and-classification.md | Metaclassification expressions form the foundation of the SysML 2.0 reflection mechanism |
 | VSE_Library Metadata: Risks, Configurations, Variants, Verification | pages/sysml2/sysml2-vse-library-metadata.md | The VSE_Library package of shared metadata definitions and enumerations used across the skills |
+| Syside Automator Core API | pages/tooling/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
+| Syside Expression Evaluation and Compiler | pages/tooling/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
+| Syside Model Modification and Element Reference | pages/tooling/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
+| Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
+| Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->

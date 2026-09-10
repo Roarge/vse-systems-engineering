@@ -222,4 +222,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | LLM as expert peer in VSE requirement reviews | pages/phas-eai/phas-eai-llm-peer-review.md | Case evidence for LLM-as-expert-peer requirement reviews in a VSE, with cautions on scoring and model ageing |
 | PHAS-EAI Framework: Core Constructs | pages/phas-eai/phas-eai-overview.md | The five PHAS-EAI constructs, from configuration space and cognitive reserve to niche construction |
 | The human dimension: craftsmanship, New Work, and the gap of slackness | pages/sysmod/sysmod-neg-human-dimension.md | Craftsmanship over Taylorism, New Work values, the gap of slackness, and the project-hero burnout warning |
+| Java 21 runtime for the OMG pilot | pages/tooling/tooling-java-runtime.md | Installing a Java 21 runtime per platform for the OMG pilot, JRE versus JDK, JAVA_HOME, and the version check |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
+| Validator selection and fallback in the pre-commit lint gate | pages/tooling/tooling-validator-fallback-process.md | How the pre-commit lint gate picks a SysML v2 validator, falls back with a notice, and reports findings |
 <!-- wiki-routing:end -->

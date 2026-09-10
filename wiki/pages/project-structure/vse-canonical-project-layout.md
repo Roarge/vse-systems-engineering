@@ -12,9 +12,10 @@ related:
   - vse-model-tiers-and-templates
   - iso29110-template-mapping
   - project-bootstrap-prerequisites
+  - tooling-sysml-toolchain-choice
 confidence: high
 created: 2026-05-04
-updated: 2026-05-06
+updated: 2026-09-10
 referenced_by: [project-setup, project-audit]
 ---
 
@@ -24,10 +25,9 @@ referenced_by: [project-setup, project-audit]
 
 - Layouts
 - Root files (both layouts)
-- Greenfield-only root files
 - CLAUDE.md marker block
 - .vse-iteration.yml schema (version 1)
-- Syside configuration
+- Toolchain configuration
 - Gitignore entries
 - Hooks
 - GitHub Actions (optional)
@@ -59,16 +59,8 @@ directory.
 | `.vse-journal.yml` | Session continuity journal | Yes |
 | `CLAUDE.md` | VSE companion guidance (marker block) | Yes |
 | `.gitignore` | Excludes `build/`, generated files | Yes |
-
-## Greenfield-only root files
-
-| File | Purpose |
-|---|---|
-| `.lsp.json` | Syside language server config |
-| `syside.toml` | Syside formatting and linting |
-| `TASKS.md` | ISO/IEC 29110 task checklist |
-
-In brownfield mode these live under `engineering/`.
+| `.lsp.json` | Language server wiring for the Claude Code IDE (Syside or OpenSysML) | When a language server is configured |
+| `syside.toml` | Syside formatting and linting | When the toolchain is `syside` |
 
 ## CLAUDE.md marker block
 
@@ -101,12 +93,21 @@ Required fields under `current_iteration`:
 Optional fields: `closure_debt` (consumed by
 [[story-branch-pr-workflow]]), `notes`, `history`.
 
-## Syside configuration
+## Toolchain configuration
 
-| File | Greenfield location | Brownfield location |
-|---|---|---|
-| `syside.toml` | Project root | `engineering/syside.toml` |
-| `.lsp.json` | Project root | `engineering/.lsp.json` |
+The recorded toolchain is the `sysml_toolchain` key in
+`.iso-config.yaml` (`syside`, `omg-pilot`, or `opensysml`, absent
+means `syside`). Each toolchain adds these files:
+
+| File | Toolchain | Greenfield location | Brownfield location |
+|---|---|---|---|
+| `syside.toml` | `syside` | Project root | Project root (`project-setup` copies it to the project root in both layouts) |
+| `.lsp.json` | `syside`, `opensysml`, and `omg-pilot` when OpenSysML is installed beside it | Project root | Project root (the IDE reads the workspace root, not `engineering/`) |
+| none | `omg-pilot` | the jar and library live under `~/.local/share/sysml-pilot`, outside the project | same |
+
+The shipped CI workflow template looks for `syside.toml` at the project
+root and under `engineering/`, so a project that moved the file by hand
+is still covered. See [[tooling-sysml-toolchain-choice]].
 
 ## Gitignore entries
 

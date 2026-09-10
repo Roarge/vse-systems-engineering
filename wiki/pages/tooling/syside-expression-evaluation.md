@@ -2,7 +2,7 @@
 title: "Syside Expression Evaluation and Compiler"
 slug: syside-expression-evaluation
 type: reference
-layer: syside
+layer: tooling
 summary: Evaluating SysML expressions, feature values with units, requirements, and metadata filters
 tags: [syside, automator, compiler, expressions, units, filters, requirements]
 sources:
@@ -19,7 +19,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-08-07
-referenced_by: [sysml2-modelling, sysml2-metadata]
+referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata]
 ---
 
 # Syside Expression Evaluation and Compiler

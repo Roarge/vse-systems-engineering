@@ -2,7 +2,7 @@
 title: "Syside Project Configuration: syside.toml and .lsp.json"
 slug: syside-project-configuration
 type: reference
-layer: syside
+layer: tooling
 summary: "Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json"
 tags: [syside, configuration, toml, lsp, lint, vscode, project-setup]
 sources:
@@ -15,10 +15,13 @@ related:
   - vse-canonical-project-layout
   - vse-model-tiers-and-templates
   - sysml2-canonical-model-layout
+  - tooling-sysml-toolchain-choice
+  - tooling-opensysml-cli
+  - tooling-validator-fallback-process
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
-referenced_by: [sysml2-modelling, project-setup]
+updated: 2026-09-10
+referenced_by: [sysml-toolchain, sysml2-modelling, project-setup]
 ---
 
 # Syside Project Configuration
@@ -38,15 +41,16 @@ referenced_by: [sysml2-modelling, project-setup]
 
 ## The two configuration files
 
-A VSE project bootstrapped through `project-setup` carries two distinct
-configuration files in its root. They serve different consumers and
+A VSE project bootstrapped through `project-setup` on the `syside`
+toolchain carries two distinct configuration files in its root. They serve different consumers and
 must not be conflated. `syside.toml` is read by Syside itself. The
 Modeler, the `syside` CLI, and the Automator share one loader.
 `.lsp.json` is read by the Claude Code IDE.
 
 The annotated `syside.toml` template lives at
 `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` and is copied into
-every new project at `project-setup` Step 4.
+a new project at `project-setup` Step 4 when the recorded toolchain is
+`syside` or no toolchain was chosen.
 
 Reference: https://docs.sensmetry.com/modeler/cli/configuration.html
 
@@ -177,19 +181,28 @@ and which file extensions (`.sysml`, `.kerml`) to route to it.
 
 The IDE looks for this file in the workspace the user has open, so it
 must live in the project root, not in the plugin cache directory. The
-template at `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` is
-identical for every project (no placeholder substitution) and is copied
-by `project-setup` Step 4.
+template at `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` carries
+the Syside entry, and `project-setup` Step 4 copies it when the
+recorded toolchain is `syside`. When the recorded toolchain is
+`opensysml` the setup writes the `sysml-lsp` entry shown in
+[[tooling-opensysml-cli]] instead. The OMG pilot ships no language
+server, so a project on `omg-pilot` receives no `.lsp.json` unless
+OpenSysML is installed beside it.
 
 Without this file the IDE does not spawn the SysML language server, and
 editing `.sysml` files inside Claude Code falls back to plain text.
-[[vse-canonical-project-layout]] records both files as required at the
-project root for the bootstrap to count as complete.
+[[vse-canonical-project-layout]] records where both files sit in the
+canonical layout and which toolchain each one belongs to.
 
 ## The two files are independent
 
 Removing `.lsp.json` does not affect `syside check` or Automator
-scripts. The CI pipeline still validates the model on push because
-`syside.toml` drives the headless tooling. Removing `syside.toml` does
-not affect IDE syntax highlighting beyond the format settings the
-language server reports back.
+scripts, and removing `syside.toml` does not affect IDE syntax
+highlighting beyond the format settings the language server reports
+back. Neither file is read by the git hooks. The hooks read the
+`sysml_toolchain` key in `.iso-config.yaml` to choose a validator, so a
+project may keep `syside.toml` for the editor while the pre-commit gate
+runs under another toolchain, see
+[[tooling-validator-fallback-process]]. The shipped CI workflow
+template runs its Syside steps only when the recorded toolchain is
+`syside`, and its format check only when `syside.toml` also exists.

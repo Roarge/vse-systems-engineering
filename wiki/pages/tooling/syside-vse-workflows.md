@@ -2,7 +2,7 @@
 title: "Syside VSE Workflows and Report Generation"
 slug: syside-vse-workflows
 type: pattern
-layer: syside
+layer: tooling
 summary: Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports
 tags: [syside, automator, vse, workflows, report-generation, traceability, excel, reqif, ci]
 sources:
@@ -19,10 +19,12 @@ related:
   - sysml2-allocations-overview
   - ambse-dependability-and-traceability
   - vse-model-tiers-and-templates
+  - tooling-validator-fallback-process
+  - tooling-sysml-toolchain-choice
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
-referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
+updated: 2026-09-10
+referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
 # Syside VSE Workflows and Report Generation
@@ -45,10 +47,14 @@ referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
 
 ## Validation in CI
 
-The `syside check` CLI is the gate a VSE puts in front of every merge.
-It loads the files the project's `syside.toml` selects (see
-[[syside-project-configuration]]) and reports diagnostics at the
-severities that file sets.
+When the recorded toolchain is `syside`, the `syside check` CLI is the
+validator behind the pre-commit lint gate and the CI validation step.
+It validates the files the gate passes it (the staged files, or the
+tracked model files in CI) at the severities the project's
+`syside.toml` sets (see [[syside-project-configuration]]). Projects on the OMG pilot or OpenSysML run
+the same gate through the wrapper in
+[[tooling-validator-fallback-process]], and every other section of
+this page describes Syside-only capabilities.
 
 ```bash
 # Fail the build on any diagnostic, not only errors
@@ -60,6 +66,9 @@ syside check --warnings-as-errors --stats
 # Check formatting without rewriting files
 syside format --check
 ```
+
+No other toolchain ships a formatter, so the format check is skipped
+when the recorded toolchain is not `syside`.
 
 `--stats` prints element and diagnostic counts for the run. Log it in
 CI, because a sudden change in element count between two commits is

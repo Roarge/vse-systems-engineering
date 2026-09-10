@@ -163,4 +163,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SysML 2.0 Case Kinds: Use, Analysis, Verification | pages/sysml2/sysml2-case-kinds.md | Syntax for the three standard case kinds, that is use case, analysis case, and verification case |
 | SysML 2.0 Case Patterns and Gotchas | pages/sysml2/sysml2-case-patterns.md | Practical case patterns and the recurring mistakes that show up in review |
 | SysML 2.0 Cases Overview | pages/sysml2/sysml2-cases-overview.md | The case construct family: use, analysis, verification, and validation cases share one structure |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->

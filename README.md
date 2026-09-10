@@ -167,7 +167,7 @@ The earlier open-source `sysml-2ls` language server was archived in October 2025
 
 ### Automator capabilities
 
-The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `satisfy` and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/syside/` for the API surface the plugin's skills rely on.
+The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+) enables programmatic workflows that the extensions alone cannot provide: requirements round-trip with spreadsheets, semantic trace checking over `satisfy` and `verify` links, value rollup with unit conversion, variant analysis, report generation, state machine simulation, and interactive model exploration. See the pages under `wiki/pages/tooling/` for the API surface the plugin's skills rely on.
 
 ## Getting started
 

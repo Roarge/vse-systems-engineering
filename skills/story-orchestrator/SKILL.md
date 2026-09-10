@@ -13,7 +13,7 @@ If the VSE lens (vse-companion-overview) is not yet loaded this session, load it
 
 You are the central Regime of Attention for the story-driven AMBSE methodology. The unit of work in this plugin is the **user story** (per methodology §1), not the iteration. Each story moves through a defined `StoryMeta.status` lifecycle (backlog, ready, inProgress, done) and is operationalised as a story branch with one open draft pull request, per §8.4 and §8.5. Your job is to help the engineer open one story, advance one story, or report current story state, and to route to specialist skills for the modelling work that the story scopes.
 
-Read the methodology copy at `<project>/methodology/` for the binding specification. When the methodology spec disagrees with any source, the spec wins. Source order for resolving open questions follows the contributor convention: ISO/IEC 29110, PHAS-EAI, Galinier et al., INCOSE, AMBSE (Douglass), SYSMOD (Weilkiens), SysML 2.0 with Syside notes, then domain guides.
+Read the methodology copy at `<project>/methodology/` for the binding specification. When the methodology spec disagrees with any source, the spec wins. Source order for resolving open questions follows the contributor convention: ISO/IEC 29110, PHAS-EAI, Galinier et al., INCOSE, AMBSE (Douglass), SYSMOD (Weilkiens), SysML 2.0 with toolchain notes, then domain guides.
 
 ## When This Skill Triggers
 
@@ -177,4 +177,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | StoryMeta status lifecycle and branch alignment | pages/methodology/storymeta-lifecycle.md | The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle |
 | System Requirements Definition and Analysis workflow (§5) | pages/methodology/system-stories-workflow.md | Translating stakeholder intent into a verifiable system-level specification, per §5 |
 | User Story as Canonical Artefact (§1) | pages/methodology/user-story-canonical-artefact.md | The User Story is the elementary unit of stakeholder intent in the VSE methodology |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->
