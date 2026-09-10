@@ -13,8 +13,11 @@ set -euo pipefail
 # shellcheck source=/dev/null
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
 
-tc_setup_repo
+# The trap goes in first, because the scratch root exists from the
+# moment lib.sh is sourced and a failure inside tc_setup_repo would
+# otherwise leak it.
 trap tc_teardown EXIT
+tc_setup_repo
 
 # A java stub at an arbitrary path, for the resolution-order cases.
 write_java_at() {
@@ -302,7 +305,55 @@ tc_assert_match '^  syside: ' "$ERR" "fallback: the syside reason is listed"
 tc_assert_match '^  omg-pilot: ' "$ERR" "fallback: the omg-pilot reason is listed"
 tc_assert_match '^  opensysml: ' "$ERR" "fallback: the opensysml reason is listed"
 
-# --------------------------------------------------- 10. real tools
+# ---------------------------------------------- 10. staged context
+
+# vse_tc_run_staged widens the context to every tracked .sysml file so
+# that cross-file names resolve, minus the directories that hold
+# generated or throwaway models. A tracked file under a nested build/
+# directory is one of those, and only the exclusion pattern keeps it
+# out, so the stub records the file list it was handed.
+tc_stub_sysml_recorder() {
+    tc_stub sysml <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+if [ "${1:-}" = "-version" ]; then
+    echo 'sysml v0.6.0'
+    exit 0
+fi
+printf '%s\n' "$*" >> "${SYSML_ARGS:-/dev/null}"
+exit 0
+EOF
+}
+
+tc_config standard opensysml
+tc_write engineering/model/g.sysml <<'EOF'
+package G {
+    part def Gadget;
+}
+EOF
+tc_write engineering/build/x.sysml <<'EOF'
+package X {
+    part def Generated;
+}
+EOF
+tc_stage f.sysml engineering/model/g.sysml engineering/build/x.sysml
+tc_commit "staged-context fixture"
+
+STAGED_ARGS="${TRANSCRIPTS}/staged-args.txt"
+: > "$STAGED_ARGS"
+tc_stub_sysml_recorder
+tc_env "SYSML_ARGS=${STAGED_ARGS}"
+tc_run_lib_fn vse_tc_run_staged f.sysml
+tc_assert_rc 0 "staged context: a clean run over the widened context is clean"
+tc_assert_grep "engineering/model/g.sysml" "$(cat "$STAGED_ARGS")" \
+    "staged context: a tracked model outside the staged set joins the context"
+tc_assert_not_grep "engineering/build/x.sysml" "$(cat "$STAGED_ARGS")" \
+    "staged context: a tracked file under a nested build/ stays out"
+
+tc_env
+tc_reset_stubs
+
+# --------------------------------------------------- 11. real tools
 
 # The three sections below run the installed toolchains. Each is
 # guarded by the library's own detect, so a runner with no SysML tool

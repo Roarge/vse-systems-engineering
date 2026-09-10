@@ -150,7 +150,7 @@ vse_tc_java() {
 }
 
 vse_tc_pilot_home() {
-    printf '%s\n' "${VSE_SYSML_PILOT_HOME:-${HOME}/.local/share/sysml-pilot}"
+    printf '%s\n' "${VSE_SYSML_PILOT_HOME:-${HOME:-}/.local/share/sysml-pilot}"
 }
 
 # Resolve the pilot jar and library into VSE_TC_PILOT_JAR and
@@ -494,7 +494,7 @@ vse_tc_run_staged() {
     while IFS= read -r f; do
         [ -n "$f" ] || continue
         case "$f" in
-            */sandbox/*|sandbox/*|*.draft.sysml|build/*) continue ;;
+            */sandbox/*|sandbox/*|*.draft.sysml|build/*|*/build/*) continue ;;
         esac
         case "$staged_list" in
             *$'\n'"${f}"$'\n'*) continue ;;

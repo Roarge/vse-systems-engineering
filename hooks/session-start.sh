@@ -160,6 +160,8 @@ elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/s
 fi
 
 if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
+    VSE_TC_PROBE_TIMEOUT="${VSE_TC_PROBE_TIMEOUT:-10}"
+    export VSE_TC_PROBE_TIMEOUT
     # shellcheck source=/dev/null
     . "$SYSML_TOOLCHAIN_LIB"
 fi
@@ -169,8 +171,6 @@ echo "Methodology: ${ENG_ROOT}/methodology/ (project-local, authoritative)"
 echo "Profile:     ${PROFILE} (per methodology section 0.10)"
 
 if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
-    VSE_TC_PROBE_TIMEOUT="${VSE_TC_PROBE_TIMEOUT:-10}"
-    export VSE_TC_PROBE_TIMEOUT
     vse_tc_status_line 2>/dev/null || echo "Toolchain:   (status unavailable)"
 else
     echo "Toolchain:   (library missing, run /vse-toolchain)"

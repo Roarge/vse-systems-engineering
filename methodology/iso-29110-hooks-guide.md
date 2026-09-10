@@ -1162,6 +1162,7 @@ Two patterns work well for customisation:
 | `core.hooksPath` not set | Same as above | `git config core.hooksPath .githooks` |
 | Renderer slow at scale | `pre-commit` takes >5 s | Move heavy checks to CI (§4.4); keep `pre-commit` to fast lint only |
 | Claude Code hooks not firing | No status injected at session start | Verify `.claude/settings.json` schema matches current docs; check shell scripts are executable |
+| Preferred SysML toolchain unavailable (licence expired, no Java 21, binary missing) | `pre-commit` prints `<tool> unavailable (...); validating with <next> instead`, or at `block` refuses with "No SysML toolchain is available" | Run `/vse-toolchain` to install or switch, or lower the gate with `gate_overrides.precommit_lint` |
 | False positives blocking valid work | `pre-commit` blocks legitimate edits | Review `.iso-config.yaml` first, since the finding is usually a configuration problem. Lower the gate with a `gate_overrides` entry (methodology §0.10.4) rather than editing the script. For the single occurrence, bypass with a recorded rationale per methodology §0.10.6 |
 | Local gate bypassed | A commit lands without the gate having run | This is a supported act, not a failure, provided the rationale is recorded per methodology §0.10.6 (Correction Register at `full`, commit body otherwise). An unrecorded bypass is the actual failure mode. Put any gate that must not be bypassable in CI instead |
 

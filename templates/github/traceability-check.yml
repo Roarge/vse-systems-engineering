@@ -45,7 +45,12 @@ jobs:
           fi
           case "$TOOLCHAIN" in
               syside|omg-pilot|opensysml) ;;
-              *) TOOLCHAIN=syside ;;
+              *)
+                  if [ -n "$TOOLCHAIN" ]; then
+                      echo "::warning::sysml_toolchain '${TOOLCHAIN}' is not recognised, using syside"
+                  fi
+                  TOOLCHAIN=syside
+                  ;;
           esac
           echo "SysML toolchain: ${TOOLCHAIN}"
           echo "toolchain=${TOOLCHAIN}" >> "$GITHUB_OUTPUT"
@@ -127,7 +132,7 @@ jobs:
           fi
           FILES=()
           while IFS= read -r f; do
-              case "$f" in */sandbox/*|sandbox/*|*.draft.sysml|build/*) continue ;; esac
+              case "$f" in */sandbox/*|sandbox/*|*.draft.sysml|build/*|*/build/*) continue ;; esac
               FILES+=("$f")
           done < <(git ls-files -- '*.sysml')
           if [ "${#FILES[@]}" -eq 0 ]; then

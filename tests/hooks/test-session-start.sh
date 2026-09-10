@@ -7,6 +7,10 @@
 # three states. The hook is advisory, so every case also asserts exit 0
 # and plain-text output, which is what reaches the conversation.
 #
+# A last pair of cases pins the budget the availability probe runs
+# under, because the hook has to set it before the library is sourced
+# for the shorter session-start value to take effect at all.
+#
 # Every toolchain is stubbed, so the file asserts the same behaviour on
 # a runner with no SysML tool installed.
 #
@@ -126,6 +130,47 @@ tc_reset_stubs
 tc_pilot_uninstall
 case_mode2 "nothing available" syside \
     "Toolchain:   syside (preferred) unavailable: syside not on PATH. No fallback installed. Run /vse-toolchain."
+
+# --------------------------------------------- the probe budget
+
+# The library defaults VSE_TC_PROBE_TIMEOUT to 20 seconds at source
+# time, so the hook has to export the shorter session-start budget of
+# 10 before it sources the library. A stub timeout records the budget
+# it is handed, which is the only place the effective value shows.
+tc_stub_timeout_recorder() {
+    tc_stub timeout <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s\n' "${1:-}" >> "${TC_TIMEOUT_RECORD:-/dev/null}"
+shift
+exec "$@"
+EOF
+}
+
+# case_probe_budget <name> <expected-seconds> [NAME=VALUE ...]
+case_probe_budget() {
+    local name="$1" expected="$2" dir record
+    shift 2
+    dir="$(tc_mktemp_d)"
+    make_vse_project "$dir" syside
+    record="$(mktemp "${TC_ROOT}/timeout.XXXXXX")"
+    tc_env "TC_TIMEOUT_RECORD=${record}" SYSIDE_OK=1 "$@"
+    run_hook_in "$dir"
+    tc_assert_rc 0 "probe budget (${name}): exit 0"
+    tc_assert_grep "Toolchain:   syside (preferred, available)" "$OUT" \
+        "probe budget (${name}): the probe ran through the preferred tool"
+    tc_assert_eq "$expected" "$(head -n 1 "$record")" \
+        "probe budget (${name}): the probe runs under ${expected} seconds"
+}
+
+tc_stub_syside
+tc_stub_timeout_recorder
+
+case_probe_budget "unset" 10
+case_probe_budget "preset" 3 VSE_TC_PROBE_TIMEOUT=3
+
+tc_env
+tc_reset_stubs
 
 if tc_summary "test-session-start"; then
     exit 0
