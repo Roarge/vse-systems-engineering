@@ -25,7 +25,10 @@ project_profile: standard
 # installed, licence expired, no Java 21) the hooks fall back along the
 # fixed order syside, omg-pilot, opensysml and print one notice naming
 # why. VSE_SYSML_TOOLCHAIN in the environment overrides this for one run.
-sysml_toolchain: syside
+# The line below ships commented out, so a project that makes no choice
+# leaves the key absent and the audit invites the decision. @project-setup
+# uncomments it and writes the recorded value when the engineer chooses.
+# sysml_toolchain: syside
 
 # Optional per-gate overrides: block | warn | info | off.
 # Unset keys follow the profile default (section 0.10.4).

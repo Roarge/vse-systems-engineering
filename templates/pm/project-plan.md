@@ -136,7 +136,10 @@ feedback._
 ### 5.1 Task List
 
 > Identify all tasks needed to produce deliverables, including V&V and review
-> tasks. Reference TASKS.md for the full ISO/IEC 29110 task checklist.
+> tasks. The Tasks element of the Plan is PM.1.5 in the content table of
+> `methodology/10-project-management.md` section 10.3, and each task references
+> an activity in methodology sections 0 to 8. The mapping to ISO/IEC 29110
+> processes is in section 9.
 
 ### 5.2 Schedule
 

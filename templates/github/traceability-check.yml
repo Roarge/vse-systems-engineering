@@ -57,7 +57,7 @@ jobs:
           echo "VSE_SYSML_TOOLCHAIN=${TOOLCHAIN}" >> "$GITHUB_ENV"
 
       - name: Set up Java 21
-        # Syside and the OMG pilot run on a JVM. OpenSysML is a static binary.
+        # The OMG pilot runs on a JVM and is the runner-side fallback for syside. OpenSysML is a static binary.
         if: steps.toolchain.outputs.toolchain != 'opensysml'
         uses: actions/setup-java@v4
         with:
