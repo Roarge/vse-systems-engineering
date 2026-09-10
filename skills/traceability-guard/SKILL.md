@@ -434,7 +434,14 @@ WARN the engineer if:
 
 ## Knowledge base
 
-The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
-to this skill directly. When reference material is needed, consult `INDEX.md`
-at the wiki root and read the named page on demand with the Read tool. Do not
-bulk-load.
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
+<!-- wiki-routing:end -->

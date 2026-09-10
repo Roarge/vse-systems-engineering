@@ -1693,7 +1693,68 @@ layer enum on line 5 of all five `wiki/schema/*.md` templates is
 updated in the same commit, closing the gap the sysmod ingest left.
 Routing rows for project-setup, sysml2-metadata and sysml2-modelling
 are regenerated so their Path cells point at `pages/tooling/`, and the
-five hand-written path references in `sysml2-modelling` and
-`sysml2-metadata` are edited by hand. No page content changes and no
-`updated:` field is bumped. INDEX regenerated. Totals stay at 159
-pages across 12 layers, routed to by 20 skills.
+six hand-written path references in `sysml2-modelling`,
+`sysml2-metadata` and `README.md` are edited by hand. No page content
+changes and no `updated:` field is bumped. INDEX regenerated. Totals
+stay at 159 pages across 12 layers, routed to by 20 skills.
+
+## [2026-09-10] ingest | open-source SysML v2 toolchains
+
+Layer: tooling. Sources are the pilot 2026-07 and OpenSysML v0.6.0
+release pages, the Adoptium and Homebrew installation pages, and the
+plugin's own validation runs of 2026-09-09, so every `raw:` is `null`
+apart from the two plugin files the fallback process page cites, and
+every citation carries its URL and access month.
+
+Pages authored:
+- tooling-sysml-toolchain-choice (new, pattern, `confidence: medium`
+  because both open-source tools are pre-1.0 and licence terms move)
+- tooling-omg-pilot-batch-validation (new)
+- tooling-opensysml-cli (new, `confidence: medium`, pre-1.0 caveat)
+- tooling-java-runtime (new)
+- tooling-reference-implementation-rules (new)
+- tooling-validator-fallback-process (new)
+
+Pages updated:
+- syside-tooling-overview (legacy note narrowed to `sysml-2ls`, two
+  licence-free rows in the tool-choice table, the licence-detection
+  fact, the Automator fallback sentence)
+- syside-project-configuration (`.lsp.json` per toolchain, the two
+  files no longer described as identical for every project or as
+  independent of the hook configuration)
+- syside-vse-workflows (`syside check` is the gate when the recorded
+  toolchain is `syside`, format check skipped elsewhere)
+- syside-core-api, syside-expression-evaluation,
+  syside-model-modification, syside-sysand-package-management
+  (routing only, `updated:` not bumped)
+- sysml2-api-and-services (reference implementation sentence and
+  cross-link)
+- vse-canonical-project-layout (Syside configuration section becomes
+  Toolchain configuration, `.lsp.json` moved to the both-layouts table
+  and its brownfield location corrected to the workspace root)
+- project-bootstrap-prerequisites (toolchain precondition, Contents
+  block added)
+- sysml2-requirements-semantics, sysml2-grammar-and-validation,
+  sysml2-domain-libraries-causation-geometry,
+  sysml2-vse-library-metadata (cross-links to the rules page)
+
+Six pages outside the layer carry Syside in prose (ambse-principles,
+ambse-risk-and-metrics, ambse-use-case-driven-elicitation,
+ambse-architecture-vv-and-iso29110, vv-reporting-and-vse-guidance,
+sysml2-expression-patterns). Each is reworded to the configured
+toolchain in one line and its `updated:` is deliberately not bumped,
+following the 2026-08-07 precedent for branding-only edits.
+
+Routing resynced: sysml-toolchain, sysml2-modelling, sysml2-metadata,
+project-setup, project-audit, attention-regime, document-export,
+traceability-guard, sysml2-cases, needs-and-requirements,
+verification-validation, story-orchestrator. document-export and
+traceability-guard gained their marker pairs in the same change.
+INDEX regenerated.
+
+## [2026-09-10] index | routing resync
+
+Pages indexed: 165. Routing blocks regenerated: 12. Routing rows 213
+to 245. Layers stay 12 (syside renamed to tooling). Referencing skills
+20 to 23. ToC drift: 2, a `## Contents` block on two pages that sit
+under the 100-line threshold.

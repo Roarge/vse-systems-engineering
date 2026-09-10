@@ -232,4 +232,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Stakeholder identification and prioritisation in SYSMOD | pages/sysmod/sysmod-stakeholder-identification.md | Workshop-based stakeholder identification, the priority-times-effort matrix, and direct versus indirect stakeholders |
 | System Context in SYSMOD: actors, Planet Environment, and the Death of the Actor | pages/sysmod/sysmod-system-context-source.md | SYSMOD's system context: actor rules, the mandatory Planet Environment actor, and why actors are blocks not Actors |
 | The zigzag pattern between requirements and architecture | pages/sysmod/sysmod-zigzag-pattern.md | Why requirements always carry solution aspects, and the what-how alternation that descends the abstraction levels |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->

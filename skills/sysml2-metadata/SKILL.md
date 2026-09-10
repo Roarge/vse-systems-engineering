@@ -538,4 +538,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Syside Model Modification and Element Reference | pages/tooling/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
 | Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
 | Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->

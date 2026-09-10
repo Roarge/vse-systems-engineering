@@ -244,4 +244,6 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
 | VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
 | SYSMOD in an ISO 15288 process landscape | pages/sysmod/sysmod-iso15288-landscape.md | Which ISO 15288 processes SYSMOD covers, where it stops, and how that sits beside the plugin's ISO/IEC 29110 story |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
+| Validator selection and fallback in the pre-commit lint gate | pages/tooling/tooling-validator-fallback-process.md | How the pre-commit lint gate picks a SysML v2 validator, falls back with a notice, and reports findings |
 <!-- wiki-routing:end -->

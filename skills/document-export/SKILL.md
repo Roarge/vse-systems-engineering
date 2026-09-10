@@ -343,7 +343,14 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 
 ## Knowledge base
 
-The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. No wiki page routes
-to this skill directly. When reference material is needed, consult `INDEX.md`
-at the wiki root and read the named page on demand with the Read tool. Do not
-bulk-load.
+The plugin wiki root is `${CLAUDE_SKILL_DIR}/../../wiki`. Read pages on
+demand with the Read tool. Do not bulk-load. Pick the pages the task
+needs. For anything not listed, consult `INDEX.md` at the wiki root, or
+search: `grep -ril "<term>" <wiki-root>/pages`.
+
+<!-- wiki-routing:begin -->
+| Page | Path | Read when |
+|---|---|---|
+| OpenSysML: installation, CLI validation, and language server | pages/tooling/tooling-opensysml-cli.md | Installing OpenSysML, validating with sysml -validate, its exit codes, and wiring sysml-lsp as the editor server |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
+<!-- wiki-routing:end -->

@@ -463,4 +463,8 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Sysand Package Management for SysML v2 | pages/tooling/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
 | Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
 | Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
+| OMG SysML v2 Pilot Implementation: installation and batch validation | pages/tooling/tooling-omg-pilot-batch-validation.md | Installing the OMG SysML v2 Pilot Implementation and validating a model through SysMLInteractive in batch |
+| OpenSysML: installation, CLI validation, and language server | pages/tooling/tooling-opensysml-cli.md | Installing OpenSysML, validating with sysml -validate, its exit codes, and wiring sysml-lsp as the editor server |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
+| Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML | pages/tooling/tooling-sysml-toolchain-choice.md | Choosing between Syside, the OMG pilot, and OpenSysML, their licences, capabilities, and the fallback order |
 <!-- wiki-routing:end -->

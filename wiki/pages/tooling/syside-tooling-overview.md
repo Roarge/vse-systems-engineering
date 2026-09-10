@@ -19,7 +19,7 @@ related:
 confidence: medium
 created: 2026-05-04
 updated: 2026-08-07
-referenced_by: [sysml2-modelling, sysml2-metadata, project-setup]
+referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
 # Syside Tooling Overview and Installation

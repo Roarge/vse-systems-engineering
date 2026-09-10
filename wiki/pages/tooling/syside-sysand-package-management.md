@@ -19,7 +19,7 @@ related:
 confidence: high
 created: 2026-08-07
 updated: 2026-08-07
-referenced_by: [project-setup, sysml2-modelling]
+referenced_by: [sysml-toolchain, project-setup, sysml2-modelling]
 ---
 
 # Sysand Package Management for SysML v2

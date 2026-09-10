@@ -177,4 +177,5 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | StoryMeta status lifecycle and branch alignment | pages/methodology/storymeta-lifecycle.md | The four StoryMeta statuses, their transition rules, and how CI enforces the story lifecycle |
 | System Requirements Definition and Analysis workflow (§5) | pages/methodology/system-stories-workflow.md | Translating stakeholder intent into a verifiable system-level specification, per §5 |
 | User Story as Canonical Artefact (§1) | pages/methodology/user-story-canonical-artefact.md | The User Story is the elementary unit of stakeholder intent in the VSE methodology |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 <!-- wiki-routing:end -->

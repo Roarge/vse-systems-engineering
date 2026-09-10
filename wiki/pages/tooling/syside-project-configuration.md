@@ -18,7 +18,7 @@ related:
 confidence: high
 created: 2026-05-04
 updated: 2026-08-07
-referenced_by: [sysml2-modelling, project-setup]
+referenced_by: [sysml-toolchain, sysml2-modelling, project-setup]
 ---
 
 # Syside Project Configuration

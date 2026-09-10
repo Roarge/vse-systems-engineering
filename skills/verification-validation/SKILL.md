@@ -187,6 +187,7 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 |---|---|---|
 | AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
 | SYSMOD test modelling: Model Test Cases and the Test Architecture | pages/sysmod/sysmod-test-modelling.md | SYSMOD's verdict-returning test behaviours, the Model Test Case, and the Test Architecture as a system in its own right |
+| SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 | Verification and Validation Definitions | pages/vv/vv-definitions.md | What verification and validation each mean, how they differ, and the levels they apply at |
 | Verification and Validation Methods, Test Case Design | pages/vv/vv-methods.md | The four standard methods apply to both verification and validation |
 | V&V Planning, Success Criteria, and the VCRM | pages/vv/vv-planning.md | V&V planning, success criteria, and the verification cross-reference matrix |
