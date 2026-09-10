@@ -210,6 +210,11 @@ _vse_tc_classify_syside() {
                 else
                     VSE_TC_REASON="licence check failed, exit ${rc}"
                 fi
+            elif printf '%s\n' "$out" | grep -q 'No display server detected'; then
+                # The Syside launcher refuses to start without X11,
+                # Wayland or xvfb-run. That is the tool being unavailable
+                # on this machine, not a finding against the model.
+                VSE_TC_REASON="no display server (the syside launcher needs X11, Wayland or xvfb-run), exit ${rc}"
             fi
             ;;
     esac
@@ -284,8 +289,8 @@ _vse_tc_validate_syside() {
     return 1
 }
 
-# One JVM per run: all files concatenated into ONE % block (names do
-# not resolve across blocks). An offset table maps the pilot's
+# One JVM per run: all files concatenated into ONE % block (forward
+# references do not resolve across blocks). An offset table maps the pilot's
 # "(1.sysml line : N column : C)" back to file:line.
 _vse_tc_validate_pilot() {
     local dir out rc=0 diag reason

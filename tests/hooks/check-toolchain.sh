@@ -178,6 +178,20 @@ tc_env SYSIDE_OK=1
 tc_run_lib detect syside
 tc_assert_rc 0 "detect syside: a passing check is available"
 
+# The launcher refuses to start without X11, Wayland or xvfb-run. That
+# is the tool being unavailable on this machine, not a model finding.
+tc_env
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: No display server detected and 'xvfb-run' is not installed." >&2
+exit 1
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: a headless launcher is unavailable"
+tc_assert_grep "syside unavailable (no display server" "$ERR" \
+    "detect syside: headless launcher reason"
+
 tc_env
 rm -f "${STUBS}/syside"
 tc_run_lib detect syside
