@@ -78,16 +78,19 @@ Using `git for-each-ref refs/heads/`:
 
 ### 5. Story Well-Formedness Audit (§1.9)
 
-For every `*.sysml` file under `model/core/stories/` and every component-scope `stories/` folder, parse each `requirement def` specialising `UserStory`. For each story, check:
+For every `*.sysml` file under `model/core/stories/` and every component-scope `stories/` folder, parse each story usage `requirement <ID> : UserStory`. A `requirement def <ID> :> UserStory` is the pre-4.0 form: emit WARN `legacy story form (pre-4.0), see CHANGELOG 4.0.0 migration` and apply the rules to it anyway. For each story, check:
 
-- Rule 1: exactly one `role` declared.
-- Rule 2: exactly one `subject` declared.
-- Rule 3: at least one `acceptance` clause if `StoryMeta.status` is `ready` or beyond.
-- Rule 4: `role` redefined with a concrete part def if status is past `backlog`.
+- Rule 1: the story is a requirement usage typed by `UserStory`, not a `requirement def`. A legacy def is the WARN above, not an ERROR.
+- Rule 2: exactly one `subject` redefined (`subject :>> system : <PartDef>`), declared before `role`.
+- Rule 3: exactly one `role` redefined (`stakeholder :>> role : <PartDef>`) with a concrete part def once status is past `backlog`.
+- Rule 4: at least one acceptance criterion in `requirement :>> acceptance` if `StoryMeta.status` is `ready` or beyond.
 - Rule 6: `capability` and `benefit` strings retained.
-- Rule 7: story does not specialise a Use Case, Action, or Case definition.
+- Rule 7: every `verify` clause naming this story uses dot notation (`verify <story>.acceptance`). A `verify <story>::<member>` emits WARN, because both reference implementations refuse the namespace form.
+- Rule 8: a system or subsystem story carries the `#derive` prefix on the usage and a `#derivation connection` whose ends are tagged `#original` and `#derive`. A `RequirementDerivation::derivations` connection, or a `#derive` prefix on a `requirement def`, is the pre-4.0 form and emits WARN.
+- Rule 9: `StoryMeta` is applied as `@StoryMeta { ... }` with qualified enumeration values. An unqualified literal such as `status = ready` emits WARN, and a `doc /* StoryMeta: ... */` comment is legacy input and emits WARN.
+- Rule 11: the story is not typed by a Use Case, Action, or Case definition.
 
-Each violation emits ERROR keyed to the rule.
+Each violation emits ERROR keyed to the rule, except the WARN cases named above.
 
 ### 6. Base Architecture Forward-Going Rule (§2.6 rule 5)
 
@@ -115,8 +118,8 @@ Inspect `model/core/context/`:
 ### 9. Concern and Story Coverage
 
 - Every `concern def` in `model/core/concerns/` is framed by at least one stakeholder story (§1.4.6). Otherwise WARN ("orphan concern").
-- Every system story declares a `derive` link to a stakeholder story (§5). Otherwise ERROR.
-- Every subsystem story declares a `derive` link to a system story (§7). Otherwise ERROR.
+- Every system story is the `#derive` end of a `#derivation connection` whose `#original` end is a stakeholder story (§5). Otherwise ERROR.
+- Every subsystem story is the `#derive` end of a `#derivation connection` whose `#original` end is a system story (§7). Otherwise ERROR.
 
 ### 10. Verification and Validation Coverage
 

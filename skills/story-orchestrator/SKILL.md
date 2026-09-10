@@ -59,7 +59,7 @@ Walk the engineer through the §1.4 elicitation in order. Confirm each before mo
 
 Then:
 
-7. **Write the story file.** Place under `model/core/stories/stakeholder/` for §4 stories, `model/core/stories/system/` for §5 stories, or `model/core/logical-architecture/components/<component>/stories/` recursively for §7 component stories. Apply `@StoryMeta { status = inProgress; ... }`.
+7. **Write the story file.** Write the story as a requirement usage, `requirement <US_id> : UserStory { ... }` per §1.7.1, with `subject :>> system` and `stakeholder :>> role` redefining the library parameters and the criterion in `requirement :>> acceptance`. Place it under `model/core/stories/stakeholder/` for §4 stories, `model/core/stories/system/` for §5 stories, or `model/core/logical-architecture/components/<component>/stories/` recursively for §7 component stories. Apply `@StoryMeta { status = StoryStatus::inProgress; ... }`, with every enumeration value qualified.
 8. **Propose the branch name.** Format `story/<US_id>_<short-name>` per §8.4.2. Branch from `main`. Announce the `git checkout -b` command and wait for the engineer to run it.
 9. **Open the draft PR.** As soon as the first commit lands, open a draft PR using the §8.6.1 template. The PR is the operational expression of `inProgress` status (§8.5.1). Do not bypass this step.
 10. **Route to the specialist** for the story's centre of work (see Hand-off below).

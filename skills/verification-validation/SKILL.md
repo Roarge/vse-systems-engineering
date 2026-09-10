@@ -48,7 +48,7 @@ A validation case exercises stakeholder intent rather than system internals. It 
 
 1. Identify the stakeholder story and the acceptance subrequirement to be validated.
 2. Author a `verification def` whose `subject` matches the stakeholder story's `subject`. The §4.3.6 example fixes this discipline.
-3. Bind the acceptance via `objective { verify <story>::<acceptance>; }`.
+3. Bind the acceptance via `objective { verify <story>.acceptance; }`. Dot notation reaches a member of the story usage, and both reference implementations refuse the `::` namespace form per §5.4.6.
 4. Provide an action body that names the demonstration or operational fixture (collect, evaluate). The body may be deferred per §8.6.3 item 6, but a stub is mandatory at final review.
 5. Place the file in `model/core/verification-validation/validation-cases/<name>.sysml`. Use `VAL_` as the case name prefix.
 
@@ -59,7 +59,7 @@ verification def VAL_AckFromDashboard {
     subject sys : Aiwell_OnlineSentral;
 
     objective {
-        verify US_042_AckFromDashboard::acceptance;
+        verify US_042_AckFromDashboard.acceptance;
     }
 
     action collectData { /* observed user task on representative hardware */ }
@@ -73,7 +73,7 @@ A verification case exercises the system as modelled. It asks "does the system e
 
 1. Identify the system story and the acceptance subrequirement to be verified.
 2. Author a `verification def` whose `subject` matches the system story's `subject`.
-3. Bind the acceptance via `objective { verify <story>::<acceptance>; }`. Where the story carries a `require constraint` (formalised benefit), a single case may verify both the constraint and the acceptance.
+3. Bind the acceptance via `objective { verify <story>.acceptance; }`. Where the story carries a formalised benefit as a nested requirement usage, a single case may verify both that usage (`verify <story>.<benefit>;`) and the acceptance.
 4. Provide an action body covering setup, measurement, and evaluation. Stubs are permitted at final review but must be populated by release per §10.5.3.
 5. Place the file in `model/core/verification-validation/verification-cases/<name>.sysml`. Use `VC_` as the case name prefix.
 
@@ -84,8 +84,8 @@ verification def VC_BatchAckLatency {
     subject sys : Aiwell_OnlineSentral;
 
     objective {
-        verify SYS_142_BatchAcknowledgement::sla;
-        verify SYS_142_BatchAcknowledgement::acceptance;
+        verify SYS_142_BatchAcknowledgement.sla;
+        verify SYS_142_BatchAcknowledgement.acceptance;
     }
 
     action setup    { /* fixture preparation */ }

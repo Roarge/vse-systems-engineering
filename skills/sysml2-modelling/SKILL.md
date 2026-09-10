@@ -135,10 +135,10 @@ When reviewing a .sysml file, check:
 
 When the user asks to find something in the model:
 
-- **Find all requirements**: `Grep for "requirement def" in models/**/*.sysml`
+- **Find all requirements**: `Grep for "requirement def" and "requirement <ID> : UserStory" in models/**/*.sysml`
 - **Find all parts**: `Grep for "part def" in models/**/*.sysml`
 - **Find all verification cases**: `Grep for "verification def" in models/**/*.sysml`
-- **Find trace links**: `Grep for "satisfy requirement\|verify requirement" in models/**/*.sysml`
+- **Find trace links**: `Grep for "satisfy \|verify " in models/**/*.sysml`
 - **Find a specific element**: `Grep for the element name in models/**/*.sysml`
 
 ## Tooling Integration

@@ -80,14 +80,14 @@ collect_touched() {
     done
 }
 
-TOUCHED_REQS=$(collect_touched 'requirement\s+def\s+\K\w+' | sort -u)
+TOUCHED_REQS=$(collect_touched 'requirement\s+(?:def\s+)?(?:<[^>]*>\s*)?\K[A-Za-z_]\w*(?=\s*:>?\s*[A-Za-z_])' | sort -u)
 TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
 
 # Does any .sysml file in the repository carry a verify link to $1?
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qP "verify\s+requirement\s+.*\b${req}\b" "$sysml" 2>/dev/null; then
+        if grep -qP "verify\s+(?:requirement\s+)?(?:[A-Za-z_][\w:]*(?:::|\.))?${req}\b" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
@@ -110,7 +110,7 @@ done <<< "$TOUCHED_REQS"
 while IFS=$'\t' read -r file ver; do
     [ -z "${ver:-}" ] && continue
     CHECKED=$((CHECKED + 1))
-    if ! grep -qP "verify\s+requirement\s+" "$file" 2>/dev/null; then
+    if ! grep -qP 'verify\s+(?:requirement\s+)?[A-Za-z_]' "$file" 2>/dev/null; then
         FINDINGS="${FINDINGS}  ${file}: verification case '${ver}' has no verify link"$'\n'
         GAPS=$((GAPS + 1))
     fi
