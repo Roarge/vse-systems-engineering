@@ -72,7 +72,7 @@ For each missing component of the preferred tool (and, on request, of a fallback
 
 **Java 21 or later (for `omg-pilot` only).** Detect the platform with `uname -s`, `uname -m`, and `ID` and `ID_LIKE` in `/etc/os-release`. A headless JRE suffices, because the plugin only runs a jar.
 
-- Debian, Ubuntu, WSL: `[sudo] sudo apt install openjdk-21-jre-headless`. Alternative, Temurin through the Adoptium repository: `wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null`, `echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list`, `sudo apt update`, `[sudo] sudo apt install temurin-21-jdk`.
+- Debian, Ubuntu, WSL: `[sudo] sudo apt install openjdk-21-jre-headless`. Alternative, Temurin through the Adoptium repository, four `[sudo]` steps: `[sudo] wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null`, `[sudo] echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list`, `[sudo] sudo apt update`, `[sudo] sudo apt install temurin-21-jdk`.
 - Fedora, RHEL: `[sudo] sudo dnf install java-21-openjdk-headless`, or `temurin-21-jdk` with the Adoptium repository.
 - macOS: `brew install --cask temurin@21`.
 - Windows (native): `winget install -e --id EclipseAdoptium.Temurin.21.JDK`.
@@ -82,22 +82,30 @@ For each missing component of the preferred tool (and, on request, of a fallback
 
 ```bash
 mkdir -p ~/.local/share/sysml-pilot
-curl -fsSL -o ~/.local/share/sysml-pilot/jupyter-sysml-kernel-0.61.0.zip \
+ZIP=~/.local/share/sysml-pilot/jupyter-sysml-kernel-0.61.0.zip
+curl -fsSL -o "$ZIP" \
   https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation/releases/download/2026-07/jupyter-sysml-kernel-0.61.0.zip
-echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $HOME/.local/share/sysml-pilot/jupyter-sysml-kernel-0.61.0.zip" | sha256sum -c -
-unzip -q -o ~/.local/share/sysml-pilot/jupyter-sysml-kernel-0.61.0.zip -d ~/.local/share/sysml-pilot
+echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $ZIP" | sha256sum -c - \
+  && unzip -q -o "$ZIP" -d ~/.local/share/sysml-pilot \
+  || { rm -f "$ZIP"; echo "checksum failed, nothing extracted"; }
 ```
+
+A failed checksum stops the step: the download is deleted and nothing is extracted.
 
 The release publishes no checksum file, so the value above was computed from the 126,125,572-byte artefact and recorded in the tooling wiki page. On macOS use `shasum -a 256 -c -` in place of `sha256sum -c -`. Without `unzip`, `python3 -m zipfile -e <zip> ~/.local/share/sysml-pilot`. The bundled `install.py` is the Jupyter kernel installer and is not run. Another location is honoured through `VSE_SYSML_PILOT_HOME`.
 
 **OpenSysML v0.6.0, user-level, no sudo.** Linux amd64:
 
 ```bash
-curl -fsSL -o /tmp/opensysml-linux-amd64.tar.gz \
+DL="$(mktemp -d)"
+curl -fsSL -o "$DL/opensysml-linux-amd64.tar.gz" \
   https://github.com/Open-MBEE/OpenSysML/releases/download/v0.6.0/opensysml-linux-amd64.tar.gz
-echo "15d4a2d12a0adaadcbb1ed53946061a113c793e60a9e159b790936938323fc38  /tmp/opensysml-linux-amd64.tar.gz" | sha256sum -c -
-mkdir -p ~/.local/bin && tar -xzf /tmp/opensysml-linux-amd64.tar.gz -C ~/.local/bin sysml sysml-lsp
+echo "15d4a2d12a0adaadcbb1ed53946061a113c793e60a9e159b790936938323fc38  $DL/opensysml-linux-amd64.tar.gz" | sha256sum -c - \
+  && mkdir -p ~/.local/bin && tar -xzf "$DL/opensysml-linux-amd64.tar.gz" -C ~/.local/bin sysml sysml-lsp
+rm -rf "$DL"
 ```
+
+As with the pilot, a failed checksum stops the step and nothing is extracted.
 
 The other archives (`opensysml-linux-arm64.tar.gz`, `opensysml-darwin-amd64.tar.gz`, `opensysml-darwin-arm64.tar.gz`, `opensysml-windows-amd64.zip`) and their checksums are listed in the release's `SHA256SUMS.txt`. macOS alternative: `brew install Open-MBEE/tap/opensysml`. Go route: `go install github.com/Open-MBEE/OpenSysML/cmd/sysml@v0.6.0` and `go install github.com/Open-MBEE/OpenSysML/cmd/sysml-lsp@v0.6.0`, whose binaries land in `$(go env GOPATH)/bin`. Say that the directory holding `sysml` must be on the PATH that git hooks see, which for hooks started from a GUI editor may differ from the shell's.
 
@@ -107,7 +115,7 @@ After each install, run from the project root and record the output:
 
 1. `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh java` prints the resolved binary, whose first `-version` line shows a major of 21 or more.
 2. `... detect <tool>` exits 0.
-3. Write `package VseToolchainProbe { part def Probe; }` to a file under `mktemp -d` and run `... validate --tool <tool> <file>`: exit 0 with no output. Write a second file `package VseToolchainBroken { part def X { attribute x : NoSuchType; } }` and run it: exit 1 with one `error:` line naming `NoSuchType`. Remove the directory.
+3. Write `package VseToolchainProbe { part def Probe; }` to a file under `mktemp -d` and run `... validate --tool <tool> <file>`: exit 0 with no output. Write a second file `package VseToolchainBroken { part def X { attribute x : NoSuchType; } }` and run it: exit 1 with at least one `error:` line naming `NoSuchType` (the pilot prints two, the unresolved type and the typing rule it breaks). Remove the directory.
 4. `... status` names the preferred tool as available.
 5. For `opensysml` also `sysml-lsp -version`.
 
