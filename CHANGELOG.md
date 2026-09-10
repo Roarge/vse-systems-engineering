@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `wiki/pages/phas-eai/phas-eai-llm-peer-review.md` were already
   correct and are unchanged.
 
+### Changed
+
+- The phrase "VSE work" now reads "engineering work" in the three
+  places a user meets it first: `templates/common/CLAUDE.md`, which
+  `project-setup` copies into a new project, its demo mirror
+  `demo/smart-sensor/CLAUDE.md`, and the lens reminder printed by
+  `hooks/session-start.sh`. Naming the activity rather than the entity
+  says the same thing without asking the reader to expand an
+  abbreviation. Compound uses such as "VSE workflow" and "VSE working"
+  keep the abbreviation, because the entity is the subject there.
+
 ## [4.0.0] - 2026-09-10
 
 The open-source toolchain release. Three things happen together,
