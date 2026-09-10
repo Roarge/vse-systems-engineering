@@ -16,24 +16,24 @@ package {{PROJECT_NAME}}_StakeholderStories {
     private import {{PROJECT_NAME}}_Context::*;
     private import VSE_Library::*;
 
-    requirement def US_001_Example :> UserStory {
-        @StoryMeta { points = 5; priority = high; status = backlog; }
+    requirement US_001_Example : UserStory {
+        @StoryMeta { points = 5; priority = Priority::high; status = StoryStatus::backlog; }
 
-        subject system : {{PROJECT_NAME}}_System;
+        subject :>> system : {{PROJECT_NAME}}_System;
         stakeholder :>> role : Operator;
 
-        capability = "(I want ...)";
-        benefit    = "(so that ...)";
+        attribute :>> capability = "(I want ...)";
+        attribute :>> benefit    = "(so that ...)";
 
-        frame concern : OpsConcerns::FastIncidentResponse;
+        frame concern : FastIncidentResponse;
 
-        requirement acceptance[1] {
+        requirement :>> acceptance {
             doc /* Given <preconditions>,
                    when <action>,
                    then <expected outcome>. */
         }
     }
 
-    // Add additional stakeholder stories here, one requirement def
+    // Add additional stakeholder stories here, one requirement usage
     // per story. Recommended naming: US_<NNN>_<ShortName>.
 }

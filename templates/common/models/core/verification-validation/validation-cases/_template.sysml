@@ -17,10 +17,10 @@ package {{PROJECT_NAME}}_ValidationCases {
         subject sys : {{PROJECT_NAME}}_System;
 
         objective {
-            verify US_001_Example::acceptance;
+            verify US_001_Example.acceptance;
         }
 
-        action collectData { /* observed user task on representative hardware */ }
-        action evaluate    { /* pass criterion in stakeholder vocabulary */ }
+        action collectData { doc /* observed user task on representative hardware */ }
+        action evaluate    { doc /* pass criterion in stakeholder vocabulary */ }
     }
 }

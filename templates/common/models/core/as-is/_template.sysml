@@ -9,7 +9,7 @@
 // Each part def below carries:
 //
 //     @ConfigItem {
-//         :>> ciState = CIState::Proposed;
+//         :>> ciState = CIState::Draft;
 //         :>> baselineId = "BL-AS-IS-CURRENT-0.1";
 //     }
 //

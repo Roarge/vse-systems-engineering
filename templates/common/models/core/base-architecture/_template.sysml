@@ -16,6 +16,8 @@
 
 library package <{{PROJECT_SHORT_CODE}}_BA> {{PROJECT_NAME}}_BaseArchitecture {
 
+    private import ScalarValues::*;
+
     // Example: a hardware platform the project must build on.
     part def AC5000_Platform {
         attribute modelRevision : String;
@@ -24,15 +26,19 @@ library package <{{PROJECT_SHORT_CODE}}_BA> {{PROJECT_NAME}}_BaseArchitecture {
 
         port modbusTCP : ModbusTCPPort;
         port digitalIO : DigitalIOPort[16];
+    }
 
-        require constraint maxChannelsConstraint {
-            doc /* Configured I/O channel count shall not exceed
-                   maxIOChannels. */
-        }
+    // Immutable Base Architecture constraint (§2.6 rule 2), stated as a
+    // requirement def whose subject is the platform. A `require constraint`
+    // is only legal inside a requirement, concern, viewpoint or objective
+    // body, never directly inside a part def.
+    requirement def MaxChannelsConstraint {
+        subject platform : AC5000_Platform;
+        doc /* Configured I/O channel count shall not exceed platform.maxIOChannels. */
     }
 
     // Example: a communication protocol abstraction with variants.
-    part def CommunicationProtocol abstract;
+    abstract part def CommunicationProtocol;
     part def ModbusTCP :> CommunicationProtocol;
     part def OPCUA    :> CommunicationProtocol;
 

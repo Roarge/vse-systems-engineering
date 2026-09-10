@@ -16,12 +16,12 @@ package {{PROJECT_NAME}}_VerificationCases {
         subject sys : {{PROJECT_NAME}}_System;
 
         objective {
-            verify SYS_001_Example::sla;
-            verify SYS_001_Example::acceptance;
+            verify SYS_001_Example.sla;
+            verify SYS_001_Example.acceptance;
         }
 
-        action setup    { /* fixture preparation */ }
-        action measure  { /* observation method */ }
-        action evaluate { /* pass criterion in measurable form */ }
+        action setup    { doc /* fixture preparation */ }
+        action measure  { doc /* observation method */ }
+        action evaluate { doc /* pass criterion in measurable form */ }
     }
 }

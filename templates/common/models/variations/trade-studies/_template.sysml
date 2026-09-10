@@ -14,21 +14,18 @@
 
 package {{PROJECT_NAME}}_TradeStudies {
 
+    private import ScalarValues::*;
     private import {{PROJECT_NAME}}_DecisionPoints::*;
     private import {{PROJECT_NAME}}_CandidateVariants::*;
     private import {{PROJECT_NAME}}_SystemStories::*;
     private import {{PROJECT_NAME}}_Domain::*;
 
     analysis def AlarmStorageTradeStudy {
-        subject alternatives : AlarmStorageStrategy = (
-            InMemoryRingBuffer,
-            EmbeddedSQLite,
-            ExternalTSDB
-        );
+        subject decision : AlarmStorageStrategy;
 
         // Criteria sourced directly from story benefit constraints.
-        attribute slaConstraint = SYS_001_Example::sla;
-        attribute slaWeight     : Real = 0.5;
+        ref requirement slaCriterion ::> SYS_001_Example.sla;
+        attribute slaWeight : Rational = 0.5;
         // Add further criteria attributes here, weights normalising to 1.0.
 
         // Utility curves and the evaluation function go here.
