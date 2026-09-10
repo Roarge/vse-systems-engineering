@@ -97,13 +97,12 @@ analysis def AlarmStorageTradeStudy :> TradeStudy {
     ref requirement slaCriterion ::> SYS_142_BatchAcknowledgement.sla;
     attribute slaWeight : Real = 0.5;
 
-    calc def evaluation : EvaluationFunction {
-        in alternative : AlarmStorageStrategy;
-        return result : ScalarValue =
-            slaWeight * latencyUtility(alternative.writeLatency);
+    calc :>> evaluationFunction {
+        in ref :>> alternative : AlarmStorageStrategy;
+        return :>> result = slaWeight * latencyUtility(alternative.writeLatency);
     }
 
-    objective : MaximizeObjective { best : ScalarValue; }
+    objective : MaximizeObjective;
 }
 ```
 

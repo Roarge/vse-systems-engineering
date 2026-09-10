@@ -22,7 +22,7 @@ referenced_by: []
 
 ## Forecast
 
-Section 0.8 of the methodology specification announces a packaging step for the constructs this methodology introduces. They shall be packaged as a SysML v2 `library package` named `MBSEMethodology` (working title), so that downstream projects adopt the methodology by `import` rather than by re-declaration. Part of the step is already taken: the shipped realisation is `VSE_Library`, which `@project-setup` copies into a project as `model/library/vse-library.sysml` and which every story imports in order to be typed by `UserStory`. What remains outstanding is the standalone library package, for which the `MBSEMethodology` name stays reserved, together with the user-defined keyword layer described below. The constructs in scope are:
+Section 0.8 of the methodology specification announces a packaging step for the constructs this methodology introduces. They shall be packaged as a SysML v2 `library package` named `MBSEMethodology` (working title), so that downstream projects adopt the methodology by `import` rather than by re-declaration. Part of the step is already taken: the shipped realisation is `VSE_Library`, which `@project-setup` copies into a project as `model/library/vse-library.sysml` and which every stories package imports so that its stories can be typed by `UserStory`. What remains outstanding is the standalone library package, for which the `MBSEMethodology` name stays reserved, together with the user-defined keyword layer described below. The constructs in scope are:
 
 - `UserStory`, the requirement definition that every story usage is typed by (see [[user-story-canonical-artefact]]).
 - `StoryMeta` and the lifecycle status enumeration that drives the branch and pull-request mapping (see [[storymeta-lifecycle]]).
@@ -56,8 +56,8 @@ Keywords such as `#userStory`, `#stakeholderStory`, `#systemStory`, and `#subsys
 With the library in place, a project model that declares a user story becomes shorter and more uniform:
 
 ```sysml
-package SmartSensor::Stories {
-    import MBSEMethodology::*;
+package SmartSensor_Stories {
+    private import VSE_Library::*;
 
     #userStory requirement US_042 {
         doc /* As a maintenance technician, I want to read the

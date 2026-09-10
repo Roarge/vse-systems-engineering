@@ -1603,9 +1603,10 @@ Pages updated:
   of §1.9.
 - role-actor-coupling. Story and use case in usage form, the objective
   now subsetting the story and binding its subject to the case subject.
-  A new paragraph records why the redefinition is mandatory and what
-  each reference implementation reports when it is missing or
-  non-conforming. Rule 5 restated to match.
+  A new paragraph records why the redefinition is mandatory, what the
+  pilot reports when it is missing, and what both implementations
+  report when the case subject does not conform. Rule 5 restated to
+  match.
 - frame-concern-pattern. Framing example in usage form, subject first,
   acceptance as a redefinition.
 - benefit-as-criterion. The worked example invented a `SystemUserStory`

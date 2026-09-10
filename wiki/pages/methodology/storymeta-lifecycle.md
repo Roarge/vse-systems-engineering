@@ -16,7 +16,7 @@ related:
   - story-branch-pr-workflow
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-09-10
 referenced_by: [story-orchestrator, release-orchestrator]
 ---
 
@@ -72,7 +72,7 @@ The branch and pull-request mechanics that produce these states are specified in
 
 The status transitions are constrained as follows:
 
-- **backlog to ready** when §1.9 well-formedness rules 3 and 4 are satisfied. Rule 3 requires at least one acceptance criterion. Rule 4 requires that `role` has been redefined with a concrete part definition. Until both hold, the story remains in backlog.
+- **backlog to ready** when §1.9 well-formedness rules 3 and 4 are satisfied. Rule 3 requires that `role` has been redefined with a concrete part definition. Rule 4 requires at least one acceptance criterion. Until both hold, the story remains in backlog.
 - **ready to inProgress** at the moment a story branch is created and a draft PR is opened against it. There shall be exactly one open draft PR per story branch.
 - **inProgress (draft) to inProgress (review)** when the §8.6.2 story-readiness checklist passes for the story and the author marks the draft PR ready for review. The `status` value does not change at this transition. The PR state changes.
 - **inProgress (review) to done** at PR merge. The branch is then deleted. The story file lands on `main` with `status = done`.
