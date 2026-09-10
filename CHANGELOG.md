@@ -6,10 +6,19 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0] - 2026-09-10
 
-Release train for 4.0.0. rc numbers are assigned at merge time and
-recorded here.
+The open-source toolchain release. Three things happen together,
+because each forced the next. The plugin stops assuming one commercial
+SysML v2 validator and supports the OMG SysML v2 Pilot Implementation
+and OpenSysML beside Sensmetry Syside, falling back automatically when
+the recorded tool is unavailable. Validating the plugin's own scaffold
+under those reference implementations showed that the definition-based
+story form the methodology taught is refused by both, so stories become
+requirement usages typed by the library definitions, which is the
+breaking change the major number records. The thesis corrections the
+ISO/IEC 29110 project editor asked for, and the open small-patch
+backlog, land in the same train.
 
 ### Changed (story form, breaking)
 
@@ -52,10 +61,16 @@ recorded here.
   `requirement def` whose subject is the platform, which is what the
   shipped template does and what both reference implementations accept,
   where a `require constraint` nested directly in a part def is
-  refused. The skills, the traceability matrix-builder agent and the
-  pre-commit gate read the new form, and `project-audit` gained story
-  checks that report each pre-4.0 construct as WARN rather than as an
-  error, so a 3.x model still audits while its migration is staged.
+  refused. The same sections also drop the inheritance vocabulary they
+  used to describe that constraint. A Base Architecture requirement
+  applies to every part typed by the platform or by a specialisation
+  of it, and a specialisation may add constraints but may not relax
+  one, which is subject typing rather than a constraint inherited
+  through part specialisation. The skills, the traceability
+  matrix-builder agent and the pre-commit gate read the new form, and
+  `project-audit` gained story checks that report each pre-4.0
+  construct as WARN rather than as an error, so a 3.x model still
+  audits while its migration is staged.
 
   The ISO/IEC 29110 obligations in §9 are unchanged. What moves is the
   SysML 2.0 notation the story artefacts are written in, not which
@@ -90,6 +105,134 @@ recorded here.
 
   Run `/vse-audit` after upgrading, and see
   `tooling-reference-implementation-rules` for the accepted forms.
+
+### Added (toolchain)
+
+- **A project records which SysML v2 toolchain validates its models.**
+  The flat key `sysml_toolchain` in `.iso-config.yaml` takes `syside`,
+  `omg-pilot` or `opensysml`, an absent key means `syside`, an
+  unrecognised value prints one notice and is treated as `syside`, and
+  `VSE_SYSML_TOOLCHAIN` overrides the key for a single run, which is
+  how CI selects a tool. Hooks read the key and never write it.
+- The shared library `hooks/lib/sysml-toolchain.sh` resolves the
+  preference, probes availability, validates, and falls back along the
+  fixed order syside, omg-pilot, opensysml with one notice on stderr
+  naming why. Its exit contract is three-valued: 0 clean with warnings
+  counted as findings, 1 findings on stdout as
+  `file:line:col: severity: message`, and 2 the toolchain is
+  unavailable with the reason on stderr. The third value is what the
+  old gate lacked. It is installed into `<project>/.githooks/lib/` at
+  every rigour profile with the project copy winning over the plugin
+  copy, and it is sourced by the pre-commit and session-start hooks and
+  executed by CI, the Makefile, the audit and the new skill.
+- The OMG SysML v2 Pilot Implementation (release 2026-07, EPL-2.0,
+  Java 21 or later, a headless JRE being enough) runs as one batch
+  process per commit. Every tracked model file goes into a single
+  block, because forward references do not resolve across blocks, and
+  an offset table maps each diagnostic back to its own file and line.
+  The pilot exits 0 whether a model is clean or rejected, so the
+  verdict is parsed from stdout instead.
+- OpenSysML v0.6.0 (Apache-2.0, a static binary that ships its own
+  standard library) runs `sysml -validate -strict` over every file at
+  once. It has no warnings-as-errors switch, so the library promotes a
+  reported warning to a finding and the three toolchains stay
+  comparable.
+- The skill `sysml-toolchain` and the command `/vse-toolchain` detect
+  what is installed, ask the choice once, record it, install what is
+  missing and verify the result. Installation is user-level where the
+  platform allows it, one approval per step, with any route that needs
+  `sudo` flagged as such and the pilot archive gated on its SHA-256
+  before extraction. The plugin now ships 29 skills and 13 commands.
+- `project-audit` gains Check 16. An absent key is a WARN that explains
+  the three options and invites the decision without making it, an
+  unrecognised value is a WARN, and a recorded value is probed and
+  reported with the reason and with whether a fallback would carry the
+  gate. It never reports an ERROR and never chooses for the engineer.
+- `templates/common/lsp-opensysml.json` wires `sysml-lsp -stdio
+  -strict` as the editor language server, which is what an
+  `opensysml` project uses and what an `omg-pilot` project gets when
+  `sysml-lsp` is on PATH, because the pilot ships no language server.
+- `tests/hooks/` carries behavioural tests for the library, the
+  pre-commit gate and the session-start hook, run by the new
+  `check-toolchain` and `test-hooks` targets in `make all` and mirrored
+  in CI. `check-demo-generated` regenerates the demo's model-derived
+  artefacts in place and fails on drift, so run `make all` on a clean
+  tree.
+
+### Changed (toolchain)
+
+- The pre-commit lint gate validates through the library rather than by
+  calling `syside` directly, so it runs whichever tool the project
+  recorded and falls back when that tool is missing or its licence has
+  expired. An unavailable toolchain is refused at `block`, warned at
+  `warn` and reported at `info`, and the notice prints at every
+  disposition except `off`.
+- `project-setup` asks the toolchain question once, immediately after
+  the rigour profile, with a one-line gloss for each option and no
+  forced default. A brownfield project that already records the key is
+  not asked. `syside.toml` is copied only for a `syside` project or one
+  that made no choice, and `.lsp.json` follows the recorded toolchain.
+- The session-start hook recognises a SysML repository from any of
+  `syside.toml`, an `.lsp.json` naming `syside` or `sysml-lsp`, a
+  configuration carrying `sysml_toolchain`, a `model/` or
+  `engineering/model/` directory, or any `.sysml` file within four
+  levels, where it previously looked for `syside.toml` alone. In a VSE
+  project the banner names the recorded toolchain and says whether a
+  fallback applies, under a bounded probe.
+- Every place a project records its tools follows the key. The SEMP
+  modelling-tool row and the engineering-tool table take the toolchain
+  name and version, the managed `CLAUDE.md` block gains a `Toolchain:`
+  line, and the Project Plan template carries a toolchain tailoring
+  line. `attention-regime` installs the library at every profile and
+  reads the key without asking, and `.claude/rules/hooks.md` records
+  that a hook reaches a validator only through the library.
+- The CI templates resolve the recorded toolchain into an environment
+  variable and install what that toolchain needs on the runner. The
+  pilot is cached and pinned by checksum, Temurin 21 is set up unless
+  the toolchain is `opensysml`, and the Syside-only formatter and
+  diagram steps are skipped rather than failing under another
+  toolchain.
+- The demo records `sysml_toolchain: omg-pilot`, takes the OpenSysML
+  editor server, and names the choice in its SEMP and in the tailoring
+  record of its Plan.
+
+### Fixed (pre-commit)
+
+- Three defects of the SysML lint block go with the move to the
+  toolchain library. `xargs` collapsed any child exit status between 1
+  and 125 to 123, which made the Syside licence failure at exit 2
+  unobservable, and the block no longer uses it. Under `set -euo
+  pipefail` a commit that staged no `.sysml` file made `grep` exit 1
+  and the gate reported a lint failure with empty output, and the
+  staged list is now collected with an explicit empty test. An absent
+  validator skipped the gate silently at every profile including
+  `full`, so a project could commit an unvalidated model and see a
+  green summary, and an unavailable toolchain is now reported at every
+  disposition except `off`.
+- The Syside launcher exits non-zero with `No display server detected`
+  on a machine with neither X11, Wayland nor `xvfb-run`. That is the
+  tool being unavailable, so it now classifies as a fallback rather
+  than as a finding against the model.
+- `document-export.yml` exported diagrams from `models/`, a directory
+  the §8.3 layout never creates, and now resolves `model/` or
+  `engineering/model/` like every other step.
+- `pre-commit-traceability.sh` matched only `verify requirement
+  <name>` and therefore never matched the methodology's own verify
+  form, so every touched verification case was reported as an orphan.
+  It now matches usage and definition story declarations and both the
+  dot and `::` verify forms.
+- The touched set ignores what is not a declaration. Comment bodies
+  are stripped before matching, so a story written inside a `doc`
+  comment or after `//` is read as documentation, and every path with
+  a `library/` directory segment is skipped, so the shipped
+  `model/library/vse-library.sysml` no longer reports `UserStory`,
+  `Feature` and `Epic` as gaps on the first commit of a full-profile
+  project.
+- The gate carries regression tests. `tests/hooks/test-pre-commit.sh`
+  gained four behavioural cases: a covered story, a story whose
+  verification case lost its verify line, a story that exists only
+  inside a comment, and the shipped library staged at the full
+  profile.
 
 ### Fixed (scaffold and demo)
 
@@ -150,6 +293,30 @@ recorded here.
   `templates/sr/validation-report.md`, no longer a §10.10 template that
   §10.10 does not list, and no longer claim a copy into
   `docs/templates/` that no skill performs.
+- The trade study template's commented evaluation block could not be
+  uncommented. It declared `calc def evaluation : EvaluationFunction`
+  and `objective : MaximiseObjective`, where the analysis definition
+  inherits `evaluationFunction` and `objective` from the standard
+  library `TradeStudy` rather than taking new members, and the library
+  spells the objective `MaximizeObjective`. The block now redefines
+  both inherited members, the analysis definition specialises
+  `TradeStudy`, and the package imports `TradeStudies::*`, without
+  which the redefinitions have nothing to redefine.
+- The configuration template shipped `sysml_toolchain: syside` active,
+  which recorded a choice the engineer never made and stopped the audit
+  from inviting the decision. The line ships commented out, and
+  `@project-setup` uncomments it when a choice exists.
+- Methodology §8.3 said `library/` is reserved for an eventual SysML v2
+  library holding stubs, which contradicted §0.8. It holds the shipped
+  `VSE_Library`, which `@project-setup` copies into the project.
+- The Project Plan template told the engineer to reference `TASKS.md`
+  for the ISO/IEC 29110 task checklist. No template ships that file and
+  `@project-setup` never creates it, so section 5.1 now points at the
+  PM.1.5 Tasks element in the methodology copy the project receives.
+- The CI template's comment claimed that Syside runs on a JVM, which
+  nothing in the repository evidences. It now says that the pilot runs
+  on a JVM and is the runner-side fallback for `syside`, and that
+  OpenSysML is a static binary.
 
 ### Added (renderer and demo)
 
@@ -203,25 +370,116 @@ recorded here.
   deferred rather than resolved here, the §8.3.1 sub-package split of
   the demo model.
 
-### Fixed (pre-commit)
+### Added (tooling wiki layer)
 
-- `pre-commit-traceability.sh` matched only `verify requirement
-  <name>` and therefore never matched the methodology's own verify
-  form, so every touched verification case was reported as an orphan.
-  It now matches usage and definition story declarations and both the
-  dot and `::` verify forms.
-- The touched set ignores what is not a declaration. Comment bodies
-  are stripped before matching, so a story written inside a `doc`
-  comment or after `//` is read as documentation, and every path with
-  a `library/` directory segment is skipped, so the shipped
-  `model/library/vse-library.sysml` no longer reports `UserStory`,
-  `Feature` and `Epic` as gaps on the first commit of a full-profile
-  project.
-- The gate carries regression tests. `tests/hooks/test-pre-commit.sh`
-  gained four behavioural cases: a covered story, a story whose
-  verification case lost its verify line, a story that exists only
-  inside a comment, and the shipped library staged at the full
-  profile.
+- Six wiki pages document the toolchains the plugin now supports:
+  `tooling-sysml-toolchain-choice` (the pattern behind the three-way
+  choice), `tooling-omg-pilot-batch-validation`,
+  `tooling-opensysml-cli`, `tooling-java-runtime`,
+  `tooling-reference-implementation-rules` (the forms both reference
+  implementations enforce, which is the page the migration and the
+  audit point at), and `tooling-validator-fallback-process`. Every
+  SysML block on them was re-run under the pilot 2026-07 and OpenSysML
+  v0.6.0 before the pages landed.
+- `document-export` and `traceability-guard` gain the routing marker
+  pair they lacked, so the pages they need reach them the way every
+  other reference-bearing skill receives its routing. The wiki now
+  holds 165 pages across 12 layers, routed to by 23 skills over 245
+  rows, with no contents-block drift.
+
+### Changed (tooling wiki layer)
+
+- The `pages/syside/` layer becomes `pages/tooling/`, a generic layer
+  for SysML v2 toolchains, so the pilot and OpenSysML pages sit beside
+  the Sensmetry ones without a vendor-named directory or a second
+  tooling layer. The seven Syside pages keep their slugs and titles, so
+  every wikilink and every `related:` entry stays valid and only the
+  `layer:` field changes. The layer row and the directory tree in
+  `wiki/CLAUDE.md` follow, and so does the layer enumeration on line 5
+  of all five `wiki/schema/*.md` templates.
+- The Syside pages record which toolchain runs the gate, that an
+  expired licence shows up only on a real `syside check`, and that
+  `.lsp.json` follows the recorded toolchain.
+  `sysml2-api-and-services`, `vse-canonical-project-layout` and
+  `project-bootstrap-prerequisites` gain the toolchain content, four
+  sysml2 pages cross-link the reference-implementation rules, and six
+  pages outside the layer lose their Syside branding in one line each
+  without an `updated:` bump, following the precedent for
+  branding-only edits.
+- `sysml2-modelling` hands its Syside command line, `syside.toml` and
+  Automator reference to `sysml-toolchain`, where it becomes a Syside
+  appendix, and keeps a short comparison of the three toolchains and a
+  route. The umbrella drops `**/syside.toml` from its `paths`, because
+  a Syside configuration file is no longer its activation surface, and
+  `sysml-toolchain` picks up that path and the matching activation
+  hints. Three corrections travel with the moved text: the `syside
+  check` exit codes record exit 2 with `License check failed:` on an
+  expired licence and name what the other two tools return, Java is
+  stated as a prerequisite of the pilot rather than of Syside, and the
+  `viz` heading no longer asserts availability past its stated Labs
+  window of 2026-06-01.
+- Three pages taught `verify requirement <name>`, which both reference
+  implementations refuse against a member of a requirement definition,
+  and now name a story member by dot notation inside a `verification
+  def` objective. The examples that verify a story declare it, the
+  `@ConfigItem` examples write `ciState` as the shipped library
+  declares it, and the layout page drops its `TASKS.md` row, a file no
+  template ships and `@project-setup` never creates.
+
+### Fixed (thesis corrections)
+
+- The designation is written ISO/IEC 29110 everywhere the plugin
+  ships, including the SysML library comments and both `CODEOWNERS`
+  files, which the original search scope did not cover. The generated
+  INDEX and every routing block were regenerated from the corrected
+  page frontmatter. The sixteen bare occurrences that remain sit
+  inside released CHANGELOG entries, which are never edited.
+- Methodology §9.2 states the scope of ISO/IEC TR 29110-5-6-2 as its
+  two processes, Project Management and System Definition and
+  Realisation, from project planning to product delivery, and no
+  longer claims the full life cycle of ISO/IEC/IEEE 15288:2023.
+- Methodology §10.10 describes the six delivery document templates as
+  conditional deliverables, produced when the Delivery Instructions
+  approved in PM.1.2 list them, rather than as unconditional
+  artefacts.
+- The README sources list records that ISO/IEC 29110-5-6-2 is at FDIS
+  stage and is expected to be published in 2026, the demo README
+  describes the three committed renderer outputs, and the README
+  version line and wiki totals are set from `plugin.json` and
+  `wiki/INDEX.md`, where they had stayed at the 3.0.0 values through
+  five releases.
+
+### Fixed (small-patch backlog)
+
+- The post-merge hook and the Contract 3 CI step resolve renderer paths
+  from the directory holding `.iso-config.yaml`, which is the
+  engineering root. A brownfield scaffold places the renderers at
+  `engineering/tools/render/`, where no configured path could satisfy
+  both the `tools/render/` prefix constraint and resolution from the
+  project root, so those projects never regenerated their model-derived
+  artefacts (closes #91). The drift check follows the same root.
+- Issue #92 is resolved apart from two items. The `#derive` resolution
+  is settled by the story-form migration, because both reference
+  implementations accept `#derive` only on a usage.
+  `SYS_003_CalibrationOffsetCommit` and `SYS_004_AlertRetentionWindow`
+  derive from `US_003_CalibrateInField` and `US_004_RetainAlertHistory`
+  with verification cases, so every stakeholder story reaches a
+  verified system story. The resolved variant's `smartSensorDeployment`
+  satisfies all four system stories, which populates the System Element
+  column of the generated matrix. `MemoryConstraint` is recorded as a
+  library-tier exemption in the demo SEMP rather than as a verification
+  case, because §2.5 writes a Base Architecture immutable constraint as
+  a `requirement def`, which is not a verify target, and because the
+  obligation belongs to a parent product line the demo project does not
+  own. The tailoring record names the StoryMeta deviation and the
+  toolchain choice, the Plan explains that `plan-baseline-v0.1` is
+  absent because the demo is nested inside the plugin repository, and
+  the actor classification moved from source comments into `doc`
+  bodies on the actor definitions.
+- Two #92 items stay open. The §8.3.1 sub-package split of the demo
+  model waits until the demo enters the phases that would fill those
+  packages, and the nested-demo limitations recorded in #79 are
+  unchanged.
 
 ## [3.2.0] - 2026-08-14
 
