@@ -1639,10 +1639,12 @@ bumped to 2026-09-10.
 ## [2026-09-10] refactor | methodology page repairs after the reference-implementation pass
 
 Layer: methodology. Five pages repaired after the story-usage sweep
-above. Four carried a worked example that one or both reference
-implementations refuse, and the fifth attributed a refusal to both
-tools where only one gives it. Every replacement block was validated
-under the OMG pilot implementation 2026-07 and OpenSysML v0.6.0.
+above. Three carried a worked example that one or both reference
+implementations refuse, one cited two section 1.9 rules the wrong way
+round, and the fifth attributed a refusal to both tools where only one
+gives it. Every replacement block except the forecast keyword form in
+methodology-library-packaging was validated under the OMG pilot
+implementation 2026-07 and OpenSysML v0.6.0.
 
 Pages updated:
 
