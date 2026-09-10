@@ -42,11 +42,20 @@ if [ "$DISPOSITION" = "off" ]; then
 fi
 
 STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.sysml$' || true)
+ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' || true)
+
+# Drop every path with a library/ directory segment, the shipped
+# model/library/vse-library.sysml above all. The library carries the
+# methodology's own definitions (UserStory, Feature, Epic), which are
+# definitions the project's stories are typed by, not requirements the
+# project has to verify. Leaving them in would report the library as a
+# wall of gaps on the first commit that stages it.
+STAGED_SYSML=$(printf '%s\n' "$STAGED_SYSML" | grep -v '\(^\|/\)library/' || true)
+ADDED_SYSML=$(printf '%s\n' "$ADDED_SYSML" | grep -v '\(^\|/\)library/' || true)
+
 if [ -z "$STAGED_SYSML" ]; then
     exit 0
 fi
-
-ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' || true)
 
 # Detect the VSE engineering root: prefer engineering/ if present
 # (brownfield layout, where work products live under engineering/ to

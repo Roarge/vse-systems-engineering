@@ -314,13 +314,15 @@ case_trace_gap() {
 }
 
 # A story written inside a doc comment is documentation, not a
-# declaration. The gate strips comment bodies before matching, so the
-# library's own example story cannot be reported as an uncovered one.
+# declaration. The gate strips comment bodies before matching, so a
+# worked example inside a project file cannot be reported as an
+# uncovered story. The file sits outside library/ on purpose, so that
+# the comment stripping is what the case proves.
 case_trace_comment_only() {
     tc_setup_repo
     config_for block opensysml
     tc_stub_sysml "sysml v0.6.0"
-    tc_write model/library/vse-library.sysml <<'EOF'
+    tc_write model/core/domain/d.sysml <<'EOF'
 package L {
     part def Sensor;
 
@@ -334,7 +336,7 @@ package L {
     // requirement US_8_Z : UserStory { }
 }
 EOF
-    tc_stage model/library/vse-library.sysml
+    tc_stage model/core/domain/d.sysml
     tc_env
     tc_run_hook
     tc_assert_rc 0 "comment-only story: the commit proceeds"
@@ -343,6 +345,27 @@ EOF
     tc_assert_not_grep "US_8_Z" "$OUT" "comment-only story: the line-comment story is not reported"
     tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
         "comment-only story: 0 touched elements, so the gate says nothing"
+}
+
+# The shipped library declares the methodology's own definitions, which
+# the project's stories are typed by. Nothing in a project verifies
+# them, and project-setup stages the library on the first commit, so a
+# gate that read them would stop that commit at the full profile.
+case_trace_library_skipped() {
+    tc_setup_repo
+    config_for block opensysml
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/library/vse-library.sysml \
+        < "${TC_PLUGIN_ROOT}/templates/common/library/vse-library.sysml"
+    tc_stage model/library/vse-library.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "shipped library: the commit proceeds"
+    tc_assert_grep "All checks passed" "$OUT" "shipped library: summary is clean"
+    tc_assert_not_grep "UserStory" "$OUT" \
+        "shipped library: no library definition is reported as a gap"
+    tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
+        "shipped library: 0 touched elements, so the gate says nothing"
 }
 
 for disposition in block warn info; do
@@ -366,6 +389,7 @@ case_context_filtering
 case_trace_covered
 case_trace_gap
 case_trace_comment_only
+case_trace_library_skipped
 
 if tc_summary "test-pre-commit"; then
     exit 0
