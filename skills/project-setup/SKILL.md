@@ -215,7 +215,7 @@ package <Aiwell> Aiwell_Core {
 
 The angle-bracket short code is the project's 3-5 letter prefix (per §8.3.4), not the long PascalCase package name.
 
-The template imports every sub-package the scaffold itself declares. The five imports of packages the scaffold does not create (`{{PROJECT_NAME}}_FunctionalArchitecture`, `{{PROJECT_NAME}}_LogicalArchitecture`, `{{PROJECT_NAME}}_ProductArchitecture`, `{{PROJECT_NAME}}_Parametrics`, `{{PROJECT_NAME}}_Processes`) ship commented out, each with a guidance comment naming the directory that has to declare the package before the import is uncommented. An import of a package that does not exist is a validation error under every SysML v2 toolchain, so the scaffold ships without one.
+The template imports every sub-package the scaffold itself declares. The five imports of packages the scaffold does not create (`{{PROJECT_NAME}}_FunctionalArchitecture`, `{{PROJECT_NAME}}_LogicalArchitecture`, `{{PROJECT_NAME}}_ProductArchitecture`, `{{PROJECT_NAME}}_Parametrics`, `{{PROJECT_NAME}}_Processes`) ship commented out, each with a guidance comment naming the directory that has to declare the package before the import is uncommented. An import of a package that does not exist is a validation error under the reference implementations, so the scaffold ships without one.
 
 `model/library/` receives a copy of `${CLAUDE_PLUGIN_ROOT}/templates/common/library/vse-library.sysml`, the methodology library stub per §0.8.
 

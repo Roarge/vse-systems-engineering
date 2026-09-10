@@ -51,7 +51,10 @@ One construct per logical line. Continuation lines are joined into a
 single statement, so a declaration that wraps is read whole, but two
 declarations written on the same line are read as one and the second is
 lost. This is a limit of the line-oriented method, not a rule of the
-notation, and it predates the story-usage form.
+notation, and it predates the story-usage form. Two layouts that the
+joiner cannot merge are read by the parser instead: `#derivation` on a
+line of its own before `connection <name> {`, and a `@StoryMeta {` block
+whose assignments sit on their own lines.
 
 Determinism
 -----------
@@ -66,7 +69,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Directories searched for the model, in order, relative to the project
 # root. This mirrors the .iso-config.yaml discovery convention used by the
@@ -216,7 +219,8 @@ class Case:
 
 @dataclass
 class Derivation:
-    """A `RequirementDerivation::derivations` connection between stories."""
+    """A derivation between stories, read from a `#derivation connection`
+    or from the legacy `RequirementDerivation::derivations` connection."""
 
     name: str
     source: str
@@ -538,6 +542,14 @@ def _nearest(stack: List[_Frame], kind: str):
     return None
 
 
+def _read_meta(text: str, meta: Dict[str, str]) -> None:
+    """Read `key = value;` pairs of a `@StoryMeta` body into meta."""
+    for pair in text.replace("}", "").split(";"):
+        if "=" in pair:
+            key, value = pair.split("=", 1)
+            meta[key.strip()] = _last_segment(value.strip())
+
+
 def _attach_doc(line: str, docs: List[str], target) -> bool:
     """Attach any doc body on this line to the given element."""
     match = _RE_DOC_MARKER.search(line)
@@ -559,11 +571,30 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
     stack: List[_Frame] = []
     depth = 0
     pending_derive = False
+    pending_derivation = False
 
     for line in _logical_lines(clean):
         delta = _brace_delta(line)
         opens = delta > 0
         top = stack[-1] if stack else None
+
+        # `#derivation` written on its own line applies to the connection
+        # that follows it, and to nothing else.
+        if pending_derivation:
+            pending_derivation = False
+            if re.match(r"connection\b", line):
+                line = "#derivation " + line
+        if line == "#derivation":
+            pending_derivation = True
+            continue
+
+        # Inside a wrapped `@StoryMeta {` block every line is a pair.
+        if top is not None and top.kind == "meta":
+            _read_meta(line, top.data.meta)
+            depth += delta
+            while stack and depth < stack[-1].depth:
+                stack.pop()
+            continue
 
         if line.startswith("#"):
             meta_match = _RE_DERIVATION_META.match(line)
@@ -715,11 +746,14 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
         if not handled and top is not None and top.kind == "story":
             match = _RE_STORYMETA.search(line)
             if match:
-                for pair in match.group(1).split(";"):
-                    if "=" in pair:
-                        key, value = pair.split("=", 1)
-                        top.data.meta[key.strip()] = _last_segment(value.strip())
+                _read_meta(match.group(1), top.data.meta)
                 handled = True
+            elif opens:
+                match = re.match(r"@StoryMeta\s*\{(.*)$", line)
+                if match:
+                    _read_meta(match.group(1), top.data.meta)
+                    stack.append(_Frame("meta", depth + delta, top.data))
+                    handled = True
 
         if not handled and top is not None:
             story = _nearest(stack, "story")
