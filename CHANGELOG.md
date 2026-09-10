@@ -6,6 +6,24 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2026-09-10
+
+### Fixed
+
+- The VSE size definition was stated as an exclusive bound in two
+  places. `skills/vse-companion-overview/SKILL.md` opened with "Very
+  Small Entities (VSEs, fewer than 25 people)" and
+  `wiki/pages/hsi/hsi-vse-tiered-approach.md` opened with "A VSE (fewer
+  than 25 people) will not have a dedicated HSI team". Both now read
+  "up to 25 people". The exclusive form was wrong on both sides,
+  because it excluded an entity of exactly 25 and implied a lower bound
+  that does not exist. ISO/IEC 29110-1-1:2024 defines a Very Small
+  Entity as an enterprise, an organisation, a department or a project
+  having up to 25 people. The two statements of the definition in
+  `wiki/pages/iso29110/iso29110-overview.md` and
+  `wiki/pages/phas-eai/phas-eai-llm-peer-review.md` were already
+  correct and are unchanged.
+
 ## [4.0.0] - 2026-09-10
 
 The open-source toolchain release. Three things happen together,

@@ -131,7 +131,7 @@ The plugin's reference content sits in three surfaces:
 - **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`. Each reference-bearing skill carries a generated routing table naming the pages it is expected to need (title, path, and a one-line read-when trigger) and reads those pages on demand with the Read tool, one page at a time. Nothing is concatenated and nothing is front-loaded. `wiki/INDEX.md` is the generated catalogue for anything a routing table does not cover.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and totals (165 atomic pages across 12 layers, routed to by 23 skills at the 4.0.0 release) and `wiki/CLAUDE.md` for the authoring schema.
+See `wiki/INDEX.md` for the page catalogue and totals (165 atomic pages across 12 layers, routed to by 23 skills at the 4.0.1 release) and `wiki/CLAUDE.md` for the authoring schema.
 
 ## Sources
 
@@ -229,4 +229,4 @@ The `demo/smart-sensor/` directory contains a worked example: a Wi-Fi-connected 
 
 ## Versioning
 
-The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **4.0.0**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.
+The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **4.0.1**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.
