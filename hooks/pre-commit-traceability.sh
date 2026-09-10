@@ -59,21 +59,61 @@ else
     ENG_ROOT="."
 fi
 
+# Blank out every comment body on stdin: the tail of a `//` line and
+# each `/* ... */` span, including a `doc` body, which spans lines. A
+# story written inside a comment is documentation, so it shall not
+# enter the touched set. Positions on the surviving text do not matter
+# here, only the text itself, so the spans are removed rather than
+# blanked. POSIX awk only, per hooks/README.md.
+strip_sysml_comments() {
+    awk '
+        {
+            line = $0
+            out = ""
+            while (length(line) > 0) {
+                if (inblock) {
+                    close_at = index(line, "*/")
+                    if (close_at == 0) { line = ""; break }
+                    line = substr(line, close_at + 2)
+                    inblock = 0
+                    continue
+                }
+                block_at = index(line, "/*")
+                line_at = index(line, "//")
+                if (line_at > 0 && (block_at == 0 || line_at < block_at)) {
+                    out = out substr(line, 1, line_at - 1)
+                    line = ""
+                    break
+                }
+                if (block_at > 0) {
+                    out = out substr(line, 1, block_at - 1)
+                    line = substr(line, block_at + 2)
+                    inblock = 1
+                    continue
+                }
+                out = out line
+                line = ""
+            }
+            print out
+        }
+    '
+}
+
 # Names this commit touches, as tab-separated "<file>\t<name>" records.
 # For a modified file only the names on added lines count, which is
 # what keeps the gate off pre-existing content. For a newly added file
-# every name in it counts.
+# every name in it counts. Both branches drop comment bodies first.
 collect_touched() {
     local pattern="$1" file added names
     for file in $STAGED_SYSML; do
         added=$(git diff --cached -U0 -- "$file" | grep '^+' | grep -v '^+++' | cut -c2- || true)
-        names=$(printf '%s\n' "$added" | grep -oP "$pattern" || true)
+        names=$(printf '%s\n' "$added" | strip_sysml_comments | grep -oP "$pattern" || true)
         for name in $names; do
             printf '%s\t%s\n' "$file" "$name"
         done
     done
     for file in $ADDED_SYSML; do
-        names=$(grep -oP "$pattern" "$file" 2>/dev/null || true)
+        names=$(strip_sysml_comments 2>/dev/null < "$file" | grep -oP "$pattern" || true)
         for name in $names; do
             printf '%s\t%s\n' "$file" "$name"
         done

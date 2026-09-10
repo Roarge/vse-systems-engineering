@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Behavioural tests for hooks/pre-commit.sh, concern 1 (SysML lint).
+# Behavioural tests for hooks/pre-commit.sh, concern 1 (SysML lint)
+# and concern 3 (the traceability gate, delegated to
+# pre-commit-traceability.sh).
 #
 # Each case installs the hook into a scratch repository, stubs the
 # toolchain the case needs, stages content, runs the hook, and asserts
@@ -234,6 +236,115 @@ EOF
     tc_assert_not_grep "error:" "$ERR" "context filtering: no diagnostic is reported"
 }
 
+# ------------------------------------------- 9. the traceability gate
+
+write_story() {
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        stakeholder :>> role : Op;
+        attribute :>> capability = "acknowledge an alarm";
+        attribute :>> benefit = "the queue clears";
+        requirement :>> acceptance { doc /* the alarm leaves the queue */ }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+}
+
+# write_case <verified|unverified>: the verification case for US_9_X,
+# with or without the verify line.
+write_case() {
+    if [ "$1" = "verified" ]; then
+        tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_9_X {
+        subject sys : Sys;
+        objective {
+            verify US_9_X.acceptance;
+        }
+    }
+}
+EOF
+    else
+        tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_9_X {
+        subject sys : Sys;
+        objective {
+        }
+    }
+}
+EOF
+    fi
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+}
+
+case_trace_covered() {
+    tc_setup_repo
+    config_for block opensysml
+    tc_stub_sysml "sysml v0.6.0"
+    write_story
+    write_case verified
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "trace covered: the commit proceeds"
+    tc_assert_grep "2 touched element(s) checked, no trace gaps" "$OUT" \
+        "trace covered: the story and its case are both checked and clean"
+}
+
+case_trace_gap() {
+    tc_setup_repo
+    config_for block opensysml
+    tc_stub_sysml "sysml v0.6.0"
+    # The case is committed with its verify line, so that deleting the
+    # line is the only change the gate can attribute to this commit.
+    write_case verified
+    tc_commit "add the verification case"
+    write_story
+    write_case unverified
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "trace gap (block): the commit is stopped"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "trace gap (block): exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace gap (block): the finding names the story"
+}
+
+# A story written inside a doc comment is documentation, not a
+# declaration. The gate strips comment bodies before matching, so the
+# library's own example story cannot be reported as an uncovered one.
+case_trace_comment_only() {
+    tc_setup_repo
+    config_for block opensysml
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/library/vse-library.sysml <<'EOF'
+package L {
+    part def Sensor;
+
+    doc /*
+        Example, not a declaration:
+        requirement US_8_Y : UserStory {
+            subject :>> system : Sensor;
+        }
+    */
+
+    // requirement US_8_Z : UserStory { }
+}
+EOF
+    tc_stage model/library/vse-library.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "comment-only story: the commit proceeds"
+    tc_assert_grep "All checks passed" "$OUT" "comment-only story: summary is clean"
+    tc_assert_not_grep "US_8_Y" "$OUT" "comment-only story: the doc-comment story is not reported"
+    tc_assert_not_grep "US_8_Z" "$OUT" "comment-only story: the line-comment story is not reported"
+    tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
+        "comment-only story: 0 touched elements, so the gate says nothing"
+}
+
 for disposition in block warn info; do
     case_preferred_available "$disposition"
 done
@@ -252,6 +363,9 @@ for disposition in block warn; do
     case_partial_install "$disposition"
 done
 case_context_filtering
+case_trace_covered
+case_trace_gap
+case_trace_comment_only
 
 if tc_summary "test-pre-commit"; then
     exit 0
