@@ -1,7 +1,8 @@
 ---
 name: sysml-toolchain
 description: Choose, install, verify, and switch the SysML v2 validation toolchain (Syside, OMG SysML v2 Pilot Implementation, Open-MBEE OpenSysML) recorded as sysml_toolchain in .iso-config.yaml. User-level installs after per-step approval. Use when a hook or CI prints a fallback notice, a Syside licence expires, Java 21 is missing, or the toolchain key is not recorded.
-when_to_use: Use when asked which SysML tool to use, to install or update the pilot, OpenSysML, or Java, to switch toolchains, when pre-commit prints "<tool> unavailable" or "No SysML toolchain is available", when the session banner says a fallback applies, when project-audit Check 16 warns, or when wiring .lsp.json for an editor server.
+when_to_use: Use when asked which SysML tool to use, to install or update the pilot, OpenSysML, or Java, to switch toolchains, when pre-commit prints "<tool> unavailable" or "No SysML toolchain is available", when the session banner says a fallback applies, when project-audit Check 16 warns, when wiring .lsp.json for an editor server, or when the question is the Syside command line (`syside check`, `syside format`, `syside viz`), `syside.toml`, or the Automator Python API, which the Syside reference section of this skill carries.
+paths: ["**/syside.toml", "**/.lsp.json"]
 user-invocable: true
 ---
 

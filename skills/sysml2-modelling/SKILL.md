@@ -1,6 +1,6 @@
 ---
 name: sysml2-modelling
-description: The SysML 2.0 workbench and umbrella router. Owns project layout, CI validation, and the top-level syntax quick reference, routes toolchain installation and configuration to sysml-toolchain, and routes topic authoring to the focused siblings.
+description: The SysML 2.0 workbench and umbrella router. Owns project layout, the validation checklist, and the top-level syntax quick reference, routes toolchain installation and configuration to sysml-toolchain, and routes topic authoring to the focused siblings.
 when_to_use: Use when the SysML topic is not yet clear, when creating or editing .sysml files generally, when checking syntax, when navigating or querying a model, or when a toolchain question is not yet specific enough to route to `@sysml-toolchain`. Route to the sibling that owns the topic once it is clear.
 paths: ["**/*.sysml"]
 user-invocable: true

@@ -331,13 +331,15 @@ A `ConfigItem` applied to a requirement elsewhere in the model:
 
 ```sysml
 package HS_Requirements {
-    private import Metadata::ConfigItem;
+    private import VSE_Library::ConfigItem;
+    private import VSE_Library::CIState;
+    private import VSE_Library::UserStory;
 
     requirement SR_SampleRate : UserStory {
         @ConfigItem {
             ciId = "REQ-SYS-001";
             baselineId = "BL-SRS-0.3";
-            state = Baselined;
+            ciState = CIState::Baselined;
             owner = "systems";
         }
         attribute id : String = "SR-0001";
