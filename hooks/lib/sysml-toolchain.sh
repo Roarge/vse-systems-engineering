@@ -146,7 +146,7 @@ vse_tc_java() {
         if [ -n "$major" ]; then
             VSE_TC_REASON="java at ${candidate} is major ${major}, need 21 or later"
         else
-            VSE_TC_REASON="java at ${candidate} did not report a version: $("$candidate" -version 2>&1 | head -n 1)"
+            VSE_TC_REASON="java at ${candidate} did not report a version: $("$candidate" -version 2>&1 | head -n 1 || true)"
         fi
     done
     [ -n "$VSE_TC_REASON" ] || VSE_TC_REASON="java not found (install Java 21 or later, or set JAVA_HOME or VSE_JAVA)"
@@ -308,7 +308,9 @@ _vse_tc_validate_pilot() {
         *)
             # A JVM that never starts writes its complaint to stderr and
             # nothing to stdout, so the reason is taken from stderr first.
-            reason="$(grep -v '^log4j' "${dir}/stderr" 2>/dev/null | tail -n 1)"
+            # Stack frames are skipped so an exception reads as its
+            # message line rather than its innermost frame.
+            reason="$(grep -v -e '^log4j' -e '^[[:space:]]*at ' "${dir}/stderr" 2>/dev/null | tail -n 1 || true)"
             [ -n "$reason" ] || reason="$(printf '%s\n' "$out" | grep -v '^Reading ' | tail -n 1)"
             rm -rf "$dir"
             VSE_TC_REASON="pilot JVM exit ${rc}: ${reason}"

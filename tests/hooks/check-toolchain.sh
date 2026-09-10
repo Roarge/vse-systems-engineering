@@ -127,19 +127,9 @@ tc_assert_eq "${STUBS}/java" "$OUT" "java: PATH is the last resort"
 
 # A java that never gets far enough to print a version banner. The
 # resolution order has to fall off the end for the reason it recorded to
-# be the one reported, so the candidate is the only java in reach: the
-# PATH below mirrors the machine's tools with java left out.
-tc_nojava_path() {
-    local dir d
-    dir="$(tc_mktemp_d)"
-    for d in /usr/bin /bin; do
-        [ -d "$d" ] || continue
-        ln -s "$d"/* "${dir}/" 2>/dev/null || true
-    done
-    rm -f "${dir}/java"
-    printf '%s\n' "$dir"
-}
-
+# be the one reported, so the dead binary must be the only java in
+# reach: VSE_JAVA names it and PATH lists its directory first (the
+# sandbox unsets JAVA_HOME).
 mkdir -p "${STUBS}/deadjava"
 cat > "${STUBS}/deadjava/java" <<'EOF'
 #!/usr/bin/env bash
@@ -150,8 +140,7 @@ exit 1
 EOF
 chmod +x "${STUBS}/deadjava/java"
 
-NOJAVA="$(tc_nojava_path)"
-tc_env "VSE_JAVA=${STUBS}/deadjava/java" "PATH=${NOJAVA}"
+tc_env "VSE_JAVA=${STUBS}/deadjava/java" "PATH=${STUBS}/deadjava:${STUBS}:/usr/bin:/bin"
 tc_run_lib java
 tc_assert_rc 2 "java: a JVM that never starts is rejected"
 tc_assert_grep "did not report a version: Error occurred during initialization of VM" \

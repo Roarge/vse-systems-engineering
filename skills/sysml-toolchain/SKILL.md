@@ -89,7 +89,7 @@ if echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $ZIP"
   unzip -q -o "$ZIP" -d ~/.local/share/sysml-pilot && rm -f "$ZIP"
 else
   rm -f "$ZIP"
-  echo "checksum failed, download deleted, nothing extracted"
+  echo "checksum failed or download missing, nothing extracted"
   false
 fi
 ```
