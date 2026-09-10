@@ -129,7 +129,9 @@ package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
     private import VSE_Library::*;
     private import ScalarValues::*;
     private import Aiwell_LogicalArchitecture::*;
+    private import RequirementDerivation::*;
 
+    #derive
     requirement ALM_001_BatchCommit : UserStory {
         subject :>> system : AlarmManagementSubsystem;
         stakeholder :>> role : OperatorUISubsystem;
@@ -143,6 +145,16 @@ package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
             doc /* The batch commit completes within commitLatency milliseconds. */
             require constraint { commitLatency <= 200.0 }
         }
+    }
+
+    // The second story of the section 7.3.3 decomposition. It is
+    // declared here in minimal form so that the derivation resolves.
+    // Its capability, benefit, and acceptance are written when the
+    // operator UI subsystem is specified in its own turn.
+    #derive
+    requirement UI_017_BatchSelectionUX : UserStory {
+        subject :>> system : OperatorUISubsystem;
+        stakeholder :>> role : AlarmManagementSubsystem;
     }
 }
 ```
@@ -167,14 +179,13 @@ stories are allocated to subsystems first. Subsystem-level stories are
 then *extracted* from the allocated behaviour.
 
 ```sysml
-// Top-down example
-#RequirementDerivation::derivation connection {
-    end #RequirementDerivation::original
-        ::> SYS_142_BatchAcknowledgement;
-    end #RequirementDerivation::derive
-        ::> ALM_001_BatchCommit;
-    end #RequirementDerivation::derive
-        ::> UI_017_BatchSelectionUX;
+// Top-down example, in the §1.9 rule 8 form: the `#derive` prefix on
+// each derived story usage and one `#derivation connection` naming the
+// original and both derived stories.
+#derivation connection sys142Decomposes {
+    end #original ::> SYS_142_BatchAcknowledgement;
+    end #derive   ::> ALM_001_BatchCommit;
+    end #derive   ::> UI_017_BatchSelectionUX;
 }
 ```
 
@@ -248,7 +259,12 @@ package <ALM_CON> AlarmManagementSubsystem_Concerns {
     }
 }
 
-package <ALM_STR> AlarmManagementSubsystem_Stories {
+package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
+    // Extends the package introduced in section 7.3.2.
+    private import VSE_Library::*;
+    private import Aiwell_LogicalArchitecture::*;
+    private import AlarmManagementSubsystem_Concerns::*;
+
     requirement ALM_002_DurableAcknowledgement : UserStory {
         subject :>> system : AlarmManagementSubsystem;
         stakeholder :>> role : OperatorUISubsystem;

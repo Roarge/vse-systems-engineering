@@ -388,21 +388,21 @@ respectively, while the story lives in `core/stories/<level>/`.
 
 A User Story participates in the model via the following relationships:
 
-- is typed by (`:`) `UserStory`;
+- is typed by (`:`) `UserStory`.
 - redefines `subject` (`subject :>> system : ...;`) with the system or
-  subsystem under specification;
+  subsystem under specification.
 - redefines `role` (`stakeholder :>> role : ...;`) with a project-specific
-  part definition, alongside any additional `stakeholder` declarations;
+  part definition, alongside any additional `stakeholder` declarations.
 - may `frame` one or more `concern def` instances representing the
-  stakeholder needs the story addresses (spec §7.20.3);
+  stakeholder needs the story addresses (spec §7.20.3).
 - may declare nested requirement usages that formalise benefit constraints
-  (spec §7.20.2);
+  (spec §7.20.2).
 - may be named as the `objective` of one or more `use case def` or
   `analysis def` by subsetting
   (`objective <n> :> <story> { subject :>> system = <caseSubject>; }`),
-  whose performance is intended to satisfy the story (spec §7.21.2);
+  whose performance is intended to satisfy the story (spec §7.21.2).
 - may have its acceptance verified by a `verify <story>.acceptance` clause
-  in the `objective` of one or more `verification def` (spec §8.2.2.23);
+  in the `objective` of one or more `verification def` (spec §8.2.2.23).
 - may be the `#original` or `#derive` end of a `#derivation connection`
   (§5.4.1).
 

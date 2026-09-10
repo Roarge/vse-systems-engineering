@@ -101,8 +101,8 @@ rather than authored separately. The mapping:
 | System | Realised system (Construction phase output) | Out of scope artefact; produced downstream |
 | System Element | Subsystem realisation | Out of scope artefact |
 | System Configuration | Tagged git commit; resolved variation set | Tag + manifest; §8 repository structure |
-| Verification Report | Execution of verification cases | Generated; `templates/sr/verification-report.md` |
-| Validation Report | Execution of validation cases | Generated; `templates/sr/validation-report.md` |
+| Verification Report | Execution of verification cases | Generated. See `templates/sr/verification-report.md` |
+| Validation Report | Execution of validation cases | Generated. See `templates/sr/validation-report.md` |
 | Integration Report | Execution of integration tests | Out of scope (SR.4/SR.5 execution); template provided in §10.10 |
 | System Operation Guide | Project-determined; references model | Out of scope (delivery artefact); §10.10 template |
 | System User Manual | Project-determined; references model | Out of scope; §10.10 template |

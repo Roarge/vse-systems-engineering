@@ -74,11 +74,11 @@ The Base Architecture is a SysML v2 `library package` (spec §7.4 — model
 libraries) declaring:
 
 - one or more `part def` representing the architectural givens
-  (platforms, infrastructure, devices, protocols);
+  (platforms, infrastructure, devices, protocols).
 - attributes and value properties on those part defs that the project
-  cannot redefine;
+  cannot redefine.
 - requirement definitions capturing immutable architectural constraints,
-  each with the constrained part def as its `subject`;
+  each with the constrained part def as its `subject`.
 - enumerations and item definitions that downstream packages depend on
   for type compatibility.
 

@@ -239,9 +239,14 @@ if iso::touches_baselined; then
     fi
 fi
 
-# 4. Traceability integrity
-python3 tools/render/traceability-matrix.py --check || {
-    echo "❌ Traceability integrity failed (dangling references)." >&2
+# 4. Derived-artefact freshness (Contract 3)
+python3 tools/render/traceability-matrix.py || {
+    echo "❌ Traceability matrix could not be regenerated." >&2
+    exit 1
+}
+git add --intent-to-add -- docs/generated/
+git diff --exit-code --quiet -- docs/generated/ || {
+    echo "❌ docs/generated/ is stale. Stage the regenerated artefacts (hooks guide Contract 3)." >&2
     exit 1
 }
 

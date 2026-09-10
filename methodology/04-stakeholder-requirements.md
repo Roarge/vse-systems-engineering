@@ -141,11 +141,11 @@ form and progress through the lifecycle as detail emerges.
 A stakeholder story:
 
 - redefines `subject` (first) with a part def from §2 (Base Architecture)
-  or §3 (System Context), typically the project's system part def;
-- redefines `role` with a part def from `core/stakeholders/`;
-- declares `capability` and `benefit` as narrative strings;
-- applies `@StoryMeta` with qualified enumeration values (§1.5);
-- frames one or more concerns from `core/concerns/` (§1.4.6);
+  or §3 (System Context), typically the project's system part def.
+- redefines `role` with a part def from `core/stakeholders/`.
+- declares `capability` and `benefit` as narrative strings.
+- applies `@StoryMeta` with qualified enumeration values (§1.5).
+- frames one or more concerns from `core/concerns/` (§1.4.6).
 - declares at least one `acceptance` criterion before transitioning
   to `ready` (§1.9 rule 4).
 
