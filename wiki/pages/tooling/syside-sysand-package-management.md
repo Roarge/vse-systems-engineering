@@ -2,7 +2,7 @@
 title: "Sysand Package Management for SysML v2"
 slug: syside-sysand-package-management
 type: reference
-layer: syside
+layer: tooling
 summary: Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2
 tags: [sysand, package-management, kpar, manifest, ci, interchange]
 sources:

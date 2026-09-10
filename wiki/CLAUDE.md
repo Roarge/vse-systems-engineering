@@ -58,9 +58,9 @@ wiki/
     needs-and-reqs/
     phas-eai/
     project-structure/
-    syside/
     sysml2/
     sysmod/
+    tooling/
     vv/
 ```
 
@@ -89,7 +89,7 @@ is the modelling language, and domain guides cover specific concerns.
 | SYSMOD (Weilkiens) | `pages/sysmod/` | Weilkiens methodology sources: SYSMOD 3rd edition, VAMOS, The New Engineering Game. |
 | Methodology | `pages/methodology/` | The plugin's methodology specification at `<plugin>/methodology/`. Atomic-page summaries cross-linked to the spec. |
 | SysML 2.0 | `pages/sysml2/` | OMG SysML 2.0 specification and derived notes. |
-| Syside tooling | `pages/syside/` | Sensmetry Syside documentation, Python API, and Sysand. |
+| Tooling | `pages/tooling/` | SysML v2 toolchains: Sensmetry Syside documentation, Python API and Sysand, the OMG SysML v2 Pilot Implementation, OpenSysML, and the Java runtime. |
 | Needs and Requirements | `pages/needs-and-reqs/` | INCOSE Guide to Needs and Requirements. |
 | Verification and Validation | `pages/vv/` | INCOSE Guide to V&V. |
 | Human-Systems Integration | `pages/hsi/` | HSI Primer Vol. 1. |

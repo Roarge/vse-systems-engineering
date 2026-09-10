@@ -2,7 +2,7 @@
 title: "Syside Tooling Overview and Installation"
 slug: syside-tooling-overview
 type: reference
-layer: syside
+layer: tooling
 summary: Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup
 tags: [syside, tooling, installation, vscode, ci, licence, roadmap]
 sources:

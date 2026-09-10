@@ -1678,3 +1678,22 @@ Pages updated:
 No `summary:` field changed and no wikilink was added or removed, so
 INDEX and the routing blocks need no regeneration. All five pages
 carry 2026-09-10.
+
+## [2026-09-10] restructure | syside layer renamed to tooling
+
+The `pages/syside/` layer becomes `pages/tooling/`, a generic layer for
+SysML v2 toolchains, so the OMG SysML v2 Pilot Implementation and
+OpenSysML pages can sit beside the Sensmetry pages without a
+vendor-named directory or a second tooling layer. The seven Syside
+pages move with `git mv`, keep their `syside-` slugs and titles, and
+change only their `layer:` field, because wikilinks resolve by slug
+under `pages/**` and every `related:` entry stays valid. The layer row
+and the directory-tree entry in `wiki/CLAUDE.md` are rewritten, and the
+layer enum on line 5 of all five `wiki/schema/*.md` templates is
+updated in the same commit, closing the gap the sysmod ingest left.
+Routing rows for project-setup, sysml2-metadata and sysml2-modelling
+are regenerated so their Path cells point at `pages/tooling/`, and the
+five hand-written path references in `sysml2-modelling` and
+`sysml2-metadata` are edited by hand. No page content changes and no
+`updated:` field is bumped. INDEX regenerated. Totals stay at 159
+pages across 12 layers, routed to by 20 skills.

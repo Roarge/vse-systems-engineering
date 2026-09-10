@@ -442,10 +442,6 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Project Bootstrap Prerequisites | pages/project-structure/project-bootstrap-prerequisites.md | What must exist before stakeholder requirements engineering opens on a new VSE project |
 | VSE Canonical Project Layout | pages/project-structure/vse-canonical-project-layout.md | The authoritative directory layout for a VSE project scaffolded by project-setup |
 | VSE Model Tiers and Document Templates | pages/project-structure/vse-model-tiers-and-templates.md | The three SysML model tiers (Flat, Minimal AMBSE, Canonical AMBSE) and the templates each one scaffolds |
-| Syside Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
-| Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
-| Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
-| Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | Base Architecture in SYSMOD: the source perspective | pages/sysmod/sysmod-base-architecture-source.md | SYSMOD's Base Architecture: the abstraction dial, reuse, innovation prompts, and coupling into the architecture chain |
 | The SYSMOD Model Purpose Model | pages/sysmod/sysmod-model-purpose-levels.md | Three modelling-purpose levels (communication, traceability, specification) for sizing how much MBSE a project needs |
 | Complexity, dynamics, and the context of the new engineering game | pages/sysmod/sysmod-neg-complexity-and-dynamics.md | Why complex and dynamic markets break process-first engineering: two complexity definitions, Conway's Law, and CPS |
@@ -453,4 +449,8 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Why model-based engineering: the digitalisation rationale | pages/sysmod/sysmod-neg-why-mbe.md | The industry case for MBE: the model criterion, ten PLM4MBSE theses, REThink 4.0 stages, and query-driven modelling |
 | Problem Statement, System Idea, and System Objectives | pages/sysmod/sysmod-problem-statement-and-objectives.md | Framing the real problem, the elevator-pitch System Idea, two kinds of System Objectives, and the workshop tools |
 | SYSMOD as a toolbox: processes, methods, products, roles | pages/sysmod/sysmod-toolbox-anatomy.md | What SYSMOD is: a methods toolbox, its four processes, tailoring, and the initial model package structure |
+| Syside Project Configuration: syside.toml and .lsp.json | pages/tooling/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
+| Sysand Package Management for SysML v2 | pages/tooling/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
+| Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
+| Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 <!-- wiki-routing:end -->

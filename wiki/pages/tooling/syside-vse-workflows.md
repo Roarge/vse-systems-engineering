@@ -2,7 +2,7 @@
 title: "Syside VSE Workflows and Report Generation"
 slug: syside-vse-workflows
 type: pattern
-layer: syside
+layer: tooling
 summary: Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports
 tags: [syside, automator, vse, workflows, report-generation, traceability, excel, reqif, ci]
 sources:

@@ -2,7 +2,7 @@
 title: "Syside Automator Core API"
 slug: syside-core-api
 type: reference
-layer: syside
+layer: tooling
 summary: Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library
 tags: [syside, automator, api, python, model-loading, traversal]
 sources:

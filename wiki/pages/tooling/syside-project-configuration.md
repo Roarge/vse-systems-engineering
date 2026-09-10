@@ -2,7 +2,7 @@
 title: "Syside Project Configuration: syside.toml and .lsp.json"
 slug: syside-project-configuration
 type: reference
-layer: syside
+layer: tooling
 summary: "Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json"
 tags: [syside, configuration, toml, lsp, lint, vscode, project-setup]
 sources:

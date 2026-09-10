@@ -14,7 +14,7 @@ You are the modelling workbench for SysML 2.0 textual notation. You guide
 authoring of .sysml files, validate syntax against the OMG specification, and
 provide templates for common model elements. The full SysML 2.0 reference set
 plus the Syside Python API reference lives in the plugin wiki, as atomic pages
-under the `wiki/pages/sysml2/` and `wiki/pages/syside/` layers.
+under the `wiki/pages/sysml2/` and `wiki/pages/tooling/` layers.
 
 ## When This Skill Triggers
 
@@ -175,11 +175,11 @@ conflicts.
 
 Additionally:
 - **Sysand**: open-source SysML v2 package manager for reusable
-  libraries. Read `pages/syside/syside-sysand-package-management.md`.
+  libraries. Read `pages/tooling/syside-sysand-package-management.md`.
 
 Reference release: 0.10.3 (23 July 2026). Syside is pre-v1.0, so pin the
 version a project depends on. Read
-`pages/syside/syside-tooling-overview.md` for the lineup, the roadmap,
+`pages/tooling/syside-tooling-overview.md` for the lineup, the roadmap,
 and the breaking-change window.
 
 ### Syside CLI Commands
@@ -417,7 +417,7 @@ python -m syside interactive models/system-requirements.sysml
 
 For full API details, read the `syside-tooling-overview`, `syside-core-api`,
 `syside-expression-evaluation`, `syside-model-modification`, and
-`syside-vse-workflows` atomic pages under `wiki/pages/syside/`.
+`syside-vse-workflows` atomic pages under `wiki/pages/tooling/`.
 
 ## Red Flags
 
@@ -438,13 +438,6 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
-| Syside Automator Core API | pages/syside/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
-| Syside Expression Evaluation and Compiler | pages/syside/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
-| Syside Model Modification and Element Reference | pages/syside/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
-| Syside Project Configuration: syside.toml and .lsp.json | pages/syside/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
-| Sysand Package Management for SysML v2 | pages/syside/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
-| Syside Tooling Overview and Installation | pages/syside/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
-| Syside VSE Workflows and Report Generation | pages/syside/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 | Systems Modeling API and Services | pages/sysml2/sysml2-api-and-services.md | The Systems Modeling API and Services, its PIM data structures and services for tool-independent model access |
 | SysML 2.0 Domain Libraries: Causation, Derivation, Geometry | pages/sysml2/sysml2-domain-libraries-causation-geometry.md | The Cause and Effect, Requirement Derivation, and Geometry domain libraries |
 | SysML 2.0 Domain Libraries: Metadata and Analysis | pages/sysml2/sysml2-domain-libraries-metadata-analysis.md | The Metadata and Analysis domain libraries, covering status, risk, tool execution, and trade studies |
@@ -463,4 +456,11 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | SysML 2.0 Syntax: Items, Parts, Ports, Connections, Interfaces, Allocations | pages/sysml2/sysml2-syntax-structure.md | Cheat sheet for the structural modelling vocabulary |
 | SysML 2.0 Systems Model Library: Base Types and Specialisations | pages/sysml2/sysml2-systems-model-library.md | The Systems Model Library provides the base types that every SysML 2.0 keyword implicitly specialises |
 | SysML 2.0 Type Hierarchy: DataValue and Occurrence Branches | pages/sysml2/sysml2-type-hierarchy.md | The two disjoint root branches of the type system: DataValue and Occurrence, and what each carries |
+| Syside Automator Core API | pages/tooling/syside-core-api.md | Loading, querying, and traversing SysML 2.0 models from the Syside Automator Python library |
+| Syside Expression Evaluation and Compiler | pages/tooling/syside-expression-evaluation.md | Evaluating SysML expressions, feature values with units, requirements, and metadata filters |
+| Syside Model Modification and Element Reference | pages/tooling/syside-model-modification.md | Adding, removing, and exporting model elements through the Syside API, with an element type reference |
+| Syside Project Configuration: syside.toml and .lsp.json | pages/tooling/syside-project-configuration.md | Three-level syside.toml discovery, merge semantics, the format, lsp, lint and telemetry sections, and .lsp.json |
+| Sysand Package Management for SysML v2 | pages/tooling/syside-sysand-package-management.md | Sysand manifests, the lock file, KPAR packaging, the public index, and CI publishing for SysML v2 |
+| Syside Tooling Overview and Installation | pages/tooling/syside-tooling-overview.md | Choosing between Syside Editor, Pro Suite, Cloud, and Derisker, plus installation and licence setup |
+| Syside VSE Workflows and Report Generation | pages/tooling/syside-vse-workflows.md | Syside workflows for requirement round-trips, grid views, hierarchy walks, trace checks, CI, and reports |
 <!-- wiki-routing:end -->
