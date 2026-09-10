@@ -196,8 +196,9 @@ package HS_Requirements {
     private import VSE_Library::Severity;
     private import VSE_Library::Likelihood;
     private import VSE_Library::RiskStatus;
+    private import VSE_Library::UserStory;
 
-    requirement def SR_SampleRate {
+    requirement SR_SampleRate : UserStory {
         @RiskInfo {
             severity = Severity::High;
             likelihood = Likelihood::Low;
@@ -218,13 +219,19 @@ and does not need a standalone entry in the risk register.
 ```python
 from syside import Model
 
-model = Model.load("models/")
+model = Model.load("model/")
 for element in model.elements_with_metadata("VSE_Library::RiskInfo"):
     risk = element.metadata("VSE_Library::RiskInfo")
     if (risk.severity in ("High", "VeryHigh", "Critical")
             and risk.status in ("Open", "Mitigating")):
         print(f"{element.qualified_name}: {risk.severity} / {risk.status}")
 ```
+
+Note: the loading call in this snippet uses an older API shape. Load
+with `syside.load_model(paths=syside.collect_files_recursively("model/"))`
+as the `syside-core-api` page documents, and treat
+`elements_with_metadata` as illustrative until it is verified against
+the Syside release the project pins.
 
 The query is advisory. A full risk-management workflow skill covering
 the identify-assess-mitigate-monitor loop is flagged as a follow-up.
@@ -317,12 +324,13 @@ metadata def Baseline {
 package HS_Requirements {
     private import VSE_Library::ConfigItem;
     private import VSE_Library::CIState;
+    private import VSE_Library::UserStory;
 
-    requirement def SR_SampleRate {
+    requirement SR_SampleRate : UserStory {
         @ConfigItem {
             ciId = "REQ-SYS-001";
             baselineId = "BL-SRS-0.3";
-            state = CIState::Baselined;
+            ciState = CIState::Baselined;
             owner = "systems";
         }
         attribute id : String = "SR-0001";
@@ -342,7 +350,7 @@ package HS_ArchDesign {
         @ConfigItem {
             ciId = "ARCH-SYS-001";
             baselineId = "BL-ARCH-0.2";
-            state = CIState::Baselined;
+            ciState = CIState::Baselined;
             owner = "systems";
         }
         // part body ...
@@ -355,7 +363,7 @@ package HS_ArchDesign {
 ```python
 from syside import Model
 
-model = Model.load("models/")
+model = Model.load("model/")
 target_baseline = "BL-SRS-0.3"
 baselined = []
 not_yet = []
@@ -363,13 +371,19 @@ for element in model.elements_with_metadata("VSE_Library::ConfigItem"):
     ci = element.metadata("VSE_Library::ConfigItem")
     if ci.baselineId != target_baseline:
         continue
-    if ci.state == "Baselined":
+    if ci.ciState == "Baselined":
         baselined.append((ci.ciId, element.qualified_name))
     else:
-        not_yet.append((ci.ciId, ci.state, element.qualified_name))
+        not_yet.append((ci.ciId, ci.ciState, element.qualified_name))
 print(f"In {target_baseline}: {len(baselined)} baselined,",
       f"{len(not_yet)} not yet at state Baselined")
 ```
+
+Note: the loading call in this snippet uses an older API shape. Load
+with `syside.load_model(paths=syside.collect_files_recursively("model/"))`
+as the `syside-core-api` page documents, and treat
+`elements_with_metadata` as illustrative until it is verified against
+the Syside release the project pins.
 
 The second list is the orphan-CI surface `@traceability-guard`
 checks at iteration-boundary closure. A full model-level CM workflow
