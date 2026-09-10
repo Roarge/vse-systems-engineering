@@ -2,8 +2,9 @@
 """Render the Traceability Matrix from the SysML 2.0 model.
 
 Writes docs/generated/traceability-matrix.md. Takes no arguments and runs
-from the project root, which is the contract the post-merge git hook and
-the Contract 3 freshness check in CI both rely on (see
+from the engineering root (the directory holding `.iso-config.yaml`, the
+project root in a greenfield layout), which is the contract the post-merge
+git hook and the Contract 3 freshness check in CI both rely on (see
 methodology/iso-29110-hooks-guide.md sections 4.4 and 4.5).
 
 The matrix is ISO/IEC TR 29110-5-6-2 product description 27. Under this
@@ -102,7 +103,11 @@ def matrix_rows(model):
             case.identifier
             for case in model.cases_verifying(story.identifier, kind="validation")
         ]
-        elements = model.elements_satisfying(story.identifier)
+        elements = list(model.elements_satisfying(story.identifier))
+        for derived_story in derived:
+            for element in model.elements_satisfying(derived_story):
+                if element not in elements:
+                    elements.append(element)
         status = (
             "Complete" if stakeholder_story_is_covered(model, story) else "Gap"
         )
