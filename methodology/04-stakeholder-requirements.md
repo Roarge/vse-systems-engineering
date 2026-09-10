@@ -29,7 +29,7 @@ story as the use case's `objective`).
   roles, residing in `core/stakeholders/`.
 - Stakeholder concern register — `concern def` instances residing in
   `core/concerns/`.
-- Stakeholder story register — story usages typed by `UserStory`, residing
+- Stakeholder story register: story usages typed by `UserStory`, residing
   in `core/stories/stakeholder/`.
 - Use case set (optional) — `use case def` instances elaborating
   capability where useful, residing in `core/use-cases/`. Each such use
@@ -185,6 +185,9 @@ the story remains the carrier of stakeholder intent.
 
 ```sysml
 package <UC> Aiwell_UseCases {
+    private import Aiwell_Stakeholders::*;
+    private import Aiwell_OnlineSentralContext::*;
+
     use case def AcknowledgeAlarms {
         subject sys : Aiwell_OnlineSentral;
         actor performer : Operator;
@@ -195,9 +198,9 @@ package <UC> Aiwell_UseCases {
 
         // Action body: detail the steps of the use case
         first start;
-        action filter alarms;
-        action select scope;
-        action confirm acknowledgement;
+        then action filterAlarms;
+        then action selectScope;
+        then action confirmAcknowledgement;
         then done;
     }
 }

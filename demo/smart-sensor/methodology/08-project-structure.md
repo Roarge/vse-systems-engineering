@@ -58,9 +58,9 @@ project-root/
 - `sandbox/` is for experimentation. Sandbox content shall not be
   imported by `model/core/` or `model/variations/`. Sandbox files may
   break the well-formedness rules elsewhere required.
-- `library/` is reserved for the methodology's eventual SysML v2 library
-  (per §0.8). Until then it contains stubs for `UserStory`, `StoryMeta`,
-  and the methodology's other reusable elements.
+- `library/` holds the shipped `VSE_Library` (`vse-library.sysml`), which
+  project-setup copies into the project. It declares `UserStory`,
+  `StoryMeta`, and the methodology's other reusable elements (per §0.8).
 - `tools/` is for repository-side automation (linters, validators,
   diagram generators). It is not part of the model.
 

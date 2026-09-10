@@ -26,7 +26,7 @@ cases only where useful.
 
 **Outputs:**
 
-- System story register — story usages typed by `UserStory`, residing in
+- System story register: story usages typed by `UserStory`, residing in
   `core/stories/system/`, each with `derive` links to one or more
   stakeholder stories.
 - Behavioural elaborations per chosen analysis path:
@@ -209,14 +209,14 @@ action def AcknowledgeAlarmsAction {
     out acknowledged : AlarmEvent[*];
     out rejected : AlarmEvent[*];
 
-    action filter : FilterAlarmsByScope {
+    action filterByScope : FilterAlarmsByScope {
         in :>> alarmSet;
         in :>> scope;
         out filtered : AlarmEvent[*];
     }
 
     action commit : CommitAcknowledgement {
-        in alarms : AlarmEvent[*] = filter.filtered;
+        in alarms : AlarmEvent[*] = filterByScope.filtered;
         out :>> acknowledged;
         out :>> rejected;
     }
@@ -235,7 +235,7 @@ use case def AcknowledgeAlarmsBatch {
         subject :>> system = sys;
     }
 
-    perform AcknowledgeAlarmsAction;
+    perform action acknowledgeAlarms : AcknowledgeAlarmsAction;
 }
 ```
 
@@ -248,18 +248,21 @@ path" path includes all alarms in the scope being acknowledged; a
 Used when the capability is *interaction-driven* — actor and system
 exchange a sequence of stimuli and responses.
 
-Scenarios are modelled as actions whose body sequences interactions:
+Scenarios are modelled as use cases whose body sequences the
+interactions as performed actions:
 
 ```sysml
-action def AckScenario_Nominal {
+use case def AckScenario_Nominal {
     subject sys : Aiwell_OnlineSentral;
     actor opr : Operator;
 
-    perform act1 : OpFiltersAlarms { /* operator → system filter */ }
-    then    act2 : SysShowsFilteredSet { /* system → operator render */ }
-    then    act3 : OpSelectsAckAll;
-    then    act4 : SysCommitsAcknowledgement;
-    then    act5 : SysShowsClearedQueue;
+    first start;
+    then perform action act1 : OpFiltersAlarms;        // operator to system: filter
+    then perform action act2 : SysShowsFilteredSet;    // system to operator: render
+    then perform action act3 : OpSelectsAckAll;
+    then perform action act4 : SysCommitsAcknowledgement;
+    then perform action act5 : SysShowsClearedQueue;
+    then done;
 }
 ```
 

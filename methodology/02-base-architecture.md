@@ -149,8 +149,10 @@ library package <BA> Aiwell_BaseArchitecture {
 ```
 
 Constraints expressed here are *immutable* in the sense that the
-project shall not redefine them. They may be inherited by specialising
-parts but not weakened.
+project shall not redefine them. The requirement definition applies to
+every part typed by the platform or by a specialisation of it. A
+specialisation may add constraints of its own, but it may not relax
+this one.
 
 ### 2.3.3 Establish the relationship to the project system
 
@@ -216,9 +218,10 @@ specialisations thereof).
    not import any package outside `library/`, `core/domain/`, or
    external libraries.
 2. Every requirement definition that constrains the Base Architecture
-   shall remain satisfied by every specialising part. CI-side validation
-   shall flag a specialising part that overrides an inherited constraint
-   with a weaker one.
+   applies to every part typed by the platform or by a specialisation of
+   it, and shall remain satisfied by all of them. A specialisation may
+   add constraints of its own. CI-side validation shall flag a
+   specialisation that relaxes a Base Architecture constraint.
 3. The project's system part def shall have exactly one relationship
    to the Base Architecture: either specialisation or allocation, not
    both. (A system that genuinely is both — instance of one platform,

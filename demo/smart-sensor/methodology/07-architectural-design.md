@@ -103,18 +103,20 @@ package <ALLOC> Aiwell_RequirementAllocations {
     private import Aiwell_LogicalArchitecture::*;
     private import Aiwell_SystemStories::*;
 
+    part la : Aiwell_OnlineSentral_LogicalArchitecture;
+
     // Single allocation
     allocation alarmsBatchOwner
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::alarms;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.alarms;
 
     // Joint allocation (latency budget shared)
     allocation latencyBudget1
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::alarms;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.alarms;
     allocation latencyBudget2
-        allocate SYS_142_BatchAcknowledgement::sla
-        to       Aiwell_OnlineSentral_LogicalArchitecture::operatorUI;
+        allocate SYS_142_BatchAcknowledgement.sla
+        to       la.operatorUI;
 }
 ```
 

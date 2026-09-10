@@ -88,9 +88,7 @@ is right and this guide is wrong. The coverage table above describes the
 │   ├── render/                   # model → ISO documents
 │   │   ├── traceability-matrix.py
 │   │   ├── stakeholder-reqs-doc.py
-│   │   ├── system-reqs-doc.py
-│   │   ├── ivv-plan.py
-│   │   └── justification-doc.py
+│   │   └── system-reqs-doc.py
 │   └── lint/
 │       ├── story-wellformed.py
 │       └── plan-complete.py
@@ -948,7 +946,12 @@ jobs:
       - name: Plan completeness (§10.3.1)
         run: python3 tools/lint/plan-complete.py docs/project-plan.md
       - name: Traceability integrity (§9.8)
-        run: python3 tools/render/traceability-matrix.py --check
+        # The renderer takes no arguments. Regenerate, then diff, the
+        # way the shipped Contract 3 step does.
+        run: |
+          python3 tools/render/traceability-matrix.py
+          git add --intent-to-add -- docs/generated/
+          git diff --exit-code -- docs/generated/
 
   render:
     needs: lint
@@ -1085,8 +1088,6 @@ renderers:
   traceability_matrix:    tools/render/traceability-matrix.py
   stakeholder_reqs:       tools/render/stakeholder-reqs-doc.py
   system_reqs:            tools/render/system-reqs-doc.py
-  ivv_plan:               tools/render/ivv-plan.py
-  justification:          tools/render/justification-doc.py
 ```
 
 The hook scripts read this file to determine what to enforce. Two

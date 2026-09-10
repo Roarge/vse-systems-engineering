@@ -174,9 +174,9 @@ The objective clause
 `objective realisesUS042 :> US_042_AckFromDashboard { subject :>> system = sys; }`
 subsets the story and binds the story's subject to the case subject. The
 redefinition is required: a case already carries an objective subject, so an
-objective that subsets a story without redefining `system` is refused
-(`Only one subject is allowed`). A case subject that does not conform to the
-story's subject type is reported as
+objective that subsets a story without redefining `system` is refused by the
+pilot (`Only one subject is allowed`). A case subject that does not conform
+to the story's subject type is reported as
 `Bound features should have conforming types`.
 
 Two consequences follow:
