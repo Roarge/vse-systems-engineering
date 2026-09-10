@@ -218,9 +218,12 @@ jobs:
             echo "Demo plugin_version pin matches plugin.json ($PLUGIN_VERSION)."
           fi
           if grep -qE '^sysml_toolchain:' templates/iso-config/.iso-config.yaml; then
-            echo "templates/iso-config/.iso-config.yaml records a sysml_toolchain."
+            echo "::error::templates/iso-config/.iso-config.yaml records an active sysml_toolchain; the shipped line is commented out so the absent-key default applies"
+            exit 1
+          elif grep -qE '^#[[:space:]]*sysml_toolchain:[[:space:]]*syside' templates/iso-config/.iso-config.yaml; then
+            echo "templates/iso-config/.iso-config.yaml carries the commented sysml_toolchain default."
           else
-            echo "::error::templates/iso-config/.iso-config.yaml does not record a sysml_toolchain"
+            echo "::error::templates/iso-config/.iso-config.yaml does not carry the commented sysml_toolchain default"
             exit 1
           fi
           DEMO_TOOLCHAIN=$(sed -n 's/^sysml_toolchain:[[:space:]]*//p' demo/smart-sensor/.iso-config.yaml)
