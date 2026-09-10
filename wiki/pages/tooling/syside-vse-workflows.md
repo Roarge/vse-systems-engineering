@@ -19,9 +19,11 @@ related:
   - sysml2-allocations-overview
   - ambse-dependability-and-traceability
   - vse-model-tiers-and-templates
+  - tooling-validator-fallback-process
+  - tooling-sysml-toolchain-choice
 confidence: high
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-09-10
 referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
@@ -45,10 +47,14 @@ referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata, project-setu
 
 ## Validation in CI
 
-The `syside check` CLI is the gate a VSE puts in front of every merge.
+When the recorded toolchain is `syside`, the `syside check` CLI is the
+validator behind the pre-commit lint gate and the CI validation step.
 It loads the files the project's `syside.toml` selects (see
 [[syside-project-configuration]]) and reports diagnostics at the
-severities that file sets.
+severities that file sets. Projects on the OMG pilot or OpenSysML run
+the same gate through the wrapper in
+[[tooling-validator-fallback-process]], and every other section of
+this page describes Syside-only capabilities.
 
 ```bash
 # Fail the build on any diagnostic, not only errors
@@ -60,6 +66,9 @@ syside check --warnings-as-errors --stats
 # Check formatting without rewriting files
 syside format --check
 ```
+
+No other toolchain ships a formatter, so the format check is skipped
+with a notice when Syside is unavailable.
 
 `--stats` prints element and diagnostic counts for the run. Log it in
 CI, because a sudden change in element count between two commits is

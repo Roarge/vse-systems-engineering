@@ -16,9 +16,12 @@ related:
   - syside-sysand-package-management
   - vse-canonical-project-layout
   - sysml2-canonical-model-layout
+  - tooling-sysml-toolchain-choice
+  - tooling-opensysml-cli
+  - tooling-validator-fallback-process
 confidence: medium
 created: 2026-05-04
-updated: 2026-08-07
+updated: 2026-09-10
 referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-metadata, project-setup]
 ---
 
@@ -55,9 +58,12 @@ provisional and confirm availability with Sensmetry before planning a
 VSE workflow around it. Statement dated August 2026.
 
 Legacy note: the earlier open-source language server, `sysml-2ls`, was
-archived in October 2025 and renamed "SysIDE Editor Legacy". It is no
-longer maintained and must not be recommended to a VSE. New projects
-use Syside Editor.
+archived in October 2025 and renamed "SysIDE Editor Legacy". It is
+unmaintained and is not a supported toolchain for a VSE. That ruling
+covers `sysml-2ls` only. Two maintained open-source toolchains are
+supported as fallbacks and as first choices, the OMG SysML v2 Pilot
+Implementation and OpenSysML, described in
+[[tooling-sysml-toolchain-choice]].
 
 ## Choosing a tool
 
@@ -68,6 +74,8 @@ use Syside Editor.
 | Scripted analysis, report generation, CI validation | Syside Pro Suite (Automator and the `syside` CLI) |
 | The Pro Suite without a local installation | Syside Cloud |
 | Safety and security analysis on top of the model | Syside Derisker (beta) |
+| Validation without a Syside licence | OMG pilot or OpenSysML, see [[tooling-sysml-toolchain-choice]] |
+| Editor language server without a Syside licence | OpenSysML `sysml-lsp`, see [[tooling-opensysml-cli]] |
 
 If a project holds a Pro Suite licence it already has everything the
 free Editor offers. Disable the Editor extension when the Modeler is
@@ -122,14 +130,19 @@ For CI/CD, use a Deployment Licence Key (prefix `CI-`) stored in the
 provider's secret management (GitHub secrets, GitLab CI/CD variables).
 Reference: https://docs.sensmetry.com/automator/install.html
 
+`syside --version` and `syside check --help` succeed without a licence.
+Only a real `syside check <path>` reveals an expired licence, printing
+`License check failed:` and exiting 2. The validator wrapper uses that
+signal to fall back, see [[tooling-validator-fallback-process]].
+
 ## VSE workflow positioning
 
 A typical VSE bootstrapped through `project-setup` installs the Pro
 Suite VS Code extension for interactive editing and the Automator
 Python package for automation hooks (CI gates, report generation,
 traceability checks). The plugin's `traceability-guard` and
-`document-export` skills both depend on the Automator being available
-in the project's virtual environment.
+`document-export` skills use the Automator when it is installed and
+fall back to the grep-based and pandoc-based procedures otherwise.
 
 Package management is a separate concern handled by Sysand, the
 open-source SysML v2 package manager described in

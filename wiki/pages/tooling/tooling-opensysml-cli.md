@@ -39,7 +39,7 @@ referenced_by: [sysml-toolchain, sysml2-modelling, document-export]
 
 OpenSysML is a SysML v2 and KerML 1.1 implementation in Go from the Open-MBEE organisation, released under the Apache License 2.0. It ships as a single static binary with a command-line validator, an interactive shell, an execution runtime and a language server, and it bundles the standard library, so nothing else has to be installed beside it. The plugin uses it as the third toolchain in the fallback order and as the language server for projects on the OMG pilot, which has none.
 
-Confidence note: this page is `medium` rather than `high` because the project is pre-1.0. Ten releases landed in August 2026, and v0.6.0 of 2026-09-07 is markedly stricter than v0.2.1 was two weeks earlier. The flags and the diagnostic wording documented here were verified against v0.6.0 and may move without a compatibility path.
+Confidence note: this page is `medium` rather than `high` because the project is pre-1.0. Twenty releases landed in August 2026, and v0.6.0 of 2026-09-07 is markedly stricter than v0.2.1 was two weeks earlier. The flags and the diagnostic wording documented here were verified against v0.6.0 and may move without a compatibility path.
 
 ## Release binaries
 

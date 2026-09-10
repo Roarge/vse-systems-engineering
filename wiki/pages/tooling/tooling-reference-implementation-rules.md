@@ -113,7 +113,7 @@ The `@StoryMeta` line of a real story (`@StoryMeta { points = 5; priority = Prio
 
 ## What each tool does not enforce
 
-OpenSysML v0.6.0 does not enforce subject-first ordering, `#derive` on a definition, or the `Only one subject is allowed` rule for a case objective. A model that passes OpenSysML can therefore still fail the pilot, which is why the demo validates under both and why the pilot sits before OpenSysML in the fallback order. Syside 0.8 tolerated every refused form in the table, so a project migrating from Syside should expect findings on its first pilot run and use the accepted-form column as the migration guide.
+OpenSysML v0.6.0 does not enforce subject-first ordering, `#derive` on a definition, or the `Only one subject is allowed` rule for a case objective. The pilot in turn accepts a `verify` whose target is a bare `require constraint`, which OpenSysML v0.6.0 refuses. A model that passes one tool can therefore still fail the other, which is why the demo validates under both. Syside 0.8 tolerated every refused form in the table, so a project migrating from Syside should expect findings on its first pilot run and use the accepted-form column as the migration guide.
 
 ## See also
 

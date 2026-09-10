@@ -1715,6 +1715,9 @@ Pages authored:
 - tooling-reference-implementation-rules (new)
 - tooling-validator-fallback-process (new)
 
+The six pages were corrected against the shipped library and CI
+template before the pull request was opened.
+
 Pages updated:
 - syside-tooling-overview (legacy note narrowed to `sysml-2ls`, two
   licence-free rows in the tool-choice table, the licence-detection
@@ -1737,6 +1740,8 @@ Pages updated:
 - sysml2-requirements-semantics, sysml2-grammar-and-validation,
   sysml2-domain-libraries-causation-geometry,
   sysml2-vse-library-metadata (cross-links to the rules page)
+- methodology-library-packaging (title and summary reframed around the
+  shipped `VSE_Library`, the body already recorded it)
 
 Six pages outside the layer carry Syside in prose (ambse-principles,
 ambse-risk-and-metrics, ambse-use-case-driven-elicitation,
@@ -1756,5 +1761,4 @@ INDEX regenerated.
 
 Pages indexed: 165. Routing blocks regenerated: 12. Routing rows 213
 to 245. Layers stay 12 (syside renamed to tooling). Referencing skills
-20 to 23. ToC drift: 2, a `## Contents` block on two pages that sit
-under the 100-line threshold.
+20 to 23. ToC drift: 0.

@@ -14,9 +14,10 @@ related:
   - sysml2-case-kinds
   - sysml2-syntax-requirements-and-cases
   - sysml2-variations-overview
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -135,3 +136,6 @@ trade studies in SR.3 (Architecture). See
 - [[sysml2-cases-overview]] and [[sysml2-case-kinds]] for the
   verification and analysis case constructs.
 - [[sysml2-variations-overview]] for the variant family.
+- [[tooling-reference-implementation-rules]] for the subject
+  ordering, trace-target and `#derive` forms the OMG pilot and
+  OpenSysML enforce on top of these semantics.

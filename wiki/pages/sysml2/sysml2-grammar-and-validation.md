@@ -13,9 +13,10 @@ related:
   - sysml2-type-hierarchy
   - sysml2-specialisation-and-typing
   - sysml2-requirements-semantics
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -208,6 +209,9 @@ Before committing a model file, verify the following:
    types and Occurrence types.
 8. **Reserved keywords** used as names are enclosed in single
    quotes.
+9. **A reference implementation accepts the file.** Run the model
+   through the pilot or OpenSysML and check the forms in
+   [[tooling-reference-implementation-rules]].
 
 ## Common modelling mistakes
 
@@ -233,3 +237,6 @@ Before committing a model file, verify the following:
   operators referenced here.
 - [[sysml2-requirements-semantics]] for the requirement family
   validation rules.
+- [[tooling-reference-implementation-rules]] for the forms the OMG
+  pilot and OpenSysML refuse in practice, which go beyond the
+  specification text quoted here.

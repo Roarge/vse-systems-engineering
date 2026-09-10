@@ -25,14 +25,6 @@ referenced_by: [sysml-toolchain, attention-regime, project-audit]
 
 # Validator selection and fallback in the pre-commit lint gate
 
-## Contents
-
-- Preconditions
-- Steps
-- Postconditions
-- Work products
-- Failure modes
-
 The lint gate of the pre-commit hook runs the SysML v2 validator the project recorded, falls back through a fixed order when that validator is unavailable, and reports findings in one shape whatever tool produced them. The gate is the `precommit_lint` row of the methodology's §0.10.4 table, so the project profile decides whether a finding blocks, warns or informs, and the toolchain decides only which validator speaks.
 
 ## Preconditions
@@ -44,15 +36,15 @@ The lint gate of the pre-commit hook runs the SysML v2 validator the project rec
 1. The hook resolves the `precommit_lint` disposition through `iso-profile.sh` and stops here when it is `off`.
 2. It lists the staged `.sysml` files. An empty list ends the gate with exit 0 and no message, because a commit that touches no model file has nothing to validate.
 3. The library reads the preference from `sysml_toolchain`, or from `VSE_SYSML_TOOLCHAIN` when the environment sets it for one run.
-4. The library probes the candidates in order, the preference first and then the remaining tools in the order syside, omg-pilot, opensysml. Syside is probed by a real `syside check` on a one-line scratch model, because `syside --version` and `syside check --help` succeed on an expired licence and only a real check prints `License check failed:` and exits 2. The pilot is probed by a Java 21 runtime, the kernel jar and the standard library under `~/.local/share/sysml-pilot`. OpenSysML is probed by `sysml -version` on the PATH.
+4. The library tries the candidates in order, the preference first and then the remaining tools in the order syside, omg-pilot, opensysml. Each validator is run directly, and a run that cannot start counts as unavailable: Syside when its output carries `License check failed:` (the failure is visible only on a real check, because `syside --version` and `syside check --help` succeed on an expired licence, which is why neither is used), the pilot when no Java 21 runtime, kernel jar or standard library resolves under `~/.local/share/sysml-pilot`, and OpenSysML when `sysml` is not on the PATH.
 5. When the tool that runs is not the preference, the library prints one notice on standard error naming the reason, for example `[pre-commit] syside unavailable (licence expired, exit 2); validating with omg-pilot instead`.
-6. The tool runs. Syside receives the staged files and `--warnings-as-errors`. The pilot receives every tracked model file in one block so that cross-file names resolve, followed by `%exit`, and its diagnostics are mapped back to file and line from an offset table and filtered to the staged files. OpenSysML receives the same file set with `-validate -strict`, and its `warning:` lines are promoted to findings.
+6. The tool runs. Syside receives the staged files and `--warnings-as-errors`. The pilot receives every tracked model file except those under `sandbox/` or `build/` and `*.draft.sysml` files (a staged file is always included) in one block so that cross-file names resolve, followed by `%exit`, and its diagnostics are mapped back to file and line from an offset table and filtered to the staged files. OpenSysML receives the same file set with `-validate -strict`, and its `warning:` lines are promoted to findings.
 7. Diagnostics are normalised to `path:line:col: severity: message`, one per line, on standard output.
 8. The library returns 0 for a clean run, 1 for findings, and 2 when no candidate could run at all, listing every reason. The hook applies the disposition: `block` refuses the commit, `warn` reports and counts, `info` prints one line. A 2 is reported at every disposition except `off`, so a full-profile project never sees a green summary with no validation performed.
 
 ## Postconditions
 
-Findings appear on standard error with the `[pre-commit]` prefix. No file is written and no temporary file is left behind. The recorded preference is untouched by the hook. A fallback notice repeats on every commit until the engineer runs `/vse-toolchain` to install the missing tool or to switch the preference.
+Findings appear on standard error as `path:line:col: severity: message` lines, followed by a `[pre-commit]` summary line. No file is written and no temporary file is left behind. The recorded preference is untouched by the hook. A fallback notice repeats on every commit until the engineer runs `/vse-toolchain` to install the missing tool or to switch the preference.
 
 ## Work products
 
@@ -70,7 +62,7 @@ None beyond the terminal output. The SEMP tool table and the Toolchain line in t
 | no toolchain installed at all | exit 2, refused at `block`, warned at `warn`, one line at `info` | `/vse-toolchain` installs one |
 | `syside format --check` under another toolchain | skipped with a notice, no other toolchain ships a formatter | none |
 | pilot runtime cost | one Java process per commit, about 8 to 15 seconds | choose OpenSysML for sub-second runs |
-| CI runner | the workflow template reads the same key, installs the pilot or OpenSysML, and runs Syside steps only when `syside.toml` exists | none |
+| CI runner | the workflow template reads the same key, installs the pilot or OpenSysML, runs its Syside steps only when the key is `syside`, and runs the format check only when `syside.toml` also exists | none |
 
 ## See also
 

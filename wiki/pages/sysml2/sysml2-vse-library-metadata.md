@@ -15,9 +15,10 @@ related:
   - sysml2-metadata-definitions
   - sysml2-language-extension
   - sysmod-vamos-method
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-04
-updated: 2026-08-14
+updated: 2026-09-10
 referenced_by: [sysml2-metadata]
 ---
 
@@ -163,3 +164,6 @@ those chapters publish.
 - [[sysml2-metadata-definitions]] for ordinary metadata syntax.
 - [[sysml2-language-extension]] for `SemanticMetadata` and
   user-defined keywords.
+- [[tooling-reference-implementation-rules]] for the qualified
+  enumeration literals both reference implementations require in a
+  metadata annotation.

@@ -92,7 +92,8 @@ is not modelling. **True modelling means specifying deep
 semantics in a formal language** (SysML 2.0) such that the
 content can be verified through testing or formal analysis.
 Diagrams are views of the model, not the model itself. The
-model lives in the repository (.sysml files managed by Syside).
+model lives in the repository (.sysml files validated by the
+configured SysML v2 toolchain).
 
 VSE guideline: every model element should have purpose, intent,
 scope, language, accuracy, fidelity, and completeness

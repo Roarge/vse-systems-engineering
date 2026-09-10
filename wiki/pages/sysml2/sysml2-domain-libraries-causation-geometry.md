@@ -12,9 +12,10 @@ related:
   - sysml2-libraries-architecture
   - sysml2-domain-libraries-metadata-analysis
   - sysml2-occurrences-4d
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [sysml2-modelling]
 ---
 
@@ -144,3 +145,7 @@ than the entire library.
   commonly imported domain libraries.
 - [[sysml2-occurrences-4d]] for the 4D worldview that frames
   spatial relations.
+- [[tooling-reference-implementation-rules]] for the derivation
+  connection form the OMG pilot and OpenSysML accept, which uses the
+  `#derivation`, `#original` and `#derive` metadata over requirement
+  usages rather than a connection typed by `Derivation`.

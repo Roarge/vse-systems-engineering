@@ -30,18 +30,9 @@ referenced_by: [sysml-toolchain, sysml2-modelling, project-setup, project-audit,
 
 # Choosing a SysML v2 toolchain: Syside, OMG pilot, OpenSysML
 
-## Contents
-
-- Problem
-- Context
-- Forces
-- Solution
-- Consequences
-- Related patterns
-
 A VSE project needs one SysML v2 validator behind its pre-commit lint gate and, where the editor supports it, one language server. The plugin supports three toolchains and records the project's choice in `.iso-config.yaml`, with an automatic fallback for the day the chosen one stops working.
 
-Confidence note: this page is `medium` rather than `high` because both open-source tools are pre-1.0. OpenSysML released ten times in August 2026 and v0.6.0 on 2026-09-07, and Sensmetry's plan terms were read in August and September 2026 and may change. The capability table reflects those versions.
+Confidence note: this page is `medium` rather than `high` because both open-source tools are pre-1.0. OpenSysML released twenty times in August 2026 and v0.6.0 on 2026-09-07, and Sensmetry's plan terms were read in August and September 2026 and may change. The capability table reflects those versions.
 
 ## Problem
 
@@ -53,7 +44,7 @@ Every project the plugin scaffolds, at every rigour profile, and every continuou
 
 ## Forces
 
-Licence cost and terms pull one way, and capability pulls the other. Only Syside ships a formatter and a diagram renderer. The OMG pilot is the reference implementation and the strictest of the three, so a model that passes it passes the others, but it needs a Java 21 runtime and spends 8 to 12 seconds starting. OpenSysML is one static binary that validates in well under a second and ships a language server, but it is younger than the pilot, claims no conformance, and tolerates a few forms the pilot refuses. The pilot has no editor integration at all. A VSE can least afford lock-in, which is the argument [[sysml2-api-and-services]] makes for the standard API.
+Licence cost and terms pull one way, and capability pulls the other. Only Syside ships a formatter and a diagram renderer. The OMG pilot is the reference implementation and the strictest of the three on the forms listed in [[tooling-reference-implementation-rules]] (OpenSysML enforces one rule the pilot does not), but it needs a Java 21 runtime and spends 8 to 12 seconds starting. OpenSysML is one static binary that validates in well under a second and ships a language server, but it is younger than the pilot, claims no conformance, and tolerates a few forms the pilot refuses. The pilot has no editor integration at all. A VSE can least afford lock-in, which is the argument [[sysml2-api-and-services]] makes for the standard API.
 
 ## Solution
 

@@ -75,7 +75,7 @@ The batch entry point is the class `org.omg.sysml.interactive.SysMLInteractive`,
 ```bash
 PILOT="$HOME/.local/share/sysml-pilot/sysml"
 LIB="$(cd "$PILOT/sysml.library" && pwd)"
-{ printf '%%\n'; cat model/**/*.sysml; printf '\n%%\n%%exit\n'; } \
+{ printf '%%\n'; cat $(find model -name '*.sysml' | sort); printf '\n%%\n%%exit\n'; } \
   | timeout 300 java -cp "$PILOT/jupyter-sysml-kernel-0.61.0-all.jar" \
       org.omg.sysml.interactive.SysMLInteractive "$LIB"
 ```
@@ -95,11 +95,11 @@ The process exits 0 whether the model is clean, carries warnings, or is rejected
 
 ## Output streams
 
-Standard output carries the banner `SysML v2 Pilot Implementation`, one `Reading <library file>...` line for each of the 95 library files, and the diagnostics. Standard error carries three `log4j:WARN` lines about a missing appender configuration. That spelling has no colon after `WARN`, so it never collides with a `WARNING:` match.
+Standard output carries the banner `SysML v2 Pilot Implementation`, one `Reading <library file>...` line for each of the 94 model files in the library (the 95th file, `.index.json`, is not read as a model), and the diagnostics. Standard error carries three `log4j:WARN` lines about a missing appender configuration. That spelling has no colon after `WARN`, so it never collides with a `WARNING:` match.
 
 ## Multi-file models
 
-Names do not resolve across blocks. Feeding one file per block produces spurious unresolved-namespace errors for every import that points at a later file, so a model tree is submitted as one block with every file concatenated. Diagnostics then read `(1.sysml line : N column : C)` with N counted from the first model line after the opening marker. The validator library keeps an offset table (file, first line, length) built from the same concatenation and maps N back to a file and a line. One Java process per commit is the rule, never one per file.
+Forward references do not resolve across blocks. Feeding one file per block produces spurious unresolved-namespace errors for every import that points at a later file, so a model tree is submitted as one block with every file concatenated. Diagnostics then read `(1.sysml line : N column : C)` with N counted from the first model line after the opening marker. The validator library keeps an offset table (file, first line, length) built from the same concatenation and maps N back to a file and a line. One Java process per commit is the rule, never one per file.
 
 ## Cost
 
@@ -123,7 +123,7 @@ with `ISQ::*`, `SI::*`, `SIPrefixes::*` and `MeasurementReferences::*` imported.
 
 ## Advanced alternatives
 
-Two thin Java programs give a real exit contract over the same jar: DeciSym's `sysmlv2-validator` (GNU-format diagnostics, directory recursion) and the `ValidateSysML.java` and KerML bridges that OpenSysML uses for its pilot differential. Both need Maven or a compiler, which the plugin cannot assume, so the plugin keeps to the batch class and parses its output.
+Two thin Java programs give a real exit contract over the same jar: DeciSym's `sysmlv2-validator` (GNU-format diagnostics, built with Maven) and the `ValidateSysML.java` and KerML bridges that OpenSysML uses for its pilot differential. Both need Maven or a compiler, which the plugin cannot assume, so the plugin keeps to the batch class and parses its output.
 
 ## See also
 
