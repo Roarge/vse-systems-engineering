@@ -9,8 +9,8 @@
 //   - Lives in a `library package` (§2.6 rule 1).
 //   - Project's system specialises (`:>`) or is allocated to a Base
 //     Architecture part def (§2.6 rule 3, exactly one relationship).
-//   - Constraints are immutable; specialising parts may not weaken
-//     them (§2.6 rule 2).
+//   - Constraints are immutable. Every part typed by the platform or
+//     by a specialisation of it keeps them satisfied (§2.6 rule 2).
 //   - AI agents shall NOT synthesise context stories or
 //     reverse-engineer Base Architecture justifications (§2.6 rule 7).
 

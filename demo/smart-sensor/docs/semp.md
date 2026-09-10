@@ -84,8 +84,8 @@ build-versus-buy decisions are open in the current release scope.
   over the ESP32 platform, and a definition is not a verify target,
   so a case would have to introduce a usage of it outside the Base
   Architecture. The constraint is held instead by the §2.6 rule 2
-  route, which is that every specialising part shall keep it
-  satisfied, checked when the firmware image is linked against the
+  route, which is that every part typed by the platform or by a
+  specialisation of it shall keep it satisfied, checked when the firmware image is linked against the
   platform budget the parent product line fixed in 2024. That link
   step sits in construction, which is outside this project's scope,
   so the check is recorded here rather than run here. A verification

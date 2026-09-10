@@ -1635,3 +1635,44 @@ Pages updated:
 No `summary:` field changed and no wikilink was added or removed, so
 INDEX and the routing blocks need no regeneration. All eight pages
 bumped to 2026-09-10.
+
+## [2026-09-10] refactor | methodology page repairs after the reference-implementation pass
+
+Layer: methodology. Five pages repaired after the story-usage sweep
+above. Four carried a worked example that one or both reference
+implementations refuse, and the fifth attributed a refusal to both
+tools where only one gives it. Every replacement block was validated
+under the OMG pilot implementation 2026-07 and OpenSysML v0.6.0.
+
+Pages updated:
+
+- benefit-as-criterion. The trade study declared its evaluation as
+  `calc def evaluation : EvaluationFunction` alongside a separately
+  typed `objective : MaximizeObjective { best : ScalarValue; }`, which
+  neither tool accepts. The analysis definition inherits both members
+  from `TradeStudy`, so the block redefines them instead,
+  `calc :>> evaluationFunction` with `in ref :>> alternative` and
+  `return :>> result`, and the objective becomes the plain
+  `objective : MaximizeObjective;`.
+- base-architecture-corollaries. The last member of an inline
+  `@ConfigItem` body was left without its terminating semicolon, in
+  both twins.
+- methodology-library-packaging. `package SmartSensor::Stories` is not
+  a legal declaration in either tool, and a bare `import` is not the
+  conforming form where a private import is meant. The forecast
+  character of the block is kept, since it shows the user-defined
+  keyword the standalone library package will introduce. The page also
+  said that every story imports the library, where it is the stories
+  package that imports it.
+- storymeta-lifecycle. Section 1.9 rules 3 and 4 were cited the wrong
+  way round. Rule 3 is the role redefinition and rule 4 the acceptance
+  criterion.
+- role-actor-coupling. The refusal `Only one subject is allowed`,
+  which an objective that subsets a story without redefining `system`
+  draws, is now attributed to the pilot. OpenSysML does not report it.
+  Both report a non-conforming case subject, which the page already
+  said.
+
+No `summary:` field changed and no wikilink was added or removed, so
+INDEX and the routing blocks need no regeneration. All five pages
+carry 2026-09-10.

@@ -115,7 +115,7 @@ package VSE_Library {
 
     requirement def Epic :> StakeholderNeed {
         doc /* Coarsest intent. Use `derive` down to Features or
-               directly to UserStory specialisations. */
+               directly to story usages typed by UserStory. */
     }
 
     metadata def StoryMeta {

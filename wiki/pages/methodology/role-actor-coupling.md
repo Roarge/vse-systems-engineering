@@ -55,7 +55,7 @@ use case def AcknowledgeAlarms {
 
 The `objective realisesUS042 :> US_042_AckFromDashboard { subject :>> system = sys; }` clause subsets the story and binds the story's subject to the case subject, which makes the story the requirement that the use case is intended to satisfy. No non-conformant nesting, no surrogate trace link, no metadata-only workaround.
 
-The subject redefinition is not optional. A case already carries an objective subject of its own, so an objective that subsets a story without redefining `system` is refused with `Only one subject is allowed`. A case subject whose type does not conform to the story's subject type is reported as `Bound features should have conforming types`.
+The subject redefinition is not optional. A case already carries an objective subject of its own, so an objective that subsets a story without redefining `system` is refused by the pilot with `Only one subject is allowed`. A case subject whose type does not conform to the story's subject type is reported as `Bound features should have conforming types`.
 
 ## Two consequences
 

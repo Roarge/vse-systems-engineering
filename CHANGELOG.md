@@ -194,12 +194,14 @@ recorded here.
   library-tier exemption in the demo SEMP rather than as a
   verification case, because §2.5 writes a Base Architecture immutable
   constraint as a `requirement def`, which is not a verify target, and
-  §2.6 rule 2 holds it through specialisation instead. The demo README
-  gains a validation record naming the tool versions, the command and
-  the result for the pilot and for OpenSysML, and the SEMP, the pull
-  request template and `CLAUDE.md` follow the recorded `omg-pilot`
-  preference. One issue #92 item is deferred rather than resolved
-  here, the §8.3.1 sub-package split of the demo model.
+  §2.6 rule 2 holds it instead through subject typing, every part
+  typed by the platform or by a specialisation of it keeping it
+  satisfied. The demo README gains a validation record naming the tool
+  versions, the command and the result for the pilot and for
+  OpenSysML, and the SEMP, the pull request template and `CLAUDE.md`
+  follow the recorded `omg-pilot` preference. One issue #92 item is
+  deferred rather than resolved here, the §8.3.1 sub-package split of
+  the demo model.
 
 ### Fixed (pre-commit)
 
@@ -208,6 +210,18 @@ recorded here.
   form, so every touched verification case was reported as an orphan.
   It now matches usage and definition story declarations and both the
   dot and `::` verify forms.
+- The touched set ignores what is not a declaration. Comment bodies
+  are stripped before matching, so a story written inside a `doc`
+  comment or after `//` is read as documentation, and every path with
+  a `library/` directory segment is skipped, so the shipped
+  `model/library/vse-library.sysml` no longer reports `UserStory`,
+  `Feature` and `Epic` as gaps on the first commit of a full-profile
+  project.
+- The gate carries regression tests. `tests/hooks/test-pre-commit.sh`
+  gained four behavioural cases: a covered story, a story whose
+  verification case lost its verify line, a story that exists only
+  inside a comment, and the shipped library staged at the full
+  profile.
 
 ## [3.2.0] - 2026-08-14
 
