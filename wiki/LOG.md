@@ -1836,3 +1836,14 @@ def to conform to.
 back identical, because no title or summary changed. Totals stay at
 165 pages across 12 layers, routed to by 23 skills over 245 rows, and
 contents-block drift stays 0.
+
+## [2026-09-10] refactor | VSE definition
+
+Layer: hsi. The opening paragraph of hsi-vse-tiered-approach described a
+VSE as having fewer than 25 people, and it now reads up to 25 people.
+The exclusive bound was wrong on both sides, because it excluded an
+entity of exactly 25 and implied a floor, where ISO/IEC 29110-1-1:2024
+defines a Very Small Entity as an enterprise, an organisation, a
+department or a project having up to 25 people. `updated:` was bumped to
+2026-09-10 on that page. No title or summary changed, so INDEX and the
+routing blocks are untouched.
