@@ -101,8 +101,8 @@ rather than authored separately. The mapping:
 | System | Realised system (Construction phase output) | Out of scope artefact; produced downstream |
 | System Element | Subsystem realisation | Out of scope artefact |
 | System Configuration | Tagged git commit; resolved variation set | Tag + manifest; §8 repository structure |
-| Verification Report | Execution of verification cases | Generated; §10.10 template |
-| Validation Report | Execution of validation cases | Generated; §10.10 template |
+| Verification Report | Execution of verification cases | Generated; `templates/sr/verification-report.md`, copied to `docs/templates/` |
+| Validation Report | Execution of validation cases | Generated; `templates/sr/validation-report.md`, copied to `docs/templates/` |
 | Integration Report | Execution of integration tests | Out of scope (SR.4/SR.5 execution); template provided in §10.10 |
 | System Operation Guide | Project-determined; references model | Out of scope (delivery artefact); §10.10 template |
 | System User Manual | Project-determined; references model | Out of scope; §10.10 template |
@@ -169,7 +169,7 @@ produce the document.
 
 | ISO document | Derivation source | Mechanism |
 |---|---|---|
-| Stakeholders Requirements Specifications | `core/stories/stakeholder/` + `core/concerns/` | Render each `requirement def :> UserStory` with its narrative fields, framed concerns, acceptance criteria |
+| Stakeholders Requirements Specifications | `core/stories/stakeholder/` + `core/concerns/` | Render each `requirement ... : UserStory` usage with its narrative fields, framed concerns, acceptance criteria |
 | System Requirements Specifications | `core/stories/system/` | Same renderer, applied to system stories |
 | System Elements Requirements Specifications | `core/logical-architecture/components/<comp>/stories/` | Per-component render |
 | System Design Document — Functional Architecture | `core/functional-architecture/` | Render of `action def` graph + relationships |

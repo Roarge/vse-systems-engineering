@@ -79,7 +79,7 @@ model/core/
 ├── context/                        # §3 — System Context (actors + interfaces)
 ├── domain/                         # glossary, item defs, common value types
 ├── stories/
-│   ├── stakeholder/                # §4 stories (UserStory specialisations)
+│   ├── stakeholder/                # §4 stories (UserStory usages)
 │   └── system/                     # §5 stories (derive from stakeholder)
 ├── use-cases/                      # §1.4.5 elaborations of system stories
 ├── functional-architecture/        # §6 functions and their properties

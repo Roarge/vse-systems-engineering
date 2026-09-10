@@ -385,13 +385,12 @@ choice, and configuration-management scope.
 
 **Side-effects performed:**
 
-1. **Traceability Matrix** regenerated to `docs/traceability-matrix.md`.
-2. **Stakeholder/System/Subsystem Requirements Specifications**
-   rendered to `docs/generated/`.
-3. **IVV Plan** rendered to `docs/generated/ivv-plan.md`.
-4. **Justification Document** rendered (aggregating trade studies +
-   ADRs).
-5. **Progress Status Record** entry stub appended when the merge
+1. **Traceability Matrix** regenerated to
+   `docs/generated/traceability-matrix.md`.
+2. **Stakeholder and System Requirements Specifications** rendered to
+   `docs/generated/stakeholder-requirements.md` and
+   `docs/generated/system-requirements.md`.
+3. **Progress Status Record** entry stub appended when the merge
    closes a story or lands a release baseline.
 
 **Sample script (`.githooks/post-merge`):**
@@ -959,11 +958,9 @@ jobs:
       - uses: actions/checkout@v4
         with: { token: ${{ secrets.RENDER_BOT_TOKEN }} }
       - run: |
-          python3 tools/render/traceability-matrix.py     > docs/traceability-matrix.md
-          python3 tools/render/stakeholder-reqs-doc.py    > docs/generated/stakeholders-requirements.md
-          python3 tools/render/system-reqs-doc.py         > docs/generated/system-requirements.md
-          python3 tools/render/ivv-plan.py                > docs/generated/ivv-plan.md
-          python3 tools/render/justification-doc.py       > docs/generated/justification-document.md
+          python3 tools/render/traceability-matrix.py   # docs/generated/traceability-matrix.md
+          python3 tools/render/stakeholder-reqs-doc.py  # docs/generated/stakeholder-requirements.md
+          python3 tools/render/system-reqs-doc.py       # docs/generated/system-requirements.md
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: regenerate derived artefacts [skip ci]"

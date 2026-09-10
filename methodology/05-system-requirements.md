@@ -26,7 +26,7 @@ cases only where useful.
 
 **Outputs:**
 
-- System story register — `UserStory` specialisations residing in
+- System story register — story usages typed by `UserStory`, residing in
   `core/stories/system/`, each with `derive` links to one or more
   stakeholder stories.
 - Behavioural elaborations per chosen analysis path:
@@ -83,90 +83,98 @@ required content addresses what the project's system shall do
 
 For each stakeholder story in scope for the iteration, derive one or
 more system stories. The derivation is recorded using the
-`RequirementDerivation` standard library (spec §9.6) — specifically the
-`DerivedRequirementMetadata` (short name `derive`) prefix annotation
-on the derived requirement, and an explicit `Derivation` connection
-between original and derived requirements.
+`RequirementDerivation` standard library (spec §9.6), with the
+`DerivedRequirementMetadata` (short name `derive`) prefix on the derived
+story usage (its base type is a usage, so it cannot annotate a
+requirement definition) and a `#derivation connection` between the
+original and the derived story, ends tagged `#original` and `#derive`.
 
 ```sysml
 package <SYS> Aiwell_SystemStories {
-    private import MBSEMethodology::*;
+    private import VSE_Library::*;
     private import Aiwell_StakeholderStories::*;
     private import Aiwell_Stakeholders::*;
     private import Aiwell_OnlineSentralContext::*;
     private import Aiwell_Concerns::*;
+    private import ScalarValues::*;
     private import RequirementDerivation::*;
 
     #derive
-    requirement def SYS_142_BatchAcknowledgement :> UserStory {
-        @StoryMeta { points = 5; priority = high; status = inProgress; }
+    requirement SYS_142_BatchAcknowledgement : UserStory {
+        @StoryMeta { points = 5; priority = Priority::high; status = StoryStatus::inProgress; }
 
-        subject sys : Aiwell_OnlineSentral;
-        stakeholder role : Operator;
+        subject :>> system : Aiwell_OnlineSentral;
+        stakeholder :>> role : Operator;
 
-        capability = "process batch acknowledgement requests against
-                      a filtered alarm set, transitioning all matching
-                      alarms to acknowledged within a bounded time";
-        benefit    = "operator queue clears within service-level time";
+        attribute :>> capability = "process batch acknowledgement requests against a filtered alarm set, transitioning all matching alarms to acknowledged within a bounded time";
+        attribute :>> benefit    = "operator queue clears within service-level time";
 
         frame concern : FastIncidentResponse;
 
-        attribute maxBatchAckLatency : DurationValue;
-        require constraint sla {
-            maxBatchAckLatency <= 1 [s]
+        attribute maxBatchAckLatency : Rational = 1.0;
+
+        // The connective mechanism (§0.3): a nested requirement usage
+        // carrying the constraint, so a verification case can target it.
+        requirement sla {
+            doc /* Batch acknowledgement completes within maxBatchAckLatency seconds. */
+            require constraint { maxBatchAckLatency <= 1.0 }
         }
 
-        requirement acceptance[1] {
+        requirement :>> acceptance {
             doc /* p99 latency for batch acknowledgement
-                   shall be ≤ 1 s for batch sizes up to N=200. */
+                   shall be at most 1 s for batch sizes up to N=200. */
         }
     }
 
-    // Explicit derivation connection (spec §9.6.2).
-    // The standard library's Derivation connection has two ends —
-    // originalRequirements and derivedRequirements — which are
-    // bound by reference subsetting at the connection site.
-    connection sys142Derives : RequirementDerivation::derivations {
-        end ::> US_042_AckFromDashboard;          // original
-        end ::> SYS_142_BatchAcknowledgement;     // derived
+    // Explicit derivation (spec §9.6.2). `#derivation` tags the connection
+    // with DerivationMetadata; the ends are tagged `#original` and `#derive`.
+    #derivation connection sys142Derives {
+        end #original ::> US_042_AckFromDashboard;
+        end #derive   ::> SYS_142_BatchAcknowledgement;
     }
 }
 ```
 
-The `#derive` annotation tags the derived requirement; the
-`Derivation` connection records which original it derives from. Where
-the project's tooling indexes the metadata, the trace is queryable
-without the explicit connection — but the connection is the canonical
-SysML v2 form and shall be preferred where ambiguity is possible.
+The `#derive` prefix tags the derived story. The `#derivation connection`
+records which original it derives from and shall be present, because the
+prefix alone is not a trace.
+
+Quantity-typed attributes (`ISQ::DurationValue` with `[s]`) need
+`private import ISQ::*;` and `private import SI::*;`. The standard library
+declares no `ms` or `us` unit, so a package that needs them declares them
+(see the candidate-variants template).
 
 ### 5.4.2 Generate system requirements
 
 Within each system story, formalise benefit and capability detail as
-`require constraint` clauses over value properties. The story's
-attributes declare the value properties; the constraints declare the
-relationships those properties must satisfy. This is what makes the
-story usable as a §6 trade-study criterion (§0.3).
+nested requirement usages, each carrying a `require constraint` over
+value properties, so that a verification case can `verify <story>.<name>`
+and a trade study can reference `<story>.<name>`. The story's attributes
+declare the value properties. The constraints declare the relationships
+those properties must satisfy. This is what makes the story usable as a
+§6 trade-study criterion (§0.3).
 
 ```sysml
-requirement def SYS_143_AlarmFiltering :> UserStory {
-    subject sys : Aiwell_OnlineSentral;
-    stakeholder role : Operator;
+requirement SYS_143_AlarmFiltering : UserStory {
+    subject :>> system : Aiwell_OnlineSentral;
+    stakeholder :>> role : Operator;
 
-    capability = "filter active alarm set by severity, source,
-                  acknowledgement state, and free-text match";
-    benefit    = "operator finds the alarm of interest within
-                  bounded interaction count";
+    attribute :>> capability = "filter active alarm set by severity, source, acknowledgement state, and free-text match";
+    attribute :>> benefit    = "operator finds the alarm of interest within bounded interaction count";
 
     frame concern : FastIncidentResponse;
 
-    attribute maxClicksToTarget : Integer;
-    require constraint findability {
-        maxClicksToTarget <= 3
+    attribute maxClicksToTarget : Integer = 3;
+
+    requirement findability {
+        doc /* The operator shall reach any alarm within
+               maxClicksToTarget interactions. */
+        require constraint { maxClicksToTarget <= 3 }
     }
 
-    requirement acceptance[1] {
+    requirement :>> acceptance {
         doc /* For any operator-described alarm in a 5000-alarm set,
-               operator shall reach it in ≤ 3 UI interactions. */
+               operator shall reach it in at most 3 UI interactions. */
     }
 }
 ```
@@ -223,7 +231,9 @@ use case def AcknowledgeAlarmsBatch {
     subject sys : Aiwell_OnlineSentral;
     actor performer : Operator;
 
-    objective realisesSYS142 : SYS_142_BatchAcknowledgement;
+    objective realisesSYS142 :> SYS_142_BatchAcknowledgement {
+        subject :>> system = sys;
+    }
 
     perform AcknowledgeAlarmsAction;
 }
@@ -361,17 +371,16 @@ concern def OperatorSafety {
     }
 }
 
-requirement def SYS_198_MaintenanceLockout :> UserStory {
-    subject sys : Aiwell_OnlineSentral;
-    stakeholder role : SafetyOfficer;
+requirement SYS_198_MaintenanceLockout : UserStory {
+    subject :>> system : Aiwell_OnlineSentral;
+    stakeholder :>> role : SafetyOfficer;
 
-    capability = "lock out actuators while maintenance mode active,
-                  releasing only on positive acknowledgement";
-    benefit    = "no inadvertent actuation during maintenance";
+    attribute :>> capability = "lock out actuators while maintenance mode active, releasing only on positive acknowledgement";
+    attribute :>> benefit    = "no inadvertent actuation during maintenance";
 
     frame concern : OperatorSafety;
 
-    requirement acceptance[1] { /* … */ }
+    requirement :>> acceptance { doc /* … */ }
 }
 ```
 
@@ -385,17 +394,21 @@ and `frame concern`.
 
 For each acceptance criterion in scope, declare a `verification def`
 (spec §7.23) whose `objective` includes a `verify` clause naming the
-acceptance subrequirement. Verification cases at this level exercise
-*system internals* — distinct from §4 validation cases that exercise
-stakeholder intent.
+member of the story usage by dot notation. Verification cases at this
+level exercise *system internals*, distinct from §4 validation cases that
+exercise stakeholder intent.
+
+The `::` namespace form (`verify SYS_142_BatchAcknowledgement::sla`)
+addresses a definition member, and both reference implementations refuse it
+(`Must be an accessible feature (use dot notation for nesting)`).
 
 ```sysml
 verification def VC_BatchAckLatency {
     subject sys : Aiwell_OnlineSentral;
 
     objective {
-        verify SYS_142_BatchAcknowledgement::sla;
-        verify SYS_142_BatchAcknowledgement::acceptance;
+        verify SYS_142_BatchAcknowledgement.sla;
+        verify SYS_142_BatchAcknowledgement.acceptance;
     }
 
     action setup {
@@ -433,14 +446,14 @@ The packages live inside the component folder per §8.3.2.
 
 | Pattern | Form | Spec ref |
 |---|---|---|
-| System story | `requirement def SYS_NNN :> UserStory { … }` | §1, §7.20 |
-| Derive (annotation) | `#derive` prefix on derived requirement | §9.6.3 |
-| Derive (connection) | `connection <name> : RequirementDerivation::derivations { end ::> Original; end ::> Derived; }` | §9.6.2 |
-| Story constraint | `require constraint <name> { <expr> }` | §7.20.2 |
+| System story | `requirement SYS_NNN_Short : UserStory { … }` | §1, §7.20 |
+| Derive (annotation) | `#derive` prefix on the derived story usage | §9.6.3 |
+| Derive (connection) | `#derivation connection <name> { end #original ::> Original; end #derive ::> Derived; }` | §9.6.2 |
+| Story constraint | `requirement <name> { require constraint { <expr> } }` | §7.20.2 |
 | Action def | `action def Name { in … ; out … ; action sub : … ; }` | §7.16 |
 | State def | `state def Name { state … ; transition … then … accept … ; }` | §7.17 |
 | Item def | `item def Name { attribute … ; }` | §7.12 |
-| Verification case | `verification def Name { subject … ; objective { verify … ; } action … ; }` | §7.23 |
+| Verification case | `verification def Name { subject … ; objective { verify <story>.<member>; } action … ; }` | §7.23 |
 
 ## 5.7 Out of scope
 

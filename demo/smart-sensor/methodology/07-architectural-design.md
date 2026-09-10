@@ -124,25 +124,29 @@ that derive from the system constraint:
 ```sysml
 // Subsystem story decomposes the system constraint
 package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
-    private import MBSEMethodology::UserStory;
+    private import VSE_Library::*;
+    private import ScalarValues::*;
     private import Aiwell_LogicalArchitecture::*;
 
-    requirement def ALM_001_BatchCommit :> UserStory {
-        subject sub : AlarmManagementSubsystem;
-        stakeholder role : OperatorUISubsystem;
+    requirement ALM_001_BatchCommit : UserStory {
+        subject :>> system : AlarmManagementSubsystem;
+        stakeholder :>> role : OperatorUISubsystem;
 
-        capability = "commit a batch of alarm acknowledgements
-                      atomically and notify the persistence layer";
-        benefit    = "the operator UI can report success within
-                      its latency budget";
+        attribute :>> capability = "commit a batch of alarm acknowledgements atomically and notify the persistence layer";
+        attribute :>> benefit    = "the operator UI can report success within its latency budget";
 
-        attribute commitLatency : DurationValue;
-        require constraint commitBudget {
-            commitLatency <= 200 [ms]
+        attribute commitLatency : Rational = 200.0;
+
+        requirement commitBudget {
+            doc /* The batch commit completes within commitLatency milliseconds. */
+            require constraint { commitLatency <= 200.0 }
         }
     }
 }
 ```
+
+At subsystem level the subject member keeps its name `system` and is
+redefined with the subsystem part def.
 
 The `OperatorUISubsystem` is the *role* in the subsystem story
 because, at the subsystem boundary, it is the entity calling the
@@ -243,18 +247,16 @@ package <ALM_CON> AlarmManagementSubsystem_Concerns {
 }
 
 package <ALM_STR> AlarmManagementSubsystem_Stories {
-    requirement def ALM_002_DurableAcknowledgement :> UserStory {
-        subject sub : AlarmManagementSubsystem;
-        stakeholder role : OperatorUISubsystem;
+    requirement ALM_002_DurableAcknowledgement : UserStory {
+        subject :>> system : AlarmManagementSubsystem;
+        stakeholder :>> role : OperatorUISubsystem;
 
-        capability = "ensure acknowledged state survives subsystem
-                      restart without loss or duplication";
-        benefit    = "the operator does not see re-emerging
-                      already-cleared alarms after restart";
+        attribute :>> capability = "ensure acknowledged state survives subsystem restart without loss or duplication";
+        attribute :>> benefit    = "the operator does not see re-emerging already-cleared alarms after restart";
 
         frame concern : AlarmDataIntegrity;
 
-        requirement acceptance[1] {
+        requirement :>> acceptance {
             doc /* After kill -9 mid-commit, on restart, no alarm
                    shall be in an indeterminate state. */
         }
@@ -330,7 +332,7 @@ Manual review remains valuable. The questions reviewers ask:
 | Allocation | `allocation <name> allocate <source> to <target>;` | §7.15 |
 | Inter-subsystem interface | `interface def Name { end … ; flow … ; }` | §7.14 |
 | Connection wiring | `interface <name> : InterfaceDef connect <part>.<port> to <part>.<port>;` | §7.13 |
-| Subsystem story | `requirement def NNN :> UserStory { subject sub : Subsystem; … }` | §1, §7.20 |
+| Subsystem story | `requirement NNN : UserStory { subject :>> system : Subsystem; … }` | §1, §7.20 |
 | Control law | `constraint def Name { attribute … ; <expr> }` allocated via `allocation` | §7.19 |
 
 ## 7.5 Well-formedness rules
