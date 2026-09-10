@@ -68,6 +68,7 @@ Track which story is currently open and which stage it is in. Use `StoryMeta.sta
 | Document export to docx, pptx, pdf | `document-export` |
 | Cross-session continuity | `session-journal` |
 | Hook and guard configuration | `attention-regime` |
+| SysML toolchain choice, installation, licence problems, validator fallback | `sysml-toolchain` |
 | Project health audit, version drift | `project-audit` |
 
 When in doubt, ask which story is open and what the engineer is trying to advance. Route on the answer rather than on a fixed phase.

@@ -41,6 +41,7 @@ umbrella active if the engineer moves between topics in one session.
 | Allocations across architecture layers | `@sysml2-allocations` | Function-to-platform or behaviour-to-structure maps |
 | Variations and variants | `@sysml2-variants` | Product lines, alternatives, configuration bindings |
 | Metadata, reflection, user-defined keywords, RiskInfo, ConfigItem, Baseline | `@sysml2-metadata` | Tagging, filters, domain keywords, risk library, CM library |
+| Toolchain choice, installation, switching, licence problems, the validator wrapper, `syside.toml`, `.lsp.json` | `@sysml-toolchain` | Choosing or installing Syside, the OMG pilot, or OpenSysML, a licence failure, or running validation by hand |
 
 The umbrella still owns project layout, tooling, CI validation, and the
 high-level quick reference. Siblings own topic authoring.
@@ -141,6 +142,12 @@ When the user asks to find something in the model:
 - **Find a specific element**: `Grep for the element name in models/**/*.sysml`
 
 ## Tooling Integration
+
+Toolchain selection, installation and switching (Syside, the OMG
+pilot, OpenSysML) is owned by `@sysml-toolchain`. The hooks read
+`sysml_toolchain` from `.iso-config.yaml` and fall back along syside,
+omg-pilot, opensysml when the preferred tool is unavailable. The rest
+of this section describes the Syside surface.
 
 ### Sensmetry Syside product lineup
 

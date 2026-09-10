@@ -20,16 +20,20 @@ The directory holds two distinct kinds of script:
   invoked by CI workflows from `templates/github/`.
 
 Conventions for every script: `#!/usr/bin/env bash`,
-`set -euo pipefail`, executable bit set. CI checks all three.
+`set -euo pipefail`, executable bit set. CI checks all three. Hook code
+stays bash 3.2 and POSIX-awk compatible (no `mapfile`, no associative
+arrays, no `match(s, r, arr)`).
 
 **Rigour profiles.** Gate-carrying hooks are profile-aware. They read
 the project's `.iso-config.yaml` (`project_profile`: light, standard,
 or full, plus per-gate `gate_overrides`) through
-`hooks/lib/iso-profile.sh`, and gate dispositions scale block, warn,
-info, or off per methodology §0.10. Profile defaults reserve block for
-the full profile, and a `gate_overrides` entry may raise any single
-gate to block at any profile. Do not hard-code a disposition in a hook
-body.
+`hooks/lib/iso-profile.sh`, and the SysML validator through
+`hooks/lib/sysml-toolchain.sh` (preference, availability, fallback). Do
+not call `syside`, `java` or `sysml` directly from a hook body. Gate
+dispositions scale block, warn, info, or off per methodology §0.10.
+Profile defaults reserve block for the full profile, and a
+`gate_overrides` entry may raise any single gate to block at any
+profile. Do not hard-code a disposition in a hook body.
 
 **Testing.** Source the script directly with the same environment
 variables and stdin the harness would provide, and record expected exit

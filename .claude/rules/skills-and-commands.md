@@ -11,8 +11,8 @@ paths:
 assets beside it. Frontmatter requires `name` and `description`, and
 the description is the activation hint, so it must be precise,
 trigger-rich, and short ("use when..." language). Prefer extending an
-existing skill over adding a new one: the plugin ships 28 skills as of
-3.0.0 and discoverability degrades as the count grows. Splitting is
+existing skill over adding a new one: the plugin ships 29 skills as of
+4.0.0 and discoverability degrades as the count grows. Splitting is
 justified past roughly 500 lines or two clearly distinct triggers.
 Reference material lives in the wiki, reached through the generated
 routing marker block in the skill body. Never hand-edit inside the

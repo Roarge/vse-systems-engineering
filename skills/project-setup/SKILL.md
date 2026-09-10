@@ -53,6 +53,7 @@ Ask the user only for the values that cannot be inferred. Confirm inferred value
 - **Project name.** Default to the basename of `PROJECT_ROOT` for brownfield, or the chosen target directory name for greenfield. Ask if uncertain.
 - **Project short code.** A 3 to 5 letter prefix used for SysML package names per `methodology/08-project-structure.md` §8.3.4 (for example `Aiwell`, `FFDS`, `SnowMelt`). Ask the user. The skill never invents this.
 - **Rigour profile.** Ask once, here. See the profile question below. The answer is `PROFILE` from this point on and it scales the scaffold, the configuration, and the tailoring record.
+- **SysML toolchain.** Ask once, here, immediately after the profile. See the toolchain question below. The answer is `TOOLCHAIN` from this point on and decides the editor wiring Step 4 copies and the validator the hooks and CI run.
 - **Acquirer name.** Optional at setup. Used in the SOW reference inside `docs/project-plan.md`. May be left blank and filled in later.
 - **Author name.** Default to `git config user.name`. Ask if missing.
 - **Engineering root prefix.** This is the mode-specific scaffold target.
@@ -84,11 +85,25 @@ Two answers of no suggest `light`. Either answer of yes suggests `standard`. A p
 
 **Say that it is reversible.** Raising the profile late is expected practice, and §0.10.2 describes how the change is recorded. A prototype that acquires its first external stakeholder moves from `light` to `standard` at that moment.
 
+### The toolchain question
+
+Before asking, run `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh status` and show its one line, so the engineer knows what this machine already has. The probe writes only under a temporary directory it removes. Offer the three toolchains with these one-line glosses, verbatim:
+
+- **`syside`.** Sensmetry Syside CLI. Commercial licence (Solo or Business), formatter and language server included, licence-server validation. Solo excludes CI and air-gapped use.
+- **`omg-pilot`.** OMG SysML v2 Pilot Implementation, the reference implementation (EPL-2.0). Needs Java 21 or later. Strictest conformance. No formatter, no language server. About 10 to 15 seconds per validation run.
+- **`opensysml`.** Open-MBEE OpenSysML (Apache-2.0, one static binary). Sub-second validation, language server included, no formatter. Younger than the pilot and slightly more permissive.
+
+**No default is forced.** If the engineer declines to choose, do not write the key. Say that an absent key means `syside` for the hooks and CI, that the hooks fall back automatically to whichever tool is installed, and that `/vse-toolchain` records the choice later.
+
+**Brownfield with an existing `.iso-config.yaml`.** If the `sysml_toolchain` key is present, read it and do not ask. A toolchain already recorded is the project's decision.
+
+**Installation is not setup's job.** If the chosen tool is not detected, say so and name `/vse-toolchain` as the post-scaffold route (Step 10). The scaffold still records the choice.
+
 ## Step 2: Enter Plan Mode
 
 Enter Plan Mode. Draft a concrete plan that lists, in this order:
 
-0. The chosen profile, and the one-line statement of what it changes about the scaffold below (which `docs/` artefacts are written, which `baselined_paths` and `storymeta.required_fields` defaults are recorded).
+0. The chosen profile and the chosen toolchain, and the one-line statement of what they change about the scaffold below (which `docs/` artefacts are written, which `baselined_paths` and `storymeta.required_fields` defaults are recorded).
 1. Every directory that the skill will create, grouped by purpose.
 2. Every file that the skill will copy from `${CLAUDE_PLUGIN_ROOT}/methodology/` or `${CLAUDE_PLUGIN_ROOT}/templates/`, with destination paths.
 3. Every file that the skill will generate from a template (project plan, SEMP stub, risk register stub, CM strategy stub, correction register, progress status record, `CLAUDE.md`, `.iso-config.yaml`).
@@ -116,18 +131,22 @@ Create or extend the following at `<PROJECT_ROOT>`:
 - `CHANGELOG.md`. Greenfield writes a fresh empty Keep-a-Changelog skeleton. Brownfield leaves any existing file alone.
 - `.github/pull_request_template.md`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`. Embeds the §8.6 review checklists.
 - `.github/CODEOWNERS`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/CODEOWNERS` (created in Phase 7) as a placeholder. The user customises it later.
-- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the five edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO/IEC 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
+- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the six edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO/IEC 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
   1. Substitute the `{{PLUGIN_VERSION}}` placeholder with the installed plugin version read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, so `@project-audit` can detect version drift later.
   2. Set `project_profile` to the tier chosen in Step 1.
   3. Set `baselined_paths` to that tier's default from the §0.10.3 obligation table. The template ships the `standard` list and carries the other two as comments. `light` is the empty list `[]`, which keeps the Change Request machinery dormant. `full` is the five-entry list. `methodology/` is deliberately absent at every tier.
   4. Set `storymeta.required_fields` to that tier's default: `[status]` at `light`, `[status, priority]` at `standard`, `[points, priority, status]` at `full`.
-  5. Leave the `renderers:` block active with the three keys the template ships, matching the three scripts copied to `<ENG_ROOT>/tools/render/` in the bullet below. The three commented keys stay commented, because those scripts do not ship yet. The block stays active in both layouts. The post-merge hook resolves renderer paths from the directory that holds this file, that is `<ENG_ROOT>`, and rejects any path that does not start with `tools/render/`, so the shipped paths reach the scripts whether `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`.
+  5. Leave the `renderers:` block active with the three keys the template ships, matching the three scripts copied to `<ENG_ROOT>/tools/render/` in the bullet below. The three commented keys stay commented, because those scripts do not ship yet. The block stays active in both layouts. The post-merge hook resolves renderer paths from the directory that holds this file, that is `<ENG_ROOT>`, and rejects any path that does not start with `tools/render/`, so the shipped paths reach the scripts whether `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`. When the engineer chose a custom scaffold sub-path, the config stays at `<PROJECT_ROOT>` while the scripts land under `<custom>/tools/render/`, so comment the `renderers:` block out and note the deviation in the tailoring record, because the hook resolves the paths from the directory holding the config and finds no scripts there.
+  6. Set `sysml_toolchain` to `TOOLCHAIN`. When no choice was made, comment the shipped `sysml_toolchain: syside` line out (`# sysml_toolchain: syside`) so the absent-key default applies visibly.
 
   Leave the commented `gate_overrides` block commented. A project raises or lowers a single gate later by uncommenting one key, and an override written at setup that nobody asked for is a surprise the engineer meets at their first blocked commit.
 - `tools/render/`. Copy all four files from `${CLAUDE_PLUGIN_ROOT}/templates/tools/render/` to `<ENG_ROOT>/tools/render/` and set the executable bit on each. The three renderer scripts (`traceability-matrix.py`, `stakeholder-reqs-doc.py`, `system-reqs-doc.py`) are the entries named in the `renderers:` block, and `sysml_model.py` is the shared model reader they import. They are invoked with no arguments from the directory that holds `model/`, they discover the model per the `model/` then `engineering/model/` convention, and they write to `docs/generated/`. They need Python 3 and nothing else. This populates the §9.8 renderer half of `tools/`, which Step 7 otherwise leaves for the project to fill.
 - `.githooks/`. Create the directory empty for now. Population is deferred to `@attention-regime`. Add a placeholder `README.md` that points to `methodology/iso-29110-hooks-guide.md` §3.
-- `syside.toml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` to `<PROJECT_ROOT>`. Configures the Syside tooling (three-level discovery starts at the project root).
-- `.lsp.json`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json` to `<PROJECT_ROOT>/.lsp.json`, verbatim (no placeholder substitution). Tells the Claude Code IDE to launch `syside lsp` for `.sysml` and `.kerml` files. Without it, model files fall back to plain text.
+- `syside.toml`. Only when `TOOLCHAIN` is `syside` or no choice was made. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` to `<PROJECT_ROOT>`. Configures the Syside tooling (three-level discovery starts at the project root). The pilot and OpenSysML read no project file.
+- `.lsp.json` at `<PROJECT_ROOT>/.lsp.json`, verbatim, chosen by `TOOLCHAIN`:
+  - `syside` (or no choice): copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp.json`. Claude Code launches `syside lsp` for `.sysml` and `.kerml` files.
+  - `opensysml`: copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp-opensysml.json`. Claude Code launches `sysml-lsp -stdio -strict`.
+  - `omg-pilot`: the pilot ships no language server. If `command -v sysml-lsp` succeeds, copy `lsp-opensysml.json` and say that the editor server is OpenSysML's while the commit gate is the pilot. Otherwise write no `.lsp.json`, and say that model files show as plain text until OpenSysML is installed (`/vse-toolchain`).
 
 Append to `.gitignore` (create if absent):
 
@@ -322,13 +341,21 @@ Create the following at `<ENG_ROOT>`:
 
   Sources for the generated files:
 
-  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the one-line tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` Where the project deviates from the tier defaults, name the deviation on that same line.
-  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`.
+  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}` and `{{SYSML_TOOLCHAIN}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` followed by the Toolchain line. Where the project deviates from the tier defaults, name the deviation on the Profile line.
+  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`. Substitute `{{SYSML_TOOLCHAIN_NAME}}` and `{{SYSML_TOOLCHAIN_VERSION}}` in the modelling-tool bullet and the development-tools table.
   - `docs/risk-register.md` from the risk-register template per §10.7.
   - `docs/cm-strategy.md` from the cm-strategy template per §10.8.
   - `docs/correction-register.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/correction-register.md`.
   - `docs/progress-status-record.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/progress-status.md`.
   - `docs/disposal-management-approach.md`, the §10.9 stub.
+
+  The toolchain placeholders in those two templates come from the `sysml_toolchain` key in `.iso-config.yaml`. `{{SYSML_TOOLCHAIN}}` is the recorded key value, or `syside (implicit, key not recorded)` when the project made no choice. The other two follow from it:
+
+  | `sysml_toolchain` | `{{SYSML_TOOLCHAIN_NAME}}` | `{{SYSML_TOOLCHAIN_VERSION}}` |
+  |---|---|---|
+  | `syside` | Sensmetry Syside | 0.10.3 (the project pins its own) |
+  | `omg-pilot` | OMG SysML v2 Pilot Implementation | release 2026-07 (kernel 0.61.0) |
+  | `opensysml` | Open-MBEE OpenSysML | v0.6.0 |
 
   The four directories written at every tier are empty and carry a `.gitkeep`. `docs/generated/` holds renderer outputs and is tracked, per the Contract 3 committed-copy design stated in Step 4.
 
@@ -338,7 +365,7 @@ Create the following at `<ENG_ROOT>`:
 
 `CLAUDE.md` lives at `<ENG_ROOT>` so the harness picks it up when the user works inside the engineering subdirectory. The content is generated from `${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md` and frames the VSE companion guidance for the project.
 
-Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), and `{{PROFILE}}` (the tier chosen in Step 1). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`.
+Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), `{{PROFILE}}` (the tier chosen in Step 1), and `{{SYSML_TOOLCHAIN}}` (the recorded toolchain in the Step 7 form). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`, and the Toolchain line does the same for the SysML v2 validator.
 
 The template is delimited by the marker pair it ships with, which is the pair the merge logic below matches on:
 
@@ -374,6 +401,7 @@ After successful scaffolding, surface the following routes and let the user pick
 - `@project-plan` if the engineer wants to author the Project Plan immediately, populating `docs/project-plan.md` per §10.3.
 - `@attention-regime` to populate `.githooks/` with the project-side scripts described in `methodology/iso-29110-hooks-guide.md` §4 and to wire the harness-side reminders. The hook set it installs follows the recorded profile per §3.4 of that guide, so mention the tier when routing.
 - `@needs-and-requirements` to begin §4 stakeholder elicitation directly, producing the first `concern def` set and stakeholder `part def`s.
+- `/vse-toolchain` (`@sysml-toolchain`) when the chosen toolchain was not detected in Step 1, to install it user-level and verify it.
 
 The skill suggests routes. The engineer chooses.
 
@@ -381,7 +409,7 @@ The skill suggests routes. The engineer chooses.
 
 Report a concise summary listing every directory created, every file copied from the plugin, every file generated from a template, and the commit (if any) that was made. Format the report so the engineer can scan it before deciding the next route.
 
-Open the report with the recorded profile and the artefacts the tier omitted from `docs/`, naming for each the skill that writes it on request. The engineer should never discover a missing artefact by looking for it.
+Open the report with the recorded profile and the artefacts the tier omitted from `docs/`, naming for each the skill that writes it on request. The engineer should never discover a missing artefact by looking for it. Name the recorded toolchain beside the profile, say whether Step 1 detected it on this machine, and name the editor wiring that followed from it.
 
 For brownfield projects, the report also names the outcome of the as-is survey (Step 6.5): whether it ran, the count of mandated rows, the count of contingent rows, and the count of skipped rows. If the survey was declined, the report names the resumption marker in `docs/as-is-classification.md` and points at `@architecture-design` as the re-entry skill.
 

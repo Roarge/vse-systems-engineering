@@ -2,8 +2,9 @@
 # Project-side git pre-commit hook for the vse-systems-engineering plugin.
 #
 # Per methodology/iso-29110-hooks-guide.md §4.1. Three concerns:
-#   1. precommit_lint: SysML lint on staged .sysml files (delegated to
-#      syside if available).
+#   1. precommit_lint: SysML lint on staged .sysml files through
+#      lib/sysml-toolchain.sh (preferred toolchain, automatic fallback,
+#      never silent).
 #   2. precommit_story_wellformed: story well-formedness (§1.9), full
 #      lint in tools/lint/.
 #   3. precommit_traceability: traceability integrity, delegated to
@@ -48,31 +49,92 @@ else
     iso_gate_disposition() { printf 'warn\n'; }
 fi
 
+# Load the shared toolchain helpers with the same resolution: the
+# project-side copy wins, the plugin copy is the fallback.
+VSE_TC_TAG="pre-commit"
+export VSE_TC_TAG
+SYSML_TOOLCHAIN_LIB=""
+if [ -r "${HOOK_DIR}/lib/sysml-toolchain.sh" ]; then
+    SYSML_TOOLCHAIN_LIB="${HOOK_DIR}/lib/sysml-toolchain.sh"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" ]; then
+    SYSML_TOOLCHAIN_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh"
+fi
+if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$SYSML_TOOLCHAIN_LIB"
+fi
+
 WARNINGS=0
 
-# 1. SysML lint via syside if available.
-# Use NUL-delimited output to handle filenames with spaces.
+# 1. SysML lint on staged .sysml files. The library runs the recorded
+# sysml_toolchain and falls back along the fixed order, printing one
+# notice per fallback on stderr. Exit 0 clean, 1 findings, 2 no
+# toolchain. An unavailable toolchain is reported at every disposition
+# except off, so a full-profile project never gets a green summary
+# with no validation performed.
 LINT_DISPOSITION="$(iso_gate_disposition precommit_lint)"
-if [ "$LINT_DISPOSITION" != "off" ] && command -v syside >/dev/null 2>&1; then
-    LINT_OUTPUT=""
-    if ! LINT_OUTPUT=$(git diff --cached --name-only --diff-filter=ACM -z \
-            | tr '\0' '\n' \
-            | grep -E '\.sysml$' \
-            | xargs -d '\n' -r syside check --warnings-as-errors 2>&1); then
-        case "$LINT_DISPOSITION" in
-            block)
-                printf '%s\n' "$LINT_OUTPUT" >&2
-                echo "[pre-commit] SysML lint failed. Fix the syntax errors before committing." >&2
-                echo "[pre-commit] To proceed anyway, record a one-line rationale per methodology §0.10.6." >&2
-                exit 1
+if [ "$LINT_DISPOSITION" != "off" ]; then
+    # NUL-delimited to survive spaces in filenames. grep exits 1 on an
+    # empty match, which is not a failure here.
+    STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM -z \
+                    | tr '\0' '\n' \
+                    | grep -E '\.sysml$' || true)
+    if [ -n "$STAGED_SYSML" ]; then
+        STAGED_SYSML_FILES=()
+        while IFS= read -r staged_sysml; do
+            [ -n "$staged_sysml" ] && STAGED_SYSML_FILES+=("$staged_sysml")
+        done <<< "$STAGED_SYSML"
+        LINT_STATUS=0
+        LINT_OUTPUT=""
+        if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
+            # stdout carries the diagnostics. stderr (fallback notices and
+            # unavailability reasons) reaches the terminal directly.
+            LINT_CAPTURE="$(mktemp "${TMPDIR:-/tmp}/vse-lint.XXXXXX")"
+            vse_tc_run_staged "${STAGED_SYSML_FILES[@]}" > "$LINT_CAPTURE" || LINT_STATUS=$?
+            LINT_OUTPUT="$(cat "$LINT_CAPTURE")"
+            rm -f "$LINT_CAPTURE"
+        else
+            LINT_STATUS=2
+            echo "[pre-commit] .githooks/lib/sysml-toolchain.sh is missing (partial install). Re-run @attention-regime." >&2
+        fi
+        case "$LINT_STATUS" in
+            0)
+                : # Clean.
                 ;;
-            warn)
-                printf '%s\n' "$LINT_OUTPUT" >&2
-                echo "[pre-commit] warning: SysML lint reported findings on the staged model files." >&2
-                WARNINGS=$((WARNINGS + 1))
+            1)
+                case "$LINT_DISPOSITION" in
+                    block)
+                        printf '%s\n' "$LINT_OUTPUT" >&2
+                        echo "[pre-commit] SysML lint failed. Fix the findings before committing." >&2
+                        echo "[pre-commit] To proceed anyway, record a one-line rationale per methodology §0.10.6." >&2
+                        exit 1
+                        ;;
+                    warn)
+                        printf '%s\n' "$LINT_OUTPUT" >&2
+                        echo "[pre-commit] warning: SysML lint reported findings on the staged model files." >&2
+                        WARNINGS=$((WARNINGS + 1))
+                        ;;
+                    info)
+                        echo "[pre-commit] SysML lint reported findings on the staged model files." >&2
+                        ;;
+                esac
                 ;;
-            info)
-                echo "[pre-commit] SysML lint reported findings on the staged model files." >&2
+            *)
+                # 2, or anything unexpected: no toolchain ran.
+                case "$LINT_DISPOSITION" in
+                    block)
+                        echo "[pre-commit] No SysML toolchain is available and precommit_lint is block at this profile." >&2
+                        echo "[pre-commit] Run /vse-toolchain to install or select one, or set gate_overrides.precommit_lint to warn (methodology §0.10.4)." >&2
+                        exit 1
+                        ;;
+                    warn)
+                        echo "[pre-commit] warning: no SysML toolchain available, the staged model files were not validated. Run /vse-toolchain." >&2
+                        WARNINGS=$((WARNINGS + 1))
+                        ;;
+                    info)
+                        echo "[pre-commit] No SysML toolchain available, staged model files not validated." >&2
+                        ;;
+                esac
                 ;;
         esac
     fi

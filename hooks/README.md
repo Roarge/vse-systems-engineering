@@ -61,6 +61,7 @@ project under `<project>/.githooks/` and activated with
 | `post-merge.sh`              | `<project>/.githooks/post-merge`         | Regenerate model-derived artefacts when main advances per §4.5. Reports drift. Does not auto-commit.                                                |
 | `post-checkout.sh`           | `<project>/.githooks/post-checkout`      | Print methodology / branch status when switching branches per §4.6.                                                                                  |
 | `lib/iso-profile.sh`         | `<project>/.githooks/lib/iso-profile.sh` | Shared library. Resolves the rigour profile and the per-gate dispositions from `.iso-config.yaml` per methodology §0.10.4. Sourced, never invoked.  |
+| `lib/sysml-toolchain.sh`     | `<project>/.githooks/lib/sysml-toolchain.sh` | Shared library. Resolves the `sysml_toolchain` preference, probes availability (including the Syside licence), validates with the preferred tool and falls back along syside, omg-pilot, opensysml. Sourced by pre-commit and session-start, executed by CI, the Makefile check, the audit and the sysml-toolchain skill. |
 
 No local `pre-push` hook ships. The four pre-push obligations of hooks
 guide §4.4 (story state on main, V&V coverage on done stories,
@@ -86,6 +87,7 @@ not listed in `hooks.json`.
 mkdir -p .githooks/lib
 # Installed at every profile.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"     .githooks/lib/iso-profile.sh
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" .githooks/lib/sysml-toolchain.sh
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/prepare-commit-msg.sh"  .githooks/prepare-commit-msg
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-checkout.sh"       .githooks/post-checkout
 # Added at standard and full.
@@ -97,6 +99,10 @@ cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-merge.sh"          .githooks/post-merge
 chmod +x .githooks/* .githooks/lib/*
 git config core.hooksPath .githooks
 ```
+
+The two `lib/` files are the only scripts that are both sourced and
+executable. `sysml-toolchain.sh` guards its command dispatch on
+`BASH_SOURCE`, so sourcing it defines functions only.
 
 The destination filenames drop the `.sh` extension because git invokes
 hooks by exact filename per the hooks guide §3.

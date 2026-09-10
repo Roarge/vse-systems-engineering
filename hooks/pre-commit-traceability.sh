@@ -53,7 +53,7 @@ ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' ||
 # keep an existing host project's root clean), else . (greenfield). The
 # repo-wide search below uses 'find .', which covers both layouts. The
 # detected root is reported so the engineer can confirm the layout.
-if [ -d "engineering/models" ] || [ -f "engineering/syside.toml" ]; then
+if [ -d "engineering/model" ] || [ -d "engineering/models" ] || [ -f "engineering/.iso-config.yaml" ] || [ -f "engineering/syside.toml" ]; then
     ENG_ROOT="engineering"
 else
     ENG_ROOT="."

@@ -10,9 +10,10 @@
 CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
-        check-refs check-skills check-config check-routing
+        check-refs check-skills check-config check-routing \
+        check-toolchain test-hooks check-demo-generated
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-toolchain test-hooks check-demo-generated
 	@echo "All checks passed."
 
 validate:
@@ -21,8 +22,8 @@ validate:
 	@jq empty .claude-plugin/marketplace.json
 
 lint:
-	@echo "Linting hook scripts..."
-	@shellcheck hooks/*.sh hooks/lib/*.sh
+	@echo "Linting hook and test scripts..."
+	@shellcheck hooks/*.sh hooks/lib/*.sh tests/hooks/*.sh
 
 check-versions:
 	@echo "Checking version consistency..."
@@ -53,13 +54,15 @@ check-validate:
 	   claude plugin validate --strict "$$TMPDIR_VALIDATE/.claude-plugin/marketplace.json" || exit 1; \
 	 fi
 
-# Every script in hooks/ must be executable and carry the shebang and
-# failure mode the hook conventions require. A non-executable or
-# unguarded hook fails silently at runtime.
+# Every script in hooks/, hooks/lib/ and tests/hooks/ must be
+# executable and carry the shebang and failure mode the hook
+# conventions require. A non-executable or unguarded hook fails
+# silently at runtime, and a test script that does not stop on the
+# first error reports a pass it did not earn.
 check-hooks:
-	@echo "Checking hook script conventions..."
+	@echo "Checking hook and test script conventions..."
 	@EXIT_CODE=0; \
-	 for hook_file in hooks/*.sh; do \
+	 for hook_file in hooks/*.sh hooks/lib/*.sh tests/hooks/*.sh; do \
 	   if [ ! -x "$$hook_file" ]; then \
 	     echo "ERROR: $$hook_file is not executable"; \
 	     EXIT_CODE=1; \
@@ -199,4 +202,55 @@ check-config:
 	   exit 1; \
 	 else \
 	   echo "  Demo plugin_version pin matches plugin.json ($$PLUGIN_VERSION)."; \
+	 fi
+	@if grep -qE '^sysml_toolchain:' templates/iso-config/.iso-config.yaml; then \
+	   echo "  templates/iso-config/.iso-config.yaml records a sysml_toolchain."; \
+	 else \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml does not record a sysml_toolchain"; \
+	   exit 1; \
+	 fi
+	@DEMO_TOOLCHAIN=$$(sed -n 's/^sysml_toolchain:[[:space:]]*//p' demo/smart-sensor/.iso-config.yaml); \
+	 case "$$DEMO_TOOLCHAIN" in \
+	   syside|omg-pilot|opensysml) \
+	     echo "  Demo sysml_toolchain is $$DEMO_TOOLCHAIN."; \
+	     ;; \
+	   *) \
+	     echo "ERROR: demo/smart-sensor/.iso-config.yaml records sysml_toolchain '$$DEMO_TOOLCHAIN', which is not one of syside, omg-pilot, opensysml"; \
+	     exit 1; \
+	     ;; \
+	 esac
+
+# The behavioural hook tests under tests/hooks/. Every toolchain is
+# stubbed, so the assertions hold with no SysML tool installed, which
+# is what CI runs. The real-tool section of check-toolchain.sh prints
+# SKIPPED for each toolchain the machine does not carry. Set
+# VSE_TC_TEST_PATH to put a local toolchain checkout on the PATH.
+check-toolchain:
+	@echo "Checking the SysML toolchain library..."
+	@bash tests/hooks/check-toolchain.sh
+
+test-hooks:
+	@echo "Testing the hook scripts..."
+	@bash tests/hooks/test-pre-commit.sh && bash tests/hooks/test-session-start.sh
+
+# Methodology section 9.8 Contract 3: the demo's model-derived
+# artefacts are regenerated and shall match what is committed. The
+# renderers run from demo/smart-sensor, because each one resolves the
+# model relative to the directory that holds the demo configuration.
+# The comparison runs from the repository root, where the committed
+# outputs live. The two halves run from different directories because
+# inside this checkout the demo is a nested project, so a locator that
+# resolves from the git top level lands on the plugin repository
+# rather than on the demo.
+check-demo-generated:
+	@echo "Checking the demo's generated artefacts..."
+	@cd demo/smart-sensor && \
+	 python3 tools/render/traceability-matrix.py && \
+	 python3 tools/render/stakeholder-reqs-doc.py && \
+	 python3 tools/render/system-reqs-doc.py
+	@if git diff --exit-code -- demo/smart-sensor/docs/generated/; then \
+	   echo "  Demo generated artefacts match the model."; \
+	 else \
+	   echo "ERROR: demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."; \
+	   exit 1; \
 	 fi

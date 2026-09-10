@@ -24,13 +24,29 @@ else
     ENG_ROOT=""
 fi
 
-# Cheap SysML content detection for the SysML-only fallback.
+# Cheap SysML content detection for the SysML-only fallback. The
+# markers cover all three toolchains: Syside's project file, the
+# editor wiring for Syside or OpenSysML, the recorded sysml_toolchain
+# key, the model tree, or any .sysml file within four levels.
 has_sysml_content() {
-    [ -f "syside.toml" ] && return 0
-    [ -f "engineering/syside.toml" ] && return 0
-    [ -d "engineering/model" ] && return 0
-    [ -d "model" ] && return 0
-    [ -n "$(find . -maxdepth 4 -name '*.sysml' -print -quit 2>/dev/null)" ] && return 0
+    local cfg
+    if [ -f "syside.toml" ] || [ -f "engineering/syside.toml" ]; then
+        return 0
+    fi
+    if [ -f ".lsp.json" ] && grep -qE '"(syside|sysml-lsp)"' ".lsp.json" 2>/dev/null; then
+        return 0
+    fi
+    for cfg in ".iso-config.yaml" "engineering/.iso-config.yaml"; do
+        if [ -f "$cfg" ] && grep -qE '^sysml_toolchain:' "$cfg" 2>/dev/null; then
+            return 0
+        fi
+    done
+    if [ -d "engineering/model" ] || [ -d "model" ]; then
+        return 0
+    fi
+    if [ -n "$(find . -maxdepth 4 -name '*.sysml' -print -quit 2>/dev/null)" ]; then
+        return 0
+    fi
     return 1
 }
 
@@ -109,6 +125,8 @@ if [ -z "$ENG_ROOT" ]; then
         echo "To upgrade this repository to a full VSE project (methodology"
         echo "spec, ISO/IEC 29110 process backbone, story-driven workflow,"
         echo "traceability enforcement), run /vse-setup."
+        echo ""
+        echo "Toolchain: run /vse-toolchain to choose and install a SysML v2 validator (Syside, OMG pilot, or OpenSysML)."
     fi
     exit 0
 fi
@@ -133,9 +151,30 @@ else
     PROFILE="standard"
 fi
 
+# Toolchain state via the shared library, resolved the same way.
+SYSML_TOOLCHAIN_LIB=""
+if [ -r "$(dirname "$0")/lib/sysml-toolchain.sh" ]; then
+    SYSML_TOOLCHAIN_LIB="$(dirname "$0")/lib/sysml-toolchain.sh"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" ]; then
+    SYSML_TOOLCHAIN_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh"
+fi
+
+if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
+    VSE_TC_PROBE_TIMEOUT="${VSE_TC_PROBE_TIMEOUT:-10}"
+    export VSE_TC_PROBE_TIMEOUT
+    # shellcheck source=/dev/null
+    . "$SYSML_TOOLCHAIN_LIB"
+fi
+
 echo "VSE project (story-driven AMBSE, ISO/IEC 29110)."
 echo "Methodology: ${ENG_ROOT}/methodology/ (project-local, authoritative)"
 echo "Profile:     ${PROFILE} (per methodology section 0.10)"
+
+if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
+    vse_tc_status_line 2>/dev/null || echo "Toolchain:   (status unavailable)"
+else
+    echo "Toolchain:   (library missing, run /vse-toolchain)"
+fi
 
 # Story state.
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "(no git)")

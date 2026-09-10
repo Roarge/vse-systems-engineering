@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+# Behavioural tests for hooks/session-start.sh.
+#
+# Two detection modes are exercised from scratch directories: mode 3,
+# the SysML-only repository, on each of the three markers that can fire
+# it, and mode 2, the VSE project, on the toolchain status line in its
+# three states. The hook is advisory, so every case also asserts exit 0
+# and plain-text output, which is what reaches the conversation.
+#
+# A last pair of cases pins the budget the availability probe runs
+# under, because the hook has to set it before the library is sourced
+# for the shorter session-start value to take effect at all.
+#
+# Every toolchain is stubbed, so the file asserts the same behaviour on
+# a runner with no SysML tool installed.
+#
+# Run: bash tests/hooks/test-session-start.sh
+set -euo pipefail
+
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+
+# The scratch repository is not used here, but its fake HOME and stub
+# directory are what keep the machine's own toolchains out of reach.
+tc_setup_repo
+trap tc_teardown EXIT
+
+HOOK="${TC_PLUGIN_ROOT}/hooks/session-start.sh"
+
+# The hook output is injected into a conversation verbatim, so it has
+# to be printable text: no terminal escapes, no stray control bytes.
+assert_plain_text() {
+    local text="$1" name="$2" stray
+    stray="$(printf '%s' "$text" | LC_ALL=C tr -d '\011\012\040-\176')"
+    if [ -z "$stray" ]; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "output carries non-printable bytes"
+    fi
+}
+
+run_hook_in() {
+    tc_run_in "$1" bash "$HOOK"
+}
+
+# --------------------------------------- mode 3: SysML-only repository
+
+case_mode3() {
+    local name="$1" dir
+    dir="$(tc_mktemp_d)"
+    shift
+    "$@" "$dir"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "mode 3 (${name}): exit 0"
+    tc_assert_grep "SysML 2.0 modelling repository detected" "$OUT" \
+        "mode 3 (${name}): the SysML-only banner fires"
+    tc_assert_grep "run /vse-toolchain to choose and install a SysML v2 validator" "$OUT" \
+        "mode 3 (${name}): the toolchain pointer is offered"
+    assert_plain_text "$OUT" "mode 3 (${name}): output is plain text"
+}
+
+# shellcheck disable=SC2317  # called indirectly through case_mode3
+marker_iso_config() {
+    printf 'sysml_toolchain: opensysml\n' > "${1}/.iso-config.yaml"
+}
+
+# shellcheck disable=SC2317  # called indirectly through case_mode3
+marker_lsp_json() {
+    cat > "${1}/.lsp.json" <<'EOF'
+{
+  "servers": {
+    "sysml-lsp": { "command": "sysml-lsp", "args": ["--stdio"] }
+  }
+}
+EOF
+}
+
+# shellcheck disable=SC2317  # called indirectly through case_mode3
+marker_syside_toml() {
+    cat > "${1}/syside.toml" <<'EOF'
+[project]
+name = "scratch"
+EOF
+}
+
+# ----------------------------------------------- mode 2: VSE project
+
+# A VSE project is a methodology/ directory plus the configuration the
+# rigour profile and the toolchain preference are read from.
+make_vse_project() {
+    local dir="$1" toolchain="$2"
+    mkdir -p "${dir}/methodology"
+    printf '# Methodology overview\n' > "${dir}/methodology/00-methodology-overview.md"
+    {
+        printf 'project_profile: standard\n'
+        printf 'sysml_toolchain: %s\n' "$toolchain"
+    } > "${dir}/.iso-config.yaml"
+}
+
+case_mode2() {
+    local name="$1" toolchain="$2" expected="$3" dir
+    dir="$(tc_mktemp_d)"
+    make_vse_project "$dir" "$toolchain"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "mode 2 (${name}): exit 0"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "mode 2 (${name}): the VSE banner fires"
+    tc_assert_grep "$expected" "$OUT" "mode 2 (${name}): the toolchain line"
+    assert_plain_text "$OUT" "mode 2 (${name}): output is plain text"
+}
+
+case_mode3 "iso-config key" marker_iso_config
+case_mode3 "lsp.json" marker_lsp_json
+case_mode3 "syside.toml" marker_syside_toml
+
+# State 1: the preferred toolchain is installed.
+tc_stub_java "21.0.12"
+tc_pilot_install
+case_mode2 "preferred available" omg-pilot \
+    "Toolchain:   omg-pilot (preferred, available)"
+
+# State 2: the preferred toolchain is absent and a fallback is not.
+case_mode2 "fallback available" syside \
+    "Toolchain:   syside (preferred) unavailable: syside not on PATH. Hooks fall back to omg-pilot. Run /vse-toolchain to install or switch."
+
+# State 3: nothing is installed.
+tc_reset_stubs
+tc_pilot_uninstall
+case_mode2 "nothing available" syside \
+    "Toolchain:   syside (preferred) unavailable: syside not on PATH. No fallback installed. Run /vse-toolchain."
+
+# State 4: the recorded value is not one of the three. The preference
+# falls back to syside, and the banner says so, so that a typo in the
+# configuration does not read back as a deliberate choice.
+case_mode2 "unrecognised value" cameo \
+    "recorded 'cameo' is not recognised, treated as syside"
+
+# --------------------------------------------- the probe budget
+
+# The library defaults VSE_TC_PROBE_TIMEOUT to 20 seconds at source
+# time, so the hook has to export the shorter session-start budget of
+# 10 before it sources the library. A stub timeout records the budget
+# it is handed, which is the only place the effective value shows.
+tc_stub_timeout_recorder() {
+    tc_stub timeout <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s\n' "${1:-}" >> "${TC_TIMEOUT_RECORD:-/dev/null}"
+shift
+exec "$@"
+EOF
+}
+
+# case_probe_budget <name> <expected-seconds> [NAME=VALUE ...]
+case_probe_budget() {
+    local name="$1" expected="$2" dir record
+    shift 2
+    dir="$(tc_mktemp_d)"
+    make_vse_project "$dir" syside
+    record="$(mktemp "${TC_ROOT}/timeout.XXXXXX")"
+    tc_env "TC_TIMEOUT_RECORD=${record}" SYSIDE_OK=1 "$@"
+    run_hook_in "$dir"
+    tc_assert_rc 0 "probe budget (${name}): exit 0"
+    tc_assert_grep "Toolchain:   syside (preferred, available)" "$OUT" \
+        "probe budget (${name}): the probe ran through the preferred tool"
+    tc_assert_eq "$expected" "$(head -n 1 "$record")" \
+        "probe budget (${name}): the probe runs under ${expected} seconds"
+}
+
+tc_stub_syside
+tc_stub_timeout_recorder
+
+case_probe_budget "unset" 10
+case_probe_budget "preset" 3 VSE_TC_PROBE_TIMEOUT=3
+
+tc_env
+tc_reset_stubs
+
+if tc_summary "test-session-start"; then
+    exit 0
+fi
+exit 1

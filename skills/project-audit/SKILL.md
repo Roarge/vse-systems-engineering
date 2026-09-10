@@ -29,7 +29,7 @@ The audit consults the following inputs in order:
 1. **Project root.** The current working directory, or the `engineering/` subdirectory if the project uses the brownfield layout. Detect via `git rev-parse --show-toplevel` and presence of `engineering/`.
 2. **Project-local methodology copy.** `<project>/methodology/`. The project must carry the 12-section methodology (sections 00 through 10, plus README and the hooks guide).
 3. **Plugin methodology copy.** `${CLAUDE_PLUGIN_ROOT}/methodology/`. Used for version comparison only. Never edited.
-4. **ISO configuration.** `<project>/.iso-config.yaml` if present, recording the plugin version at setup, the rigour profile (`project_profile`), the baselined paths, and the StoryMeta required fields. The profile is read first, because it governs which obligations the checks below apply (methodology §0.10).
+4. **ISO configuration.** `<project>/.iso-config.yaml` if present, recording the plugin version at setup, the rigour profile (`project_profile`), the SysML toolchain (`sysml_toolchain`), the baselined paths, and the StoryMeta required fields. The profile is read first, because it governs which obligations the checks below apply (methodology §0.10).
 5. **Plugin manifest.** `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, for the current plugin version.
 
 ## Audit Checks
@@ -173,12 +173,28 @@ Where the profile is present, also check the one-line tailoring record (§0.10.2
 
 Missing scripts or unset `core.hooksPath` emit ERROR. Hand off to `@attention-regime` for installation.
 
+### 16. SysML Toolchain Recorded and Available (hooks guide §8, §11)
+
+Read `sysml_toolchain` from `<project>/.iso-config.yaml`.
+
+- Absent: WARN ("toolchain preference not recorded, hooks treat it as `syside`"). Name the three toolchains with their one-line glosses (Syside: commercial CLI with formatter and language server. OMG pilot: the reference implementation on Java 21, strictest, no formatter or language server. OpenSysML: a static binary with a language server, no formatter) and invite the engineer to record one through `@sysml-toolchain`. Do not choose on their behalf: an absent key has a defined meaning.
+- Present but not `syside`, `omg-pilot`, or `opensysml`: WARN ("unrecognised `sysml_toolchain` value, treated as `syside`").
+- Present: run `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh detect <value>` (the probe writes only under a temporary directory it removes). If the Bash tool is unavailable in this forked execution, report presence only and say the probe was skipped. Available: PASS, naming the tool in the report header. Unavailable: WARN quoting the reason line, then run `... status` and report whether a fallback tool would carry the lint gate. Never ERROR: the gate falls back automatically, and at `block` it refuses the commit with a message, which is the designed behaviour.
+
+Consistency, each a WARN when it fails:
+
+- the `command` in `.lsp.json` matches the toolchain (`syside` for syside, `sysml-lsp` for opensysml, `sysml-lsp` or no file for omg-pilot),
+- `.githooks/lib/sysml-toolchain.sh` exists when `.githooks/lib/iso-profile.sh` does (a partial upgrade otherwise),
+- the `CLAUDE.md` managed block carries a Toolchain line matching the key,
+- `docs/semp.md`, where the profile owes one, names the same tool.
+
 ## Reporting
 
 Produce a structured Markdown report grouped by check, then by severity. Each finding includes the rule reference, file path, and one sentence of context. The report header records:
 
 - plugin version, methodology version, project recorded version,
 - recorded rigour profile, or "not recorded, treated as standard",
+- recorded SysML toolchain and whether it is available, or "not recorded, treated as syside",
 - detected layout (greenfield or brownfield),
 - number of ERROR, WARN, and PASS findings.
 
@@ -201,6 +217,7 @@ The audit produces findings. Remediation is delegated to other skills:
 - Baselined-artefact drift, hand off to `@change-request`.
 - Hooks not installed or `core.hooksPath` not set, hand off to `@attention-regime`.
 - Rigour profile not recorded, hand off to `@project-setup` to record it, or point the engineer at §0.10.2 to write the key and the tailoring line by hand. Recording a profile is a one-line edit and does not need a full setup run.
+- SysML toolchain not recorded, unavailable, or inconsistent with `.lsp.json` or the SEMP, hand off to `@sysml-toolchain`.
 - Model-derived artefact rendering gaps, hand off to `@document-export`.
 
 ## Outputs

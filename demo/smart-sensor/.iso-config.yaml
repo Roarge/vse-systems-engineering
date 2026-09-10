@@ -11,6 +11,10 @@ plugin_version: "3.2.0"
 # One of: light | standard | full. Absent means standard.
 project_profile: standard
 
+# SysML v2 toolchain: the demo prefers the OMG pilot implementation and
+# validates under OpenSysML as the second reference (README validation record).
+sysml_toolchain: omg-pilot
+
 # Baselined paths require an open Change Request and a
 # "(CR #<n>)" reference in the commit message.
 baselined_paths:
@@ -41,10 +45,10 @@ change_request:
   required_for_paths: ${baselined_paths}
 
 # Renderers for §9.8 model-derived artefacts. Each path is an executable
-# script invoked with no arguments from the project root by the
-# post-merge hook on main and by the Contract 3 freshness check in CI.
-# The three scripts below live in tools/render/ and their output is
-# committed under docs/generated/.
+# script invoked with no arguments from the directory that holds this
+# file, which is the engineering root, by the post-merge hook on main and
+# by the Contract 3 freshness check in CI. The three scripts below live
+# in tools/render/ and their output is committed under docs/generated/.
 renderers:
   traceability_matrix: tools/render/traceability-matrix.py
   stakeholder_reqs:    tools/render/stakeholder-reqs-doc.py
