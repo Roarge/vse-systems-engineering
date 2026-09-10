@@ -51,7 +51,12 @@ jobs:
           fi
           case "$TOOLCHAIN" in
               syside|omg-pilot|opensysml) ;;
-              *) TOOLCHAIN=syside ;;
+              *)
+                  if [ -n "$TOOLCHAIN" ]; then
+                      echo "::warning::sysml_toolchain '${TOOLCHAIN}' is not recognised, using syside"
+                  fi
+                  TOOLCHAIN=syside
+                  ;;
           esac
           echo "SysML toolchain: ${TOOLCHAIN}"
           echo "toolchain=${TOOLCHAIN}" >> "$GITHUB_OUTPUT"

@@ -64,7 +64,7 @@ Then the editor wiring. `.lsp.json` at the project root is read by the Claude Co
 - `opensysml`: copy `${CLAUDE_PLUGIN_ROOT}/templates/common/lsp-opensysml.json` (launches `sysml-lsp -stdio -strict`).
 - `omg-pilot`: the pilot ships no language server. If `command -v sysml-lsp` succeeds, copy `lsp-opensysml.json` and say that the editor server is OpenSysML's while the commit gate is the pilot. Otherwise write no `.lsp.json`, and say that `.sysml` files show as plain text until OpenSysML is installed.
 
-If an existing `.lsp.json` differs from both templates, show the diff and ask before overwriting. `syside.toml` stays in place when switching away from Syside (the hooks do not read it), with an offer to remove it. If `.githooks/lib/iso-profile.sh` exists but `.githooks/lib/sysml-toolchain.sh` does not, offer the single copy `cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" .githooks/lib/sysml-toolchain.sh && chmod +x .githooks/lib/sysml-toolchain.sh`. If `.githooks/` is absent, hand off to `@attention-regime`.
+If an existing `.lsp.json` differs from both templates, show the diff and ask before overwriting. `syside.toml` stays in place when switching away from Syside (the hooks do not read it), with an offer to remove it. The scaffold copies it only for `syside` or when no toolchain was chosen. If `.githooks/lib/iso-profile.sh` exists but `.githooks/lib/sysml-toolchain.sh` does not, offer the single copy `cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" .githooks/lib/sysml-toolchain.sh && chmod +x .githooks/lib/sysml-toolchain.sh`. If `.githooks/` is absent, hand off to `@attention-regime`.
 
 ## Step 5: Install Offers
 
@@ -85,12 +85,16 @@ mkdir -p ~/.local/share/sysml-pilot
 ZIP=~/.local/share/sysml-pilot/jupyter-sysml-kernel-0.61.0.zip
 curl -fsSL -o "$ZIP" \
   https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation/releases/download/2026-07/jupyter-sysml-kernel-0.61.0.zip
-echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $ZIP" | sha256sum -c - \
-  && unzip -q -o "$ZIP" -d ~/.local/share/sysml-pilot \
-  || { rm -f "$ZIP"; echo "checksum failed, nothing extracted"; }
+if echo "3d310efb8a5332b11ec2441697d40ae10e7e04cfb8c8d121c198ffba38229ada  $ZIP" | sha256sum -c -; then
+  unzip -q -o "$ZIP" -d ~/.local/share/sysml-pilot && rm -f "$ZIP"
+else
+  rm -f "$ZIP"
+  echo "checksum failed, download deleted, nothing extracted"
+  false
+fi
 ```
 
-A failed checksum stops the step: the download is deleted and nothing is extracted.
+A failed checksum stops the step with a non-zero status: the download is deleted and nothing is extracted. A failure of `unzip` itself leaves the verified download in place for the `python3 -m zipfile` route below.
 
 The release publishes no checksum file, so the value above was computed from the 126,125,572-byte artefact and recorded in the tooling wiki page. On macOS use `shasum -a 256 -c -` in place of `sha256sum -c -`. Without `unzip`, `python3 -m zipfile -e <zip> ~/.local/share/sysml-pilot`. The bundled `install.py` is the Jupyter kernel installer and is not run. Another location is honoured through `VSE_SYSML_PILOT_HOME`.
 
@@ -133,7 +137,7 @@ The pattern for every item: name the rule and its section, state the concrete ri
 - **Choosing `omg-pilot` on a machine without Java and declining the install.** Say that every commit will fall back to the next installed tool, or at `full` will be refused with `No SysML toolchain is available`, until Java is installed.
 - **`sudo`.** Never run a `[sudo]` step without the explicit yes for that step. Offer the no-sudo route first when one exists.
 - **A `sysml` on the PATH that is not OpenSysML.** The probe says so (`-version` did not print `sysml`). Ask before installing over it.
-- **A `syside.toml` in a project that never chose Syside.** The scaffold copies it only for `syside`, so its presence records an earlier choice. Say so before removing it.
+- **A `syside.toml` in a project that never chose Syside.** The scaffold copies it only for `syside` or when no toolchain was chosen, so its presence records an earlier choice or an earlier silence. Say so before removing it.
 
 ## Hand-offs
 
