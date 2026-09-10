@@ -127,9 +127,10 @@ Automator when scripting against a local model, and for the OMG
 standard when exchanging models between tools or avoiding lock-in.
 
 The OMG SysML v2 Pilot Implementation is the reference implementation
-the plugin drives in batch mode when Syside is unavailable, and
-OpenSysML offers gRPC and language clients of its own. Neither is
-reached through this standard API by the plugin today.
+the plugin drives in batch mode when it is the recorded toolchain or
+when Syside is unavailable, and OpenSysML offers gRPC and language
+clients of its own. Neither is reached through this standard API by the
+plugin today.
 [[tooling-sysml-toolchain-choice]] compares the three.
 
 ## Status in the 2026-07 release

@@ -1762,3 +1762,47 @@ INDEX regenerated.
 Pages indexed: 165. Routing blocks regenerated: 12. Routing rows 213
 to 245. Layers stay 12 (syside renamed to tooling). Referencing skills
 20 to 23. ToC drift: 0.
+
+## [2026-09-10] refactor | dot-notation verify and toolchain corrections
+
+Layer: sysml2, ambse, tooling, project-structure, methodology. The
+skill prose that handed the Syside tool surface to `@sysml-toolchain`
+left three wiki pages still teaching `verify requirement <name>`, which
+both reference implementations refuse against a definition member. The
+form is now `verify <story>.<member>;` inside a `verification def`
+objective, as methodology §5.4.6 fixes it. The remaining edits are
+single-sentence corrections raised in the review of the previous
+commit, where the page overstated what the CI template keys on, where
+`syside.toml` lands, or what a Syside probe proves.
+
+Pages updated:
+
+- sysml2-case-kinds (the drone power-up objective takes a story member
+  by dot notation)
+- sysml2-grammar-and-validation (the missing-verify checklist row)
+- ambse-architecture-vv-and-iso29110 (both verification cases gain an
+  `objective` block and the dot form)
+- syside-project-configuration (the CI template keys on the recorded
+  toolchain, and on `syside.toml` only for the format check)
+- syside-vse-workflows (the format check is skipped when the recorded
+  toolchain is not `syside`, not when Syside is missing)
+- syside-tooling-overview (`syside --version` was exercised on an
+  expired licence, not on a machine with no key)
+- tooling-java-runtime (the Syside diagram export ships a Java
+  component, and no JNI mechanism is recorded)
+- sysml2-requirements-semantics (subject ordering and `#derive` on a
+  definition are pilot-only, the trace-target rule is enforced by both)
+- sysml2-api-and-services (the pilot also runs when it is the recorded
+  toolchain, not only as a Syside fallback)
+- vse-canonical-project-layout (`syside.toml` sits at the project root
+  in both layouts, and the CI template checks both locations)
+- user-story-canonical-artefact, system-stories-workflow (the backlink
+  to `tooling-reference-implementation-rules` the previous commit left
+  one-way)
+
+`updated:` was bumped on sysml2-case-kinds and
+ambse-architecture-vv-and-iso29110. The other pages already carried
+2026-09-10. INDEX and every routing block were regenerated and came
+back identical, because no title or summary changed. Totals stay at
+165 pages across 12 layers, routed to by 23 skills over 245 rows, and
+contents-block drift stays 0.

@@ -24,7 +24,7 @@ referenced_by: [sysml-toolchain, attention-regime]
 
 # Java 21 runtime for the OMG pilot
 
-Java is a certain prerequisite of one toolchain. The OMG SysML v2 Pilot Implementation is a Java program and needs a runtime on the machine that validates. OpenSysML does not depend on Java. The Syside command-line tool loads a JVM through JNI for its diagram export, and whether `syside check` needs one is not recorded, so a project that never chooses the pilot installs Java only if Syside asks for it.
+Java is a certain prerequisite of one toolchain. The OMG SysML v2 Pilot Implementation is a Java program and needs a runtime on the machine that validates. OpenSysML does not depend on Java. The Syside command-line tool ships a Java component for its diagram export, and whether `syside check` needs a runtime is not recorded, so a project that never chooses the pilot installs Java only if Syside asks for it.
 
 ## The floor
 

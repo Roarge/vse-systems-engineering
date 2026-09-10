@@ -68,7 +68,7 @@ syside format --check
 ```
 
 No other toolchain ships a formatter, so the format check is skipped
-with a notice when Syside is unavailable.
+when the recorded toolchain is not `syside`.
 
 `--stats` prints element and diagnostic counts for the run. Log it in
 CI, because a sudden change in element count between two commits is

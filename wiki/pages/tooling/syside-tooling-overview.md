@@ -130,8 +130,8 @@ For CI/CD, use a Deployment Licence Key (prefix `CI-`) stored in the
 provider's secret management (GitHub secrets, GitLab CI/CD variables).
 Reference: https://docs.sensmetry.com/automator/install.html
 
-`syside --version` and `syside check --help` succeed without a licence.
-Only a real `syside check <path>` reveals an expired licence, printing
+`syside --version` and `syside check --help` succeed on an expired
+licence. Only a real `syside check <path>` reveals it, printing
 `License check failed:` and exiting 2. The validator wrapper uses that
 signal to fall back, see [[tooling-validator-fallback-process]].
 

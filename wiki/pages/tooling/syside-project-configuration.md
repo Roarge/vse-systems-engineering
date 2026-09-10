@@ -203,4 +203,5 @@ back. Neither file is read by the git hooks. The hooks read the
 project may keep `syside.toml` for the editor while the pre-commit gate
 runs under another toolchain, see
 [[tooling-validator-fallback-process]]. The shipped CI workflow
-template runs its Syside steps only when `syside.toml` is present.
+template runs its Syside steps only when the recorded toolchain is
+`syside`, and its format check only when `syside.toml` also exists.

@@ -183,7 +183,7 @@ Common validation errors a VSE engineer is likely to encounter:
 | Assert constraint evaluating to false | Assert constraints must subset `trueEvaluations` | Fix the constraint or correct the model values that violate it |
 | Cross-hierarchy specialisation | DataValue and Occurrence are disjoint | Do not specialise an `attribute def` from a `part def` or vice versa |
 | Variation member not a variant | All owned members of a variation must be `variant` usages | Add the `variant` keyword to each member |
-| Missing verify link in verification case | Verification case objective should contain `verify requirement` | Add `verify requirement <name>` inside the `objective` block |
+| Missing verify link in verification case | Verification case objective should contain a `verify` clause | Add `verify <story>.<member>;` inside the `objective` block |
 | Usage specialising a definition | Usages specialise usages, definitions specialise definitions | Use `:` (typing) to type a usage by a definition, not `:>` (specialisation) |
 | Redefinition type mismatch | A redefining feature must be type-compatible with the redefined feature | Ensure the new type is a subtype of the original |
 | Multiple subjects in one requirement | A requirement may have only one subject parameter | Remove the extra subject declarations |

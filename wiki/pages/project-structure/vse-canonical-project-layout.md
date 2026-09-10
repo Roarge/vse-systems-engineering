@@ -61,15 +61,15 @@ directory.
 | `CLAUDE.md` | VSE companion guidance (marker block) | Yes |
 | `.gitignore` | Excludes `build/`, generated files | Yes |
 | `.lsp.json` | Language server wiring for the Claude Code IDE (Syside or OpenSysML) | When a language server is configured |
+| `syside.toml` | Syside formatting and linting | When the toolchain is `syside` |
 
 ## Greenfield-only root files
 
 | File | Purpose |
 |---|---|
-| `syside.toml` | Syside formatting and linting (present when the toolchain is `syside`) |
 | `TASKS.md` | ISO/IEC 29110 task checklist |
 
-In brownfield mode these live under `engineering/`.
+In brownfield mode this lives under `engineering/`.
 
 ## CLAUDE.md marker block
 
@@ -110,11 +110,13 @@ means `syside`). Each toolchain adds these files:
 
 | File | Toolchain | Greenfield location | Brownfield location |
 |---|---|---|---|
-| `syside.toml` | `syside` | Project root | `engineering/syside.toml` |
+| `syside.toml` | `syside` | Project root | Project root (`project-setup` copies it to the project root in both layouts) |
 | `.lsp.json` | `syside`, `opensysml` | Project root | Project root (the IDE reads the workspace root, not `engineering/`) |
 | none | `omg-pilot` | the jar and library live under `~/.local/share/sysml-pilot`, outside the project | same |
 
-See [[tooling-sysml-toolchain-choice]].
+The shipped CI workflow template looks for `syside.toml` at the project
+root and under `engineering/`, so a project that moved the file by hand
+is still covered. See [[tooling-sysml-toolchain-choice]].
 
 ## Gitignore entries
 

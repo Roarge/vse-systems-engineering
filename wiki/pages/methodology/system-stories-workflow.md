@@ -14,6 +14,7 @@ related:
   - stakeholder-stories-workflow
   - benefit-as-criterion
   - architectural-analysis-workflow
+  - tooling-reference-implementation-rules
 confidence: high
 created: 2026-05-05
 updated: 2026-09-10
@@ -75,3 +76,9 @@ For each acceptance criterion in scope, declare a `verification def` (spec §7.2
 - Verification plan as `verification def` instances under `core/verification-validation/verification-cases/`.
 
 §5 applies recursively at subsystem level inside each component folder, with "system" reading as "subsystem" and the stakeholder set extended to include sibling subsystems and the parent system.
+
+## See also
+
+- [[tooling-reference-implementation-rules]] for the derivation,
+  `#derive` and dot-notation `verify` forms the OMG pilot and OpenSysML
+  accept, and the ones they refuse.

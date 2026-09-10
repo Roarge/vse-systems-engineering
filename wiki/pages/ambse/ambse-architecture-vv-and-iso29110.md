@@ -19,7 +19,7 @@ related:
   - iso29110-sr-process
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-09-10
 referenced_by: [architecture-design]
 ---
 
@@ -84,7 +84,9 @@ package VerificationCases {
                and 85 degrees C. Record system readings. Verify all readings
                are within +/- 0.5 degrees C of the source. */
         attribute method = "test";
-        verify requirement SystemRequirements::MeasureTemperature;
+        objective {
+            verify MeasureTemperature.acceptance;
+        }
     }
 
     verification def VerifyTempResponseTime {
@@ -93,7 +95,9 @@ package VerificationCases {
                Procedure: Apply a step change in temperature. Measure time
                from stimulus to reported reading. Verify less than 100 ms. */
         attribute method = "test";
-        verify requirement SystemRequirements::TemperatureResponseTime;
+        objective {
+            verify TemperatureResponseTime.acceptance;
+        }
     }
 }
 ```

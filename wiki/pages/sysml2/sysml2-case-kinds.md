@@ -16,7 +16,7 @@ related:
   - sysml2-expressions-constraints
 confidence: high
 created: 2026-05-04
-updated: 2026-08-14
+updated: 2026-09-10
 referenced_by: [sysml2-cases]
 ---
 
@@ -167,7 +167,7 @@ The verdict is typically bound from a library helper.
 verification def PowerUpTest {
     subject drone : Drone;
     objective checkPowerUp {
-        verify requirement : DronePowerUpRequirement;
+        verify DronePowerUp.acceptance;
     }
 
     perform drone.powerUp;

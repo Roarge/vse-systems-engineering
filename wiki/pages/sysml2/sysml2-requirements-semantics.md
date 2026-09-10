@@ -136,6 +136,8 @@ trade studies in SR.3 (Architecture). See
 - [[sysml2-cases-overview]] and [[sysml2-case-kinds]] for the
   verification and analysis case constructs.
 - [[sysml2-variations-overview]] for the variant family.
-- [[tooling-reference-implementation-rules]] for the subject
-  ordering, trace-target and `#derive` forms the OMG pilot and
-  OpenSysML enforce on top of these semantics.
+- [[tooling-reference-implementation-rules]] for the forms the
+  reference implementations enforce on top of these semantics. The
+  OMG pilot alone enforces subject-first ordering and refuses
+  `#derive` on a requirement definition, and both tools require a
+  trace target to be a usage rather than a definition.
