@@ -41,18 +41,9 @@ PTU_STORIES="model/core/stories/stakeholder"
 # the canonical paths the hook names.
 PTU_REAL=""
 
-# A directory of links to every program in /usr/bin and /bin except the
-# named ones, used as PATH to take jq or python3 out of reach.
-ptu_bin_without() {
-    local dir
-    dir="$(tc_mktemp_d)"
-    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
-        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
-    printf '%s\n' "$dir"
-}
-
-PTU_BIN_NO_JQ="$(ptu_bin_without ! -name jq)"
-PTU_BIN_NO_JSON="$(ptu_bin_without ! -name jq ! -name python3)"
+# PATH values that take jq, python3 or both out of reach.
+PTU_BIN_NO_JQ="$(tc_bin_without jq)"
+PTU_BIN_NO_JSON="$(tc_bin_without jq python3)"
 
 # ------------------------------------------------------------- fixtures
 

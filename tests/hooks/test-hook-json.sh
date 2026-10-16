@@ -85,19 +85,10 @@ run_hj_seq() {
     tc_run_in "$REPO" bash -c "$HJ_SEQ_DRIVER" hj-driver "$HJ_LIB" "$@"
 }
 
-# A directory of links to every program in /usr/bin and /bin except the
-# named ones, used as PATH to take jq or python3 out of reach.
-hj_bin_without() {
-    local dir
-    dir="$(tc_mktemp_d)"
-    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
-        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
-    printf '%s\n' "$dir"
-}
-
-HJ_BIN_NO_PYTHON="$(hj_bin_without ! -name python3)"
-HJ_BIN_NO_JQ="$(hj_bin_without ! -name jq)"
-HJ_BIN_NO_JSON="$(hj_bin_without ! -name jq ! -name python3)"
+# PATH values that take jq, python3 or both out of reach.
+HJ_BIN_NO_PYTHON="$(tc_bin_without python3)"
+HJ_BIN_NO_JQ="$(tc_bin_without jq)"
+HJ_BIN_NO_JSON="$(tc_bin_without jq python3)"
 
 HJ_ENGINES="jq python3"
 

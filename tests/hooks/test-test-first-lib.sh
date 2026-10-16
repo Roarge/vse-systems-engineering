@@ -107,19 +107,10 @@ run_tf_to() {
     tc_run_in "$REPO" bash -c "$TF_FILE_DRIVER" tf-driver "$TF_LIB" "$out" "$@"
 }
 
-# A directory of links to every program in /usr/bin and /bin except the
-# named ones, used as PATH to take jq or python3 out of reach.
-tf_bin_without() {
-    local dir
-    dir="$(tc_mktemp_d)"
-    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
-        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
-    printf '%s\n' "$dir"
-}
-
-TF_BIN_NO_PYTHON="$(tf_bin_without ! -name python3)"
-TF_BIN_NO_JQ="$(tf_bin_without ! -name jq)"
-TF_BIN_NO_JSON="$(tf_bin_without ! -name jq ! -name python3)"
+# PATH values that take jq, python3 or both out of reach.
+TF_BIN_NO_PYTHON="$(tc_bin_without python3)"
+TF_BIN_NO_JQ="$(tc_bin_without jq)"
+TF_BIN_NO_JSON="$(tc_bin_without jq python3)"
 
 # ids_of <scanner-output>: the ID column, one per line.
 ids_of() {

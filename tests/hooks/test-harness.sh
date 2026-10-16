@@ -201,6 +201,34 @@ case_assert_json_silent() {
     tc_assert_grep "FAIL: object" "$result" "assert_json_silent: any stdout fails"
 }
 
+# ------------------------------------------------- a PATH without tools
+
+# tc_bin_without names a directory that links every program of /usr/bin
+# and /bin except the named ones, so a case can take jq or python3 out
+# of reach while sh, git and the rest still run.
+case_bin_without_named_tools() {
+    local bin
+    bin="$(tc_bin_without jq python3)"
+    if [ -d "$bin" ]; then
+        tc_pass "bin without: the result is a directory"
+    else
+        tc_fail "bin without: the result is a directory" "got: ${bin}"
+    fi
+    tc_env PATH="$bin"
+    tc_run_in "$REPO" sh -c 'command -v jq || echo no-jq; command -v python3 || echo no-python3'
+    tc_assert_line "no-jq" "$OUT" "bin without: jq is out of reach"
+    tc_assert_line "no-python3" "$OUT" "bin without: python3 is out of reach"
+    tc_run_in "$REPO" sh -c 'command -v git && command -v sed'
+    tc_assert_rc 0 "bin without: the programs not named still run"
+    tc_assert_line "${bin}/git" "$OUT" "bin without: git is reached through the directory"
+
+    bin="$(tc_bin_without)"
+    tc_env PATH="$bin"
+    tc_run_in "$REPO" sh -c 'command -v sh'
+    tc_assert_line "${bin}/sh" "$OUT" "bin without: with no name every program is linked"
+    tc_env
+}
+
 case_stdin_reaches_hook
 case_other_runners_read_empty_stdin
 case_runners_drop_outer_vse_iso_config
@@ -216,6 +244,7 @@ case_assert_json_shows_jq_error
 case_assert_json_reports_missing_jq
 case_assert_line_exact
 case_assert_json_silent
+case_bin_without_named_tools
 
 if tc_summary "test-harness"; then
     exit 0

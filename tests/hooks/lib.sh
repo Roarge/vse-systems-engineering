@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Shared helpers for the behavioural hook tests under tests/hooks/.
 #
-# Sourced by check-toolchain.sh, test-harness.sh, test-pre-commit.sh
-# and test-session-start.sh. Provides a scratch git repository with the
-# project-side hooks installed, a stub directory that shadows the real
-# SysML toolchains, assertion helpers, and a pass/fail summary.
+# Sourced by check-toolchain.sh and the test-*.sh files beside it.
+# Provides a scratch git repository with the project-side hooks
+# installed, a stub directory that shadows the real SysML toolchains, a
+# PATH directory without named tools (tc_bin_without), assertion
+# helpers, and a pass/fail summary.
 #
 # Two runners:
 #   tc_run_hook, tc_run_lifecycle, tc_run_lib, tc_run_lib_fn are
@@ -396,6 +397,47 @@ tc_real_available() {
     tc_env
     tc_run_real bash "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" detect "$tool"
     [ "$RC" -eq 0 ]
+}
+
+# tc_bin_without [<tool> ...]: print a new scratch directory holding a
+# symbolic link to every program in /usr/bin and /bin except the named
+# tools. A case passes it as PATH to take jq or python3 out of reach
+# while every other program still runs. Where /bin and /usr/bin hold
+# the same name, the /usr/bin program is linked. The links are made by
+# one ln call per source directory, in the POSIX form that names the
+# target directory last (GNU ln -t is not available on macOS).
+tc_bin_without() {
+    local dir src entry name tool keep
+    local links
+    dir="$(tc_mktemp_d)"
+    for src in /usr/bin /bin; do
+        links=()
+        for entry in "${src}"/*; do
+            name="${entry##*/}"
+            # A directory is not a program, a glob that matched nothing
+            # is not a file, and a name linked from /usr/bin stays.
+            if [ -d "$entry" ] || { [ ! -e "$entry" ] && [ ! -L "$entry" ]; }; then
+                continue
+            fi
+            if [ -e "${dir}/${name}" ] || [ -L "${dir}/${name}" ]; then
+                continue
+            fi
+            keep=1
+            for tool in "$@"; do
+                if [ "$name" = "$tool" ]; then
+                    keep=0
+                    break
+                fi
+            done
+            if [ "$keep" -eq 1 ]; then
+                links+=("$entry")
+            fi
+        done
+        if [ "${#links[@]}" -gt 0 ]; then
+            ln -s "${links[@]}" "$dir"
+        fi
+    done
+    printf '%s\n' "$dir"
 }
 
 # Sandboxed run in an arbitrary directory, for the SessionStart hook,

@@ -194,17 +194,8 @@ tc_reset_stubs
 
 # ------------------------------- behaviour-first and test-first policy
 
-# A directory of links to every program in /usr/bin and /bin except the
-# named ones, used as PATH to take jq out of reach.
-ss_bin_without() {
-    local dir
-    dir="$(tc_mktemp_d)"
-    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
-        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
-    printf '%s\n' "$dir"
-}
-
-SS_BIN_NO_JQ="$(ss_bin_without ! -name jq)"
+# A PATH value that takes jq out of reach.
+SS_BIN_NO_JQ="$(tc_bin_without jq)"
 
 # make_policy_project <dir> <applies|-> [marker ...]
 #
@@ -315,6 +306,12 @@ case_mode2_jq_missing_warning() {
     tc_assert_match '^Warning: jq is not on PATH\..*python3.*fail open' "$OUT" \
         "jq missing: the gates fall back to python3 or fail open, and the session is told"
     assert_plain_text "$OUT" "jq missing: output is plain text"
+    # The sandbox PATH is the stubs, /usr/bin and /bin, so a jq
+    # installed anywhere else (Homebrew, say) is out of its reach.
+    if [ ! -x /usr/bin/jq ] && [ ! -x /bin/jq ]; then
+        tc_skip "jq under /usr/bin or /bin" "the jq present case needs jq on the sandbox PATH"
+        return 0
+    fi
     tc_env
     run_hook_in "$dir"
     tc_assert_not_grep "jq is not on PATH" "$OUT" "jq present: no warning"
