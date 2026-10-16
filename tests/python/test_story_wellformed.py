@@ -16,7 +16,9 @@ Run from the repository root:
     python3 -m unittest discover -s tests/python -t . -v
 """
 
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import shutil
@@ -25,6 +27,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -171,6 +174,33 @@ class StorySideTests(unittest.TestCase):
             (SYSML, 117, "S8"),
         ])
 
+    def test_S8_strictest_row_when_status_unreadable_or_unranked(self):
+        # A story whose status cannot be read, or whose status §11.4
+        # does not rank (blocked, which the project's storymeta allows),
+        # is held to the inProgress and done row. US_511 has no tagged
+        # scenario, and the criteria of US_512 and US_513 are reached by
+        # no case. US_514 and US_515_Clean meet the row.
+        self.assertEqual(lint("status"), [
+            (SYSML, 4, "S8"),
+            (SYSML, 24, "S8"),
+            (SYSML, 40, "S8"),
+        ])
+
+    def test_S8_says_the_status_was_unreadable(self):
+        findings = story_wellformed.lint_paths(
+            ["model"], "gherkin", Path(FIXTURES) / "status")
+
+        def messages(sid):
+            return " ".join(finding.message for finding in findings
+                            if sid in finding.message)
+
+        self.assertIn("status cannot be read",
+                      messages("US_511_NoStatusNoScenario"))
+        self.assertIn("status cannot be read",
+                      messages("US_512_NoStatusUncovered"))
+        self.assertIn("does not rank its status blocked",
+                      messages("US_513_UnrankedStatusUncovered"))
+
     def test_S9_unreadable_story_declarations(self):
         # A definition, a subsetting usage and a usage typed by another
         # library's UserStory. The other library's own definition of
@@ -193,6 +223,40 @@ class StorySideTests(unittest.TestCase):
             findings = story_wellformed.lint_paths(["model"], None,
                                                    Path(root))
         self.assertEqual(triples(findings), [(SYSML, 6, "S9")])
+
+    def test_S9_only_under_the_gherkin_rule_set(self):
+        # A finding carries one disposition, so a model file that is not
+        # UTF-8 is the gherkin gate's alone.
+        with ScratchCopy("register") as root:
+            path = os.path.join(root, SYSML)
+            with open(path, "ab") as handle:
+                handle.write(b"// \xff\n")
+            findings = {
+                only: triples(story_wellformed.lint_paths(
+                    ["model"], only, Path(root)))
+                for only in ("wellformed", "gherkin")}
+        self.assertEqual(findings, {
+            "wellformed": [],
+            "gherkin": [(SYSML, 68, "S9")],
+        })
+
+    def test_S9_story_file_that_cannot_be_read(self):
+        # A dangling link named like a story file cannot be read. The
+        # gherkin rule set reports it, and the wellformed one does not.
+        with ScratchCopy("register") as root:
+            os.symlink("no-such-target.sysml",
+                       os.path.join(root, STK, "dangling.sysml"))
+            findings = {
+                only: triples(story_wellformed.lint_paths(
+                    ["model"], only, Path(root)))
+                for only in ("wellformed", "gherkin", None)}
+        dangling = (STK + "dangling.sysml", 1, "S9")
+        missing_feature = (SYSML, 36, "S1")
+        self.assertEqual(findings, {
+            "wellformed": [],
+            "gherkin": [dangling, missing_feature],
+            None: [dangling, missing_feature],
+        })
 
     def test_register_file_four_stories(self):
         # Four stories in one register file, each paired with its own
@@ -329,6 +393,17 @@ class WellformedTests(unittest.TestCase):
             (SYSML, 28, "W3"),
         ])
 
+    def test_W3_unreadable_status_counts_as_past_backlog(self):
+        # W3 and S8 agree that any status other than backlog, an
+        # unreadable one included, is past backlog. US_514 has no status
+        # and no role.
+        self.assertEqual(lint("status", "wellformed"), [
+            (SYSML, 5, "W10"),
+            (SYSML, 15, "W10"),
+            (SYSML, 46, "W3"),
+            (SYSML, 47, "W10"),
+        ])
+
     def test_W6_narrative(self):
         self.assertEqual(lint("W6", "wellformed"), [
             (SYSML, 4, "W6"),
@@ -348,11 +423,13 @@ class WellformedTests(unittest.TestCase):
         # The config lists points, priority and status (as a block list)
         # and the four statuses. Points missing at ready, an unknown
         # status, and no status at all. A backlog story need not carry
-        # the other fields yet.
+        # the other fields yet. US_346 lacks both its status and points,
+        # and only the missing status is reported.
         self.assertEqual(lint("W10", "wellformed"), [
             (SYSML, 5, "W10"),
             (SYSML, 15, "W10"),
             (SYSML, 35, "W10"),
+            (SYSML, 55, "W10"),
         ])
 
     def test_W10_defaults_without_config(self):
@@ -365,6 +442,31 @@ class WellformedTests(unittest.TestCase):
         self.assertEqual(triples(findings), [
             (SYSML, 15, "W10"),
             (SYSML, 35, "W10"),
+            (SYSML, 55, "W10"),
+        ])
+
+
+class StatementTests(unittest.TestCase):
+    def test_bare_block_starts_at_its_brace(self):
+        # A block with no words before its `{` starts on the brace's
+        # line, not on the line of the statement before it.
+        statements = story_wellformed._statements("a;\n\n{\n}\n")
+        self.assertEqual(
+            [(statement.words, statement.line) for statement in statements],
+            [(["a"], 1), ([], 3)])
+
+
+class CompactFormattingTests(unittest.TestCase):
+    def test_statements_on_one_line_are_read(self):
+        # US_501, US_502 and US_504_Clean are each written on one line,
+        # and US_503 has two narrative attributes on one line. US_501
+        # lacks only its benefit and US_502's narrative names another
+        # role. Nothing else is reported: the status, role, capability
+        # (with an escaped quotation mark) and benefit of each story are
+        # all read.
+        self.assertEqual(lint("compact", None), [
+            (STK + "US_502_OtherRole.feature", 4, "S6"),
+            (SYSML, 4, "W6"),
         ])
 
 
@@ -465,6 +567,41 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("render", result.stderr)
         self.assertEqual(result.stdout, "")
+
+    def test_os_error_exits_2_on_one_line(self):
+        # The working directory is removed after the lint starts in it,
+        # so the lint cannot resolve its paths. That is an environment
+        # error: exit 2 and one line on standard error, not a traceback.
+        scratch = tempfile.mkdtemp(prefix="vse-lint-test-")
+        gone = os.path.join(scratch, "gone")
+        os.mkdir(gone)
+        try:
+            result = subprocess.run(
+                [sys.executable, LINT, "model"], cwd=gone,
+                preexec_fn=lambda: os.rmdir(gone),
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, check=False)
+        finally:
+            shutil.rmtree(scratch, ignore_errors=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(len(result.stderr.splitlines()), 1, result.stderr)
+        self.assertIn("story-wellformed.py:", result.stderr)
+        self.assertEqual(result.stdout, "")
+
+    def test_unexpected_error_exits_2_on_one_line(self):
+        # No input is known to raise inside the lint, so a stand-in for
+        # lint_paths raises the way a defect would.
+        def defect(*_args):
+            raise RuntimeError("a defect in the lint")
+
+        stderr = io.StringIO()
+        with mock.patch.object(story_wellformed, "lint_paths", defect), \
+                contextlib.redirect_stderr(stderr):
+            code = story_wellformed.main(["model"])
+        self.assertEqual(code, 2)
+        self.assertEqual(len(stderr.getvalue().splitlines()), 1,
+                         stderr.getvalue())
+        self.assertIn("a defect in the lint", stderr.getvalue())
 
     def test_gherkin_module_missing_exit_2(self):
         with tempfile.TemporaryDirectory() as scratch:

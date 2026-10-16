@@ -1,0 +1,4 @@
+project_profile: full
+
+storymeta:
+  valid_statuses: [backlog, ready, inProgress, blocked, done]

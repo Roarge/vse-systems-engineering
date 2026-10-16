@@ -26,6 +26,12 @@ Feature: Story lint
     When the engineer runs the story lint
     Then the lint reports finding S3 for US_901_Example
 
+  Scenario: A story whose status cannot be read is held to the strictest row
+    Given a story file US_901_Example with the acceptance criterion firstReading and no status
+    And a feature file for US_901_Example with a scenario tagged @AC_firstReading
+    When the engineer runs the story lint
+    Then the lint reports finding S8 for US_901_Example
+
   Scenario: A story whose criteria match its scenarios passes
     Given a story file US_901_Example with the acceptance criterion firstReading
     And a feature file for US_901_Example with a scenario tagged @AC_firstReading

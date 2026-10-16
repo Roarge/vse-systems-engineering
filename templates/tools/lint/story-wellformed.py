@@ -24,13 +24,19 @@ Rule sets
 * `--only wellformed`: section 1.9 rules 2, 3, 6 and 9 and the
   `storymeta` fields, codes W2, W3, W6, W9 and W10, for the stories in
   the `.sysml` files named or found. This is the
-  `precommit_story_wellformed` gate.
+  `precommit_story_wellformed` gate. W3 checks that the role is typed,
+  without resolving the type to a part definition, because the type may
+  come from an imported library.
 * `--only gherkin`: findings S1 to S9 and F1 to F10 of section 11.9.1,
   for every directory that holds a named file or that a named directory
   search finds. This is the `precommit_gherkin` gate.
 * `--only syntax`: F1, F2, F7, F8 and F9 for the `.feature` files named
   or found, with no story context.
 * No `--only`: wellformed and gherkin.
+
+A finding carries one disposition. A `.sysml` file that cannot be read,
+or is not UTF-8, is S9 under the gherkin rule set alone, and the
+wellformed rule set skips it.
 
 A story is what the plugin's in-session Gherkin-first hook reads as one:
 a requirement usage declared as `requirement <ID> : UserStory` or
@@ -47,7 +53,19 @@ The `storymeta` block of `.iso-config.yaml`, when present, sets
 `required_fields` (required once a story leaves backlog) and
 `valid_statuses`. Without it, status alone is required and the four
 statuses of section 1.5 are valid. Status itself is required whatever
-the story's state, because the other checks depend on it.
+the story's state, because the other checks depend on it. A story with
+no status draws that one W10 finding, not one per required field.
+
+A status that cannot be read, or that the section 11.4 ordering table
+does not rank (one a project adds through `valid_statuses`), holds the
+story to the strictest row of that table for S8, and W3 counts it as
+past backlog, so a story is never left unchecked.
+
+The story's narrative attributes, role and `@StoryMeta` values are read
+from the lint's own statement scanner, so a story written on one line
+reads the same as the usual layout. From the model reader the lint
+takes its comment stripping, its string unescaping, and the cases and
+`satisfy` relationships that S8 needs.
 
 Output
 ------
@@ -55,7 +73,9 @@ One finding per line, `<path>:<line>: <code> <message> (<reference>)`, or
 a JSON array of objects with the keys path, line, code, message and ref,
 sorted by path, line and code. Exit status 0 means clean, 1 means
 findings, and 2 means a usage or environment error, such as a missing
-path or a missing `tools/render/` beside `tools/lint/`.
+path, a missing `tools/render/` beside `tools/lint/`, a file system
+error, or an unexpected error in the lint itself. An error is one line
+on standard error, never a traceback.
 
 The lint uses the Python standard library only. It reads feature files
 with gherkin.py beside it and the model with ../render/sysml_model.py.
@@ -95,7 +115,10 @@ except ImportError as error:
                     .format(RENDER, error))
 
 MODES = ("wellformed", "gherkin", "syntax")
+# The rows of the section 11.4 ordering table. A status that cannot be
+# read, or that the table does not rank, is held to the strictest row.
 STATUS_RANK = {"backlog": 0, "ready": 1, "inProgress": 2, "done": 2}
+STRICTEST = max(STATUS_RANK.values())
 DEFAULT_STATUSES = ["backlog", "ready", "inProgress", "done"]
 ENUMERATIONS = {"priority": "Priority", "status": "StoryStatus",
                 "invest": "InvestFlags"}
@@ -164,11 +187,12 @@ class Statement:
 
 @dataclass
 class StoryBlock:
-    """A story declared in the canonical form, with its body."""
+    """A story declared in the canonical form, with what its body
+    declares."""
 
     identifier: str
     line: int
-    body: List[Statement]
+    shape: "StoryShape"
 
 
 @dataclass
@@ -197,7 +221,8 @@ def _statements(text: str) -> List[Statement]:
             continue
         if kind == "symbol" and value in ("{", "}", ";"):
             if value == "{":
-                statement = Statement(words, kinds, start or token_line, "{")
+                statement = Statement(words, kinds,
+                                      start if words else token_line, "{")
                 stack[-1].append(statement)
                 stack.append(statement.body)
             else:
@@ -280,13 +305,13 @@ def _misdeclared(statement: Statement) -> bool:
 
 def read_stories(text: str) -> StoryScan:
     """Stories and unreadable story declarations in SysML text."""
-    clean, _docs = sysml_model._strip_comments(text)
+    clean, docs = sysml_model._strip_comments(text)
     scan = StoryScan()
     for statement in _walk(_statements(clean)):
         identifier = _story_identifier(statement)
         if identifier is not None:
-            scan.stories.append(
-                StoryBlock(identifier, statement.line, statement.body))
+            scan.stories.append(StoryBlock(
+                identifier, statement.line, story_shape(statement.body, docs)))
         elif _misdeclared(statement):
             scan.unreadable.append((statement.line, statement.text()))
     return scan
@@ -304,7 +329,12 @@ class Criterion:
 
 @dataclass
 class StoryShape:
-    """What the story body declares, as the checks need it."""
+    """What the story body declares, as the checks need it.
+
+    Everything here is read from the lint's own statements, so a story
+    written on one line, or two attributes on one line, reads the same
+    as the usual layout.
+    """
 
     subjects: List[Statement] = field(default_factory=list)
     roles: List[Statement] = field(default_factory=list)
@@ -312,17 +342,81 @@ class StoryShape:
     prose: List[int] = field(default_factory=list)
     criteria: List[Criterion] = field(default_factory=list)
     order: Dict[int, int] = field(default_factory=dict)
+    capability: str = ""
+    benefit: str = ""
+    meta_values: Dict[str, str] = field(default_factory=dict)
 
     def names(self) -> List[str]:
         return [criterion.name for criterion in self.criteria]
 
+    @property
+    def role(self) -> str:
+        """The type name of the first role, or "" when it is untyped."""
+        return _type_name(self.roles[0]) if self.roles else ""
+
+    @property
+    def status(self) -> str:
+        """The status in the @StoryMeta, or "" when it cannot be read."""
+        return self.meta_values.get("status", "")
+
+
+def _type_name(statement: Statement) -> str:
+    """The last segment of the type in `: <Type>`, or ""."""
+    words, kinds = statement.words, statement.kinds
+    for index, word in enumerate(words):
+        if (word == ":" and index + 1 < len(words)
+                and kinds[index + 1] == "name"):
+            end = index + 1
+            while (end + 2 < len(words) and words[end + 1] == "::"
+                   and kinds[end + 2] == "name"):
+                end += 2
+            return words[end]
+    return ""
+
 
 def _typed(statement: Statement) -> bool:
     """True when the statement carries `: <Type>`."""
-    words, kinds = statement.words, statement.kinds
-    return any(word == ":" and index + 1 < len(words)
-               and kinds[index + 1] == "name"
-               for index, word in enumerate(words))
+    return bool(_type_name(statement))
+
+
+def _narrative(shape: StoryShape, words: List[str], kinds: List[str]) -> None:
+    """Read `attribute :>> capability = "...";`, or the same for the
+    benefit, unescaped and with runs of whitespace collapsed."""
+    if (len(words) >= 5 and words[1] == ":>>"
+            and words[2] in ("capability", "benefit") and words[3] == "="
+            and kinds[4] == "string" and len(words[4]) >= 2
+            and words[4].endswith('"')):
+        value = sysml_model._unescape(words[4][1:-1])
+        setattr(shape, words[2], " ".join(value.split()))
+
+
+def _meta_values(meta: Statement) -> Dict[str, str]:
+    """The `name = value;` pairs of an @StoryMeta body, each value read
+    as its last segment, so `StoryStatus::ready` reads as `ready`."""
+    values = {}  # type: Dict[str, str]
+    for assignment in meta.body:
+        words = assignment.words
+        if len(words) >= 3 and words[1] == "=":
+            values[words[0]] = words[-1]
+    return values
+
+
+def _legacy_values(statement: Statement, docs: List[str]) -> Dict[str, str]:
+    """The pairs of a `doc /* StoryMeta: status=ready, ... */` comment,
+    the form used before @StoryMeta (finding W9 asks to replace it)."""
+    # The comment stripper leaves a marker such as `@@VSEDOC0@@` where
+    # the doc body was.
+    marker = sysml_model._RE_DOC_MARKER.fullmatch("".join(statement.words[1:]))
+    if marker is None or int(marker.group(1)) >= len(docs):
+        return {}
+    body = " ".join(docs[int(marker.group(1))].split())
+    legacy = sysml_model._RE_STORYMETA_DOC.search(body)
+    values = {}  # type: Dict[str, str]
+    for pair in legacy.group(1).split(",") if legacy else []:
+        if "=" in pair:
+            name, value = pair.split("=", 1)
+            values[name.strip()] = value.strip()
+    return values
 
 
 def _is_acceptance(words: List[str]) -> bool:
@@ -345,9 +439,12 @@ def _acceptance(shape: StoryShape, statement: Statement) -> None:
             shape.criteria.append(criterion)
 
 
-def story_shape(story: StoryBlock) -> StoryShape:
+def story_shape(body: List[Statement], docs: List[str]) -> StoryShape:
+    """What a story body declares. `docs` holds the doc bodies the
+    comment stripper took out."""
     shape = StoryShape()
-    for position, statement in enumerate(story.body):
+    legacy = {}  # type: Dict[str, str]
+    for position, statement in enumerate(body):
         words, kinds = statement.head()
         if not words:
             continue
@@ -356,9 +453,14 @@ def story_shape(story: StoryBlock) -> StoryShape:
             shape.subjects.append(statement)
         elif words[0] == "stakeholder":
             shape.roles.append(statement)
+        elif words[0] == "attribute":
+            _narrative(shape, words, kinds)
+        elif words[0] == "doc":
+            legacy = legacy or _legacy_values(statement, docs)
         elif words[:2] == ["@", "StoryMeta"]:
             if shape.meta is None:
                 shape.meta = statement
+                shape.meta_values = _meta_values(statement)
         elif words[0] == "requirement" and len(words) > 1:
             if _is_acceptance(words):
                 _acceptance(shape, statement)
@@ -366,6 +468,8 @@ def story_shape(story: StoryBlock) -> StoryShape:
                   and words[2] == ":>" and words[3] == "acceptance"):
                 shape.criteria.append(
                     Criterion(words[1], statement.line, "sibling"))
+    if shape.meta is None:
+        shape.meta_values = legacy
     return shape
 
 
@@ -406,14 +510,9 @@ class SysmlFile:
     full: Path
     findings: List[Finding]
     scan: StoryScan = field(default_factory=StoryScan)
+    # The model reader's view, for the cases and satisfy relationships
+    # finding S8 needs. Stories are read from `scan` only.
     model: Optional["sysml_model.Model"] = None
-
-    def values(self, identifier: str) -> "sysml_model.Story":
-        """What the model reader read for the story, or an empty story."""
-        story = self.model.story(identifier) if self.model else None
-        if story is None:
-            story = sysml_model.Story(identifier, self.display, "")
-        return story
 
 
 @dataclass
@@ -423,6 +522,9 @@ class FeatureFile:
     findings: List[Finding]
     feature: Optional["gherkin.Feature"] = None
     lines: List[str] = field(default_factory=list)
+    # F6 for the narrative lines, worked out once, or None when they are
+    # in order or the file did not parse.
+    narrative_order: Optional[Finding] = None
 
     @property
     def ok(self) -> bool:
@@ -471,6 +573,8 @@ class Workspace:
                     _parser_finding(finding)
                     for finding in gherkin.check_structure(result, display))
                 entry.lines = text.split("\n")
+                if entry.ok:
+                    entry.narrative_order = _narrative_order(entry)
             self.features[key] = entry
         return self.features[key]
 
@@ -537,9 +641,12 @@ def _collect(paths: List[str], project_root: Path) -> Scope:
 
 
 def _directory_files(full: Path, display: str) -> List[Tuple[Path, str]]:
+    """The lintable files of one directory. A name that is not a
+    directory is kept even when it cannot be read, such as a dangling
+    link, so that reading it reports a finding."""
     return [(full / name, _display(display, name))
             for name in sorted(os.listdir(str(full)))
-            if _lintable(name) and (full / name).is_file()]
+            if _lintable(name) and not (full / name).is_dir()]
 
 
 # ---------------------------------------------------------------------------
@@ -610,9 +717,8 @@ def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
 
     for story in entry.scan.stories:
         sid = story.identifier
-        shape = story_shape(story)
-        values = entry.values(sid)
-        status = values.meta.get("status", "")
+        shape = story.shape
+        status = shape.status
 
         # Rule 2: one typed subject, before the role.
         if not shape.subjects:
@@ -637,27 +743,30 @@ def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
                        "the subject of {} comes after its role. Declare the "
                        "subject first".format(sid), "§1.9 rule 2")
 
-        # Rule 3: one role, typed by a part definition once past backlog.
+        # Rule 3: one role, typed once past backlog. Any status other
+        # than backlog is past it, an unreadable one included, as for S8.
         if len(shape.roles) > 1:
             report(shape.roles[1].line, "W3",
                    "{} declares {} roles. Keep exactly one `stakeholder :>> "
                    "role : <PartDef>;`".format(sid, len(shape.roles)),
                    "§1.9 rule 3")
-        elif status and status != "backlog":
+        elif status != "backlog":
+            past = ("{} is {}".format(sid, status) if status else
+                    "the status of {} cannot be read, so it counts as past "
+                    "backlog".format(sid))
             if not shape.roles:
                 report(story.line, "W3",
-                       "{} is {} but has no role. Declare `stakeholder :>> "
+                       "{}, but it has no role. Declare `stakeholder :>> "
                        "role : <PartDef>;` before a story leaves backlog"
-                       .format(sid, status), "§1.9 rule 3")
+                       .format(past), "§1.9 rule 3")
             elif not _typed(shape.roles[0]):
                 report(shape.roles[0].line, "W3",
-                       "the role of {} has no part definition, which a {} "
-                       "story needs. Write `stakeholder :>> role : "
-                       "<PartDef>;`".format(sid, status), "§1.9 rule 3")
+                       "{}, but its role is untyped. Write `stakeholder :>> "
+                       "role : <PartDef>;`".format(past), "§1.9 rule 3")
 
         # Rule 6: the narrative capability and benefit stay.
-        for name, value in (("capability", values.capability),
-                            ("benefit", values.benefit)):
+        for name, value in (("capability", shape.capability),
+                            ("benefit", shape.benefit)):
             if not value:
                 report(story.line, "W6",
                        "{} has no {}. Keep `attribute :>> {} = \"...\";` "
@@ -688,27 +797,30 @@ def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
                            " ".join(value)), "§1.9 rule 9, §1.5")
 
         # Storymeta fields: status always, the rest once past backlog.
+        # Without a status, which fields apply is unknown, so the missing
+        # status is the one finding.
         line = shape.meta.line if shape.meta is not None else story.line
         if not status:
             report(line, "W10",
                    "{} has no status. Add `status = StoryStatus::backlog;` "
                    "or its actual status to the @StoryMeta".format(sid),
                    "§1.5")
-        elif status not in valid:
+            continue
+        if status not in valid:
             report(line, "W10",
                    "{} has the status {}, which is not one of {}. Use one "
                    "of the valid statuses".format(
                        sid, status, ", ".join(valid)), "§1.5, §0.10.3")
         if status != "backlog":
             missing = [name for name in required
-                       if name != "status" and name not in values.meta]
+                       if name != "status" and name not in shape.meta_values]
             for name in missing:
                 report(line, "W10",
                        "{} is {} but its @StoryMeta has no {}. The project "
                        "requires {} once a story leaves backlog (storymeta "
                        "in .iso-config.yaml)".format(
-                           sid, status or "without a status", name,
-                           ", ".join(required)), "§1.5, §0.10.3")
+                           sid, status, name, ", ".join(required)),
+                       "§1.5, §0.10.3")
     return findings
 
 
@@ -834,9 +946,8 @@ def _check_feature(entry: FeatureFile, project_root: Path) -> List[Finding]:
                     "§11.2.3"))
             else:
                 seen[name] = tag.line
-    order = _narrative_order(entry)
-    if order is not None:
-        findings.append(order)
+    if entry.narrative_order is not None:
+        findings.append(entry.narrative_order)
     return findings
 
 
@@ -845,7 +956,7 @@ def _words(text: str) -> str:
 
 
 def _check_narrative(entry: FeatureFile, sid: str,
-                     values: "sysml_model.Story") -> List[Finding]:
+                     story: StoryShape) -> List[Finding]:
     """S6: the narrative lines against the story's role, capability and
     benefit. Run only when the order (F6) is right."""
     findings = []  # type: List[Finding]
@@ -854,32 +965,32 @@ def _check_narrative(entry: FeatureFile, sid: str,
     role_line, want_line, benefit_line = description[:3]
     article = "As an " if role_line.startswith("As an ") else "As a "
     role = role_line[len(article):]
-    if values.role and ("".join(role.split()).lower()
-                        != values.role.lower()):
+    if story.role and ("".join(role.split()).lower()
+                       != story.role.lower()):
         findings.append(Finding(
             entry.display, lines[0], "S6",
             "'{}' does not name the role of {}, which is {}. Write "
             "'As a <role>' with the role's part definition name, spaces "
-            "and case aside".format(role_line, sid, values.role),
+            "and case aside".format(role_line, sid, story.role),
             "§11.2.2"))
     want = _words(want_line[len("I want "):])
     wanted = [want]
     if want.startswith("to "):
         wanted.append(want[len("to "):])
-    if values.capability and _words(values.capability) not in wanted:
+    if story.capability and story.capability not in wanted:
         findings.append(Finding(
             entry.display, lines[1], "S6",
             "'{}' does not repeat the capability of {}, \"{}\". Write "
             "'I want to {}' or 'I want {}'".format(
-                want_line, sid, values.capability, values.capability,
-                values.capability), "§11.2.2"))
+                want_line, sid, story.capability, story.capability,
+                story.capability), "§11.2.2"))
     benefit = _words(benefit_line[len("So that "):])
-    if values.benefit and _words(values.benefit) != benefit:
+    if story.benefit and story.benefit != benefit:
         findings.append(Finding(
             entry.display, lines[2], "S6",
             "'{}' does not repeat the benefit of {}, \"{}\". Write "
-            "'So that {}'".format(benefit_line, sid, values.benefit,
-                                  values.benefit), "§11.2.2"))
+            "'So that {}'".format(benefit_line, sid, story.benefit,
+                                  story.benefit), "§11.2.2"))
     return findings
 
 
@@ -932,6 +1043,18 @@ def _world(workspace: Workspace, scope_files: List[SysmlFile]) -> World:
     return world
 
 
+def _standing(sid: str, status: str) -> str:
+    """The story's status as S8 reports it, saying why the strictest row
+    applies when the status cannot be read or is not ranked."""
+    if not status:
+        return ("{} is held to the strictest row of §11.4 because its "
+                "status cannot be read".format(sid))
+    if status not in STATUS_RANK:
+        return ("{} is held to the strictest row of §11.4 because the table "
+                "does not rank its status {}".format(sid, status))
+    return "{} is {}".format(sid, status)
+
+
 def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
                  features: Dict[str, FeatureFile], world: World
                  ) -> List[Finding]:
@@ -939,10 +1062,9 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
     findings = []  # type: List[Finding]
     path = entry.display
     sid = story.identifier
-    shape = story_shape(story)
-    values = entry.values(sid)
-    status = values.meta.get("status", "")
-    rank = STATUS_RANK.get(status, -1)
+    shape = story.shape
+    status = shape.status
+    rank = STATUS_RANK.get(status, STRICTEST)
     name = sid + ".feature"
     feature = features.get(name)
 
@@ -1016,25 +1138,25 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
                     "`requirement {} {{ doc /* ... */ }}` in its "
                     "`requirement :>> acceptance`, or remove the tag"
                     .format(tag, sid, tag), "§11.3.1"))
-        if _narrative_order(feature) is None:
-            findings.extend(_check_narrative(feature, sid, values))
+        if feature.narrative_order is None:
+            findings.extend(_check_narrative(feature, sid, shape))
         if rank >= 1 and not tags:
             findings.append(Finding(
                 path, story.line, "S8",
-                "{} is {} but {} has no scenario tagged @AC_<name>. Write "
-                "at least one scenario, or set the status back to backlog"
-                .format(sid, status, name), "§11.4"))
+                "{} has no scenario tagged @AC_<name>, and {}. Write at "
+                "least one scenario, or set the status to backlog".format(
+                    name, _standing(sid, status)), "§11.4"))
 
     if rank >= 2:
         for criterion in shape.criteria:
             if not world.covers(sid, criterion.name):
                 findings.append(Finding(
                     path, criterion.line, "S8",
-                    "criterion {} of {} ({}) is reached by no verification "
-                    "or validation case. Add `verify {}.acceptance.{};` to "
-                    "a case objective, a stub is enough".format(
-                        criterion.name, sid, status, sid, criterion.name),
-                    "§11.4, §11.3.3"))
+                    "criterion {} of {} is reached by no verification or "
+                    "validation case, and {}. Add `verify {}.acceptance.{};` "
+                    "to a case objective, a stub is enough".format(
+                        criterion.name, sid, _standing(sid, status), sid,
+                        criterion.name), "§11.4, §11.3.3"))
 
     satisfactions = world.satisfied.get(sid, [])
     no_scenarios = feature is None or (scenarios is not None
@@ -1113,15 +1235,11 @@ def lint_paths(paths: List[str], only: Optional[str],
             findings.extend(workspace.feature_file(full, display).findings)
         return sorted(findings, key=_sort_key)
 
-    # Every .sysml file a rule set checks, each once, so that a file that
-    # cannot be read is reported once whichever rule set read it.
-    checked = []  # type: List[SysmlFile]
     if only in (None, "wellformed"):
         storymeta = read_storymeta(project_root / CONFIG)
         for full, display in scope.sysml.values():
-            entry = workspace.sysml_file(full, display)
-            checked.append(entry)
-            findings.extend(_check_wellformed(entry, storymeta))
+            findings.extend(_check_wellformed(
+                workspace.sysml_file(full, display), storymeta))
 
     if only in (None, "gherkin"):
         in_directories = [
@@ -1129,17 +1247,22 @@ def lint_paths(paths: List[str], only: Optional[str],
             for full, display in scope.directories.values()
             for file_full, file_display in _directory_files(full, display)
             if file_full.name.endswith(".sysml")]
-        checked.extend(in_directories)
         world = _world(workspace, in_directories)
         for full, display in scope.directories.values():
             findings.extend(_check_directory(workspace, full, display, world))
-
-    reported = set()
-    for entry in checked:
-        if id(entry) not in reported:
-            reported.add(id(entry))
+        # A model file that cannot be read or decoded is S9, which is the
+        # gherkin gate's finding alone, so that no finding carries two
+        # dispositions. The wellformed rule set skips such a file.
+        for entry in in_directories:
             findings.extend(entry.findings)
     return sorted(findings, key=_sort_key)
+
+
+def _environment_error(message: str) -> int:
+    """Write the message on one line of standard error, for exit 2."""
+    sys.stderr.write("story-wellformed.py: {}\n".format(
+        " ".join(message.split())))
+    return 2
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -1159,9 +1282,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         sys.stdout.reconfigure(errors="backslashreplace")
     try:
         findings = lint_paths(args.paths, args.only, Path.cwd())
-    except LintError as error:
-        sys.stderr.write("story-wellformed.py: {}\n".format(error))
-        return 2
+    except (LintError, OSError) as error:
+        return _environment_error(str(error))
+    except Exception as error:  # A defect must not read as findings.
+        return _environment_error("unexpected error, {}: {}".format(
+            type(error).__name__, error))
     if args.format == "json":
         print(json.dumps([finding.as_dict() for finding in findings],
                          indent=2))

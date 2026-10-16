@@ -50,4 +50,14 @@ package FixtureW10 {
         attribute :>> capability = "see the first reading";
         attribute :>> benefit    = "the device is known to work";
     }
+
+    requirement US_346_NoStatusNoPoints : UserStory {
+        @StoryMeta { priority = Priority::high; }
+
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        attribute :>> capability = "see the first reading";
+        attribute :>> benefit    = "the device is known to work";
+    }
 }

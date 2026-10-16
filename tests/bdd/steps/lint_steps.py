@@ -80,6 +80,18 @@ def story_with_criterion(ctx, story, criterion):
                "requirement {} {{".format(criterion))
 
 
+@step(r"a story file (\w+) with the acceptance criterion (\w+) and no status")
+def story_with_criterion_without_status(ctx, story, criterion):
+    copy_piece(ctx, "story-no-status.sysml",
+               os.path.join(STORIES, "stories.sysml"),
+               ["requirement {} : UserStory".format(story),
+                "requirement {} {{".format(criterion)])
+    with open(os.path.join(project(ctx), STORIES, "stories.sysml"),
+              encoding="utf-8") as handle:
+        if "status =" in handle.read():
+            raise AssertionError("story-no-status.sysml declares a status")
+
+
 @step(r"a story file (\w+) whose acceptance is legacy prose")
 def story_with_legacy_prose(ctx, story):
     story_file(ctx, "story-legacy.sysml", story,
