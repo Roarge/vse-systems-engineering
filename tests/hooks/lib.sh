@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # Shared helpers for the behavioural hook tests under tests/hooks/.
 #
-# Sourced by check-toolchain.sh, test-pre-commit.sh and
-# test-session-start.sh. Provides a scratch git repository with the
+# Sourced by check-toolchain.sh, test-harness.sh, test-pre-commit.sh
+# and test-session-start.sh. Provides a scratch git repository with the
 # project-side hooks installed, a stub directory that shadows the real
 # SysML toolchains, assertion helpers, and a pass/fail summary.
 #
 # Two runners:
-#   tc_run_hook, tc_run_lib, tc_run_lib_fn are sandboxed. PATH is the
-#     stub directory followed by /usr/bin and /bin, HOME is a scratch
-#     directory, and the pilot home points inside it, so nothing the
-#     machine has installed can reach the code under test.
+#   tc_run_hook, tc_run_lifecycle, tc_run_lib, tc_run_lib_fn are
+#     sandboxed. PATH is the stub directory followed by /usr/bin and
+#     /bin, HOME is a scratch directory, and the pilot home points
+#     inside it, so nothing the machine has installed can reach the
+#     code under test.
 #   tc_run_real uses the machine's own PATH and HOME, for the sections
 #     that exercise a really installed toolchain. Those sections are
 #     guarded and print SKIPPED when the tool is absent, which is what
@@ -106,21 +107,36 @@ tc_setup_repo() {
     STUBS="$(tc_mktemp_d)"
 }
 
-# tc_config <profile> <toolchain|-> [override=<block|warn|info|off>]
+# tc_config <profile> <toolchain|-> [spec ...]
+#
+# Each spec is <gate>=<block|warn|info|off>, or override=<disp>, the
+# older form that means precommit_lint. Every spec lands in one
+# gate_overrides block, in the order given.
 tc_config() {
-    local profile="$1" toolchain="$2" extra="${3:-}"
+    local profile="$1" toolchain="$2" spec gate
+    shift 2
     {
         printf 'project_profile: %s\n' "$profile"
         if [ "$toolchain" != "-" ]; then
             printf 'sysml_toolchain: %s\n' "$toolchain"
         fi
-        case "$extra" in
-            override=*)
-                printf 'gate_overrides:\n'
-                printf '  precommit_lint: %s\n' "${extra#override=}"
-                ;;
-        esac
+        if [ "$#" -gt 0 ]; then
+            printf 'gate_overrides:\n'
+            for spec in "$@"; do
+                gate="${spec%%=*}"
+                if [ "$gate" = "override" ]; then
+                    gate="precommit_lint"
+                fi
+                printf '  %s: %s\n' "$gate" "${spec#*=}"
+            done
+        fi
     } > "${REPO}/.iso-config.yaml"
+}
+
+# tc_config_append: append stdin verbatim to the project configuration,
+# for keys tc_config does not write.
+tc_config_append() {
+    cat >> "${REPO}/.iso-config.yaml"
 }
 
 # tc_stub <name>: write an executable stub into $STUBS from stdin.
@@ -249,6 +265,8 @@ tc_env() {
     TC_ENV=("$@")
 }
 
+# Stdin is the file named by TC_STDIN, or empty when it is unset, so
+# code under test never reads the terminal of whoever runs the tests.
 _tc_capture() {
     local outf errf
     outf="$(mktemp "${TC_ROOT}/out.XXXXXX")"
@@ -256,7 +274,7 @@ _tc_capture() {
     RC=0
     # env is an external process, so the errexit context of this caller
     # cannot leak into the code under test.
-    "$@" > "$outf" 2> "$errf" < /dev/null || RC=$?
+    "$@" > "$outf" 2> "$errf" < "${TC_STDIN:-/dev/null}" || RC=$?
     # shellcheck disable=SC2034
     OUT="$(cat "$outf")"
     # shellcheck disable=SC2034
@@ -281,6 +299,19 @@ _tc_sandboxed() {
 
 tc_run_hook() {
     _tc_sandboxed ./.githooks/pre-commit
+}
+
+# tc_run_lifecycle <hook-basename> <json>: run a lifecycle hook the way
+# the harness does, sandboxed in $REPO with the JSON payload on stdin
+# and CLAUDE_PLUGIN_ROOT naming the plugin root. TC_HOOK_ROOT, when
+# set, replaces the plugin root, so a self-test can run a stub hook.
+tc_run_lifecycle() {
+    local hook="$1" json="$2" root TC_STDIN
+    root="${TC_HOOK_ROOT:-${TC_PLUGIN_ROOT}}"
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$json" > "$TC_STDIN"
+    _tc_sandboxed CLAUDE_PLUGIN_ROOT="$root" "${root}/hooks/${hook}.sh"
+    rm -f "$TC_STDIN"
 }
 
 # Run the library as the command-line entry point CI and the Makefile
@@ -454,6 +485,32 @@ tc_assert_empty() {
     else
         tc_fail "$name" "expected empty, got:
 ${text}"
+    fi
+}
+
+# tc_assert_json <jq-filter> <case>: stdout is exactly one JSON value
+# and the filter holds on it. A hook that prints two objects fails even
+# when both satisfy the filter, because the output contract allows
+# exactly one.
+tc_assert_json() {
+    local filter="$1" name="$2"
+    if printf '%s' "$OUT" | jq -e "$filter" > /dev/null 2>&1 \
+        && printf '%s' "$OUT" | jq -e -s 'length == 1' > /dev/null 2>&1; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected one JSON value satisfying: ${filter}
+$(_tc_context)"
+    fi
+}
+
+# tc_assert_json_silent <case>: the hook printed nothing on stdout.
+tc_assert_json_silent() {
+    local name="$1"
+    if [ -z "$OUT" ]; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected no stdout
+$(_tc_context)"
     fi
 }
 
