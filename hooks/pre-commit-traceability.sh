@@ -10,6 +10,18 @@
 # not the commit that introduced the gap, and stopping it teaches the
 # engineer to reach for a bypass. /vse-trace reports the whole model.
 #
+# The file set follows pre-commit.sh. With VSE_PRECOMMIT_RANGE unset
+# the gate reads the staged set. CI sets it to a git range (such as
+# origin/main...HEAD), and the gate reads what that range adds, or to
+# "all", and the gate reads every tracked file whole.
+#
+# A criterion nested inside a story's acceptance (requirement <name>
+# { ... } inside requirement :>> acceptance) is a member of its story,
+# not a requirement of its own, so it never enters the touched set. A
+# verify clause reaches a requirement through any chain of "::" and "."
+# segments, so verify <story>.acceptance.<name> counts for the story
+# (methodology §11.3.3).
+#
 # The disposition comes from the precommit_traceability gate, per
 # methodology §0.10.4: block reports and stops the commit, warn reports
 # and lets it through, info prints one summary line, off skips.
@@ -41,8 +53,30 @@ if [ "$DISPOSITION" = "off" ]; then
     exit 0
 fi
 
-STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.sysml$' || true)
-ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' || true)
+RANGE="${VSE_PRECOMMIT_RANGE:-}"
+
+# The file set, as paths relative to the repository root, one per line,
+# read the way pre-commit.sh reads it. git writes NUL-delimited names,
+# so a space in a name arrives intact.
+# Usage: file_set <git diff filter>
+file_set() {
+    if [ -z "$RANGE" ]; then
+        git diff --cached --name-only --diff-filter="$1" -z | tr '\0' '\n'
+    elif [ "$RANGE" = "all" ]; then
+        git ls-files -z | tr '\0' '\n'
+    else
+        git diff --name-only --diff-filter="$1" -z "$RANGE" | tr '\0' '\n'
+    fi
+}
+
+if ! CHANGED="$(file_set ACM)"; then
+    if [ -n "$RANGE" ]; then
+        echo "pre-commit-traceability: Cannot list the files changed by the range '${RANGE}'. Set VSE_PRECOMMIT_RANGE to a range git can read, such as origin/main...HEAD, or to all."
+    else
+        echo "pre-commit-traceability: Cannot list the staged files."
+    fi
+    exit 1
+fi
 
 # Drop every path with a library/ directory segment, the shipped
 # model/library/vse-library.sysml above all. The library carries the
@@ -50,10 +84,9 @@ ADDED_SYSML=$(git diff --cached --name-only --diff-filter=A | grep '\.sysml$' ||
 # definitions the project's stories are typed by, not requirements the
 # project has to verify. Leaving them in would report the library as a
 # wall of gaps on the first commit that stages it.
-STAGED_SYSML=$(printf '%s\n' "$STAGED_SYSML" | grep -v '\(^\|/\)library/' || true)
-ADDED_SYSML=$(printf '%s\n' "$ADDED_SYSML" | grep -v '\(^\|/\)library/' || true)
+SYSML_FILES=$(printf '%s\n' "$CHANGED" | grep '\.sysml$' | grep -v '\(^\|/\)library/' || true)
 
-if [ -z "$STAGED_SYSML" ]; then
+if [ -z "$SYSML_FILES" ]; then
     exit 0
 fi
 
@@ -68,75 +101,215 @@ else
     ENG_ROOT="."
 fi
 
-# Blank out every comment body on stdin: the tail of a `//` line and
-# each `/* ... */` span, including a `doc` body, which spans lines. A
-# story written inside a comment is documentation, so it shall not
-# enter the touched set. Positions on the surviving text do not matter
-# here, only the text itself, so the spans are removed rather than
-# blanked. POSIX awk only, per hooks/README.md.
-strip_sysml_comments() {
-    awk '
-        {
-            line = $0
-            out = ""
-            while (length(line) > 0) {
-                if (inblock) {
-                    close_at = index(line, "*/")
-                    if (close_at == 0) { line = ""; break }
-                    line = substr(line, close_at + 2)
-                    inblock = 0
-                    continue
+# added_model_text <whole>: read one file's diff on stdin and print the
+# model text of each added line. The diff carries the whole new file as
+# context, so each added line is read in its place in the file: a line
+# added inside an existing doc comment or acceptance body is known to
+# sit there. With <whole> set to 1, stdin is the file itself and every
+# line counts as added.
+#
+# The printed text keeps each column but blanks string contents,
+# comments, KerML notes and doc bodies, so a story written inside a
+# comment is documentation and does not enter the touched set. It also
+# blanks the body of a story's acceptance (requirement :>> acceptance
+# { ... }, or requirement acceptance { ... }), because the criteria
+# nested there are members of the story. Braces in blanked comments and
+# strings are not counted. POSIX awk only, per hooks/README.md.
+#
+# Mask modes: 0 model text, 1 inside a "string", 2 inside a /* */
+# comment or a //* */ note. A // line comment ends the line. The note
+# opener //* is checked before //, because a note may span lines.
+#
+# Acceptance states: 1 after "requirement", 2 after "requirement :>>",
+# 3 after "acceptance", waiting for "{" (the body) or ";" (no body).
+added_model_text() {
+    LC_ALL=C awk -v whole="$1" '
+        function mask(line,    n, i, c, d, m) {
+            n = length(line)
+            m = ""
+            i = 1
+            while (i <= n) {
+                c = substr(line, i, 1)
+                if (mode == 1) {
+                    if (c == "\\") {
+                        m = m "  "
+                        i += 2
+                        continue
+                    }
+                    if (c == "\"")
+                        mode = 0
+                    else
+                        c = " "
+                } else if (mode == 2) {
+                    if (c == "*" && substr(line, i + 1, 1) == "/") {
+                        mode = 0
+                        m = m "  "
+                        i += 2
+                        continue
+                    }
+                    c = " "
+                } else if (c == "\"") {
+                    mode = 1
+                } else if (c == "/") {
+                    d = substr(line, i + 1, 1)
+                    if (d == "/" && substr(line, i + 2, 1) == "*") {
+                        mode = 2
+                        m = m "   "
+                        i += 3
+                        continue
+                    }
+                    if (d == "/")
+                        break
+                    if (d == "*") {
+                        mode = 2
+                        m = m "  "
+                        i += 2
+                        continue
+                    }
                 }
-                block_at = index(line, "/*")
-                line_at = index(line, "//")
-                if (line_at > 0 && (block_at == 0 || line_at < block_at)) {
-                    out = out substr(line, 1, line_at - 1)
-                    line = ""
-                    break
-                }
-                if (block_at > 0) {
-                    out = out substr(line, 1, block_at - 1)
-                    line = substr(line, block_at + 2)
-                    inblock = 1
-                    continue
-                }
-                out = out line
-                line = ""
+                m = m c
+                i++
             }
-            print out
+            return m
+        }
+        function feed(tok) {
+            if (tok == " " || tok == "\t" || tok == "\r")
+                return
+            if (st == 1) {
+                if (tok == ":>>") {
+                    st = 2
+                    return
+                }
+                if (tok == "acceptance") {
+                    st = 3
+                    return
+                }
+                st = 0
+            } else if (st == 2) {
+                if (tok == "acceptance") {
+                    st = 3
+                    return
+                }
+                st = 0
+            } else if (st == 3) {
+                if (tok == "{") {
+                    depth++
+                    if (!inside) {
+                        inside = 1
+                        body = depth
+                    }
+                    st = 0
+                    return
+                }
+                if (tok != ";" && tok != "}" && tok != "requirement")
+                    return
+                st = 0
+            }
+            if (tok == "requirement") {
+                st = 1
+            } else if (tok == "{") {
+                depth++
+            } else if (tok == "}") {
+                if (inside && depth == body)
+                    inside = 0
+                depth--
+            }
+        }
+        function scan(m,    n, i, len, tok, hidden, out) {
+            n = length(m)
+            out = ""
+            i = 1
+            while (i <= n) {
+                if (substr(m, i, 1) ~ /[A-Za-z_]/) {
+                    match(substr(m, i), /^[A-Za-z_][A-Za-z0-9_]*/)
+                    len = RLENGTH
+                } else if (substr(m, i, 3) == ":>>") {
+                    len = 3
+                } else {
+                    len = 1
+                }
+                tok = substr(m, i, len)
+                hidden = inside
+                feed(tok)
+                if (hidden || inside)
+                    out = out sprintf("%" len "s", "")
+                else
+                    out = out tok
+                i += len
+            }
+            return out
+        }
+        BEGIN { started = whole }
+        !started {
+            if (substr($0, 1, 2) == "@@")
+                started = 1
+            next
+        }
+        {
+            if (whole) {
+                mark = "+"
+                text = $0
+            } else if (substr($0, 1, 2) == "@@") {
+                next
+            } else {
+                mark = substr($0, 1, 1)
+                text = substr($0, 2)
+            }
+            # "-" lines are the old side and "\" lines are notes.
+            if (mark != "+" && mark != " ")
+                next
+            out = scan(mask(text))
+            if (mark == "+")
+                print out
         }
     '
 }
 
-# Names this commit touches, as tab-separated "<file>\t<name>" records.
+# Context wide enough to hold any model file whole (a million lines),
+# so the diff of one file is a single hunk with every line of the file.
+WHOLE_FILE=1000000
+
+# added_text <file>: the model text of the lines this change adds to
+# <file>. In "all" mode every line of the file counts as added.
+added_text() {
+    local file="$1"
+    if [ -z "$RANGE" ]; then
+        git diff --cached --no-color --no-ext-diff --unified="$WHOLE_FILE" -- "$file" \
+            | added_model_text 0
+    elif [ "$RANGE" = "all" ]; then
+        added_model_text 1 < "$file"
+    else
+        git diff --no-color --no-ext-diff --unified="$WHOLE_FILE" "$RANGE" -- "$file" \
+            | added_model_text 0
+    fi
+}
+
+# Names this change touches, as tab-separated "<file>\t<name>" records.
 # For a modified file only the names on added lines count, which is
 # what keeps the gate off pre-existing content. For a newly added file
-# every name in it counts. Both branches drop comment bodies first.
+# every line is added, so every name in it counts.
 collect_touched() {
-    local pattern="$1" file added names
-    for file in $STAGED_SYSML; do
-        added=$(git diff --cached -U0 -- "$file" | grep '^+' | grep -v '^+++' | cut -c2- || true)
-        names=$(printf '%s\n' "$added" | strip_sysml_comments | grep -oP "$pattern" || true)
+    local pattern="$1" file names name
+    while IFS= read -r file; do
+        [ -n "$file" ] || continue
+        names=$(added_text "$file" | grep -oP "$pattern" || true)
         for name in $names; do
             printf '%s\t%s\n' "$file" "$name"
         done
-    done
-    for file in $ADDED_SYSML; do
-        names=$(strip_sysml_comments 2>/dev/null < "$file" | grep -oP "$pattern" || true)
-        for name in $names; do
-            printf '%s\t%s\n' "$file" "$name"
-        done
-    done
+    done <<< "$SYSML_FILES"
 }
 
 TOUCHED_REQS=$(collect_touched 'requirement\s+(?:def\s+)?(?:<[^>]*>\s*)?\K[A-Za-z_]\w*(?=\s*:>?\s*[A-Za-z_])' | sort -u)
 TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
 
 # Does any .sysml file in the repository carry a verify link to $1?
+# The target may follow any chain of "::" and "." segments, such as a
+# package and the requirement groups the story sits in, and may run on
+# past it, as in verify <story>.acceptance.<name>.
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qP "verify\s+(?:requirement\s+)?(?:[A-Za-z_][\w:]*(?:::|\.))?${req}\b" "$sysml" 2>/dev/null; then
+        if grep -qP "verify\s+(?:requirement\s+)?(?:[A-Za-z_]\w*(?:::|\.))*${req}\b" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)

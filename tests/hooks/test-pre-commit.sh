@@ -379,6 +379,249 @@ case_trace_library_skipped() {
         "shipped library: 0 touched elements, so the gate says nothing"
 }
 
+# A KerML note (//* ... */) may span lines, and a story inside it is
+# documentation. A comment opener inside a string opens nothing, so the
+# story after it is still read.
+case_trace_note_and_string() {
+    tc_setup_repo
+    config_for block opensysml
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/domain/d.sysml <<'EOF'
+package L {
+    //* A note, not a declaration:
+        requirement US_8_W : UserStory { }
+    */
+    attribute storyFiles = "stories/*.sysml";
+    requirement US_8_V : UserStory {
+        subject :>> system : Sensor;
+    }
+}
+EOF
+    tc_stage model/core/domain/d.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "note and string: the story after the string stops the commit"
+    tc_assert_grep "requirement 'US_8_V' has no verification case" "$OUT" \
+        "note and string: the story after the string is read"
+    tc_assert_not_grep "US_8_W" "$OUT" "note and string: the story in the note is not reported"
+}
+
+# A case reaches one criterion through a chain (methodology §11.3.3),
+# and the story may sit inside requirement groups, so the chain can
+# carry any number of "::" and "." segments before the story's name.
+# US_9_X is reached as US_9_X.acceptance.alarmCleared. US_9_Y sits two
+# groups down and is reached as
+# S::Alarms.Queue.US_9_Y.acceptance.allCleared. Both chains reach their
+# story, so neither story is a gap.
+case_trace_deep_verify_counts() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        stakeholder :>> role : Op;
+        attribute :>> capability = "acknowledge an alarm";
+        attribute :>> benefit = "the queue clears";
+        requirement :>> acceptance {
+            requirement alarmCleared {
+                doc /* Given an alarm, when it is acknowledged, then it leaves the queue. */
+            }
+        }
+    }
+    requirement Alarms {
+        requirement Queue {
+            requirement US_9_Y : UserStory {
+                subject :>> system : Sys;
+                stakeholder :>> role : Op;
+                attribute :>> capability = "clear every alarm at once";
+                attribute :>> benefit = "nothing waits";
+                requirement :>> acceptance {
+                    requirement allCleared {
+                        doc /* Given alarms, when all are acknowledged, then the queue is empty. */
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    private import S::*;
+    verification def VC_9_X {
+        subject sys : Sys;
+        objective {
+            verify US_9_X.acceptance.alarmCleared;
+            verify S::Alarms.Queue.US_9_Y.acceptance.allCleared;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "deep verify: the commit proceeds"
+    tc_assert_grep "3 touched element(s) checked, no trace gaps" "$OUT" \
+        "deep verify: both stories and the case are checked and clean"
+    tc_assert_not_grep "US_9_Y" "$OUT" \
+        "deep verify: the chain through two groups reaches the story"
+}
+
+# A criterion nested inside a story's acceptance is a member of that
+# story, not a requirement of its own, so the gate never asks for a
+# case that names it (verify US_9_X.acceptance covers it). The criterion
+# alarmCleared is typed. The story lint reports that form (S7, off
+# here), and it is the form that reads like a requirement declaration.
+# The second commit adds a criterion inside the acceptance that is
+# already committed, so the gate can only tell where the added line
+# sits by reading it in its place in the whole file.
+case_trace_nested_criterion_not_a_requirement() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        stakeholder :>> role : Op;
+        attribute :>> capability = "acknowledge an alarm";
+        attribute :>> benefit = "the queue clears";
+        requirement :>> acceptance {
+            requirement alarmCleared : AlarmBehaviour {
+                doc /* Given an alarm, when it is acknowledged, then it leaves the queue. */
+            }
+            requirement queueEmpty {
+                doc /* Given one alarm, when it is acknowledged, then the queue is empty. */
+            }
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    write_case verified
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "nested criterion: the commit proceeds"
+    tc_assert_grep "2 touched element(s) checked, no trace gaps" "$OUT" \
+        "nested criterion: the story and its case are checked, the criteria are not"
+    tc_assert_not_grep "alarmCleared" "$OUT" \
+        "nested criterion: the typed criterion is not reported as a requirement"
+
+    tc_commit "add the story and its case"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        stakeholder :>> role : Op;
+        attribute :>> capability = "acknowledge an alarm";
+        attribute :>> benefit = "the queue clears";
+        requirement :>> acceptance {
+            requirement alarmCleared : AlarmBehaviour {
+                doc /* Given an alarm, when it is acknowledged, then it leaves the queue. */
+            }
+            requirement batchCleared : AlarmBehaviour {
+                doc /* Given ten alarms, when all are acknowledged, then all leave the queue. */
+            }
+            requirement queueEmpty {
+                doc /* Given one alarm, when it is acknowledged, then the queue is empty. */
+            }
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "nested criterion, added later: the commit proceeds"
+    tc_assert_not_grep "batchCleared" "$OUT" \
+        "nested criterion, added later: the criterion is not reported as a requirement"
+    tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
+        "nested criterion, added later: 0 touched elements, so the gate says nothing"
+}
+
+# write_two_stories <without-x|with-x>: US_9_Y alone, or US_9_Y and
+# US_9_X, in one file. Neither story has a verification case.
+write_two_stories() {
+    {
+        printf 'package S {\n'
+        printf '    requirement US_9_Y : UserStory {\n'
+        printf '        subject :>> system : Sys;\n'
+        printf '    }\n'
+        if [ "$1" = "with-x" ]; then
+            printf '    requirement US_9_X : UserStory {\n'
+            printf '        subject :>> system : Sys;\n'
+            printf '    }\n'
+        fi
+        printf '}\n'
+    } | tc_write model/core/stories/stakeholder/s.sysml
+    tc_stage model/core/stories/stakeholder/s.sysml
+}
+
+# Range mode is what CI runs, where nothing is staged. The range still
+# scopes the gate to what it adds: US_9_Y has no case either, but it
+# predates the branch, so only all, which reads every tracked file,
+# reports it. A range git cannot read stops the delegate, run alone,
+# rather than passing it.
+case_trace_range_mode() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    write_two_stories without-x
+    tc_commit "add the first story"
+    git -C "$REPO" checkout -q -b feat/alarm
+    write_two_stories with-x
+    tc_commit "add the second story"
+
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "trace range: the staged set is empty and passes"
+
+    tc_env "VSE_PRECOMMIT_RANGE=main...HEAD"
+    tc_run_hook
+    tc_assert_rc 1 "trace range: the story added on the branch stops the check"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "trace range: exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace range: the finding names the story the range adds"
+    tc_assert_not_grep "US_9_Y" "$OUT" \
+        "trace range: the story that predates the range is not reported"
+
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_hook
+    tc_assert_rc 1 "trace range all: the check stops"
+    tc_assert_grep "2 trace gap(s) on touched requirements" "$OUT" \
+        "trace range all: every story in every tracked file is checked"
+
+    tc_env "VSE_PRECOMMIT_RANGE=no-such-ref...HEAD"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "trace bad range: the delegate stops"
+    tc_assert_grep "pre-commit-traceability: Cannot list the files changed by the range 'no-such-ref...HEAD'" "$OUT" \
+        "trace bad range: the range is named"
+}
+
+# A path with a space reaches git as one name.
+case_trace_filenames_with_spaces() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write "model/core/stories/field team/s.sysml" <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_stage "model/core/stories/field team/s.sysml"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "trace spaces: the story in a directory with a space is checked"
+    tc_assert_grep "model/core/stories/field team/s.sysml: requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace spaces: the path is named whole"
+}
+
 # ------------------------------------- 10. the story gates (concern 2)
 
 SCENARIOS="${TC_PLUGIN_ROOT}/tests/fixtures/lint/scenarios"
@@ -998,6 +1241,11 @@ case_trace_covered
 case_trace_gap
 case_trace_comment_only
 case_trace_library_skipped
+case_trace_note_and_string
+case_trace_deep_verify_counts
+case_trace_nested_criterion_not_a_requirement
+case_trace_range_mode
+case_trace_filenames_with_spaces
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full
