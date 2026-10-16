@@ -489,7 +489,7 @@ default, and only a recorded `gate_overrides` entry lowers one
 
 | Gate | Configuration key | Carrier | light | standard | full | What it checks |
 |---|---|---|---|---|---|---|
-| Gherkin conformance | `precommit_gherkin` | `pre-commit` and CI | block | block | block | The story lint findings S1 to S9 and F1 to F10 (§11.9.1) over every stories directory the change touches |
+| Gherkin conformance | `precommit_gherkin` | `pre-commit` and CI | block | block | block | The story lint findings S1 to S9 and F1 to F10 (§11.9.1) over every stories directory the change touches, and every changed feature file under `model/` outside one |
 | Test before code | `precommit_test_first` | `pre-commit` and CI | block | block | block | A change to a code path with no change to a test path, either in the commit set or on the branch since its merge base (the commit the branch started from). While `test_first` is unrecorded, a finding only when test tooling is detected or code-like files change, and otherwise one info line suggesting `/vse-test-first` |
 | Gherkin first in session | `pretooluse_gherkin_first` | Claude Code `PreToolUse` | block | block | block | An agent edit that adds or changes a story whose feature file is missing or lacks the story tag (§11.9.3) |
 | Test first in session | `pretooluse_test_first` | Claude Code `PreToolUse` | block | block | block | An agent edit to a code path with no test evidence (§11.9.3) |

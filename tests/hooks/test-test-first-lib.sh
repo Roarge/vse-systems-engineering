@@ -917,6 +917,20 @@ case_refactor_branch_toplevel() {
     tc_assert_rc 0 "refactor: with no top level the working directory is read"
 }
 
+# CI checks a pull request out as a detached merge commit, so a caller
+# can name the branch (GITHUB_HEAD_REF there) instead of reading it.
+case_refactor_branch_named() {
+    tf_evidence_repo
+    git -C "$REPO" checkout -q --detach
+    run_tf vse_tf_refactor_branch "$REPO" refactor/split
+    tc_assert_rc 0 "refactor: a named refactor branch matches on a detached HEAD"
+    git -C "$REPO" checkout -q -b refactor/split
+    run_tf vse_tf_refactor_branch "$REPO" feat/x
+    tc_assert_rc 1 "refactor: a named branch wins over the branch checked out"
+    run_tf vse_tf_refactor_branch "$REPO" ""
+    tc_assert_rc 0 "refactor: an empty name reads the branch checked out"
+}
+
 case_detect_pytest() {
     local dir
     tc_setup_repo
@@ -1144,6 +1158,7 @@ case_evidence_detached
 case_evidence_unborn
 case_refactor_branch
 case_refactor_branch_toplevel
+case_refactor_branch_named
 case_detect_pytest
 case_detect_none
 case_detect_npm_test_in_scripts

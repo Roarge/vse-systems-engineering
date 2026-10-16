@@ -22,9 +22,23 @@
 #   vse_tf_disk_image <file>           file content before the edit
 #   vse_tf_classify <relpath>          never, test, code or other
 #   vse_tf_evidence <toplevel>         evidence: <path>, or reason: ...
-#   vse_tf_refactor_branch [<toplevel>]  0 on a refactor branch
+#   vse_tf_refactor_branch [<toplevel> [<branch>]]  0 on a refactor branch
 #   vse_tf_detect <dir>                one key per detected test tool
 #   vse_tf_applies                     true, false or nothing
+#
+# In-shell classifier, a supported interface for loops over many paths
+# (hooks/pre-commit.sh, and the plugin's own
+# tests/hooks/check-test-first.sh). vse_tf_classify costs a subshell
+# and a git call per path, and these two do not:
+#
+#   _vse_tf_load                       read the globs into globals, once
+#   _vse_tf_kind <relpath>             set _VSE_TF_KIND to never, test,
+#                                      code or other
+#
+# Call _vse_tf_load once before the loop, then _vse_tf_kind for each
+# path. _VSE_TF_CODE_GLOBS is empty when the record names no
+# code_paths. A change to these names or globals is a change to both
+# callers.
 #
 # Configuration comes from iso-profile.sh, which shall be sourced
 # first: ISO_CONFIG_FILE names the file, iso_section_scalar and
@@ -693,12 +707,17 @@ EOF
 
 # Return 0 when the branch checked out in <toplevel>, or in the working
 # directory's repository when no top level is named, matches a
-# test_first.refactor_branches glob. An absent key means [refactor/*],
-# and an explicit empty list names no branch. A detached HEAD is never
-# a refactor branch.
+# test_first.refactor_branches glob. A non-empty <branch> is matched
+# instead of the branch checked out, for a checkout that has none, such
+# as the detached merge commit CI checks out for a pull request. An
+# absent key means [refactor/*], and an explicit empty list names no
+# branch. A detached HEAD with no <branch> named is never a refactor
+# branch.
 vse_tf_refactor_branch() {
-    local top="${1:-.}" branch globs
-    branch="$(git -C "$top" symbolic-ref --short -q HEAD 2>/dev/null)" || return 1
+    local top="${1:-.}" branch="${2:-}" globs
+    if [ -z "$branch" ]; then
+        branch="$(git -C "$top" symbolic-ref --short -q HEAD 2>/dev/null)" || return 1
+    fi
     globs="$(iso_section_list test_first refactor_branches)"
     if [ -z "$globs" ]; then
         [ -z "$(iso_section_scalar test_first refactor_branches)" ] || return 1

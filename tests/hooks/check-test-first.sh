@@ -21,10 +21,17 @@
 # check reads the repository that holds the working directory, with
 # the libraries of the plugin checkout this script belongs to.
 #
-# Exit codes: 0 when no code path changed or a test path changed too,
-# 1 when code changed with no change to a test path, 2 when the
-# configuration is missing or names no code_paths, or git cannot read
-# the range.
+# On a branch that matches test_first.refactor_branches (default
+# refactor/*), code that changed with no change to a test path draws a
+# notice instead of the finding, because a refactor keeps the behaviour
+# and the tests that pin it. The branch is GITHUB_HEAD_REF when it is
+# set, because CI checks a pull request out as a detached merge
+# commit, and otherwise the branch checked out.
+#
+# Exit codes: 0 when no code path changed, a test path changed too, or
+# the branch is a refactor branch, 1 when code changed with no change
+# to a test path, 2 when the configuration is missing or names no
+# code_paths, or git cannot read the range.
 set -euo pipefail
 
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../hooks/lib" && pwd)"
@@ -85,6 +92,10 @@ if [ -z "$CODE" ]; then
 fi
 if [ -n "$TESTS" ]; then
     echo "[check-test-first] Code and test paths both changed."
+    exit 0
+fi
+if vse_tf_refactor_branch "$TOP" "${GITHUB_HEAD_REF:-}"; then
+    echo "[check-test-first] Notice: refactor branch: run the tests before and after, no behaviour change."
     exit 0
 fi
 echo "ERROR: code changed with no change to a test path. Write the failing test first, then the code (methodology §11.7)."

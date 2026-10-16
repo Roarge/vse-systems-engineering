@@ -215,7 +215,10 @@ the install.
 5. **Gherkin conformance.** For every stories directory touched by a
    changed story file or `.feature` file, run the story linter with
    `--only gherkin` (methodology §11.9, findings S1 to S9 and F1 to
-   F10).
+   F10). A changed `.feature` file under `model/` that sits outside a
+   `stories/` directory is linted as well, so F10 reports it. A
+   `.feature` file outside `model/`, such as a Cucumber feature for the
+   project's code, is the project's own and is left alone.
 6. **Test before code.** Where `test_first.applies` is `true`, reject a
    change to a code path that arrives with no change to a test path,
    either in the commit set or on the branch since its merge base

@@ -42,6 +42,18 @@ Feature: Gherkin-first and test-first gates at every profile
       Then the commit goes through
       And the engineer is warned of finding S1
 
+  Rule: At commit, the Gherkin gate reads every feature file in the model
+
+    Scenario: A feature file in the model but outside a stories directory is refused
+      Given a VSE project at the light profile
+      When the engineer commits a change to model/features/US_901_Example.feature
+      Then the commit is refused with finding F10
+
+    Scenario: A feature file outside the model is left to the project
+      Given a VSE project at the light profile
+      When the engineer commits a change to features/login.feature
+      Then the commit goes through
+
   Rule: The in-session gates block at every profile
 
     @wip

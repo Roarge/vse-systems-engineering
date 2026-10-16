@@ -8,9 +8,13 @@
 #      never silent).
 #   2. The story lint, tools/lint/story-wellformed.py under the
 #      engineering root, over every stories directory that a changed
-#      .sysml or .feature file under stories/ touches.
-#      precommit_story_wellformed runs it with --only wellformed (§1.9),
-#      precommit_gherkin with --only gherkin (§11.9.1).
+#      .sysml or .feature file under stories/ touches, and over every
+#      changed .feature file under model/ that sits outside stories/,
+#      so that F10 reports it. A .feature file outside model/ is the
+#      project's own, such as a Cucumber feature for its code, and is
+#      left alone. precommit_story_wellformed runs the lint with --only
+#      wellformed (§1.9), precommit_gherkin with --only gherkin
+#      (§11.9.1).
 #   3. precommit_traceability: traceability integrity, delegated to
 #      pre-commit-traceability.sh.
 #   4. precommit_test_first: test before code (§11.9), through
@@ -278,39 +282,50 @@ fi
 
 # 2. The story lint over every stories directory the change touches: a
 # directory holding a changed .sysml or .feature file that sits under a
-# stories/ directory, given relative to the engineering root. A file
-# outside the engineering root, or a directory the change removed, is
-# not passed. Each directory is one argument, so a space in a name is
-# kept.
-STORY_DIR_LIST=""
+# stories/ directory. A changed .feature file under model/ outside
+# stories/ is passed as itself, so the lint reads its directory and F10
+# reports it. Paths are given relative to the engineering root. A file
+# outside the engineering root, a directory the change removed, or a
+# feature file it deleted, is not passed. Each path is one argument, so
+# a space in a name is kept.
+STORY_PATH_LIST=""
 if [ "$ENG_INSIDE" -eq 1 ]; then
     while IFS= read -r changed; do
         case "$changed" in
-            stories/*.sysml|*/stories/*.sysml|stories/*.feature|*/stories/*.feature) : ;;
+            stories/*.sysml|*/stories/*.sysml|stories/*.feature|*/stories/*.feature) kind=directory ;;
+            *.feature) kind=feature ;;
             *) continue ;;
         esac
         case "$changed" in
             "${ENG_PREFIX}"*) changed="${changed#"${ENG_PREFIX}"}" ;;
             *) continue ;;
         esac
-        case "$changed" in
-            */*) changed="${changed%/*}" ;;
-            *) continue ;;
-        esac
-        [ -d "${ENG_ROOT}/${changed}" ] || continue
-        STORY_DIR_LIST="${STORY_DIR_LIST}${changed}"$'\n'
+        if [ "$kind" = feature ]; then
+            case "$changed" in
+                model/*) : ;;
+                *) continue ;;
+            esac
+            [ -f "${ENG_ROOT}/${changed}" ] || continue
+        else
+            case "$changed" in
+                */*) changed="${changed%/*}" ;;
+                *) continue ;;
+            esac
+            [ -d "${ENG_ROOT}/${changed}" ] || continue
+        fi
+        STORY_PATH_LIST="${STORY_PATH_LIST}${changed}"$'\n'
     done <<EOF
 $CHANGED_ALL
 EOF
 fi
-STORY_DIRS=()
-STORY_DIR_COUNT=0
-while IFS= read -r story_dir; do
-    [ -n "$story_dir" ] || continue
-    STORY_DIRS+=("$story_dir")
-    STORY_DIR_COUNT=$((STORY_DIR_COUNT + 1))
+STORY_PATHS=()
+STORY_PATH_COUNT=0
+while IFS= read -r story_path; do
+    [ -n "$story_path" ] || continue
+    STORY_PATHS+=("$story_path")
+    STORY_PATH_COUNT=$((STORY_PATH_COUNT + 1))
 done <<EOF
-$(printf '%s' "$STORY_DIR_LIST" | LC_ALL=C sort -u)
+$(printf '%s' "$STORY_PATH_LIST" | LC_ALL=C sort -u)
 EOF
 
 STORY_LINT_REL="tools/lint/story-wellformed.py"
@@ -332,13 +347,13 @@ story_gate() {
         gate_report "$disposition" "${gate}: python3 is not available, so ${what} was not checked. Install python3 to run ${ENG_PREFIX}${STORY_LINT_REL} (methodology §11.9.1)."
         return 0
     fi
-    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" "${STORY_DIRS[@]}" 2>&1)" || status=$?
+    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" "${STORY_PATHS[@]}" 2>&1)" || status=$?
     case "$status" in
         0)
             : # Clean.
             ;;
         1)
-            gate_report "$disposition" "${gate}: ${what} findings in the touched stories directories. Fix them and re-stage." "$output"
+            gate_report "$disposition" "${gate}: ${what} findings in the stories directories and feature files this change touches. Fix them and commit again." "$output"
             ;;
         *)
             gate_report "$disposition" "${gate}: the story lint could not run (exit ${status}), so ${what} was not checked." "$output"
@@ -346,7 +361,7 @@ story_gate() {
     esac
 }
 
-if [ "$STORY_DIR_COUNT" -gt 0 ]; then
+if [ "$STORY_PATH_COUNT" -gt 0 ]; then
     story_gate precommit_story_wellformed wellformed "story well-formedness (§1.9)"
     story_gate precommit_gherkin gherkin "Gherkin conformance (§11.9.1)"
 fi

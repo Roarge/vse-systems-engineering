@@ -51,10 +51,12 @@ commit_paths() {
 }
 
 # run_check [range]: run the check from RUN_DIR (the repository root
-# by default). A range or configuration path from the caller's own
-# environment never reaches it, so only tc_env sets one.
+# by default). A range, configuration path or pull request branch from
+# the caller's own environment never reaches it, so only tc_env sets
+# one.
 run_check() {
     _tc_capture env -C "${RUN_DIR:-$REPO}" -u VSE_PRECOMMIT_RANGE -u VSE_ISO_CONFIG \
+        -u GITHUB_HEAD_REF \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
         bash "$CHECK" "$@"
 }
@@ -247,6 +249,59 @@ case_subdirectory() {
     tc_assert_line "  code: hooks/x.sh" "$OUT" "run from a subdirectory: the path is relative to the top level"
 }
 
+# ---------------------------------------------------- refactor branches
+
+NOTICE="[check-test-first] Notice: refactor branch: run the tests before and after, no behaviour change."
+
+# A branch that matches test_first.refactor_branches (refactor/* in the
+# plugin's record) changes code without changing its tests, so code
+# alone draws a notice instead of the finding. Locally the branch is
+# the one checked out.
+case_refactor_branch_checked_out() {
+    setup_branch
+    git -C "$REPO" checkout -q -b refactor/tidy
+    commit_paths "tidy a hook" hooks/x.sh
+    tc_env
+    run_check
+    tc_assert_rc 0 "refactor branch checked out: the check passes"
+    tc_assert_line "  code: hooks/x.sh" "$OUT" "refactor branch checked out: the code path is printed"
+    tc_assert_line "$NOTICE" "$OUT" "refactor branch checked out: the notice is printed"
+    tc_assert_not_grep "ERROR:" "$OUT" "refactor branch checked out: no finding"
+
+    setup_branch
+    git -C "$REPO" checkout -q -b feat/refactor-tidy
+    commit_paths "tidy a hook" hooks/x.sh
+    tc_env
+    run_check
+    tc_assert_rc 1 "other branch checked out: the check fails"
+    tc_assert_grep "$FAILURE" "$OUT" "other branch checked out: the finding is stated"
+    tc_assert_not_grep "Notice:" "$OUT" "other branch checked out: no notice"
+}
+
+# CI checks a pull request out as a detached merge commit and names the
+# pull request's branch in GITHUB_HEAD_REF, which wins over the branch
+# checked out.
+case_refactor_branch_github_head_ref() {
+    setup_branch
+    commit_paths "tidy a hook" hooks/x.sh
+    git -C "$REPO" checkout -q --detach
+    tc_env "GITHUB_HEAD_REF=refactor/tidy"
+    run_check
+    tc_assert_rc 0 "GITHUB_HEAD_REF refactor branch: the check passes"
+    tc_assert_line "$NOTICE" "$OUT" "GITHUB_HEAD_REF refactor branch: the notice is printed"
+
+    tc_env "GITHUB_HEAD_REF=feat/refactor-tidy"
+    run_check
+    tc_assert_rc 1 "GITHUB_HEAD_REF other branch: the check fails"
+    tc_assert_grep "$FAILURE" "$OUT" "GITHUB_HEAD_REF other branch: the finding is stated"
+
+    git -C "$REPO" checkout -q -b refactor/tidy
+    tc_env "GITHUB_HEAD_REF=feat/change"
+    run_check
+    tc_assert_rc 1 "GITHUB_HEAD_REF and a refactor branch checked out: GITHUB_HEAD_REF wins"
+    tc_assert_not_grep "Notice:" "$OUT" "GITHUB_HEAD_REF and a refactor branch checked out: no notice"
+}
+
 # ---------------------------------------------------------------- errors
 
 case_bad_range() {
@@ -306,6 +361,8 @@ case_environment_range
 case_argument_wins
 case_main_moved_on
 case_subdirectory
+case_refactor_branch_checked_out
+case_refactor_branch_github_head_ref
 case_bad_range
 case_no_origin_main
 case_missing_config

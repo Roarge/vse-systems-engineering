@@ -672,6 +672,8 @@ gherkin_blocks_at() {
     tc_assert_grep "${STORY_DIR}/stories.sysml:4: S1 US_901_Example has no feature file" "$ERR" \
         "gherkin (${profile}): finding S1 is shown"
     tc_assert_grep "precommit_gherkin" "$ERR" "gherkin (${profile}): the gate is named"
+    tc_assert_match '^\[pre-commit\] precommit_gherkin: .*\. Fix them and commit again\.$' "$ERR" \
+        "gherkin (${profile}): the headline says to fix the findings and commit again"
     tc_assert_line "$RATIONALE" "$ERR" "gherkin (${profile}): the rationale line follows"
 }
 
@@ -764,6 +766,62 @@ case_gherkin_removed_directory() {
     tc_assert_not_grep "precommit_gherkin" "$ERR" "removed directory: the Gherkin gate reports nothing"
 }
 
+# A feature file in the model but outside a stories/ directory is
+# misplaced, so the Gherkin gate lints it and F10 reports it, in the
+# brownfield layout too. Deleting it leaves nothing to lint.
+case_gherkin_misplaced_feature() {
+    tc_setup_repo
+    story_config light
+    tc_write model/features/US_901_Example.feature < "${SCENARIOS}/feature-tagged.feature"
+    tc_stage model/features/US_901_Example.feature
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "misplaced feature: the commit is stopped"
+    tc_assert_grep "model/features/US_901_Example.feature:1: F10 US_901_Example.feature is not under a stories/ directory" "$ERR" \
+        "misplaced feature: finding F10 is shown"
+    tc_assert_grep "precommit_gherkin" "$ERR" "misplaced feature: the gate is named"
+
+    tc_commit "add the misplaced feature"
+    git -C "$REPO" rm -q model/features/US_901_Example.feature
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "misplaced feature deleted: the commit proceeds"
+    tc_assert_not_grep "precommit_gherkin" "$ERR" "misplaced feature deleted: the Gherkin gate reports nothing"
+
+    tc_setup_repo
+    story_config light
+    mkdir -p "${REPO}/engineering"
+    mv "${REPO}/.iso-config.yaml" "${REPO}/engineering/.iso-config.yaml"
+    mv "${REPO}/tools" "${REPO}/engineering/tools"
+    tc_write engineering/model/features/US_901_Example.feature < "${SCENARIOS}/feature-tagged.feature"
+    tc_stage engineering/model/features/US_901_Example.feature
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "misplaced feature, brownfield: the commit is stopped"
+    tc_assert_grep "model/features/US_901_Example.feature:1: F10" "$ERR" \
+        "misplaced feature, brownfield: F10 is shown with the path relative to engineering/"
+}
+
+# A feature file outside the model is the project's own, such as a
+# Cucumber feature for its code, so the Gherkin gate leaves it alone.
+case_gherkin_feature_outside_model() {
+    tc_setup_repo
+    story_config light
+    tc_write features/login.feature <<'EOF'
+Feature: Login
+  Scenario: A user logs in
+    Given a registered user
+    When the user logs in
+    Then the dashboard opens
+EOF
+    tc_stage features/login.feature
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "feature outside the model: the commit proceeds"
+    tc_assert_not_grep "F10" "$ERR" "feature outside the model: no F10"
+    tc_assert_not_grep "precommit_gherkin" "$ERR" "feature outside the model: the Gherkin gate reports nothing"
+}
+
 # precommit_story_wellformed keeps its profile scaling: off at light,
 # warn at standard, block at full. The story has no status (W10). The
 # Gherkin gate is off, because it reads a story without a status
@@ -847,7 +905,9 @@ case_lint_environment_error_blocks() {
     tc_assert_grep "story-wellformed.py:" "$ERR" "lint environment error: the lint's own message is shown"
 }
 
-# A directory holding every command of /usr/bin except python3.
+# A directory holding every command of /usr/bin except python3. On a
+# merged-/usr runner /bin/* repeats /usr/bin/*, and a dangling link
+# there fails -e, so an existing link counts as present too.
 path_without_python() {
     local bin entry name
     bin="$(tc_mktemp_d)"
@@ -856,7 +916,7 @@ path_without_python() {
         case "$name" in
             python*) continue ;;
         esac
-        [ -e "${bin}/${name}" ] || ln -s "$entry" "${bin}/${name}"
+        [ -e "${bin}/${name}" ] || [ -L "${bin}/${name}" ] || ln -s "$entry" "${bin}/${name}"
     done
     printf '%s\n' "$bin"
 }
@@ -1254,6 +1314,8 @@ case_gherkin_override_info_and_off
 case_gherkin_clean_story_passes
 case_gherkin_deleted_feature
 case_gherkin_removed_directory
+case_gherkin_misplaced_feature
+case_gherkin_feature_outside_model
 case_wellformed_scales_by_profile
 case_brownfield_lint_found
 case_lint_missing_blocks
