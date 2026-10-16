@@ -46,13 +46,15 @@
 #
 # Locating the project. The hook may run from any working directory,
 # so everything is found from the edited file (a relative path is
-# taken from the payload's cwd). The configuration is the first
-# .iso-config.yaml found walking up from the file to the git top level
-# (also engineering/.iso-config.yaml at the top), exported as
-# VSE_ISO_CONFIG so every reader agrees on it. With none the hook is
-# silent. In contributor mode (the plugin repository, recognised by
-# wiki/CLAUDE.md at the git top level) only a configuration under
-# demo/ counts, so the shipped template under templates/ is ignored.
+# taken from the payload's cwd) by vse_tf_locate_project, which every
+# lifecycle hook shares. The project is located through its
+# .iso-config.yaml: the first one found walking up from the file to the
+# git top level (also engineering/.iso-config.yaml at the top). It is
+# exported as VSE_ISO_CONFIG so every reader agrees on it. With none
+# the hook is silent. In contributor mode (the plugin repository,
+# recognised by wiki/CLAUDE.md at the git top level) only a
+# configuration under demo/ counts, so the shipped template under
+# templates/ is ignored.
 #
 # Cost. The hook runs on every edit, so the cheap checks come first:
 # one payload read, then file tests up the directory tree. git and the
@@ -133,38 +135,10 @@ PTU_DIR="${PTU_TARGET%/*}"
 [ -n "$PTU_DIR" ] || PTU_DIR=/
 PTU_BASE="${PTU_TARGET##*/}"
 
-# Return 0 when a .iso-config.yaml or an engineering/.iso-config.yaml
-# sits in <dir> or in any directory above it. File tests only, so a
-# file outside every project costs no git call.
-_ptu_config_above() {
-    local dir="$1"
-    while :; do
-        if [ -f "${dir%/}/.iso-config.yaml" ] || [ -f "${dir%/}/engineering/.iso-config.yaml" ]; then
-            return 0
-        fi
-        [ "$dir" != / ] || return 1
-        dir="${dir%/*}"
-        [ -n "$dir" ] || dir=/
-    done
-}
-
-_ptu_config_above "$PTU_DIR" || exit 0
-PTU_CONFIG="$(vse_tf_find_config "$PTU_TARGET")"
-[ -n "$PTU_CONFIG" ] || exit 0
-
-PTU_PROBE="$PTU_DIR"
-while [ ! -d "$PTU_PROBE" ]; do
-    PTU_PROBE="${PTU_PROBE%/*}"
-    [ -n "$PTU_PROBE" ] || PTU_PROBE=/
-done
-PTU_TOP="$(git -C "$PTU_PROBE" rev-parse --show-toplevel 2>/dev/null)" || PTU_TOP=""
-
-if [ -n "$PTU_TOP" ] && [ -f "${PTU_TOP}/wiki/CLAUDE.md" ]; then
-    case "$PTU_CONFIG" in
-        "${PTU_TOP%/}/demo/"*) : ;;
-        *) exit 0 ;;
-    esac
-fi
+vse_tf_locate_project "$PTU_TARGET" || exit 0
+PTU_CONFIG="$VSE_TF_CONFIG"
+PTU_ENG="$VSE_TF_ENG_ROOT"
+PTU_TOP="$VSE_TF_TOP"
 
 VSE_ISO_CONFIG="$PTU_CONFIG"
 export VSE_ISO_CONFIG
@@ -423,15 +397,14 @@ ptu_test_first() {
 # ------------------------------------------------- 4. baselined paths
 
 ptu_baselined() {
-    local entry rel eng rel_top="" rel_eng="" hit=""
-    eng="${PTU_CONFIG%/*}"
+    local entry rel rel_top="" rel_eng="" hit=""
     if [ -n "$PTU_TOP" ]; then
         case "$PTU_TARGET" in
             "${PTU_TOP%/}/"*) rel_top="${PTU_TARGET#"${PTU_TOP%/}/"}" ;;
         esac
     fi
     case "$PTU_TARGET" in
-        "${eng%/}/"*) rel_eng="${PTU_TARGET#"${eng%/}/"}" ;;
+        "${PTU_ENG%/}/"*) rel_eng="${PTU_TARGET#"${PTU_ENG%/}/"}" ;;
     esac
     while IFS= read -r entry; do
         entry="${entry%/}"

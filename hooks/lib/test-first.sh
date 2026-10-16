@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Shared test-first and story-scanning helpers for the PreToolUse
-# lifecycle hook and the project-side pre-commit gate (methodology
-# §11.9).
+# Shared test-first and story-scanning helpers for the lifecycle hooks
+# (PreToolUse, PostToolUse, Stop, SubagentStop and SessionStart) and the
+# project-side pre-commit gate (methodology §11.9).
 #
 # Gherkin first (behaviour described as scenarios before the model
 # changes) needs three answers: which stories an edit adds or changes,
@@ -15,6 +15,9 @@
 #
 #   vse_tf_canonical <path>            absolute path, directories resolved
 #   vse_tf_find_config <abs-path>      nearest .iso-config.yaml
+#   vse_tf_locate_project <path>       the project for a lifecycle hook:
+#                                      sets VSE_TF_CONFIG, VSE_TF_ENG_ROOT
+#                                      and VSE_TF_TOP, 1 when none
 #   vse_tf_story_blocks                stdin SysML, stdout ID<TAB>block
 #   vse_tf_touched_stories <pre> <post>  IDs new or changed in post
 #   vse_tf_feature_has_tag <file> <ID>   0 when tagged @<ID>
@@ -59,7 +62,7 @@
 # file system.
 #
 # Install as <project>/.githooks/lib/test-first.sh beside
-# iso-profile.sh. The PreToolUse hook sources the plugin's own copy.
+# iso-profile.sh. The lifecycle hooks source the plugin's own copy.
 set -euo pipefail
 
 if ! command -v iso_section_scalar >/dev/null 2>&1 \
@@ -136,6 +139,65 @@ vse_tf_find_config() {
         dir="${dir%/*}"
         [ -n "$dir" ] || dir=/
     done
+}
+
+# Locate the VSE project that governs <path>, for the lifecycle hooks.
+# A project is located through its .iso-config.yaml, which is the
+# canonical project marker. <path> is a file, which need not exist yet,
+# or a directory (a working directory), which is searched from itself
+# rather than from its parent. On success the function sets, in the
+# calling shell, so it is called directly and never inside $(...):
+#
+#   VSE_TF_CONFIG     the .iso-config.yaml (vse_tf_find_config)
+#   VSE_TF_ENG_ROOT   its directory, the engineering root
+#   VSE_TF_TOP        the git top level, or empty outside git
+#
+# and returns 0. It returns 1 with the three variables empty when no
+# configuration governs the path, and in contributor mode (the plugin
+# repository, recognised by wiki/CLAUDE.md at the git top level) when
+# the configuration is not under demo/, so the shipped template under
+# templates/ is never taken for a project. File tests up the directory
+# tree come first, so a path with no configuration above it costs no
+# git call.
+# The three variables are read by the caller.
+# shellcheck disable=SC2034
+vse_tf_locate_project() {
+    local path dir config top
+    VSE_TF_CONFIG=""
+    VSE_TF_ENG_ROOT=""
+    VSE_TF_TOP=""
+    path="$(vse_tf_canonical "$1")" || return 1
+    if [ -d "$path" ]; then
+        dir="$path"
+        # vse_tf_find_config walks from the directory of the path it
+        # is given, so a name inside the directory starts the walk there.
+        path="${path%/}/.vse-locate"
+    else
+        dir="${path%/*}"
+        [ -n "$dir" ] || dir=/
+    fi
+    while :; do
+        if [ -f "${dir%/}/.iso-config.yaml" ] || [ -f "${dir%/}/engineering/.iso-config.yaml" ]; then
+            break
+        fi
+        [ "$dir" != / ] || return 1
+        dir="${dir%/*}"
+        [ -n "$dir" ] || dir=/
+    done
+    config="$(vse_tf_find_config "$path")"
+    [ -n "$config" ] || return 1
+    top="$(git -C "${config%/*}" rev-parse --show-toplevel 2>/dev/null)" || top=""
+    if [ -n "$top" ] && [ -f "${top%/}/wiki/CLAUDE.md" ]; then
+        case "$config" in
+            "${top%/}/demo/"*) : ;;
+            *) return 1 ;;
+        esac
+    fi
+    VSE_TF_CONFIG="$config"
+    VSE_TF_ENG_ROOT="${config%/*}"
+    [ -n "$VSE_TF_ENG_ROOT" ] || VSE_TF_ENG_ROOT=/
+    VSE_TF_TOP="$top"
+    return 0
 }
 
 # ------------------------------------------------------ story scanner

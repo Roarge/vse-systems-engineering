@@ -41,8 +41,9 @@
 # recorded, the finding goes to the user as a systemMessage instead, so
 # it can never continue the turn twice.
 #
-# Locating the project. The configuration is the first .iso-config.yaml
-# found walking up from the payload's cwd (else the hook's own working
+# Locating the project, through the shared vse_tf_locate_project. The
+# project is located through its .iso-config.yaml: the first one found
+# walking up from the payload's cwd (else the hook's own working
 # directory) to the git top level, also engineering/.iso-config.yaml at
 # the top. Its directory is the engineering root. With none the hook is
 # silent. In contributor mode (the plugin repository, recognised by
@@ -125,19 +126,10 @@ export VSE_ISO_CONFIG
 # shellcheck source=/dev/null
 . "${STOP_LIB}/test-first.sh"
 
-# vse_tf_find_config walks up from the directory of the path it is
-# given, so a name inside the working directory starts the walk there.
-STOP_CONFIG="$(vse_tf_find_config "${STOP_CWD%/}/.vse-stop")"
-[ -n "$STOP_CONFIG" ] || exit 0
-STOP_ENG="${STOP_CONFIG%/*}"
-STOP_TOP="$(git -C "$STOP_ENG" rev-parse --show-toplevel 2>/dev/null)" || STOP_TOP=""
-
-if [ -n "$STOP_TOP" ] && [ -f "${STOP_TOP}/wiki/CLAUDE.md" ]; then
-    case "$STOP_CONFIG" in
-        "${STOP_TOP%/}/demo/"*) : ;;
-        *) exit 0 ;;
-    esac
-fi
+vse_tf_locate_project "$STOP_CWD" || exit 0
+STOP_CONFIG="$VSE_TF_CONFIG"
+STOP_ENG="$VSE_TF_ENG_ROOT"
+STOP_TOP="$VSE_TF_TOP"
 
 VSE_ISO_CONFIG="$STOP_CONFIG"
 export VSE_ISO_CONFIG

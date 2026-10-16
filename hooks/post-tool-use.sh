@@ -25,10 +25,11 @@
 # is always 0: an internal error ends the hook silently, with one line
 # on stderr.
 #
-# Locating the project, as in pre-tool-use.sh. The hook may run from
-# any working directory, so the project is found from the edited file
-# (a relative path is taken from the payload's cwd). The configuration
-# is the first .iso-config.yaml found walking up from the file to the
+# Locating the project, as in pre-tool-use.sh, through the shared
+# vse_tf_locate_project. The hook may run from any working directory,
+# so the project is found from the edited file (a relative path is
+# taken from the payload's cwd). The project is located through its
+# .iso-config.yaml: the first one found walking up from the file to the
 # git top level (also engineering/.iso-config.yaml at the top). With
 # none the hook is silent. In contributor mode (the plugin repository,
 # recognised by wiki/CLAUDE.md at the git top level) only a
@@ -97,16 +98,9 @@ export VSE_ISO_CONFIG
 
 POST_TARGET="$(vse_tf_canonical "$POST_RAW")"
 POST_NAME="${POST_TARGET##*/}"
-POST_CONFIG="$(vse_tf_find_config "$POST_TARGET")"
-[ -n "$POST_CONFIG" ] || exit 0
-POST_TOP="$(git -C "${POST_CONFIG%/*}" rev-parse --show-toplevel 2>/dev/null)" || POST_TOP=""
-
-if [ -n "$POST_TOP" ] && [ -f "${POST_TOP}/wiki/CLAUDE.md" ]; then
-    case "$POST_CONFIG" in
-        "${POST_TOP%/}/demo/"*) : ;;
-        *) exit 0 ;;
-    esac
-fi
+vse_tf_locate_project "$POST_TARGET" || exit 0
+POST_CONFIG="$VSE_TF_CONFIG"
+POST_TOP="$VSE_TF_TOP"
 
 VSE_ISO_CONFIG="$POST_CONFIG"
 export VSE_ISO_CONFIG

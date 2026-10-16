@@ -1090,6 +1090,126 @@ case_find_config_nested_demo() {
     tc_assert_eq "${outer}/.iso-config.yaml" "$OUT" "find config: outside git the walk continues upward"
 }
 
+# The lifecycle hooks locate the project they serve through one helper,
+# which sets three variables in the calling shell. The driver prints
+# them after the call and exits with the helper's status.
+# shellcheck disable=SC2016
+TF_LOCATE_DRIVER='
+lib="$1"
+shift
+. "${lib}/iso-profile.sh"
+. "${lib}/test-first.sh"
+rc=0
+vse_tf_locate_project "$@" || rc=$?
+printf "config=%s\neng=%s\ntop=%s\n" "${VSE_TF_CONFIG-unset}" "${VSE_TF_ENG_ROOT-unset}" "${VSE_TF_TOP-unset}"
+exit "$rc"
+'
+
+# run_locate <path>: locate the project that governs <path>, from $REPO.
+run_locate() {
+    tc_run_in "$REPO" bash -c "$TF_LOCATE_DRIVER" tf-locate "$TF_LIB" "$@"
+}
+
+# tf_assert_located <config> <eng> <top> <case>
+tf_assert_located() {
+    tc_assert_rc 0 "$4: found"
+    tc_assert_eq "config=$1
+eng=$2
+top=$3" "$OUT" "$4"
+}
+
+# tf_assert_not_located <case>: return 1 with the three variables empty.
+tf_assert_not_located() {
+    tc_assert_rc 1 "$1: not found"
+    tc_assert_eq "config=
+eng=
+top=" "$OUT" "$1"
+}
+
+case_locate_project_layouts() {
+    local top outer
+    tc_setup_repo
+    tc_env
+    top="$(cd "$REPO" && pwd -P)"
+    tc_config light -
+    run_locate "${REPO}/src/not/yet/reading.py"
+    tf_assert_located "${top}/.iso-config.yaml" "$top" "$top" \
+        "locate: a new file below the top-level configuration"
+    run_locate "$REPO"
+    tf_assert_located "${top}/.iso-config.yaml" "$top" "$top" \
+        "locate: a directory is searched from itself, so the top level finds its own file"
+
+    mkdir -p "${REPO}/projects/sensor/src"
+    printf 'project_profile: full\n' > "${REPO}/projects/sensor/.iso-config.yaml"
+    run_locate "${REPO}/projects/sensor"
+    tf_assert_located "${top}/projects/sensor/.iso-config.yaml" "${top}/projects/sensor" "$top" \
+        "locate: a project directory below the top level finds its own configuration"
+    run_locate "${REPO}/projects/sensor/src/reading.py"
+    tf_assert_located "${top}/projects/sensor/.iso-config.yaml" "${top}/projects/sensor" "$top" \
+        "locate: the nearest configuration governs, and its directory is the engineering root"
+
+    rm -f "${REPO}/.iso-config.yaml"
+    mkdir -p "${REPO}/engineering"
+    printf 'project_profile: standard\n' > "${REPO}/engineering/.iso-config.yaml"
+    run_locate "${REPO}/src/reading.py"
+    tf_assert_located "${top}/engineering/.iso-config.yaml" "${top}/engineering" "$top" \
+        "locate: the brownfield configuration under engineering/ at the top level"
+
+    outer="$(cd "$(tc_mktemp_d)" && pwd -P)"
+    mkdir -p "${outer}/plain/dir"
+    printf 'project_profile: light\n' > "${outer}/.iso-config.yaml"
+    run_locate "${outer}/plain/dir/file.txt"
+    tf_assert_located "${outer}/.iso-config.yaml" "$outer" "" \
+        "locate: outside git the configuration is found and the top level is empty"
+}
+
+case_locate_project_none() {
+    local outside
+    tc_setup_repo
+    tc_env VSE_TF_CONFIG=stale VSE_TF_ENG_ROOT=stale VSE_TF_TOP=stale
+    run_locate "${REPO}/src/reading.py"
+    tf_assert_not_located "locate: a git repository with no configuration, earlier values cleared"
+    outside="$(tc_mktemp_d)"
+    run_locate "${outside}/x/y.txt"
+    tf_assert_not_located "locate: a path outside every project"
+
+    # The file tests come first, so a path with no configuration above
+    # costs no git call. The stub git records every call, and the empty
+    # placeholder configuration keeps iso-profile.sh from searching.
+    tc_stub_recorder git
+    : > "${FAKEHOME}/git-calls"
+    : > "${FAKEHOME}/unset.yaml"
+    tc_env "TC_INVOCATIONS=${FAKEHOME}/git-calls" "VSE_ISO_CONFIG=${FAKEHOME}/unset.yaml"
+    run_locate "${REPO}/src/reading.py"
+    tf_assert_not_located "locate: no configuration above, with git stubbed"
+    tc_assert_empty "$(cat "${FAKEHOME}/git-calls")" "locate: no configuration above means no git call"
+    tc_reset_stubs
+    tc_env
+}
+
+# In the plugin repository (wiki/CLAUDE.md at the top level) only a
+# configuration under demo/ marks a project, so the shipped template is
+# never taken for one.
+case_locate_project_contributor_mode() {
+    local top
+    tc_setup_repo
+    tc_env
+    top="$(cd "$REPO" && pwd -P)"
+    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    printf 'project_profile: light\n' | tc_write templates/iso-config/.iso-config.yaml
+    printf 'project_profile: light\n' | tc_write demo/smart-sensor/.iso-config.yaml
+    run_locate "${REPO}/templates/iso-config/stories/x.sysml"
+    tf_assert_not_located "locate, contributor: the shipped template configuration is ignored"
+    run_locate "${REPO}/hooks/pre-commit.sh"
+    tf_assert_not_located "locate, contributor: a hook is in no project"
+    run_locate "${REPO}/demo/smart-sensor/model/core/stories/new.sysml"
+    tf_assert_located "${top}/demo/smart-sensor/.iso-config.yaml" "${top}/demo/smart-sensor" "$top" \
+        "locate, contributor: the demo is a project"
+    printf 'project_profile: light\n' | tc_write .iso-config.yaml
+    run_locate "${REPO}/hooks/pre-commit.sh"
+    tf_assert_not_located "locate, contributor: a top-level configuration in the plugin repository is ignored"
+}
+
 case_canonical_missing_tail() {
     local real link
     tc_setup_repo
@@ -1157,6 +1277,9 @@ case_detect_each_key
 case_applies_values
 case_requires_profile_library
 case_find_config_nested_demo
+case_locate_project_layouts
+case_locate_project_none
+case_locate_project_contributor_mode
 case_canonical_missing_tail
 
 if tc_summary "test-test-first-lib"; then
