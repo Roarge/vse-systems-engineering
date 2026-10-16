@@ -157,6 +157,23 @@ plugin_lib() {
     fi
 }
 
+# The configuration in force is the project's own, in the working
+# directory (else under engineering/, the same order iso-profile.sh
+# searches). Left to itself, iso-profile.sh searches the git top level,
+# which misses a project below it (demo/smart-sensor in the plugin
+# repository, or a monorepo subproject), while the gates find the
+# project's file by walking up from the edited file. A path the
+# environment already names is kept.
+if [ -z "${VSE_ISO_CONFIG:-}" ]; then
+    if [ -f ".iso-config.yaml" ]; then
+        VSE_ISO_CONFIG="$(pwd -P)/.iso-config.yaml"
+        export VSE_ISO_CONFIG
+    elif [ -f "engineering/.iso-config.yaml" ]; then
+        VSE_ISO_CONFIG="$(pwd -P)/engineering/.iso-config.yaml"
+        export VSE_ISO_CONFIG
+    fi
+fi
+
 # Rigour profile via the shared library.
 ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
 

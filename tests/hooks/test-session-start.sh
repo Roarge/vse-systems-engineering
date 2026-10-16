@@ -20,6 +20,11 @@
 # when jq is missing, and the one pointer to the contributor rules in
 # the plugin repository (mode 1).
 #
+# A VSE project below its git top level (greenfield and brownfield
+# layouts) has its own configuration read, the same file the gates
+# find by walking up from an edited file, and a configuration path the
+# environment already names is kept.
+#
 # Every toolchain is stubbed, so the file asserts the same behaviour on
 # a runner with no SysML tool installed.
 #
@@ -315,6 +320,64 @@ case_mode2_jq_missing_warning() {
     tc_assert_not_grep "jq is not on PATH" "$OUT" "jq present: no warning"
 }
 
+# case_mode2_nested_project <greenfield|brownfield>
+#
+# A VSE project that sits below its git top level, as demo/smart-sensor
+# does in the plugin repository or a subproject does in a monorepo. The
+# gates find the configuration by walking up from the edited file, so
+# they read the project's own .iso-config.yaml (under engineering/ for
+# the brownfield layout), and the session has to be told the same
+# values. The top level carries no configuration, so a lookup from
+# there reads the defaults: standard, syside and an unrecorded
+# test_first.applies, none of which the project records.
+case_mode2_nested_project() {
+    local layout="$1" top proj eng
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    proj="${top}/projects/sensor"
+    eng="$proj"
+    if [ "$layout" = brownfield ]; then
+        eng="${proj}/engineering"
+    fi
+    mkdir -p "${eng}/methodology"
+    printf '# Methodology overview\n' > "${eng}/methodology/00-methodology-overview.md"
+    {
+        printf 'project_profile: full\n'
+        printf 'sysml_toolchain: omg-pilot\n'
+        printf 'test_first:\n  applies: false\n'
+    } > "${eng}/.iso-config.yaml"
+    tc_env
+    run_hook_in "$proj"
+    tc_assert_rc 0 "nested project (${layout}): exit 0"
+    tc_assert_grep "Profile:     full (per methodology section 0.10)" "$OUT" \
+        "nested project (${layout}): the Profile line reads the project's configuration"
+    tc_assert_match '^Toolchain: +omg-pilot \(preferred' "$OUT" \
+        "nested project (${layout}): the Toolchain line names the recorded preference"
+    tc_assert_match '^Test-first: test_first\.applies is false\.' "$OUT" \
+        "nested project (${layout}): the Test-first line names the recorded value, false"
+    tc_assert_not_grep "is not recorded" "$OUT" \
+        "nested project (${layout}): the recorded value is not reported as missing"
+    assert_plain_text "$OUT" "nested project (${layout}): output is plain text"
+}
+
+# A configuration path the environment already names is left alone, as
+# iso-profile.sh documents, rather than replaced by the one in the
+# working directory.
+case_mode2_preset_config_path() {
+    local proj preset
+    proj="$(tc_mktemp_d)"
+    make_policy_project "$proj" false
+    preset="$(tc_mktemp_d)/preset.yaml"
+    printf 'project_profile: light\ntest_first:\n  applies: true\n' > "$preset"
+    tc_env "VSE_ISO_CONFIG=${preset}"
+    run_hook_in "$proj"
+    tc_assert_rc 0 "preset configuration path: exit 0"
+    tc_assert_grep "Profile:     light (per methodology section 0.10)" "$OUT" \
+        "preset configuration path: the Profile line reads the named file"
+    tc_assert_match '^Test-first: test_first\.applies is true\.' "$OUT" \
+        "preset configuration path: the Test-first line reads the named file"
+}
+
 # Contributor mode (the plugin repository) prints exactly one pointer to
 # the contributor rules for test first and Gherkin first.
 case_mode1_pointer() {
@@ -349,6 +412,10 @@ case_mode2_nudge_when_detected "false, nothing found" false -
 case_mode2_nudge_when_detected "unrecorded, nothing found" - -
 
 case_mode2_jq_missing_warning
+
+case_mode2_nested_project greenfield
+case_mode2_nested_project brownfield
+case_mode2_preset_config_path
 
 case_mode1_pointer
 
