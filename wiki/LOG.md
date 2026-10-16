@@ -1847,3 +1847,27 @@ defines a Very Small Entity as an enterprise, an organisation, a
 department or a project having up to 25 people. `updated:` was bumped to
 2026-09-10 on that page. No title or summary changed, so INDEX and the
 routing blocks are untouched.
+
+## [2026-10-16] refactor | nested acceptance criteria validated
+
+Layer: tooling. A spike (a short experiment run before a design
+commits to a form) checked whether a story's acceptance can carry
+named criteria that a verification case verifies one at a time, with
+`verify <story>.acceptance.<name>`.
+
+Pages updated:
+
+- tooling-reference-implementation-rules (a rules-table row for a deep
+  verify that names an undeclared criterion, the validated pattern
+  extended with two criteria nested inside `requirement :>> acceptance`
+  and a `VAL_001` case that verifies each by name, paragraphs recording
+  the runs and their negative probes, a source citation for the
+  2026-10-16 runs, and the `acceptance-criteria` tag)
+
+The pilot 2026-07 on Java 21 and OpenSysML v0.6.0 both validated the
+extended pattern, and a copy of the Smart Sensor demo model with the
+acceptance of `US_001_SeeReadingsOnDashboard` split into two named
+criteria, with no diagnostic. Both refused an unknown criterion name
+and a missing semicolon with exit 1. The demo itself is unchanged.
+`updated:` was bumped to 2026-10-16 on that page. No title or summary
+changed, so INDEX and the routing blocks are untouched.
