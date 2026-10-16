@@ -15,20 +15,17 @@ Feature: Test first
     Background:
       Given test first applies to code under src/ with tests under tests/
 
-    @wip
     Scenario: A code edit with no test change is denied
       Given no test file has changed
       When the agent edits src/reading.py
       Then the edit is denied
       And the denial asks for a failing test first
 
-    @wip
     Scenario: A code edit goes ahead once a test file has changed
       Given the file tests/test_reading.py has changed in the working tree
       When the agent edits src/reading.py
       Then the edit goes ahead
 
-    @wip
     Scenario: A refactor branch only draws a reminder
       Given the branch refactor/tidy-readings is checked out
       And no test file has changed

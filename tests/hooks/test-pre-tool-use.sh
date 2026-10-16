@@ -1,0 +1,706 @@
+#!/usr/bin/env bash
+# Behavioural tests for hooks/pre-tool-use.sh, the PreToolUse lifecycle
+# hook (methodology §11.9.3, hooks guide §5.3).
+#
+# Each case builds a scratch project, feeds the hook the JSON payload
+# Claude Code would send for an Edit, Write, MultiEdit or NotebookEdit
+# call, and reads the one JSON object the hook prints. Five groups of
+# behaviour are pinned:
+#
+#   1. Gherkin first. An edit that adds a story, or changes a story's
+#      text, is denied while <dir>/<ID>.feature is missing or lacks the
+#      @<ID> tag. Untouched siblings draw a warning, deletion is never
+#      denied, templates and the library are skipped, and the gate's
+#      disposition comes from the configuration.
+#   2. Test first. Where test_first.applies is true, an edit to a code
+#      path is denied while no test path has changed in the working
+#      tree or on the branch. A refactor branch draws a reminder.
+#   3. The self-bypass guard. An edit to .iso-config.yaml that changes
+#      gate_overrides or test_first asks the human to confirm.
+#   4. Locating the project. The configuration is found by walking up
+#      from the edited file, whatever the hook's working directory, and
+#      contributor mode (the plugin repository) counts only the demo.
+#   5. The output contract. Exactly one JSON object or nothing, never
+#      an explicit allow, a capped deny reason, and exit 0 always, with
+#      an internal error failing open.
+#
+# Run: bash tests/hooks/test-pre-tool-use.sh
+set -euo pipefail
+
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+
+trap tc_teardown EXIT
+
+PTU_HOOK="${TC_PLUGIN_ROOT}/hooks/pre-tool-use.sh"
+PTU_STORIES="model/core/stories/stakeholder"
+
+# Physical path of $REPO, set by ptu_project, so expected paths match
+# the canonical paths the hook names.
+PTU_REAL=""
+
+# A directory of links to every program in /usr/bin and /bin except the
+# named ones, used as PATH to take jq or python3 out of reach.
+ptu_bin_without() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
+        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
+    printf '%s\n' "$dir"
+}
+
+PTU_BIN_NO_JQ="$(ptu_bin_without ! -name jq)"
+PTU_BIN_NO_JSON="$(ptu_bin_without ! -name jq ! -name python3)"
+
+# ------------------------------------------------------------- fixtures
+
+# ptu_project [profile] [spec ...]: a fresh scratch repository with a
+# configuration at its top level.
+ptu_project() {
+    local profile="${1:-light}"
+    shift || true
+    tc_setup_repo
+    tc_env
+    tc_config "$profile" - "$@"
+    PTU_REAL="$(cd "$REPO" && pwd -P)"
+}
+
+# ptu_test_first_project [profile] [spec ...]: a project where test
+# first applies to src/ with tests under tests/, committed on main with
+# a clean working tree.
+ptu_test_first_project() {
+    ptu_project "$@"
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  rationale: "pytest runs the code under src/."
+  test_command: "pytest -q"
+  code_paths: [src/*]
+  test_paths: [tests/*]
+EOF
+    git -C "$REPO" add -A
+    tc_commit "chore: start the project"
+}
+
+# ptu_story <ID>: one story block, with a capability unique to the ID
+# so that an edit to one story never matches another.
+ptu_story() {
+    local id="$1"
+    cat <<EOF
+    requirement ${id} : UserStory {
+        @StoryMeta { points = 3; priority = Priority::high; status = StoryStatus::ready; }
+
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        attribute :>> capability = "use ${id}";
+        attribute :>> benefit    = "the device is known to work";
+
+        requirement :>> acceptance {
+            requirement firstReading {
+                doc /* Given the device is on, when it reads, then the reading is shown. */
+            }
+        }
+    }
+EOF
+}
+
+# ptu_register <ID>...: a story file holding the named stories.
+ptu_register() {
+    local id
+    printf 'package ExampleStories {\n    private import VSE_Library::*;\n\n'
+    for id in "$@"; do
+        ptu_story "$id"
+        printf '\n'
+    done
+    printf '}\n'
+}
+
+# ptu_feature <ID> [tag]: a feature file for <ID> in the stories
+# directory, tagged @<tag> (the ID by default).
+ptu_feature() {
+    local id="$1" tag="${2:-$1}"
+    tc_write "${PTU_STORIES}/${id}.feature" <<EOF
+# language: en
+@${tag}
+Feature: Use ${id}
+  As an operator
+  I want to use ${id}
+  So that the device is known to work
+EOF
+}
+
+# ------------------------------------------------------------- payloads
+
+# ptu_write_json <abs-path> <content>
+ptu_write_json() {
+    jq -n -c --arg p "$1" --arg c "$2" --arg cwd "${REPO}" \
+        '{session_id: "test", cwd: $cwd, hook_event_name: "PreToolUse",
+          tool_name: "Write", tool_input: {file_path: $p, content: $c}}'
+}
+
+# ptu_edit_json <abs-path> <old> <new>
+ptu_edit_json() {
+    jq -n -c --arg p "$1" --arg o "$2" --arg n "$3" --arg cwd "${REPO}" \
+        '{session_id: "test", cwd: $cwd, hook_event_name: "PreToolUse",
+          tool_name: "Edit",
+          tool_input: {file_path: $p, old_string: $o, new_string: $n}}'
+}
+
+# ptu_multiedit_json <abs-path> <old1> <new1> [<old2> <new2>]...
+ptu_multiedit_json() {
+    local path="$1" edits="[]"
+    shift
+    while [ "$#" -ge 2 ]; do
+        edits="$(jq -c --arg o "$1" --arg n "$2" '. + [{old_string: $o, new_string: $n}]' <<<"$edits")"
+        shift 2
+    done
+    jq -n -c --arg p "$path" --argjson e "$edits" --arg cwd "${REPO}" \
+        '{session_id: "test", cwd: $cwd, hook_event_name: "PreToolUse",
+          tool_name: "MultiEdit", tool_input: {file_path: $p, edits: $e}}'
+}
+
+# ptu_notebook_json <abs-path>
+ptu_notebook_json() {
+    jq -n -c --arg p "$1" --arg cwd "${REPO}" \
+        '{session_id: "test", cwd: $cwd, hook_event_name: "PreToolUse",
+          tool_name: "NotebookEdit",
+          tool_input: {notebook_path: $p, new_source: "print(1)", cell_id: "a"}}'
+}
+
+# ------------------------------------------------------------- runners
+
+ptu_run() {
+    tc_run_lifecycle pre-tool-use "$1"
+}
+
+# ptu_run_from <dir> <json>: run the hook with <dir> as its working
+# directory, the way a session started elsewhere would.
+ptu_run_from() {
+    local dir="$1" TC_STDIN
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$2" > "$TC_STDIN"
+    tc_run_in "$dir" CLAUDE_PLUGIN_ROOT="$TC_PLUGIN_ROOT" "$PTU_HOOK"
+    rm -f "$TC_STDIN"
+}
+
+# ----------------------------------------------------------- assertions
+
+ptu_assert_denied() {
+    tc_assert_rc 0 "$1: exit 0"
+    tc_assert_json '.hookSpecificOutput.hookEventName == "PreToolUse"
+        and .hookSpecificOutput.permissionDecision == "deny"' "$1"
+}
+
+ptu_assert_asked() {
+    tc_assert_rc 0 "$1: exit 0"
+    tc_assert_json '.hookSpecificOutput.hookEventName == "PreToolUse"
+        and .hookSpecificOutput.permissionDecision == "ask"' "$1"
+}
+
+# The call proceeds: nothing at all, or one object with no decision.
+ptu_assert_proceeds() {
+    tc_assert_rc 0 "$1: exit 0"
+    if [ -z "$OUT" ]; then
+        tc_pass "$1"
+    else
+        tc_assert_json '.hookSpecificOutput.permissionDecision == null' "$1"
+    fi
+}
+
+# ptu_assert_reason <fixed-string> <case>
+ptu_assert_reason() {
+    tc_assert_json "(.hookSpecificOutput.permissionDecisionReason // \"\") | contains($(jq -n --arg s "$1" '$s'))" "$2"
+}
+
+# ptu_assert_reason_lacks <fixed-string> <case>
+ptu_assert_reason_lacks() {
+    tc_assert_json "(.hookSpecificOutput.permissionDecisionReason // \"\") | contains($(jq -n --arg s "$1" '$s')) | not" "$2"
+}
+
+# ptu_assert_context <fixed-string> <case>
+ptu_assert_context() {
+    tc_assert_json "(.hookSpecificOutput.additionalContext // \"\") | contains($(jq -n --arg s "$1" '$s'))" "$2"
+}
+
+# ptu_assert_context_lacks <fixed-string> <case>: no context, or one
+# that does not hold the string.
+ptu_assert_context_lacks() {
+    if [ -z "$OUT" ]; then
+        tc_pass "$2"
+    else
+        tc_assert_json "(.hookSpecificOutput.additionalContext // \"\") | contains($(jq -n --arg s "$1" '$s')) | not" "$2"
+    fi
+}
+
+# ------------------------------------------------- locating the project
+
+case_outside_project_silent() {
+    local dir
+    tc_setup_repo
+    tc_env
+    dir="$(tc_mktemp_d)"
+    ptu_run "$(ptu_write_json "${dir}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    tc_assert_rc 0 "outside: exit 0 for a story outside any project"
+    tc_assert_json_silent "outside: a story outside any project is silent"
+    tc_assert_empty "$ERR" "outside: nothing on stderr outside any project"
+
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    tc_assert_json_silent "outside: a git repository with no configuration is silent"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    tc_assert_json_silent "outside: a code file with no configuration is silent"
+    ptu_run '{"session_id": "test", "tool_name": "Write", "tool_input": {"content": "x"}}'
+    tc_assert_rc 0 "outside: exit 0 with no file path"
+    tc_assert_json_silent "outside: no file path is silent"
+}
+
+case_contributor_mode_skips() {
+    tc_setup_repo
+    tc_env
+    PTU_REAL="$(cd "$REPO" && pwd -P)"
+    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_config light -
+    tc_write templates/iso-config/.iso-config.yaml <<'EOF'
+project_profile: light
+gate_overrides:
+  pretooluse_gherkin_first: block
+test_first:
+  applies: true
+  code_paths: [hooks/*]
+  test_paths: [tests/*]
+EOF
+    ptu_run "$(ptu_write_json "${REPO}/templates/common/models/core/stories/stakeholder/stories.sysml" "$(ptu_register US_901_Example)")"
+    tc_assert_json_silent "contributor: a story outside the demo is not gated"
+    ptu_run "$(ptu_write_json "${REPO}/templates/iso-config/stories/x.sysml" "$(ptu_register US_901_Example)")"
+    tc_assert_json_silent "contributor: the shipped template configuration is ignored"
+    ptu_run "$(ptu_edit_json "${REPO}/templates/iso-config/.iso-config.yaml" "pretooluse_gherkin_first: block" "pretooluse_gherkin_first: off")"
+    tc_assert_json_silent "contributor: an edit to the template configuration is not asked"
+    ptu_run "$(ptu_write_json "${REPO}/hooks/new-hook.sh" "echo hi")"
+    tc_assert_json_silent "contributor: a hook edit is not gated by any configuration"
+
+    printf 'project_profile: light\n' | tc_write demo/smart-sensor/.iso-config.yaml
+    ptu_run "$(ptu_write_json "${REPO}/demo/smart-sensor/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "contributor: a demo story without a feature file is denied"
+    ptu_assert_reason "${PTU_REAL}/demo/smart-sensor/${PTU_STORIES}/US_901_Example.feature" "contributor: the denial names the demo feature path"
+}
+
+# The configuration is found from the edited file, never from the
+# hook's own working directory.
+case_any_working_directory() {
+    local other
+    ptu_project light
+    other="$(tc_mktemp_d)"
+    git -C "$other" init -q -b main
+    printf 'project_profile: light\ngate_overrides:\n  pretooluse_gherkin_first: off\n' > "${other}/.iso-config.yaml"
+
+    ptu_run_from "$other" "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "cwd: the edited file's project decides, not the working directory"
+
+    ptu_run_from "$REPO" "$(ptu_write_json "${other}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "cwd: a project with the gate off is not gated from another project's directory"
+
+    ptu_run_from "$(tc_mktemp_d)" "$(jq -n -c --arg cwd "$REPO" --arg c "$(ptu_register US_901_Example)" \
+        '{cwd: $cwd, tool_name: "Write", tool_input: {file_path: "model/core/stories/stakeholder/stories.sysml", content: $c}}')"
+    ptu_assert_denied "cwd: a relative file path is taken from the payload's cwd"
+}
+
+# --------------------------------------------------------- Gherkin first
+
+case_new_story_without_feature_denied() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "new story: a new story without a feature file is denied"
+    ptu_assert_reason "${PTU_REAL}/${PTU_STORIES}/US_901_Example.feature" "new story: the denial names the expected path"
+    ptu_assert_reason "@US_901_Example" "new story: the denial names the tag"
+    ptu_assert_reason "§11" "new story: the denial cites methodology section 11"
+    ptu_assert_reason_lacks "formalise" "new story: a new story is not told to formalise existing text"
+
+    ptu_register US_900_Existing | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_900_Existing
+    ptu_run "$(ptu_edit_json "$file" "$(printf '\n}\n')" "$(printf '\n%s\n}\n' "$(ptu_story US_902_Added)")")"
+    ptu_assert_denied "new story: a story added to an existing file is denied"
+    ptu_assert_reason "US_902_Added.feature" "new story: the added story is named"
+    ptu_assert_reason_lacks "US_900_Existing" "new story: the story with a feature file is not named"
+}
+
+case_new_story_with_feature_allowed_with_context() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "with feature: the story goes ahead once its feature file carries the tag"
+    ptu_assert_context "§1.9" "with feature: the story-file reminder reaches the agent as context"
+
+    ptu_feature US_901_Example US_999_Other
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "with feature: a feature file without the story tag does not count"
+}
+
+case_register_untouched_sibling() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example US_902_Sibling | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_edit_json "$file" 'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"')"
+    ptu_assert_proceeds "sibling: an edit to a story with a feature file goes ahead"
+    ptu_assert_context "US_902_Sibling" "sibling: the untouched sibling without a feature file draws a warning"
+    ptu_assert_context "${PTU_REAL}/${PTU_STORIES}/US_902_Sibling.feature" "sibling: the warning names the sibling's expected feature path"
+}
+
+case_edit_rename_requires_new_feature() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_edit_json "$file" "requirement US_901_Example : UserStory" "requirement US_903_Renamed : UserStory")"
+    ptu_assert_denied "rename: a renamed story needs a feature file under its new name"
+    ptu_assert_reason "US_903_Renamed.feature" "rename: the new name is named"
+    ptu_assert_reason_lacks "US_901_Example.feature" "rename: the old name is not asked for"
+}
+
+case_delete_story_allowed() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example US_902_Kept | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_902_Kept
+    ptu_run "$(ptu_edit_json "$file" "$(ptu_story US_901_Example)" "")"
+    ptu_assert_proceeds "delete: removing a story without a feature file is never denied"
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register)")"
+    ptu_assert_proceeds "delete: emptying the story file is never denied"
+}
+
+case_template_and_library_skipped() {
+    ptu_project light
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_paths: [model/library/*.py]
+  test_paths: [tests/*]
+EOF
+    git -C "$REPO" add -A
+    tc_commit "chore: start the project"
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/_template.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "skip: a story template is not gated"
+    ptu_run "$(ptu_write_json "${REPO}/model/library/stories/library-stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "skip: a story file under the library is not gated"
+    ptu_run "$(ptu_write_json "${REPO}/model/library/helper.py" "x = 1")"
+    ptu_assert_denied "skip: the library skip never reaches a code path"
+}
+
+case_gherkin_override_warn() {
+    ptu_project light pretooluse_gherkin_first=warn
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "gherkin warn: the edit goes ahead"
+    ptu_assert_context "US_901_Example.feature" "gherkin warn: the finding reaches the agent as context"
+}
+
+case_gherkin_override_off_silent() {
+    ptu_project full pretooluse_gherkin_first=off
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "gherkin off: the edit goes ahead"
+    ptu_assert_context_lacks "US_901_Example" "gherkin off: the gate says nothing about the story"
+}
+
+# At info each gate adds one line of context and the edit goes ahead.
+case_info_disposition_one_line() {
+    ptu_test_first_project light pretooluse_gherkin_first=info pretooluse_test_first=info
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_proceeds "info: a story without a feature file goes ahead"
+    ptu_assert_context "Gherkin first (info)" "info: the Gherkin-first line reaches the agent"
+    ptu_assert_context "US_901_Example" "info: the line names the story"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_proceeds "info: a code edit with no test change goes ahead"
+    ptu_assert_context "Test first (info)" "info: the test-first line reaches the agent"
+    tc_assert_json '.hookSpecificOutput.additionalContext | split("\n") | length == 1' "info: the test-first finding is one line"
+}
+
+# A story from before 5.0.0 carries Given/When/Then prose and no
+# feature file. Its denial says to formalise that text first.
+case_legacy_story_formalise_first() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    tc_write "${PTU_STORIES}/stories.sysml" <<'EOF'
+package ExampleStories {
+    private import VSE_Library::*;
+
+    requirement US_901_Example : UserStory {
+        @StoryMeta { points = 3; priority = Priority::high; status = StoryStatus::ready; }
+        attribute :>> capability = "see the first reading";
+        attribute :>> benefit    = "the device is known to work";
+        requirement :>> acceptance {
+            doc /* Given the device is switched on, when it takes a reading, then the reading is shown. */
+        }
+    }
+}
+EOF
+    ptu_run "$(ptu_edit_json "$file" "StoryStatus::ready" "StoryStatus::inProgress")"
+    ptu_assert_denied "legacy: a status change on a story without a feature file is denied"
+    ptu_assert_reason "formalise the existing Given/When/Then first" "legacy: the denial says to formalise the existing text"
+}
+
+case_reason_length_capped() {
+    local ids="" n
+    ptu_project light
+    for n in $(seq 1 30); do
+        ids="${ids} US_$(printf '%03d' "$n")_ExampleStoryWithALongerName"
+    done
+    # The IDs are words, split on purpose.
+    # shellcheck disable=SC2086
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register $ids)")"
+    ptu_assert_denied "cap: thirty new stories are denied"
+    tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length < 1500' "cap: the reason stays under 1,500 characters"
+    ptu_assert_reason "US_001_ExampleStoryWithALongerName" "cap: the first story is named"
+    ptu_assert_reason "and 27 more" "cap: the rest are counted, not listed"
+    ptu_assert_reason_lacks "US_030_ExampleStoryWithALongerName" "cap: the last story is not listed"
+}
+
+case_multiedit_applied() {
+    local file added
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    added="$(printf '\n%s\n}\n' "$(ptu_story US_904_Added)")"
+    ptu_run "$(ptu_multiedit_json "$file" \
+        'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"' \
+        "$(printf '\n}\n')" "$added")"
+    ptu_assert_denied "multiedit: a story added by the second edit is denied"
+    ptu_assert_reason "US_904_Added.feature" "multiedit: the added story is named"
+
+    ptu_run "$(ptu_multiedit_json "$file" \
+        "$(printf '\n}\n')" "$added" \
+        "$(ptu_story US_904_Added)" "")"
+    ptu_assert_proceeds "multiedit: the edits apply in order, so a story added and removed again is not gated"
+}
+
+# ------------------------------------------------------------ test first
+
+case_test_first_denied_without_evidence() {
+    ptu_test_first_project light
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "def reading():\n    return 1\n")"
+    ptu_assert_denied "test first: a code edit with no test change is denied"
+    ptu_assert_reason "src/reading.py" "test first: the denial names the code path"
+    ptu_assert_reason "failing test" "test first: the denial asks for a failing test first"
+    ptu_assert_reason "main" "test first: the denial names the base the branch was measured against"
+
+    git -C "$REPO" checkout -q --detach
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_denied "test first: a detached HEAD gives no branch evidence"
+    ptu_assert_reason "detached HEAD" "test first: the denial says why there is no branch evidence"
+}
+
+case_test_first_allowed_with_working_tree_test() {
+    ptu_test_first_project light
+    printf 'def test_reading():\n    assert False\n' | tc_write tests/test_reading.py
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_proceeds "test first: an untracked test file is evidence"
+
+    git -C "$REPO" checkout -q -b feat/readings
+    git -C "$REPO" add tests/test_reading.py
+    tc_commit "test: read a value"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_proceeds "test first: a test committed on the branch is evidence"
+}
+
+case_test_first_refactor_branch_context() {
+    ptu_test_first_project light
+    git -C "$REPO" checkout -q -b refactor/tidy-readings
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_proceeds "refactor: a code edit on a refactor branch goes ahead"
+    ptu_assert_context "refactor" "refactor: the agent is reminded"
+    ptu_assert_context "no test file has changed" "refactor: the reminder says no test file has changed"
+}
+
+case_test_first_not_applicable() {
+    ptu_project light
+    git -C "$REPO" add -A
+    tc_commit "chore: start the project"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    tc_assert_json_silent "not applicable: test_first unrecorded, a code edit is silent"
+
+    tc_config_append <<'EOF'
+test_first:
+  applies: false
+  rationale: "No implementation code."
+  code_paths: [src/*]
+  test_paths: [tests/*]
+EOF
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    tc_assert_json_silent "not applicable: applies false is silent"
+
+    ptu_test_first_project light
+    ptu_run "$(ptu_write_json "${REPO}/docs/project-plan.md" "# Plan")"
+    tc_assert_json_silent "not applicable: a path outside code_paths is silent"
+    ptu_run "$(ptu_write_json "${REPO}/tests/test_reading.py" "x = 1")"
+    tc_assert_json_silent "not applicable: a test path is silent"
+    ptu_run "$(ptu_write_json "${REPO}/src/readings.feature" "Feature: x")"
+    tc_assert_json_silent "not applicable: a feature file is never code"
+}
+
+case_notebook_path_read() {
+    ptu_test_first_project light
+    ptu_run "$(ptu_notebook_json "${REPO}/src/analysis.ipynb")"
+    ptu_assert_denied "notebook: a notebook under the code paths is gated"
+    ptu_assert_reason "src/analysis.ipynb" "notebook: the denial names the notebook path"
+    ptu_run "$(ptu_notebook_json "${REPO}/notes/analysis.ipynb")"
+    tc_assert_json_silent "notebook: a notebook outside the code paths is silent"
+}
+
+# --------------------------------------------------- self-bypass guard
+
+case_config_gate_change_asks() {
+    local config
+    ptu_project light precommit_lint=warn
+    config="${REPO}/.iso-config.yaml"
+    ptu_run "$(ptu_edit_json "$config" "precommit_lint: warn" "precommit_lint: warn
+  pretooluse_gherkin_first: off")"
+    ptu_assert_asked "config: adding a gate override asks"
+    ptu_assert_reason "gate_overrides" "config: the question names gate_overrides"
+    ptu_assert_reason "§11.10" "config: the question cites the self-bypass rule"
+
+    ptu_run "$(ptu_edit_json "$config" "precommit_lint: warn" "precommit_lint: off")"
+    ptu_assert_asked "config: changing an override value asks"
+
+    ptu_run "$(ptu_write_json "$config" "project_profile: light
+")"
+    ptu_assert_asked "config: removing gate_overrides asks"
+
+    ptu_run "$(ptu_edit_json "$config" "project_profile: light" "project_profile: light
+test_first:
+  applies: false")"
+    ptu_assert_asked "config: adding a test_first record asks"
+    ptu_assert_reason "test_first" "config: the question names test_first"
+}
+
+case_config_other_change_allowed() {
+    local config
+    ptu_project light precommit_lint=warn
+    config="${REPO}/.iso-config.yaml"
+    ptu_run "$(ptu_edit_json "$config" "project_profile: light" "project_profile: standard")"
+    ptu_assert_proceeds "config: a profile change is not asked"
+    ptu_run "$(ptu_edit_json "$config" "precommit_lint: warn" "# A comment.
+  precommit_lint: warn")"
+    ptu_assert_proceeds "config: a comment line inside gate_overrides is not asked"
+    ptu_run "$(ptu_edit_json "$config" "project_profile: light" "project_profile: light
+baselined_paths:
+  - docs/project-plan.md")"
+    ptu_assert_proceeds "config: a baselined_paths change is not asked"
+}
+
+# The baselined-path note of earlier releases reaches the agent as
+# context.
+case_baselined_path_context() {
+    ptu_project light
+    tc_config_append <<'EOF'
+baselined_paths:
+  - docs/project-plan.md
+EOF
+    ptu_run "$(ptu_edit_json "${REPO}/docs/project-plan.md" "a" "b")"
+    ptu_assert_proceeds "baselined: the edit goes ahead"
+    ptu_assert_context "baselined" "baselined: the agent is told the file is baselined"
+    ptu_assert_context "Change Request" "baselined: the note points at a Change Request"
+    ptu_run "$(ptu_edit_json "${REPO}/docs/other.md" "a" "b")"
+    tc_assert_json_silent "baselined: a file off the list is silent"
+}
+
+# ------------------------------------------------------- output contract
+
+case_no_jq_python_fallback() {
+    ptu_project light
+    tc_env PATH="$PTU_BIN_NO_JQ"
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "no jq: python3 reads the payload and the story is denied"
+    ptu_assert_reason "US_901_Example.feature" "no jq: the reason is complete"
+    ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "project_profile: light" "project_profile: light
+gate_overrides:
+  pretooluse_test_first: off")"
+    ptu_assert_asked "no jq: a gate change still asks"
+    tc_env
+}
+
+case_no_jq_no_python_notice() {
+    ptu_project light
+    tc_env PATH="$PTU_BIN_NO_JSON"
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    tc_assert_rc 0 "no engine: exit 0"
+    tc_assert_json '.hookSpecificOutput.hookEventName == "PreToolUse"
+        and .hookSpecificOutput.permissionDecision == null
+        and (.hookSpecificOutput.additionalContext | contains("jq"))
+        and (.systemMessage | contains("jq"))' "no engine: a fixed notice for the agent and the user, and no decision"
+    tc_env
+}
+
+case_malformed_payload_fails_open() {
+    ptu_project light
+    ptu_run '{"tool_name": "Write", "tool_input": '
+    tc_assert_rc 0 "fail open: a malformed payload exits 0"
+    tc_assert_json_silent "fail open: a malformed payload prints nothing on stdout"
+    tc_assert_grep "[pre-tool-use]" "$ERR" "fail open: the problem is reported on stderr"
+
+    ptu_run "$(jq -n -c --arg p "${REPO}/${PTU_STORIES}/stories.sysml" \
+        '{tool_name: "Edit", tool_input: {file_path: $p, old_string: 1, new_string: {}}}')"
+    tc_assert_rc 0 "fail open: an edit the image cannot apply exits 0"
+    ptu_assert_proceeds "fail open: an edit the image cannot apply is never denied"
+}
+
+case_never_emits_allow() {
+    local json
+    ptu_test_first_project light
+    ptu_feature US_901_Example
+    printf 'x = 1\n' | tc_write tests/test_reading.py
+    for json in \
+        "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")" \
+        "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")" \
+        "$(ptu_notebook_json "${REPO}/src/analysis.ipynb")" \
+        "$(ptu_edit_json "${REPO}/.iso-config.yaml" "project_profile: light" "project_profile: full")" \
+        "$(ptu_write_json "${REPO}/README.md" "# Readme")"; do
+        ptu_run "$json"
+        tc_assert_rc 0 "allow: exit 0"
+        tc_assert_not_grep '"allow"' "$OUT" "allow: no explicit allow is printed"
+        if [ -n "$OUT" ]; then
+            tc_assert_json '.hookSpecificOutput.hookEventName == "PreToolUse"' "allow: one object naming the event"
+        fi
+    done
+}
+
+# ------------------------------------------------------------------ run
+
+case_outside_project_silent
+case_contributor_mode_skips
+case_any_working_directory
+case_new_story_without_feature_denied
+case_new_story_with_feature_allowed_with_context
+case_register_untouched_sibling
+case_edit_rename_requires_new_feature
+case_delete_story_allowed
+case_template_and_library_skipped
+case_gherkin_override_warn
+case_gherkin_override_off_silent
+case_info_disposition_one_line
+case_legacy_story_formalise_first
+case_reason_length_capped
+case_multiedit_applied
+case_test_first_denied_without_evidence
+case_test_first_allowed_with_working_tree_test
+case_test_first_refactor_branch_context
+case_test_first_not_applicable
+case_notebook_path_read
+case_config_gate_change_asks
+case_config_other_change_allowed
+case_baselined_path_context
+case_no_jq_python_fallback
+case_no_jq_no_python_notice
+case_malformed_payload_fails_open
+case_never_emits_allow
+
+if tc_summary "test-pre-tool-use"; then
+    exit 0
+fi
+exit 1

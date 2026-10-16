@@ -56,7 +56,6 @@ Feature: Gherkin-first and test-first gates at every profile
 
   Rule: The in-session gates block at every profile
 
-    @wip
     Scenario Outline: A new story without a feature file is denied at the <profile> profile
       Given a VSE project at the <profile> profile
       And no feature file for US_901_Example
@@ -69,7 +68,6 @@ Feature: Gherkin-first and test-first gates at every profile
         | standard |
         | full     |
 
-    @wip
     Scenario Outline: A code edit with no test change is denied at the <profile> profile
       Given a VSE project at the <profile> profile
       And test first applies to code under src/ with tests under tests/
