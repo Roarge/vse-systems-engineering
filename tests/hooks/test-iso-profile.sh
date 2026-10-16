@@ -12,7 +12,8 @@
 #   2. VSE_ISO_CONFIG, when it names a readable file, wins over the
 #      search from the git toplevel.
 #   3. The section readers return a value or an inline list nested
-#      under a top-level key, such as the test_first record.
+#      under a top-level key, such as the test_first record. A value
+#      loses one matching pair of outer quotes and nothing more.
 #   4. A "#" inside quotes is part of the value, while a "#" outside
 #      quotes starts a comment, as it always has.
 #
@@ -35,6 +36,22 @@ ISO_DRIVER='
 # way a hook does, and call one of its functions.
 run_iso() {
     tc_run_in "$REPO" bash -c "$ISO_DRIVER" iso-driver "$@"
+}
+
+# Command substitution drops trailing newlines, so OUT cannot tell
+# "printed nothing" from "printed an empty line". This driver prints
+# the number of bytes the function wrote instead.
+# shellcheck disable=SC2016
+ISO_BYTES_DRIVER='
+. ./.githooks/lib/iso-profile.sh
+n=$("$@" | wc -c)
+printf "%s\n" $((n))
+'
+
+# run_iso_bytes <function> [arg ...]: as run_iso, but OUT is the byte
+# count of what the function printed.
+run_iso_bytes() {
+    tc_run_in "$REPO" bash -c "$ISO_BYTES_DRIVER" iso-bytes-driver "$@"
 }
 
 NEW_GATES="precommit_gherkin precommit_test_first pretooluse_gherkin_first pretooluse_test_first"
@@ -136,6 +153,29 @@ EOF
     tc_assert_eq "true" "$OUT" "section scalar: a plain value with a comment"
 }
 
+# Exactly one layer of quotes comes off, and only a matching pair that
+# wraps the whole value. Quotes inside a plain value belong to it, so a
+# test command such as pytest -k "not slow" reaches the shell intact.
+case_section_scalar_one_quote_layer() {
+    tc_setup_repo
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  test_command: pytest -k "not slow"
+  rationale: "'x'"
+  scenario_command: "say 'hi'"
+EOF
+    tc_env
+    run_iso iso_section_scalar test_first test_command
+    tc_assert_eq 'pytest -k "not slow"' "$OUT" "section scalar: quotes inside a plain value are kept"
+    run_iso iso_section_scalar test_first rationale
+    tc_assert_eq "'x'" "$OUT" "section scalar: only the outer pair of quotes is removed"
+    run_iso iso_section_scalar test_first scenario_command
+    tc_assert_eq "say 'hi'" "$OUT" "section scalar: a quote of the other kind at the end is kept"
+    run_iso_bytes iso_section_scalar test_first absent_key
+    tc_assert_eq "0" "$OUT" "section scalar: a missing key prints nothing"
+}
+
 case_section_list_inline_quoted() {
     local expected
     tc_setup_repo
@@ -199,6 +239,24 @@ EOF
     tc_assert_eq "full" "$OUT" "top-level scalar: a quoted profile with a comment still reads"
 }
 
+# The top-level reader follows the same rule as the section reader:
+# one matching pair of outer quotes comes off, and nothing else.
+case_scalar_one_quote_layer() {
+    tc_setup_repo
+    tc_config_append <<'EOF'
+project_profile: light
+command: pytest -k "not slow"
+nested: "'x'"
+EOF
+    tc_env
+    run_iso _iso_scalar command
+    tc_assert_eq 'pytest -k "not slow"' "$OUT" "top-level scalar: quotes inside a plain value are kept"
+    run_iso _iso_scalar nested
+    tc_assert_eq "'x'" "$OUT" "top-level scalar: only the outer pair of quotes is removed"
+    run_iso_bytes _iso_scalar absent_key
+    tc_assert_eq "0" "$OUT" "top-level scalar: a missing key prints nothing"
+}
+
 case_crlf_config_read() {
     tc_setup_repo
     printf 'project_profile: full\r\ntest_first:\r\n  test_paths: [tests/*, "spec/*"]\r\n\r\n  applies: true\r\n' \
@@ -218,9 +276,11 @@ case_override_lowers_new_gate
 case_override_forms_kept
 case_vse_iso_config_wins
 case_section_scalar_quoted_hash
+case_section_scalar_one_quote_layer
 case_section_list_inline_quoted
 case_section_list_missing_key_empty
 case_scalar_quoted_hash_kept
+case_scalar_one_quote_layer
 case_crlf_config_read
 
 if tc_summary "test-iso-profile"; then

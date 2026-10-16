@@ -57,7 +57,9 @@ _iso_locate_config() {
 # token starts the comment, as it always has. With list set, the commas
 # that separate flow-list items come back as SUBSEP.
 #
-# iso_item trims one list item and removes one layer of matching quotes.
+# iso_item trims a scalar value or one list item and removes one layer
+# of quotes, only when a matching pair wraps the whole text. Quotes
+# inside a plain value (pytest -k "not slow") are part of it.
 #
 # "\047" is a single quote, which this shell string cannot hold.
 _ISO_AWK_LIB='
@@ -111,22 +113,23 @@ function iso_item(s,    f) {
 }
 '
 
-# Read one top-level scalar key out of the configuration file.
+# Read one top-level scalar key out of the configuration file, with
+# one layer of quotes removed. Prints nothing for a missing key.
 _iso_scalar() {
-    local key="$1" value
     [ -n "${ISO_CONFIG_FILE}" ] || return 0
-    value=$(awk -v key="$key" "${_ISO_AWK_LIB}"'
+    awk -v key="$1" "${_ISO_AWK_LIB}"'
         { sub(/\r$/, "") }
         index($0, key ":") == 1 {
-            print iso_value(substr($0, length(key) + 2), 0)
+            print iso_item(iso_value(substr($0, length(key) + 2), 0))
             exit
         }
-    ' "$ISO_CONFIG_FILE")
-    _iso_unquote "$value"
+    ' "$ISO_CONFIG_FILE"
 }
 
 # Read <key> indented under the top-level <section>: mapping. With
-# list 1 the value is an inline flow list, printed one item per line.
+# list 0 the value is a scalar, printed with one layer of quotes
+# removed. With list 1 it is an inline flow list, printed one item per
+# line.
 # The section ends at the next line that starts in column one, other
 # than a comment. Prints nothing for a missing section or key.
 #
@@ -148,7 +151,7 @@ _iso_section_read() {
                 next
             value = iso_value(substr(line, length(key) + 2), list)
             if (!list) {
-                print value
+                print iso_item(value)
                 exit
             }
             sub(/^\[/, "", value)
@@ -165,11 +168,12 @@ _iso_section_read() {
 }
 
 # Print the value of <key> under the top-level <section>, with one layer
-# of quotes removed.
+# of quotes removed when a matching pair wraps the whole value. Prints
+# nothing for a missing section or key.
 #
 # Usage: iso_section_scalar test_first test_command
 iso_section_scalar() {
-    _iso_unquote "$(_iso_section_read "$1" "$2" 0)"
+    _iso_section_read "$1" "$2" 0
 }
 
 # Print the items of the inline flow list <key> under the top-level
@@ -179,16 +183,6 @@ iso_section_scalar() {
 # Usage: iso_section_list test_first code_paths
 iso_section_list() {
     _iso_section_read "$1" "$2" 1
-}
-
-# Strip a single layer of surrounding quotes.
-_iso_unquote() {
-    local value="$1"
-    value="${value%\"}"
-    value="${value#\"}"
-    value="${value%\'}"
-    value="${value#\'}"
-    printf '%s\n' "$value"
 }
 
 # Print the path of the project .iso-config.yaml, or nothing when the
