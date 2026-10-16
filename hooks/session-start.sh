@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
-# SessionStart hook for vse-systems-engineering plugin v2.x.
+# SessionStart hook for the vse-systems-engineering plugin.
 #
-# Three detection modes, evaluated in order:
+# Three detection modes. The numbers name the modes, and the code
+# evaluates them in this order:
 #   1. Contributor mode: wiki/CLAUDE.md present (plugin development repo).
+#   3. SysML-only repo: no methodology/ folder, .sysml content present.
 #   2. VSE project: <root>/methodology/ present, or
 #                   <root>/engineering/methodology/ present (brownfield).
-#   3. SysML-only repo: .sysml content present, no methodology/ folder.
 #
 # When none match, exits 0 with no output.
 #
-# stdout is injected into the conversation as context.
-# Exit 0 always. The hook is advisory.
+# Mode 2 also states the behaviour-first and test-first policy of
+# methodology section 11: a Behaviour-first line, a Test-first line that
+# names the recorded test_first.applies value, a nudge when test tooling
+# is found while that value is false or unrecorded, and a warning when
+# jq is missing. Mode 1 prints one pointer to the plugin's own rules for
+# the same discipline.
+#
+# Plain text on stdout is added to the conversation as context, which is
+# the SessionStart output contract (hooks guide section 5), so this hook
+# prints no JSON. The text stays printable ASCII. Exit 0 always. The
+# hook is advisory.
 set -euo pipefail
 
 # Detect VSE engineering root: prefer engineering/methodology if present
@@ -98,6 +108,7 @@ if [ -f "wiki/CLAUDE.md" ]; then
     else
         echo "  No /vse-wiki-lint report on disk. Run /vse-wiki-lint for a health check."
     fi
+    echo "Contributor rules: plugin work goes test first and Gherkin first, see .claude/rules/tdd-bdd.md."
     echo ""
     exit 0
 fi
@@ -134,14 +145,20 @@ fi
 # Mode 2: VSE project. Context lines, not instructions. The engineer
 # decides what follows, per methodology section 0.10.1.
 
-# Rigour profile via the shared library. The plugin copy is the primary
-# source here, because this hook runs from the plugin tree.
-ISO_PROFILE_LIB=""
-if [ -r "$(dirname "$0")/lib/iso-profile.sh" ]; then
-    ISO_PROFILE_LIB="$(dirname "$0")/lib/iso-profile.sh"
-elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" ]; then
-    ISO_PROFILE_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"
-fi
+# Print the path of the shared library <name>, or nothing when no copy
+# is readable. The copy beside this script is the primary source,
+# because this hook runs from the plugin tree, and the plugin root is
+# the fallback.
+plugin_lib() {
+    if [ -r "$(dirname "$0")/lib/$1" ]; then
+        printf '%s\n' "$(dirname "$0")/lib/$1"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1" ]; then
+        printf '%s\n' "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1"
+    fi
+}
+
+# Rigour profile via the shared library.
+ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
 
 if [ -n "$ISO_PROFILE_LIB" ]; then
     # shellcheck source=/dev/null
@@ -151,12 +168,19 @@ else
     PROFILE="standard"
 fi
 
-# Toolchain state via the shared library, resolved the same way.
-SYSML_TOOLCHAIN_LIB=""
-if [ -r "$(dirname "$0")/lib/sysml-toolchain.sh" ]; then
-    SYSML_TOOLCHAIN_LIB="$(dirname "$0")/lib/sysml-toolchain.sh"
-elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" ]; then
-    SYSML_TOOLCHAIN_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh"
+# Toolchain state via the shared library.
+SYSML_TOOLCHAIN_LIB="$(plugin_lib sysml-toolchain.sh)"
+
+# Test-first helpers. They read the test_first record through
+# iso-profile.sh, so they load only when it did.
+TEST_FIRST_LIB=""
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    TEST_FIRST_LIB="$(plugin_lib test-first.sh)"
+fi
+
+if [ -n "$TEST_FIRST_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$TEST_FIRST_LIB"
 fi
 
 if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
@@ -208,6 +232,39 @@ if command -v gh >/dev/null 2>&1; then
     if [ -n "$OPEN_CRS" ] && [ "$OPEN_CRS" -gt 0 ]; then
         echo "Open Change Requests: ${OPEN_CRS} (run /vse-cr to manage)"
     fi
+fi
+
+# Behaviour first and test first, per methodology section 11. These are
+# context lines. The PreToolUse and pre-commit gates enforce both.
+echo "Behaviour-first: every story gets its Gherkin feature, Given/When/Then scenarios in <ID>.feature beside the story and tagged @<ID>, before design or code (methodology section 11)."
+
+TF_APPLIES=""
+if [ -n "$TEST_FIRST_LIB" ]; then
+    TF_APPLIES="$(vse_tf_applies)"
+    TF_SHOWN="${TF_APPLIES:-not recorded}"
+else
+    TF_SHOWN="unknown (test-first library missing)"
+fi
+TF_SKILL="If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11."
+if [ "$TF_SHOWN" = "not recorded" ]; then
+    echo "Test-first: test_first.applies is not recorded, run /vse-test-first to record the judgement. ${TF_SKILL}"
+else
+    echo "Test-first: test_first.applies is ${TF_SHOWN}. ${TF_SKILL}"
+fi
+
+# Test tooling in the project while the record says no, or says
+# nothing, suggests the judgement is missing or out of date.
+if [ -n "$TEST_FIRST_LIB" ] && [ "$TF_APPLIES" != "true" ]; then
+    TF_TOOLS="$(vse_tf_detect . 2>/dev/null | awk 'NR > 1 { printf ", " } { printf "%s", $0 }' || true)"
+    if [ -n "$TF_TOOLS" ]; then
+        echo "Test-first nudge: test tooling found (${TF_TOOLS}) while test_first.applies is ${TF_SHOWN}. Record or revisit the judgement with /vse-test-first (methodology section 11.5)."
+    fi
+fi
+
+# The in-session gates read the tool payload with jq, fall back to
+# python3, and let the edit through when neither is present.
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Warning: jq is not on PATH. The in-session gates fall back to python3, and fail open (let every edit through) when python3 is missing too. Install jq."
 fi
 
 echo "Lens: load vse-companion-overview before engineering work if not yet loaded this session."

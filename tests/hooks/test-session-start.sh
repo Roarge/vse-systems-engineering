@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
 # Behavioural tests for hooks/session-start.sh.
 #
-# Two detection modes are exercised from scratch directories: mode 3,
-# the SysML-only repository, on each of the three markers that can fire
-# it, and mode 2, the VSE project, on the toolchain status line in its
-# three states. The hook is advisory, so every case also asserts exit 0
-# and plain-text output, which is what reaches the conversation.
+# All three detection modes are exercised from scratch directories:
+# mode 3, the SysML-only repository, on each of the three markers that
+# can fire it, mode 2, the VSE project, on the toolchain status line in
+# its three states, and mode 1, the plugin repository, on its pointer
+# to the contributor rules. The hook is advisory, so every case also
+# asserts exit 0 and plain-text output, which is what reaches the
+# conversation.
 #
-# A last pair of cases pins the budget the availability probe runs
-# under, because the hook has to set it before the library is sourced
-# for the shorter session-start value to take effect at all.
+# A pair of cases pins the budget the availability probe runs under,
+# because the hook has to set it before the library is sourced for the
+# shorter session-start value to take effect at all.
+#
+# The policy cases pin what the session is told about working behaviour
+# first and test first (methodology section 11): the Behaviour-first
+# and Test-first lines in a VSE project, the nudge when test tooling is
+# found while test_first.applies is false or unrecorded, the warning
+# when jq is missing, and the one pointer to the contributor rules in
+# the plugin repository (mode 1).
 #
 # Every toolchain is stubbed, so the file asserts the same behaviour on
 # a runner with no SysML tool installed.
@@ -177,6 +186,173 @@ case_probe_budget "preset" 3 VSE_TC_PROBE_TIMEOUT=3
 
 tc_env
 tc_reset_stubs
+
+# ------------------------------- behaviour-first and test-first policy
+
+# A directory of links to every program in /usr/bin and /bin except the
+# named ones, used as PATH to take jq out of reach.
+ss_bin_without() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    find -H /usr/bin /bin -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
+        "$@" -exec ln -sf -t "$dir" {} + 2>/dev/null || true
+    printf '%s\n' "$dir"
+}
+
+SS_BIN_NO_JQ="$(ss_bin_without ! -name jq)"
+
+# make_policy_project <dir> <applies|-> [marker ...]
+#
+# A VSE project whose configuration records test_first.applies with the
+# given value, or carries no test_first block for "-". Each marker is a
+# file created empty at the project root, so that the test tooling
+# detection finds it (pytest.ini reads as pytest, go.mod as go).
+make_policy_project() {
+    local dir="$1" applies="$2" marker
+    shift 2
+    make_vse_project "$dir" syside
+    if [ "$applies" != "-" ]; then
+        printf 'test_first:\n  applies: %s\n' "$applies" >> "${dir}/.iso-config.yaml"
+    fi
+    for marker in "$@"; do
+        : > "${dir}/${marker}"
+    done
+}
+
+case_mode2_behaviour_first_line() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" -
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "behaviour first: exit 0"
+    tc_assert_match '^Behaviour-first: .*Gherkin feature.*@<ID>.*before design or code \(methodology section 11\)' "$OUT" \
+        "behaviour first: every story gets its tagged Gherkin feature before design or code"
+    assert_plain_text "$OUT" "behaviour first: output is plain text"
+}
+
+# case_mode2_test_first_recorded <applies|-> <shown>
+#
+# The Test-first line names the value the configuration records, and an
+# unrecognised value reads as unrecorded rather than being echoed back.
+case_mode2_test_first_recorded() {
+    local applies="$1" shown="$2" dir
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" "$applies"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "test first (${applies}): exit 0"
+    tc_assert_match "^Test-first: test_first\\.applies is ${shown}[ .,]" "$OUT" \
+        "test first (${applies}): the line names the recorded value, ${shown}"
+    tc_assert_match '^Test-first: .*If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11\.' "$OUT" \
+        "test first (${applies}): an installed TDD skill comes first, else section 11"
+    if [ "$shown" = "not recorded" ]; then
+        tc_assert_match '^Test-first: .*/vse-test-first' "$OUT" \
+            "test first (${applies}): the line points at /vse-test-first to record it"
+    fi
+    assert_plain_text "$OUT" "test first (${applies}): output is plain text"
+}
+
+# case_mode2_nudge_when_detected <name> <applies|-> <expected|-> [marker ...]
+#
+# <expected> is the nudge text after "Test-first nudge: ", or "-" when
+# no nudge is due.
+case_mode2_nudge_when_detected() {
+    local name="$1" applies="$2" expected="$3" dir
+    shift 3
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" "$applies" "$@"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "nudge (${name}): exit 0"
+    if [ "$expected" = "-" ]; then
+        tc_assert_not_grep "Test-first nudge:" "$OUT" "nudge (${name}): no nudge"
+    else
+        tc_assert_grep "Test-first nudge: ${expected}" "$OUT" \
+            "nudge (${name}): the tooling found and the recorded value are named"
+        tc_assert_match '^Test-first nudge: .*/vse-test-first' "$OUT" \
+            "nudge (${name}): the nudge points at /vse-test-first"
+        assert_plain_text "$OUT" "nudge (${name}): output is plain text"
+    fi
+}
+
+# A copy of the hook whose lib/ holds no test-first.sh still runs to the
+# end, and says the value is unknown rather than unrecorded.
+case_mode2_test_first_library_missing() {
+    local dir plugin
+    dir="$(tc_mktemp_d)"
+    plugin="$(tc_mktemp_d)"
+    mkdir -p "${plugin}/hooks/lib"
+    cp "$HOOK" "${plugin}/hooks/session-start.sh"
+    cp "${TC_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" \
+       "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" "${plugin}/hooks/lib/"
+    make_policy_project "$dir" true pytest.ini
+    tc_env
+    tc_run_in "$dir" bash "${plugin}/hooks/session-start.sh"
+    tc_assert_rc 0 "test-first library missing: exit 0"
+    tc_assert_match '^Test-first: test_first\.applies is unknown \(test-first library missing\)\.' "$OUT" \
+        "test-first library missing: the value reads as unknown, not as unrecorded"
+    tc_assert_not_grep "Test-first nudge:" "$OUT" "test-first library missing: no nudge"
+    tc_assert_grep "Lens: load vse-companion-overview" "$OUT" \
+        "test-first library missing: the hook runs to the end"
+}
+
+# The in-session gates read their payload with jq, fall back to
+# python3, and let the edit through when neither is present, so the
+# session is told when jq is missing and stays quiet when it is not.
+case_mode2_jq_missing_warning() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" true
+    tc_env PATH="$SS_BIN_NO_JQ"
+    run_hook_in "$dir"
+    tc_assert_rc 0 "jq missing: exit 0"
+    tc_assert_match '^Warning: jq is not on PATH\..*python3.*fail open' "$OUT" \
+        "jq missing: the gates fall back to python3 or fail open, and the session is told"
+    assert_plain_text "$OUT" "jq missing: output is plain text"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_not_grep "jq is not on PATH" "$OUT" "jq present: no warning"
+}
+
+# Contributor mode (the plugin repository) prints exactly one pointer to
+# the contributor rules for test first and Gherkin first.
+case_mode1_pointer() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    mkdir -p "${dir}/wiki"
+    printf '# Wiki schema\n' > "${dir}/wiki/CLAUDE.md"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "mode 1: exit 0"
+    tc_assert_eq 1 "$(printf '%s\n' "$OUT" | grep -cF '.claude/rules/tdd-bdd.md' || true)" \
+        "mode 1: one line points at the contributor rules"
+    tc_assert_match '^Contributor rules: .*test first.*Gherkin first.*\.claude/rules/tdd-bdd\.md' "$OUT" \
+        "mode 1: the pointer names test first and Gherkin first"
+    assert_plain_text "$OUT" "mode 1: output is plain text"
+}
+
+case_mode2_behaviour_first_line
+
+case_mode2_test_first_recorded true true
+case_mode2_test_first_recorded false false
+case_mode2_test_first_recorded - "not recorded"
+case_mode2_test_first_recorded yes "not recorded"
+case_mode2_test_first_library_missing
+
+case_mode2_nudge_when_detected "false, pytest found" false \
+    "test tooling found (pytest) while test_first.applies is false." pytest.ini
+case_mode2_nudge_when_detected "unrecorded, pytest and go found" - \
+    "test tooling found (pytest, go) while test_first.applies is not recorded." pytest.ini go.mod
+case_mode2_nudge_when_detected "true, pytest found" true - pytest.ini
+case_mode2_nudge_when_detected "false, nothing found" false -
+case_mode2_nudge_when_detected "unrecorded, nothing found" - -
+
+case_mode2_jq_missing_warning
+
+case_mode1_pointer
+
+tc_env
 
 if tc_summary "test-session-start"; then
     exit 0
