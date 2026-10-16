@@ -11,11 +11,15 @@
 #      (methodology section 0.10.4).
 #   2. VSE_ISO_CONFIG, when it names a readable file, wins over the
 #      search from the git toplevel.
-#   3. The section readers return a value or an inline list nested
-#      under a top-level key, such as the test_first record. A value
-#      loses one matching pair of outer quotes and nothing more.
+#   3. The section readers return a value or a list nested under a
+#      top-level key, such as the test_first record, and iso_list reads
+#      a list held by a top-level key, such as protected_branches. A
+#      list may be an inline flow list or a block sequence of "- item"
+#      lines. A value loses one matching pair of outer quotes and
+#      nothing more, and a missing key or section prints nothing.
 #   4. A "#" inside quotes is part of the value, while a "#" outside
-#      quotes starts a comment, as it always has.
+#      quotes starts a comment, as it always has. Escapes inside quotes
+#      pass through verbatim.
 #
 # Run: bash tests/hooks/test-iso-profile.sh
 set -euo pipefail
@@ -126,7 +130,13 @@ case_vse_iso_config_wins() {
 
     tc_env VSE_ISO_CONFIG="${alt}.missing"
     run_iso iso_profile
-    tc_assert_eq "light" "$OUT" "VSE_ISO_CONFIG: an unreadable file falls back to the search"
+    tc_assert_eq "light" "$OUT" "VSE_ISO_CONFIG: a missing file falls back to the search"
+
+    tc_env VSE_ISO_CONFIG="$(dirname "$alt")"
+    run_iso iso_profile
+    tc_assert_eq "light" "$OUT" "VSE_ISO_CONFIG: a directory falls back to the search"
+    run_iso iso_config_path
+    tc_assert_eq "${REPO}/.iso-config.yaml" "$OUT" "VSE_ISO_CONFIG: a directory is not taken as the configuration"
     tc_env
 }
 
@@ -176,6 +186,48 @@ EOF
     tc_assert_eq "0" "$OUT" "section scalar: a missing key prints nothing"
 }
 
+# Command substitution hides a lone newline, so the byte count is what
+# shows that a missing section, key or file prints nothing at all, the
+# contract the list reader has.
+case_section_scalar_missing_prints_nothing() {
+    tc_setup_repo
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+EOF
+    tc_env
+    run_iso_bytes iso_section_scalar test_first absent_key
+    tc_assert_eq "0" "$OUT" "section scalar: a missing key prints no line"
+    run_iso_bytes iso_section_scalar absent_section applies
+    tc_assert_eq "0" "$OUT" "section scalar: a missing section prints no line"
+    rm -f "${REPO}/.iso-config.yaml"
+    run_iso_bytes iso_section_scalar test_first applies
+    tc_assert_eq "0" "$OUT" "section scalar: no configuration file prints no line"
+}
+
+# Escapes inside quotes are not decoded. Only the outer pair of quotes
+# comes off, so a doubled single quote or a backslash escape reads back
+# as written.
+case_quoted_escapes_verbatim() {
+    tc_setup_repo
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  test_command: "echo \"hi\""
+  rationale: 'it''s'
+  code_paths: ["a\"b", 'c''d']
+EOF
+    tc_env
+    run_iso iso_section_scalar test_first test_command
+    tc_assert_eq 'echo \"hi\"' "$OUT" "escapes: a backslash escape in double quotes passes through"
+    run_iso iso_section_scalar test_first rationale
+    tc_assert_eq "it''s" "$OUT" "escapes: a doubled single quote passes through"
+    run_iso iso_section_list test_first code_paths
+    tc_assert_eq "a\\\"b
+c''d" "$OUT" "escapes: list items keep their escapes too"
+}
+
 case_section_list_inline_quoted() {
     local expected
     tc_setup_repo
@@ -193,6 +245,67 @@ scripts/*.sh'
     run_iso iso_section_list test_first code_paths
     tc_assert_eq "$expected" "$OUT" "section list: one item per line, quotes and spaces stripped"
     tc_assert_rc 0 "section list: exit 0"
+}
+
+# A list may also be written as a block sequence: one "- item" line per
+# item, indented as deep as its key or deeper. Quotes and comments
+# follow the inline rules, and a comma is part of a block item, as in
+# YAML. Blank and comment lines inside the sequence are passed over.
+# The sequence ends at the next sibling key, at a line shallower than
+# the key, or at the end of the section.
+case_section_list_block_sequence() {
+    local expected
+    tc_setup_repo
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_paths:   # globs
+    - src/*
+    - "b c"
+    # a comment inside the list
+
+    - 'd'   # a trailing comment
+    - "x # y"
+    - a, b
+  refactor_branches:
+  rationale: none
+  test_paths:
+    - tests/*
+other:
+    - not/this
+EOF
+    expected='src/*
+b c
+d
+x # y
+a, b'
+    tc_env
+    run_iso iso_section_list test_first code_paths
+    tc_assert_eq "$expected" "$OUT" "block list: one item per line, quotes and comments as inline"
+    tc_assert_rc 0 "block list: exit 0"
+    run_iso_bytes iso_section_list test_first refactor_branches
+    tc_assert_eq "0" "$OUT" "block list: a key followed by a sibling key holds no item"
+    run_iso iso_section_list test_first test_paths
+    tc_assert_eq "tests/*" "$OUT" "block list: the end of the section ends the list"
+    run_iso iso_section_scalar test_first rationale
+    tc_assert_eq "none" "$OUT" "block list: a scalar after a list still reads"
+
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  refactor_branches:
+  - cleanup/*
+  - tidy-*
+  test_paths:
+    - tests/*
+- stray
+EOF
+    run_iso iso_section_list test_first refactor_branches
+    tc_assert_eq "cleanup/*
+tidy-*" "$OUT" "block list: items in the key's own column are read, as YAML allows"
+    run_iso iso_section_list test_first test_paths
+    tc_assert_eq "tests/*" "$OUT" "block list: a dash line shallower than its key is not an item"
 }
 
 case_section_list_missing_key_empty() {
@@ -257,9 +370,57 @@ EOF
     tc_assert_eq "0" "$OUT" "top-level scalar: a missing key prints nothing"
 }
 
+# iso_list reads a list held by a top-level key, in either form.
+case_top_level_list_forms() {
+    local expected='main
+release/*
+develop'
+    tc_setup_repo
+    tc_config_append <<'EOF'
+project_profile: light
+protected_branches: [main, "release/*", 'develop']  # flow
+EOF
+    tc_env
+    run_iso iso_list protected_branches
+    tc_assert_eq "$expected" "$OUT" "top-level list: an inline flow list"
+    tc_assert_rc 0 "top-level list: exit 0"
+
+    tc_setup_repo
+    tc_config_append <<'EOF'
+project_profile: light
+protected_branches:   # block
+  - main
+  - "release/*"   # quoted
+  # a comment inside the list
+  - develop
+storymeta:
+  required_fields:
+    - points
+EOF
+    run_iso iso_list protected_branches
+    tc_assert_eq "$expected" "$OUT" "top-level list: a block sequence ends at the next top-level key"
+    run_iso_bytes iso_list required_fields
+    tc_assert_eq "0" "$OUT" "top-level list: a key nested in a section is not top-level"
+    run_iso_bytes iso_list absent_key
+    tc_assert_eq "0" "$OUT" "top-level list: a missing key prints nothing"
+
+    tc_config_append <<'EOF'
+release_branches:
+- main
+- "release/*"   # quoted
+EOF
+    run_iso iso_list release_branches
+    tc_assert_eq "main
+release/*" "$OUT" "top-level list: items in column one are read, as YAML allows"
+    rm -f "${REPO}/.iso-config.yaml"
+    run_iso_bytes iso_list protected_branches
+    tc_assert_eq "0" "$OUT" "top-level list: no configuration file prints nothing"
+    tc_assert_rc 0 "top-level list: no configuration file exits 0"
+}
+
 case_crlf_config_read() {
     tc_setup_repo
-    printf 'project_profile: full\r\ntest_first:\r\n  test_paths: [tests/*, "spec/*"]\r\n\r\n  applies: true\r\n' \
+    printf 'project_profile: full\r\ntest_first:\r\n  test_paths: [tests/*, "spec/*"]\r\n\r\n  applies: true\r\n  code_paths:\r\n    - src/*\r\n\r\n    - "lib/*"\r\n' \
         > "${REPO}/.iso-config.yaml"
     tc_env
     run_iso iso_profile
@@ -269,6 +430,9 @@ case_crlf_config_read() {
 spec/*" "$OUT" "CRLF: list items carry no carriage return"
     run_iso iso_section_scalar test_first applies
     tc_assert_eq "true" "$OUT" "CRLF: a blank CRLF line does not end the section"
+    run_iso iso_section_list test_first code_paths
+    tc_assert_eq "src/*
+lib/*" "$OUT" "CRLF: block list items carry no carriage return"
 }
 
 case_new_gates_block_every_profile
@@ -277,10 +441,14 @@ case_override_forms_kept
 case_vse_iso_config_wins
 case_section_scalar_quoted_hash
 case_section_scalar_one_quote_layer
+case_section_scalar_missing_prints_nothing
+case_quoted_escapes_verbatim
 case_section_list_inline_quoted
+case_section_list_block_sequence
 case_section_list_missing_key_empty
 case_scalar_quoted_hash_kept
 case_scalar_one_quote_layer
+case_top_level_list_forms
 case_crlf_config_read
 
 if tc_summary "test-iso-profile"; then

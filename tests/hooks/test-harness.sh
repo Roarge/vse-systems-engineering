@@ -75,6 +75,8 @@ case_runners_drop_outer_vse_iso_config() {
     tc_assert_eq "unset" "$OUT" "outer VSE_ISO_CONFIG: tc_run_in drops it"
     tc_run_lib_fn bash -c "$show"
     tc_assert_eq "unset" "$OUT" "outer VSE_ISO_CONFIG: the hook runners drop it"
+    tc_run_real bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer VSE_ISO_CONFIG: the real-toolchain runner drops it"
     tc_env VSE_ISO_CONFIG=/from/tc-env.yaml
     tc_run_in "$REPO" bash -c "$show"
     tc_assert_eq "/from/tc-env.yaml" "$OUT" "VSE_ISO_CONFIG: tc_env still passes it through"

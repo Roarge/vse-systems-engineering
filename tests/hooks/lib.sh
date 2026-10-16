@@ -342,10 +342,11 @@ tc_run_lib_fn() {
 }
 
 # Run inside $REPO with the machine's real PATH and HOME, for the
-# installed-toolchain sections.
+# installed-toolchain sections. The configuration path is dropped here
+# too, so an outer value cannot steer a real-tool case.
 tc_run_real() {
     _tc_capture env -C "$REPO" \
-        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN \
+        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG \
         PATH="${TC_REAL_PATH}" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
         "$@"

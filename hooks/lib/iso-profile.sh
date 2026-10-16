@@ -9,12 +9,18 @@
 #   2. What disposition does a named gate carry (methodology §0.10.4)?
 #
 # It also reads the values nested one level under a top-level key, such
-# as the test_first record (methodology §11.5.2), as a scalar or as an
-# inline flow list (a bracketed, comma-separated list on one line).
+# as the test_first record (methodology §11.5.2), and the lists held by
+# a top-level key, such as protected_branches. A list may be an inline
+# flow list (a bracketed, comma-separated list on one line) or a block
+# sequence (one "- item" line per item, below the key and indented as
+# deep as the key or deeper), and both forms print one item per line.
 #
 # The configuration schema stays flat and at most two levels deep, so
 # awk is enough and no YAML library dependency is taken. A "#" inside
-# a quoted value is kept, and any other "#" starts a comment.
+# a quoted value is kept, and any other "#" starts a comment. One
+# matching pair of outer quotes is removed and nothing else is decoded:
+# an escape inside a quoted value ('' in single quotes, \" in double
+# quotes) passes through verbatim.
 #
 # Sourcing the file resolves the configuration path and the profile
 # once, into ISO_CONFIG_FILE and ISO_PROFILE. Resolving eagerly keeps a
@@ -60,6 +66,17 @@ _iso_locate_config() {
 # iso_item trims a scalar value or one list item and removes one layer
 # of quotes, only when a matching pair wraps the whole text. Quotes
 # inside a plain value (pytest -k "not slow") are part of it.
+#
+# iso_flow prints the items of an inline flow list, as iso_value
+# returned it with list set, one per line. Empty items are skipped.
+#
+# iso_block_item reads one line after a key whose value is empty and
+# whose own line is indented by ind characters. A "- item" line
+# indented by ind characters or more is an item (YAML lets the dash sit
+# in the key's own column), read with the scalar rules and printed
+# unless it is empty. Blank and comment lines are passed over. It
+# returns 1 to go on reading and 0 at the first other line, which ends
+# the sequence. A comma inside a block item is part of it.
 #
 # "\047" is a single quote, which this shell string cannot hold.
 _ISO_AWK_LIB='
@@ -111,42 +128,64 @@ function iso_item(s,    f) {
         s = substr(s, 2, length(s) - 2)
     return s
 }
+function iso_flow(value,    n, i, items, item) {
+    sub(/^\[/, "", value)
+    sub(/\]$/, "", value)
+    n = split(value, items, SUBSEP)
+    for (i = 1; i <= n; i++) {
+        item = iso_item(items[i])
+        if (item != "")
+            print item
+    }
+}
+function iso_block_item(s, ind,    rest, c, item) {
+    rest = s
+    sub(/^[ \t]+/, "", rest)
+    if (rest == "" || substr(rest, 1, 1) == "#")
+        return 1
+    if (length(s) - length(rest) < ind || substr(rest, 1, 1) != "-")
+        return 0
+    c = substr(rest, 2, 1)
+    if (c != "" && c != " " && c != "\t")
+        return 0
+    item = iso_item(iso_value(substr(rest, 2), 0))
+    if (item != "")
+        print item
+    return 1
+}
 '
 
-# Read one top-level scalar key out of the configuration file, with
-# one layer of quotes removed. Prints nothing for a missing key.
-_iso_scalar() {
-    [ -n "${ISO_CONFIG_FILE}" ] || return 0
-    awk -v key="$1" "${_ISO_AWK_LIB}"'
-        { sub(/\r$/, "") }
-        index($0, key ":") == 1 {
-            print iso_item(iso_value(substr($0, length(key) + 2), 0))
-            exit
-        }
-    ' "$ISO_CONFIG_FILE"
-}
-
-# Read <key> indented under the top-level <section>: mapping. With
-# list 0 the value is a scalar, printed with one layer of quotes
-# removed. With list 1 it is an inline flow list, printed one item per
-# line.
-# The section ends at the next line that starts in column one, other
-# than a comment. Prints nothing for a missing section or key.
+# Read <key> from the configuration file. With <section> empty the key
+# is a top-level key, written in column one. Otherwise it is a key
+# indented under the top-level <section>: mapping, and the section ends
+# at the next line that starts in column one, other than a comment.
+# With list 0 the value is a scalar, printed with one layer of quotes
+# removed. With list 1 it is a list, printed one item per line: an
+# inline flow list, or, when nothing but a comment follows the key, a
+# block sequence. Prints nothing for a missing section or key, and
+# nothing when the project carries no configuration file.
 #
-# Usage: _iso_section_read <section> <key> <0|1>
-_iso_section_read() {
+# Usage: _iso_read <section|""> <key> <0|1>
+_iso_read() {
     [ -n "${ISO_CONFIG_FILE}" ] || return 0
     awk -v section="$1" -v key="$2" -v list="$3" "${_ISO_AWK_LIB}"'
+        BEGIN { inside = (section == "") }
         { sub(/\r$/, "") }
         !inside {
             if (index($0, section ":") == 1)
                 inside = 1
             next
         }
-        /^[^ \t#]/ { exit }
+        block {
+            if (iso_block_item($0, indent))
+                next
+            exit
+        }
+        section != "" && /^[^ \t#]/ { exit }
         {
             line = $0
-            sub(/^[ \t]+/, "", line)
+            if (section != "")
+                sub(/^[ \t]+/, "", line)
             if (index(line, key ":") != 1)
                 next
             value = iso_value(substr(line, length(key) + 2), list)
@@ -154,35 +193,48 @@ _iso_section_read() {
                 print iso_item(value)
                 exit
             }
-            sub(/^\[/, "", value)
-            sub(/\]$/, "", value)
-            n = split(value, items, SUBSEP)
-            for (i = 1; i <= n; i++) {
-                item = iso_item(items[i])
-                if (item != "")
-                    print item
+            if (value != "") {
+                iso_flow(value)
+                exit
             }
-            exit
+            block = 1
+            indent = length($0) - length(line)
         }
     ' "$ISO_CONFIG_FILE"
 }
 
+# Read one top-level scalar key out of the configuration file, with
+# one layer of quotes removed. Prints nothing for a missing key.
+_iso_scalar() {
+    _iso_read "" "$1" 0
+}
+
 # Print the value of <key> under the top-level <section>, with one layer
 # of quotes removed when a matching pair wraps the whole value. Prints
-# nothing for a missing section or key.
+# nothing for a missing section or key, the same as iso_section_list.
 #
 # Usage: iso_section_scalar test_first test_command
 iso_section_scalar() {
-    _iso_section_read "$1" "$2" 0
+    _iso_read "$1" "$2" 0
 }
 
-# Print the items of the inline flow list <key> under the top-level
-# <section>, one per line, quotes and surrounding spaces stripped.
-# Prints nothing for a missing section or key.
+# Print the items of the list <key> under the top-level <section>, one
+# per line, quotes and surrounding spaces stripped. The list may be an
+# inline flow list or a block sequence. Prints nothing for a missing
+# section or key.
 #
 # Usage: iso_section_list test_first code_paths
 iso_section_list() {
-    _iso_section_read "$1" "$2" 1
+    _iso_read "$1" "$2" 1
+}
+
+# Print the items of the list held by the top-level <key>, one per line,
+# read the same way as iso_section_list. Prints nothing for a missing
+# key.
+#
+# Usage: iso_list protected_branches
+iso_list() {
+    _iso_read "" "$1" 1
 }
 
 # Print the path of the project .iso-config.yaml, or nothing when the
