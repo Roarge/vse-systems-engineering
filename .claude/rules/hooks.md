@@ -31,10 +31,26 @@ or full, plus per-gate `gate_overrides`) through
 `hooks/lib/sysml-toolchain.sh` (preference, availability, fallback). Do
 not call `syside`, `java` or `sysml` directly from a hook body. Gate
 dispositions scale block, warn, info, or off per methodology §0.10.
-Profile defaults reserve block for the full profile, and a
-`gate_overrides` entry may raise any single gate to block at any
-profile. Do not hard-code a disposition in a hook body.
+From 5.0.0, the four test-first and Gherkin gates
+(`precommit_gherkin`, `precommit_test_first`,
+`pretooluse_gherkin_first`, `pretooluse_test_first`) default to block
+at every profile, and only a recorded `gate_overrides` entry lowers
+one. The other gates scale as before: their profile defaults reserve
+block for the full profile, and a `gate_overrides` entry may raise any
+single gate to block at any profile. Do not hard-code a disposition in
+a hook body.
 
-**Testing.** Source the script directly with the same environment
-variables and stdin the harness would provide, and record expected exit
-codes. Do not rely on Claude to feel whether the hook fires.
+**Output contract.** Plain stdout reaches the model only for
+`SessionStart` and `UserPromptSubmit`. For `PreToolUse`,
+`PostToolUse`, `Stop` and `SubagentStop`, Claude never sees plain
+text. When one of these hooks has something to say, its stdout
+carries exactly one JSON object with `hookSpecificOutput.hookEventName`
+set to the event name. Diagnostics go to stderr, never stdout.
+
+**Testing.** Hook changes follow `.claude/rules/tdd-bdd.md`, so the
+failing test comes first. Source the script directly with the same
+environment variables and stdin the harness would provide, and record
+expected exit codes. Lifecycle hook tests feed the stdin JSON payload
+through `tc_run_lifecycle` in `tests/hooks/lib.sh` and assert on the
+single JSON object the hook prints. Do not rely on Claude to feel
+whether the hook fires.
