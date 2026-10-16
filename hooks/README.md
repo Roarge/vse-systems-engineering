@@ -54,7 +54,7 @@ project under `<project>/.githooks/` and activated with
 
 | Script                       | Installed as                             | Purpose                                                                                                                                              |
 |------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pre-commit.sh`              | `<project>/.githooks/pre-commit`         | Orchestrate four checks per §4.1: SysML lint, story well-formedness (§1.9), baselined-artefact protection, traceability integrity.                   |
+| `pre-commit.sh`              | `<project>/.githooks/pre-commit`         | Run the commit-time gates per §4.1: SysML lint, story well-formedness (§1.9), Gherkin conformance and test before code (methodology §11.9), traceability integrity, and a note on baselined artefacts. Reads the staged set, or in CI the range `VSE_PRECOMMIT_RANGE` names. |
 | `pre-commit-traceability.sh` | called by `pre-commit`                   | Trace-integrity check (existing legacy script). Delegated by the orchestrator above.                                                                 |
 | `commit-msg.sh`              | `<project>/.githooks/commit-msg`         | Enforce conventional-commit pattern with story scope, CR reference, or meeting-record format per §4.2.                                               |
 | `prepare-commit-msg.sh`      | `<project>/.githooks/prepare-commit-msg` | Prepopulate the commit subject with the Story ID inferred from the branch name per §4.3.                                                             |

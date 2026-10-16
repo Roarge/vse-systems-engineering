@@ -1,19 +1,43 @@
 #!/usr/bin/env bash
 # Project-side git pre-commit hook for the vse-systems-engineering plugin.
 #
-# Per methodology/iso-29110-hooks-guide.md §4.1. Three concerns:
+# Per methodology/iso-29110-hooks-guide.md §4.1 and methodology §11.9.
+# Four concerns:
 #   1. precommit_lint: SysML lint on staged .sysml files through
 #      lib/sysml-toolchain.sh (preferred toolchain, automatic fallback,
 #      never silent).
-#   2. precommit_story_wellformed: story well-formedness (§1.9), full
-#      lint in tools/lint/.
+#   2. The story lint, tools/lint/story-wellformed.py under the
+#      engineering root, over every stories directory that a changed
+#      .sysml or .feature file under stories/ touches.
+#      precommit_story_wellformed runs it with --only wellformed (§1.9),
+#      precommit_gherkin with --only gherkin (§11.9.1).
 #   3. precommit_traceability: traceability integrity, delegated to
 #      pre-commit-traceability.sh.
+#   4. precommit_test_first: test before code (§11.9), through
+#      lib/test-first.sh.
 #
 # Each concern carries a disposition drawn from the project rigour
 # profile and any per-gate override, per methodology §0.10.4. block
 # reports and stops the commit, warn reports and lets it through, info
-# prints one summary line, off skips the gate.
+# prints one summary line, off skips the gate. precommit_gherkin and
+# precommit_test_first block at every profile until an override lowers
+# them (§11.9). A missing story lint or a missing python3 is reported
+# at the gate's own disposition, so a broken install cannot pass
+# quietly.
+#
+# The file set. With VSE_PRECOMMIT_RANGE unset the hook reads the
+# staged set. CI sets it to a git range (such as origin/main...HEAD),
+# and the hook reads the files that range changes, or to "all", and the
+# hook reads every tracked file. A fresh CI checkout has nothing staged,
+# so a staged-set check there would pass without checking anything. In
+# range mode concern 1 is skipped with a note, because CI validates the
+# model in its own step.
+#
+# The engineering root is the directory of the configuration file that
+# iso_config_path names (VSE_ISO_CONFIG, then .iso-config.yaml at the
+# repository root, then engineering/.iso-config.yaml), or the
+# repository root when there is none. The story lint lives under it and
+# runs from it, with paths relative to it.
 #
 # Baselined-artefact protection lives in the commit-msg hook, where the
 # pending message is reliably available. The pre-commit baseline check
@@ -44,9 +68,44 @@ if [ -n "$ISO_PROFILE_LIB" ]; then
     # shellcheck source=/dev/null
     . "$ISO_PROFILE_LIB"
 else
-    # An install without the library reports rather than blocks, which
-    # is the standard-profile disposition for both local gates.
-    iso_gate_disposition() { printf 'warn\n'; }
+    # An install without the library reports rather than blocks for the
+    # gates that scale with the profile, which is their standard-profile
+    # disposition. The Gherkin and test-first gates block at every
+    # profile, so a partial install cannot lower them.
+    iso_gate_disposition() {
+        case "$1" in
+            precommit_gherkin|precommit_test_first) printf 'block\n' ;;
+            *) printf 'warn\n' ;;
+        esac
+    }
+    # The library's search for the configuration: VSE_ISO_CONFIG when
+    # it names a readable file, then the greenfield and brownfield
+    # layouts.
+    iso_config_path() {
+        if [ -n "${VSE_ISO_CONFIG:-}" ] && [ -f "${VSE_ISO_CONFIG}" ] && [ -r "${VSE_ISO_CONFIG}" ]; then
+            printf '%s\n' "${VSE_ISO_CONFIG}"
+        elif [ -f "${ROOT}/.iso-config.yaml" ]; then
+            printf '%s\n' "${ROOT}/.iso-config.yaml"
+        elif [ -f "${ROOT}/engineering/.iso-config.yaml" ]; then
+            printf '%s\n' "${ROOT}/engineering/.iso-config.yaml"
+        fi
+    }
+fi
+
+# Load the test-first helpers with the same resolution. They read the
+# configuration through the profile library and refuse to load without
+# it, so they are looked for only when the library loaded.
+TEST_FIRST_LIB=""
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    if [ -r "${HOOK_DIR}/lib/test-first.sh" ]; then
+        TEST_FIRST_LIB="${HOOK_DIR}/lib/test-first.sh"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/test-first.sh" ]; then
+        TEST_FIRST_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/test-first.sh"
+    fi
+fi
+if [ -n "$TEST_FIRST_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$TEST_FIRST_LIB"
 fi
 
 # Load the shared toolchain helpers with the same resolution: the
@@ -65,15 +124,92 @@ if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
 fi
 
 WARNINGS=0
+RATIONALE="[pre-commit] To proceed anyway, record a one-line rationale per methodology §0.10.6."
+
+# Report one finding at a gate's disposition. block prints the detail,
+# the headline and the §0.10.6 rationale line, and stops the commit.
+# warn prints the detail and the headline marked as a warning, and
+# counts it. info prints the headline alone, one line. off prints
+# nothing. Everything goes to stderr.
+#
+# Usage: gate_report <disposition> <headline> [<detail>]
+gate_report() {
+    local disposition="$1" headline="$2" detail="${3:-}"
+    case "$disposition" in
+        block)
+            [ -z "$detail" ] || printf '%s\n' "$detail" >&2
+            printf '[pre-commit] %s\n' "$headline" >&2
+            printf '%s\n' "$RATIONALE" >&2
+            exit 1
+            ;;
+        warn)
+            [ -z "$detail" ] || printf '%s\n' "$detail" >&2
+            printf '[pre-commit] warning: %s\n' "$headline" >&2
+            WARNINGS=$((WARNINGS + 1))
+            ;;
+        info)
+            printf '[pre-commit] %s\n' "$headline" >&2
+            ;;
+    esac
+    return 0
+}
+
+# The engineering root, resolved, and its path below the repository
+# root with a trailing slash (empty when they are the same). A
+# configuration outside the repository leaves no changed file inside
+# the engineering root.
+TOP_REAL="$(pwd -P)"
+ISO_CONFIG="$(iso_config_path)"
+ENG_ROOT="$TOP_REAL"
+if [ -n "$ISO_CONFIG" ]; then
+    ENG_ROOT="$(CDPATH='' cd -- "$(dirname -- "$ISO_CONFIG")" && pwd -P)" || ENG_ROOT="$TOP_REAL"
+fi
+ENG_PREFIX=""
+ENG_INSIDE=1
+case "${ENG_ROOT}/" in
+    "${TOP_REAL}/") : ;;
+    "${TOP_REAL}"/*) ENG_PREFIX="${ENG_ROOT#"${TOP_REAL}"/}/" ;;
+    *) ENG_INSIDE=0 ;;
+esac
+
+# The file set, as paths relative to the repository root, one per line.
+# git writes NUL-delimited names, so a space or an unusual character in
+# a name arrives intact. CHANGED_ALL keeps deletions, because deleting
+# a feature file leaves its story uncovered. CHANGED_LIVE drops them,
+# because a deleted file is neither code nor test evidence.
+RANGE="${VSE_PRECOMMIT_RANGE:-}"
+
+# Usage: file_set <git diff filter>
+file_set() {
+    if [ -z "$RANGE" ]; then
+        git diff --cached --name-only --diff-filter="$1" -z | tr '\0' '\n'
+    elif [ "$RANGE" = "all" ]; then
+        git ls-files -z | tr '\0' '\n'
+    else
+        git diff --name-only --diff-filter="$1" -z "$RANGE" | tr '\0' '\n'
+    fi
+}
+
+if ! CHANGED_ALL="$(file_set ACMRD)" || ! CHANGED_LIVE="$(file_set ACMR)"; then
+    if [ -n "$RANGE" ]; then
+        echo "[pre-commit] Cannot list the files changed by the range '${RANGE}'. Set VSE_PRECOMMIT_RANGE to a range git can read, such as origin/main...HEAD, or to all." >&2
+    else
+        echo "[pre-commit] Cannot list the staged files." >&2
+    fi
+    exit 1
+fi
 
 # 1. SysML lint on staged .sysml files. The library runs the recorded
 # sysml_toolchain and falls back along the fixed order, printing one
 # notice per fallback on stderr. Exit 0 clean, 1 findings, 2 no
 # toolchain. An unavailable toolchain is reported at every disposition
 # except off, so a full-profile project never gets a green summary
-# with no validation performed.
+# with no validation performed. In range mode CI validates the model
+# in its own step, so the hook says so and moves on.
 LINT_DISPOSITION="$(iso_gate_disposition precommit_lint)"
-if [ "$LINT_DISPOSITION" != "off" ]; then
+if [ "$LINT_DISPOSITION" != "off" ] && [ -n "$RANGE" ]; then
+    echo "[pre-commit] Note: precommit_lint is skipped in range mode, because CI validates the model in its own step." >&2
+elif [ "$LINT_DISPOSITION" != "off" ]; then
     # NUL-delimited to survive spaces in filenames. grep exits 1 on an
     # empty match, which is not a failure here.
     STAGED_SYSML=$(git diff --cached --name-only --diff-filter=ACM -z \
@@ -140,34 +276,79 @@ if [ "$LINT_DISPOSITION" != "off" ]; then
     fi
 fi
 
-# 2. Story well-formedness check.
-# The shipped hook is a stub that succeeds when the lint script is absent.
-STORY_DISPOSITION="$(iso_gate_disposition precommit_story_wellformed)"
-if [ "$STORY_DISPOSITION" != "off" ] && [ -x "tools/lint/story-wellformed.py" ]; then
-    STAGED_STORIES=$(git diff --cached --name-only --diff-filter=ACM -z \
-                        | tr '\0' '\n' \
-                        | grep -E '/stories/.*\.sysml$' || true)
-    if [ -n "$STAGED_STORIES" ]; then
-        STORY_OUTPUT=""
-        if ! STORY_OUTPUT=$(echo "$STAGED_STORIES" | xargs -d '\n' -r python3 tools/lint/story-wellformed.py 2>&1); then
-            case "$STORY_DISPOSITION" in
-                block)
-                    printf '%s\n' "$STORY_OUTPUT" >&2
-                    echo "[pre-commit] Story well-formedness failed (§1.9). Fix and re-stage." >&2
-                    echo "[pre-commit] To proceed anyway, record a one-line rationale per methodology §0.10.6." >&2
-                    exit 1
-                    ;;
-                warn)
-                    printf '%s\n' "$STORY_OUTPUT" >&2
-                    echo "[pre-commit] warning: story well-formedness findings (§1.9)." >&2
-                    WARNINGS=$((WARNINGS + 1))
-                    ;;
-                info)
-                    echo "[pre-commit] Story well-formedness findings on the staged story files (§1.9)." >&2
-                    ;;
-            esac
-        fi
+# 2. The story lint over every stories directory the change touches: a
+# directory holding a changed .sysml or .feature file that sits under a
+# stories/ directory, given relative to the engineering root. A file
+# outside the engineering root, or a directory the change removed, is
+# not passed. Each directory is one argument, so a space in a name is
+# kept.
+STORY_DIR_LIST=""
+if [ "$ENG_INSIDE" -eq 1 ]; then
+    while IFS= read -r changed; do
+        case "$changed" in
+            stories/*.sysml|*/stories/*.sysml|stories/*.feature|*/stories/*.feature) : ;;
+            *) continue ;;
+        esac
+        case "$changed" in
+            "${ENG_PREFIX}"*) changed="${changed#"${ENG_PREFIX}"}" ;;
+            *) continue ;;
+        esac
+        case "$changed" in
+            */*) changed="${changed%/*}" ;;
+            *) continue ;;
+        esac
+        [ -d "${ENG_ROOT}/${changed}" ] || continue
+        STORY_DIR_LIST="${STORY_DIR_LIST}${changed}"$'\n'
+    done <<EOF
+$CHANGED_ALL
+EOF
+fi
+STORY_DIRS=()
+STORY_DIR_COUNT=0
+while IFS= read -r story_dir; do
+    [ -n "$story_dir" ] || continue
+    STORY_DIRS+=("$story_dir")
+    STORY_DIR_COUNT=$((STORY_DIR_COUNT + 1))
+done <<EOF
+$(printf '%s' "$STORY_DIR_LIST" | LC_ALL=C sort -u)
+EOF
+
+STORY_LINT_REL="tools/lint/story-wellformed.py"
+
+# Run the story lint for one gate. Exit 0 is clean, 1 is findings, and
+# anything else means the lint could not run. A missing lint or python3
+# is a finding at the gate's own disposition.
+#
+# Usage: story_gate <gate> <rule set> <what the rule set checks>
+story_gate() {
+    local gate="$1" only="$2" what="$3" disposition status=0 output=""
+    disposition="$(iso_gate_disposition "$gate")"
+    [ "$disposition" != "off" ] || return 0
+    if [ ! -r "${ENG_ROOT}/${STORY_LINT_REL}" ]; then
+        gate_report "$disposition" "${gate}: the story lint ${ENG_PREFIX}${STORY_LINT_REL} is missing, so ${what} was not checked. Re-run @attention-regime to install tools/lint/ (methodology §11.9.1)."
+        return 0
     fi
+    if ! command -v python3 > /dev/null 2>&1; then
+        gate_report "$disposition" "${gate}: python3 is not available, so ${what} was not checked. Install python3 to run ${ENG_PREFIX}${STORY_LINT_REL} (methodology §11.9.1)."
+        return 0
+    fi
+    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" "${STORY_DIRS[@]}" 2>&1)" || status=$?
+    case "$status" in
+        0)
+            : # Clean.
+            ;;
+        1)
+            gate_report "$disposition" "${gate}: ${what} findings in the touched stories directories. Fix them and re-stage." "$output"
+            ;;
+        *)
+            gate_report "$disposition" "${gate}: the story lint could not run (exit ${status}), so ${what} was not checked." "$output"
+            ;;
+    esac
+}
+
+if [ "$STORY_DIR_COUNT" -gt 0 ]; then
+    story_gate precommit_story_wellformed wellformed "story well-formedness (§1.9)"
+    story_gate precommit_gherkin gherkin "Gherkin conformance (§11.9.1)"
 fi
 
 # 3. Traceability integrity (delegated). The delegate reads its own
@@ -187,17 +368,78 @@ if [ -n "$TRACE_OUT" ]; then
     fi
 fi
 
+# 4. Test before code (methodology §11.9). With test_first.applies
+# true, a changed code path needs a changed test path in the file set,
+# or test evidence in the working tree or on the branch since its
+# merge base. On a refactor branch the finding is a reminder. With
+# test_first unrecorded, detected test tooling or a changed file the
+# recorded paths classify as code or test is a finding that asks for
+# the record, and otherwise one line suggests it. With applies false
+# the gate is silent. Without test-first.sh, or without the profile
+# library it needs, the gate reports the partial install instead.
+#
+# Every changed path is classified once with the library's in-shell
+# classifier, which loads the globs once and needs no subshell per
+# path, so a full-tree run stays fast.
+test_first_gate() {
+    local disposition="$1" applies changed code="" tests="" evidence tools touched
+    applies="$(vse_tf_applies)"
+    [ "$applies" != "false" ] || return 0
+    _vse_tf_load
+    while IFS= read -r changed; do
+        [ -n "$changed" ] || continue
+        _vse_tf_kind "$changed"
+        case "$_VSE_TF_KIND" in
+            code) code="${code}  code: ${changed}"$'\n' ;;
+            test) tests="${tests}  test: ${changed}"$'\n' ;;
+        esac
+    done <<EOF
+$CHANGED_LIVE
+EOF
+
+    if [ "$applies" != "true" ]; then
+        tools="$(vse_tf_detect "$TOP_REAL" | tr '\n' ' ' || true)"
+        tools="${tools% }"
+        if [ -n "$tools" ]; then
+            gate_report "$disposition" "precommit_test_first: test_first is not recorded and test tooling was detected (${tools}), so record test_first with /vse-test-first (methodology §11.5)."
+        elif [ -n "${code}${tests}" ]; then
+            touched="${code}${tests}"
+            gate_report "$disposition" "precommit_test_first: test_first is not recorded and this change touches paths its code_paths or test_paths name, so record test_first with /vse-test-first (methodology §11.5)." "${touched%$'\n'}"
+        else
+            echo "[pre-commit] test_first is not recorded. When the project has code to test, record test_first with /vse-test-first (methodology §11.5)." >&2
+        fi
+        return 0
+    fi
+
+    [ -n "$code" ] || return 0
+    [ -z "$tests" ] || return 0
+    if evidence="$(vse_tf_evidence "$TOP_REAL")"; then
+        return 0
+    fi
+    if vse_tf_refactor_branch "$TOP_REAL"; then
+        echo "[pre-commit] Reminder: precommit_test_first: code changed with no change to a test path, on a refactor branch, so the commit proceeds. Keep the behaviour unchanged and the tests green (methodology §11.9.2)." >&2
+        return 0
+    fi
+    gate_report "$disposition" \
+        "precommit_test_first: code changed with no change to a test path. Write the failing test first, then the code (methodology §11.7)." \
+        "${code}  ${evidence}"
+}
+
+TEST_FIRST_DISPOSITION="$(iso_gate_disposition precommit_test_first)"
+if [ "$TEST_FIRST_DISPOSITION" != "off" ]; then
+    if [ -n "$TEST_FIRST_LIB" ]; then
+        test_first_gate "$TEST_FIRST_DISPOSITION"
+    else
+        gate_report "$TEST_FIRST_DISPOSITION" "precommit_test_first: .githooks/lib/test-first.sh or .githooks/lib/iso-profile.sh is missing (partial install), so test before code was not checked. Re-run @attention-regime."
+    fi
+fi
+
 # Baselined-artefact awareness (advisory only, see header). Skipped
 # when baselined_paths is empty, which is the light-profile default
 # per methodology §0.10.3, so the Change Request machinery stays
-# dormant until the project baselines something.
-ISO_CONFIG=""
-if [ -f ".iso-config.yaml" ]; then
-    ISO_CONFIG=".iso-config.yaml"
-elif [ -f "engineering/.iso-config.yaml" ]; then
-    ISO_CONFIG="engineering/.iso-config.yaml"
-fi
-
+# dormant until the project baselines something. The configuration is
+# the file iso_config_path names, the same one the dispositions come
+# from.
 if [ -n "$ISO_CONFIG" ]; then
     BASELINED=$(awk '
         /^baselined_paths:/ { inside=1; next }

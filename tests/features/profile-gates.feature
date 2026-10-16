@@ -9,7 +9,6 @@ Feature: Gherkin-first and test-first gates at every profile
 
   Rule: The commit-time gates block at every profile
 
-    @wip
     Scenario Outline: A story without a feature file is refused at the <profile> profile
       Given a VSE project at the <profile> profile
       And a story file US_901_Example without a feature file
@@ -22,7 +21,6 @@ Feature: Gherkin-first and test-first gates at every profile
         | standard |
         | full     |
 
-    @wip
     Scenario Outline: Code without a test change is refused at the <profile> profile
       Given a VSE project at the <profile> profile
       And test first applies to code under src/ with tests under tests/
@@ -36,7 +34,6 @@ Feature: Gherkin-first and test-first gates at every profile
         | standard |
         | full     |
 
-    @wip
     Scenario: An override to warn lets the commit through with a warning
       Given a VSE project at the light profile
       And the gate precommit_gherkin is overridden to warn

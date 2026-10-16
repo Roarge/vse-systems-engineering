@@ -85,23 +85,34 @@ tc_teardown() {
 # ------------------------------------------------------------- fixture
 
 # Scratch git repository with the project-side hooks installed the way
-# @attention-regime installs them, plus an empty fake HOME and an empty
-# stub directory.
+# @attention-regime installs them, the story lint and the renderers it
+# imports under tools/, plus an empty fake HOME and an empty stub
+# directory.
 tc_setup_repo() {
+    local name
     REPO="$(tc_mktemp_d)"
     git -C "$REPO" init -q -b main
     git -C "$REPO" config user.email "hook-test@example.invalid"
     git -C "$REPO" config user.name "VSE hook test"
     git -C "$REPO" config commit.gpgsign false
-    mkdir -p "${REPO}/.githooks/lib"
+    mkdir -p "${REPO}/.githooks/lib" "${REPO}/tools"
     cp "${TC_PLUGIN_ROOT}/hooks/pre-commit.sh" "${REPO}/.githooks/pre-commit"
     cp "${TC_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" "${REPO}/.githooks/pre-commit-traceability.sh"
     cp "${TC_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" "${REPO}/.githooks/lib/iso-profile.sh"
     cp "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" "${REPO}/.githooks/lib/sysml-toolchain.sh"
+    cp "${TC_PLUGIN_ROOT}/hooks/lib/test-first.sh" "${REPO}/.githooks/lib/test-first.sh"
     chmod +x "${REPO}/.githooks/pre-commit" \
              "${REPO}/.githooks/pre-commit-traceability.sh" \
              "${REPO}/.githooks/lib/iso-profile.sh" \
-             "${REPO}/.githooks/lib/sysml-toolchain.sh"
+             "${REPO}/.githooks/lib/sysml-toolchain.sh" \
+             "${REPO}/.githooks/lib/test-first.sh"
+    # The lint imports ../render/sysml_model.py, so both directories
+    # are installed. Bytecode caches are left behind.
+    for name in lint render; do
+        mkdir -p "${REPO}/tools/${name}"
+        find "${TC_PLUGIN_ROOT}/templates/tools/${name}" -maxdepth 1 -type f \
+            -exec cp {} "${REPO}/tools/${name}/" \;
+    done
     git -C "$REPO" config core.hooksPath .githooks
     FAKEHOME="$(tc_mktemp_d)"
     STUBS="$(tc_mktemp_d)"

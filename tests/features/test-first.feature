@@ -38,7 +38,6 @@ Feature: Test first
 
   Rule: At commit, a project with nothing to test is not blocked
 
-    @wip
     Scenario: A project with no code and no record is not blocked at commit
       Given test first is not recorded
       And the project holds no code and no test tooling

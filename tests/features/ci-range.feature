@@ -11,14 +11,12 @@ Feature: Commit gates in continuous integration
   Background:
     Given a VSE project at the light profile
 
-  @wip
   Scenario: Range mode catches a story committed on a branch without a feature file
     Given a branch whose commits add a story file US_901_Example without a feature file
     And a fresh checkout of the branch with nothing staged
     When CI checks the range from main to the branch head
     Then the check fails with finding S1
 
-  @wip
   Scenario: Full-tree mode runs on a tag
     Given a commit that adds a story file US_901_Example without a feature file
     And a later commit tagged v1.0.0 that changes only README.md
