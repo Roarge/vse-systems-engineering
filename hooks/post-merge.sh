@@ -12,26 +12,47 @@ set -euo pipefail
 # Only run on main.
 [[ "$(git rev-parse --abbrev-ref HEAD)" == "main" ]] || exit 0
 
+HOOK_DIR="$(dirname "$0")"
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-# Locate iso-config to find renderer paths. The directory that holds it
-# is the engineering root, which is either the project root or
-# engineering/ under a brownfield scaffold. Renderer paths, renderer
-# working directory, and derived artefacts all resolve from there.
-ISO_CONFIG=""
-ENG_ROOT=""
-if [ -f ".iso-config.yaml" ]; then
-    ISO_CONFIG=".iso-config.yaml"
-    ENG_ROOT="."
-elif [ -f "engineering/.iso-config.yaml" ]; then
-    ISO_CONFIG="engineering/.iso-config.yaml"
-    ENG_ROOT="engineering"
+# Load the shared profile helpers. The project-side copy wins, the
+# plugin copy is the fallback for a partial install. Without either,
+# the hook makes the library's search for the configuration itself:
+# VSE_ISO_CONFIG when it names a readable file, then the greenfield and
+# brownfield layouts.
+ISO_PROFILE_LIB=""
+if [ -r "${HOOK_DIR}/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="${HOOK_DIR}/lib/iso-profile.sh"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" ]; then
+    ISO_PROFILE_LIB="${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"
 fi
 
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$ISO_PROFILE_LIB"
+else
+    iso_config_path() {
+        if [ -n "${VSE_ISO_CONFIG:-}" ] && [ -f "${VSE_ISO_CONFIG}" ] && [ -r "${VSE_ISO_CONFIG}" ]; then
+            printf '%s\n' "${VSE_ISO_CONFIG}"
+        elif [ -f "${ROOT}/.iso-config.yaml" ]; then
+            printf '%s\n' "${ROOT}/.iso-config.yaml"
+        elif [ -f "${ROOT}/engineering/.iso-config.yaml" ]; then
+            printf '%s\n' "${ROOT}/engineering/.iso-config.yaml"
+        fi
+    }
+fi
+
+# The configuration names the renderers. The directory that holds it
+# is the engineering root, which is the project root, engineering/
+# under a brownfield scaffold, or the directory of the file
+# VSE_ISO_CONFIG names. Renderer paths, the renderer working directory
+# and the derived artefacts all resolve from there.
+ISO_CONFIG="$(iso_config_path)"
 if [ -z "$ISO_CONFIG" ]; then
     exit 0
 fi
+ENG_ROOT="$(dirname "$ISO_CONFIG")"
 
 # Invoke renderers when they exist. The real implementations live in
 # tools/render/ as the project matures. The hook is silent when

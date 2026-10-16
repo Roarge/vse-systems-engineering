@@ -312,6 +312,22 @@ tc_run_hook() {
     _tc_sandboxed ./.githooks/pre-commit
 }
 
+# tc_install_githook <name>: install hooks/<name>.sh as .githooks/<name>,
+# for the git hooks tc_setup_repo does not install.
+tc_install_githook() {
+    local name="$1"
+    cp "${TC_PLUGIN_ROOT}/hooks/${name}.sh" "${REPO}/.githooks/${name}"
+    chmod +x "${REPO}/.githooks/${name}"
+}
+
+# tc_run_githook <name> [arg ...]: run .githooks/<name> sandboxed in
+# $REPO, the way git runs it, with the arguments git would pass.
+tc_run_githook() {
+    local name="$1"
+    shift
+    _tc_sandboxed "./.githooks/${name}" "$@"
+}
+
 # tc_run_lifecycle <hook-basename> <json>: run a lifecycle hook the way
 # the harness does, sandboxed in $REPO with the JSON payload on stdin
 # and CLAUDE_PLUGIN_ROOT naming the plugin root. TC_HOOK_ROOT, when
