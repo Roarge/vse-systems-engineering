@@ -265,10 +265,14 @@ vse_hj_emit() {
 
 # The path arrives as data, never as program text: jq splits it into
 # keys, and python3 walks the same keys. Anything that is not an object
-# on the way reads as absent.
+# on the way reads as absent. The payload must hold exactly one JSON
+# value. jq slurps it (reads every value into one array) so that an
+# empty payload, or one with two values, fails as it does in python3,
+# rather than reading as an absent field.
 # shellcheck disable=SC2016
 _VSE_HJ_JQ_READ='
-(try getpath($path | ltrimstr(".") | split(".")) catch null)
+if length != 1 then error("expected exactly one JSON value") else .[0] end
+| (try getpath($path | ltrimstr(".") | split(".")) catch null)
 | if type == "string" then .
   elif type == "boolean" then tostring
   else empty end
@@ -320,16 +324,16 @@ _vse_hj_check_path() {
 # letter or underscore followed by letters, digits or underscores. A
 # string prints as it is, a boolean as true or false. A field that is
 # absent, null, empty or of another type prints nothing and returns 0.
-# Returns 2 when the payload cannot be read or is not JSON, 3 when
-# neither jq nor python3 is available, and 64 for a path of another
-# form. Uses jq, else python3 in isolated mode. A byte that is not
-# valid UTF-8 reads as U+FFFD.
+# Returns 2 when the payload cannot be read or is not exactly one JSON
+# value (an empty payload included), 3 when neither jq nor python3 is
+# available, and 64 for a path of another form. Uses jq, else python3
+# in isolated mode. A byte that is not valid UTF-8 reads as U+FFFD.
 vse_hj_read() {
     local payload="$1" path="$2" out
     _vse_hj_check_path "$path" || return 64
     # The x keeps the trailing newlines a substitution would drop.
     if command -v jq >/dev/null 2>&1; then
-        out="$(jq -j --arg path "$path" "$_VSE_HJ_JQ_READ" "$payload" && printf x)" || out=""
+        out="$(jq -j -s --arg path "$path" "$_VSE_HJ_JQ_READ" "$payload" && printf x)" || out=""
     elif command -v python3 >/dev/null 2>&1; then
         out="$(python3 -I -c "$_VSE_HJ_PY_READ" "$payload" "$path" && printf x)" || out=""
     else

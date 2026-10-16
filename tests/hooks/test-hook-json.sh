@@ -584,6 +584,33 @@ case_read_bad_payload() {
     tc_env
 }
 
+# A payload is exactly one JSON value. An empty payload (a hook run by
+# hand, or with stdin from /dev/null) and a payload of two values are
+# errors with either engine, never a silent "field absent" that a deny
+# gate would read as an allow.
+case_read_not_one_value() {
+    local engine dir name
+    dir="$(tc_mktemp_d)"
+    : > "${dir}/empty.json"
+    printf ' \n\t\n' > "${dir}/blank.json"
+    printf '{"tool_name":"a"}{"tool_name":"b"}' > "${dir}/two.json"
+    printf '{"tool_name":"a"}\n{"tool_name":"b"}\n' > "${dir}/two-lines.json"
+    printf '{"tool_name":"a"} 1' > "${dir}/trailing.json"
+    for engine in $HJ_ENGINES; do
+        hj_engine "$engine"
+        for name in empty blank two two-lines trailing; do
+            run_hj vse_hj_read "${dir}/${name}.json" .tool_name
+            tc_assert_rc 2 "read not one value (${engine}): the ${name} payload exits 2"
+            tc_assert_json_silent "read not one value (${engine}): the ${name} payload prints nothing"
+            tc_assert_grep "[hook-json]" "$ERR" "read not one value (${engine}): the ${name} payload is named on stderr"
+        done
+        run_hj vse_hj_read /dev/null .tool_name
+        tc_assert_rc 2 "read not one value (${engine}): /dev/null as the payload exits 2"
+        tc_assert_json_silent "read not one value (${engine}): /dev/null as the payload prints nothing"
+    done
+    tc_env
+}
+
 # A byte that is not valid UTF-8 reads as U+FFFD with either engine.
 case_read_invalid_utf8() {
     local engine payload
@@ -830,6 +857,7 @@ case_read_strings
 case_read_booleans
 case_read_absent
 case_read_bad_payload
+case_read_not_one_value
 case_read_invalid_utf8
 case_read_bad_path
 case_read_no_json_tool
