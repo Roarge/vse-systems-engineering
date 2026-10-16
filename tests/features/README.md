@@ -33,10 +33,18 @@ It prints one line per scenario, marked `PASS`, `FAIL`, `UNDEFINED` or
 bdd: 3 passed, 0 failed, 0 undefined, 1 skipped
 ```
 
-It exits 0 when no scenario failed or was undefined, and 1 otherwise. A
-step that no step definition matches is undefined, and an undefined
-step fails the run. A directory that holds no `.feature` file passes
-with a zero summary.
+The exit status is:
+
+- 0 when every scenario passed or was skipped
+- 1 when a scenario failed or was undefined
+- 2 when nothing could run: a feature file does not parse (any finding
+  the parser reports), a step module fails to import, a path or the
+  steps directory is missing, or the command line is otherwise wrong.
+
+A step that no step definition matches is undefined, and an undefined
+step fails the run. A step module that fails to import is named on
+standard error as `<module path>: <error>`. A directory that holds no
+`.feature` file passes with a zero summary.
 
 A path may also name a single `.feature` file. `--steps DIR` reads the
 step definitions from another directory, which the runner's own unit

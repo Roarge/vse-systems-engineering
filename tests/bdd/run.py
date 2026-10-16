@@ -41,9 +41,14 @@ FAIL or UNDEFINED, then one summary line:
 Every row of a Scenario Outline reports the line of the outline itself,
 because the parser does not record the line of an Examples row.
 
-Exit status: 0 when no scenario failed or was undefined, 1 otherwise,
-and 2 for bad usage or when a file does not parse. Every file is parsed
-before any scenario runs, so a parse error runs nothing.
+Exit status: 0 when every scenario passed or was skipped, 1 when one
+failed or was undefined, and 2 when nothing could run, that is, when a
+feature file does not parse (any finding the parser reports), a step
+module fails to import, a path or the steps directory is missing, or
+the command line is otherwise wrong. Every file is parsed and every
+step module imported before any scenario runs, so these errors run
+nothing. A step module that fails to import is named on stderr as
+`<module path>: <error>`.
 """
 
 import argparse
@@ -69,6 +74,7 @@ from steps import (  # noqa: E402
     REGISTRY,
     STEP_ERRORS,
     Context,
+    StepModuleError,
     load_step_modules,
 )
 
@@ -156,9 +162,13 @@ def run_scenario(path: str,
                     for pattern, function, _ in found)
                 break
             _, function, groups = found[0]
+            # A Background step is the same parsed step in every
+            # scenario, so the step gets its own copy of each row. The
+            # doc string is a str, which no step can change in place.
             ctx.doc_string = (item.doc_string.content
                               if item.doc_string is not None else None)
-            ctx.table = item.table
+            ctx.table = ([list(row) for row in item.table]
+                         if item.table is not None else None)
             try:
                 function(ctx, *groups)
             except STEP_ERRORS as error:
@@ -211,7 +221,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(finding.format(), file=sys.stderr)
         return 2
 
-    load_step_modules(args.steps)
+    try:
+        load_step_modules(args.steps)
+    except StepModuleError as error:
+        print(error, file=sys.stderr)
+        return 2
     counts = {"PASS": 0, "FAIL": 0, "UNDEFINED": 0,
               "SKIP": 0}  # type: Dict[str, int]
     for path, feature in features:

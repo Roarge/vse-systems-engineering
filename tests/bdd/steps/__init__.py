@@ -22,13 +22,17 @@ The context (`ctx`) is a fresh `Context` for every scenario. Steps share
 state by setting attributes on it. Before each step the runner sets
 `ctx.doc_string` to the text of the step's doc string and `ctx.table` to
 the rows of its data table (the header row first), or to None when the
-step has none. `ctx.cleanup(fn)` registers a function to run when the
-scenario ends, whether it passed or not.
+step has none. The table is the step's own copy, so a step may change it
+without changing what a later scenario sees. `ctx.cleanup(fn)` registers
+a function to run when the scenario ends, whether it passed or not.
 
 The runner imports every `*.py` file in the steps directory except this
 one, each under its file name, with the directory on the module search
 path. A step module therefore imports a helper module beside it by its
 bare name, and must not share its name with a standard library module.
+A module that fails to import, through a syntax error, a failed import,
+or an exception or sys.exit() at module level, stops the run before any
+scenario. The runner then prints `<module path>: <error>` and exits 2.
 """
 
 import importlib
@@ -88,11 +92,27 @@ class Context:
         return errors
 
 
+class StepModuleError(Exception):
+    """A step module failed to import. Reads `<path>: <error>`."""
+
+    def __init__(self, path: str, error: BaseException) -> None:
+        super().__init__("{}: {}: {}".format(
+            path, type(error).__name__, error))
+
+
 def load_step_modules(directory: str) -> None:
-    """Import every `*.py` file in `directory` except `__init__.py`."""
-    directory = os.path.abspath(directory)
-    if directory not in sys.path:
-        sys.path.insert(0, directory)
-    for name in sorted(os.listdir(directory)):
+    """Import every `*.py` file in `directory` except `__init__.py`.
+
+    Raise StepModuleError for the first module whose import raises or
+    calls sys.exit(), a SyntaxError or an ImportError included.
+    """
+    search = os.path.abspath(directory)
+    if search not in sys.path:
+        sys.path.insert(0, search)
+    for name in sorted(os.listdir(search)):
         if name.endswith(".py") and name != "__init__.py":
-            importlib.import_module(name[:-3])
+            try:
+                importlib.import_module(name[:-3])
+            except STEP_ERRORS as error:
+                raise StepModuleError(os.path.join(directory, name),
+                                      error) from error

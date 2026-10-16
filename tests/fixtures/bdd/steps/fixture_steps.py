@@ -97,6 +97,18 @@ def table_shape(ctx, count, first):
     assert ctx.table[0][0] == first, repr(ctx.table)
 
 
+# A Background step runs once per scenario from the same parsed step, so
+# a change it makes to its table must not reach the next scenario. The
+# header row is both removed and changed, so a copy of the outer list
+# alone does not pass.
+@step(r"I take the header row from a table of (\d+) rows headed (\w+)")
+def take_header_row(ctx, count, first):
+    assert len(ctx.table) == int(count), repr(ctx.table)
+    header = ctx.table.pop(0)
+    assert header[0] == first, repr(header)
+    header[0] = "taken"
+
+
 @step(r"the step has no doc string or table")
 def no_argument(ctx):
     assert ctx.doc_string is None, repr(ctx.doc_string)

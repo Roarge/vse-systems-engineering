@@ -42,11 +42,12 @@ class RunnerTests(unittest.TestCase):
         self.scratch = scratch.name
         self.log = os.path.join(self.scratch, "log.txt")
 
-    def run_bdd(self, *args):
-        """Run the runner with the fixture steps. Return (code, out, err)."""
+    def run_bdd(self, *args, steps=STEPS):
+        """Run the runner with the fixture steps, or the steps directory
+        given. Return (code, out, err)."""
         env = dict(os.environ, BDD_FIXTURE_LOG=self.log)
         completed = subprocess.run(
-            [sys.executable, RUN, "--steps", STEPS] + list(args),
+            [sys.executable, RUN, "--steps", steps] + list(args),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
@@ -217,6 +218,25 @@ class RunnerTests(unittest.TestCase):
         )
         self.assertEqual(code, 0, out + err)
 
+    def test_step_gets_its_own_copy_of_the_table(self):
+        # The Background step removes and changes its header row. The
+        # second scenario runs the same parsed step and must see the
+        # table as the file wrote it.
+        path = feature("table_copy.feature")
+        code, out, err = self.run_bdd(path)
+        lines = out.splitlines()
+        self.assertIn(
+            "PASS {}:8 The first scenario takes the header row".format(path),
+            lines,
+        )
+        self.assertIn(
+            "PASS {}:12 The second scenario sees the whole table again"
+            .format(path), lines
+        )
+        self.assertEqual(self.logged(), ["first scenario", "second scenario"])
+        self.assertEqual(lines[-1], summary(2, 0, 0, 0))
+        self.assertEqual(code, 0, out + err)
+
     def test_cleanup_runs_after_failure(self):
         path = feature("cleanup.feature")
         code, out, err = self.run_bdd(path)
@@ -310,6 +330,34 @@ class RunnerTests(unittest.TestCase):
         self.assertNotIn("PASS", out)
         self.assertEqual(self.logged(), [])
         self.assertEqual(code, 2, out + err)
+
+    def test_broken_step_module_exit_2(self):
+        # A step module that cannot be imported is a usage error, named
+        # on one line, not a traceback with the exit status of a failed
+        # scenario. sys.exit(0) at module level must not read as a pass.
+        cases = [
+            ("syntax", "def broken(:\n", "SyntaxError: "),
+            ("import", "from steps import no_such_name\n",
+             "ImportError: cannot import name 'no_such_name'"),
+            ("exception", 'raise RuntimeError("module went wrong")\n',
+             "RuntimeError: module went wrong"),
+            ("exit", "import sys\nsys.exit(0)\n", "SystemExit: 0"),
+        ]
+        for kind, body, error in cases:
+            with self.subTest(kind=kind):
+                steps = os.path.join(self.scratch, kind)
+                os.makedirs(steps)
+                module = os.path.join(steps, "broken_steps.py")
+                with open(module, "w", encoding="utf-8") as handle:
+                    handle.write(body)
+                code, out, err = self.run_bdd(feature("passing.feature"),
+                                              steps=steps)
+                self.assertIn("{}: {}".format(module, error), err)
+                self.assertNotIn("Traceback", err)
+                # Nothing runs when a step module fails to import.
+                self.assertEqual(out, "")
+                self.assertEqual(self.logged(), [])
+                self.assertEqual(code, 2, out + err)
 
     def test_missing_path_exit_2(self):
         missing = os.path.join(self.scratch, "no-such.feature")
