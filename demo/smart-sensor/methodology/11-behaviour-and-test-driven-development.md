@@ -72,13 +72,13 @@ in this order:
 ```
 
 `<role>` is the name of the part definition that types the story's
-role (§1.4.1), without any package qualifier, and `As an` replaces
-`As a` where English needs it.
-`<capability>` and `<benefit>` are the story's `capability` and
-`benefit` strings, and `I want to` may replace `I want` where the
-capability is a verb phrase. The tooling compares the three lines with
-the SysML story after normalising whitespace, so the narrative cannot
-drift from the model. Further description lines may follow the three.
+role (§1.4.1), without any package qualifier. `<capability>` and
+`<benefit>` are the story's `capability` and `benefit` strings (§1.4.2,
+§1.4.3). The tooling compares the three lines with the SysML story
+after normalising whitespace, so the narrative cannot drift from the
+model. The opening words `As a`, `I want` and `So that` are fixed, so
+`As an` or `I want to` is a mismatch. Further description lines may
+follow the three.
 
 ### 11.2.3 Scenarios and criterion names
 
@@ -176,8 +176,8 @@ reads:
 # language: en
 @US_001_SeeReadingsOnDashboard
 Feature: See readings on the dashboard
-  As an Operator
-  I want to see live temperature and humidity readings on a dashboard
+  As a Operator
+  I want see live temperature and humidity readings on a dashboard
   So that deployment-site conditions are visible without on-site visits
 
   @AC_latestReadingShown
