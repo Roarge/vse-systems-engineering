@@ -58,8 +58,9 @@ Codes follow the lint table of methodology section 11.
   can stand, a step, doc string, table row or Examples where none can
   stand (a step takes one doc string or one table), an unclosed doc
   string, a table row whose cell count differs from the first row, a word
-  on a tag line that does not start with `@`, a tag line not followed by a
-  taggable keyword, or a tag above Background or a step.
+  on a tag line that does not start with `@`, an `@` with no name after
+  it, a tag line not followed by a taggable keyword, or a tag above
+  Background or a step.
 * F2, language: a `# language:` comment naming a language the table does
   not carry. Parsing stops there, because the keywords are unknown.
 * F7, Background: a second Background at one level, a Background after
@@ -415,6 +416,8 @@ class _Parser:
         for token in stripped.split():
             if token.startswith("@") and len(token) > 1:
                 self.pending_tags.append(Tag(token, number))
+            elif token == "@":
+                self.report(number, "F1", "a tag needs a name after @")
             else:
                 self.report(number, "F1",
                             "'{}' on a tag line is not a tag, tags start "
@@ -577,7 +580,10 @@ class _Parser:
 
 
 def parse(text: str, path: str = "<string>") -> ParseResult:
-    """Parse Gherkin text. `path` labels the findings."""
+    """Parse Gherkin text. `path` labels the findings. One leading byte
+    order mark (U+FEFF) is dropped."""
+    if text.startswith("\ufeff"):
+        text = text[1:]
     parser = _Parser(path)
     for number, line in enumerate(text.split("\n"), 1):
         if line.endswith("\r"):
@@ -591,8 +597,8 @@ def parse(text: str, path: str = "<string>") -> ParseResult:
 
 
 def parse_file(path: str) -> ParseResult:
-    """Parse a `.feature` file, dropping a byte order mark if present."""
-    with open(path, encoding="utf-8-sig") as handle:
+    """Parse a `.feature` file. parse() drops a byte order mark."""
+    with open(path, encoding="utf-8") as handle:
         return parse(handle.read(), path)
 
 

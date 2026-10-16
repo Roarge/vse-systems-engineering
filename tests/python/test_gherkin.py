@@ -366,6 +366,13 @@ class ParseErrorTests(unittest.TestCase):
         self.assertEqual(pairs(result.findings), [("F1", 1)])
         self.assertEqual(result.feature.tags, [Tag("@US_Story", 1)])
 
+    def test_F1_bare_at_asks_for_a_tag_name(self):
+        result = load("tag_bare_at.feature")
+        self.assertEqual(pairs(result.findings), [("F1", 1)])
+        self.assertEqual(result.findings[0].message,
+                         "a tag needs a name after @")
+        self.assertEqual(result.feature.tags, [Tag("@US_Story", 1)])
+
     def test_F2_language_no(self):
         result = load("language_no.feature")
         self.assertEqual(pairs(result.findings), [("F2", 1)])
@@ -427,6 +434,13 @@ class StructureTests(unittest.TestCase):
         self.assertIn("<note>", findings[1].message)
         self.assertIn("<missing>", findings[2].message)
 
+    def test_F8_and_F9_inside_a_rule(self):
+        self.assertEqual(parse_pairs("rule_structure.feature"), [])
+        self.assertEqual(
+            structure_pairs("rule_structure.feature"),
+            [("F8", 7), ("F9", 9)],
+        )
+
     def test_F9_examples_under_plain_scenario(self):
         result = load("examples_under_plain_scenario.feature")
         self.assertEqual(result.findings, [])
@@ -448,6 +462,26 @@ class EncodingTests(unittest.TestCase):
             self.assertEqual(result.findings, [])
             self.assertEqual(result.feature.name, "Show the latest reading")
             self.assertEqual(result, gherkin.parse(text, path))
+
+    def test_bom_dropped_by_parse(self):
+        # The story lint decodes a feature file itself and hands the text
+        # to parse(), so parse() drops the byte order mark too.
+        text = fixture_text("minimal.feature")
+        result = gherkin.parse("﻿" + text, "US_Minimal.feature")
+        self.assertEqual(result.findings, [])
+        self.assertEqual(result, gherkin.parse(text, "US_Minimal.feature"))
+
+    def test_only_one_bom_dropped(self):
+        # A second U+FEFF is text, not a byte order mark, so the file does
+        # not open with Feature.
+        text = fixture_text("minimal.feature")
+        with tempfile.TemporaryDirectory() as scratch:
+            path = os.path.join(scratch, "US_Minimal.feature")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write("﻿﻿" + text)
+            for result in (gherkin.parse_file(path),
+                           gherkin.parse("﻿﻿" + text, path)):
+                self.assertEqual(pairs(result.findings), [("F1", 1)])
 
     def test_crlf_tolerated(self):
         for name in ("minimal.feature", "doc_strings.feature",
