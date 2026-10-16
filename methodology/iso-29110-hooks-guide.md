@@ -412,8 +412,10 @@ branch can (see §11 and methodology §0.10.6).
 The four contracts remain part of the methodology. A `full`-profile
 project implements them in CI, gated as required status checks on `main`
 and on release tags. A `standard` project implements as many as it finds
-useful, advisory. The contracts are stated here so a CI implementer has
-the specification without reading the deleted script.
+useful, advisory. Contract 2 now ships at every profile, as finding S8
+of the `precommit_gherkin` gate, which runs in the `pre-commit` hook and
+in CI (methodology §11.9). The contracts are stated here so a CI
+implementer has the specification without reading the deleted script.
 
 **Contract 1: story state on protected references.** No commit reaching
 `main` carries a story whose `StoryMeta.status` is `inProgress`. Story
@@ -731,8 +733,10 @@ an agent's file edit lands, and remind the agent of the obligations an
 edit touches.
 
 - **Gherkin first** (`pretooluse_gherkin_first`). An edit that adds a
-  story, or changes a story's declaration, is denied while the story's
-  `<ID>.feature` is missing or lacks the `@<ID>` tag.
+  story, or changes a story's text, is denied while the story's
+  `<ID>.feature` is missing or lacks the `@<ID>` tag. A story's text is
+  its declaration and its body, from the declaration line through its
+  matching closing brace.
 - **Test first** (`pretooluse_test_first`). Where `test_first.applies`
   is `true`, an edit to a code path is denied while no test path has
   changed in the working tree or on the branch.
@@ -794,10 +798,13 @@ case "$target" in
         # The shipped hook asks only when gate_overrides or test_first change.
         emit ask "This edit changes gate_overrides or test_first. Confirm that a human asked for it (methodology §11.10)."
         ;;
-    */stories/_*|*/library/*)
-        exit 0   # templates and the library are never gated
+    */library/*)
+        exit 0   # the library is never gated
         ;;
     */stories/*.sysml)
+        # Templates are never gated. They sit in subdirectories such as
+        # stories/stakeholder/_template.sysml, so match the file name alone.
+        case "$(basename "$target")" in _*) exit 0;; esac
         # touched_story_ids applies the edit to the file first, then lists
         # the stories it adds or changes. Untouched siblings are not gated.
         for id in $(touched_story_ids "$payload" "$target"); do

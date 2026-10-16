@@ -74,10 +74,18 @@ in this order:
 `<role>` is the name of the part definition that types the story's
 role (§1.4.1), without any package qualifier. `<capability>` and
 `<benefit>` are the story's `capability` and `benefit` strings (§1.4.2,
-§1.4.3). The tooling compares the three lines with the SysML story
-after normalising whitespace, so the narrative cannot drift from the
-model. The opening words `As a`, `I want` and `So that` are fixed, so
-`As an` or `I want to` is a mismatch. Further description lines may
+§1.4.3).
+
+The narrative accepts `As a <role>` or `As an <role>`, and
+`I want <capability>` or `I want to <capability>`, then
+`So that <benefit>`. Only the article and the infinitive `to` may vary,
+so the narrative reads as English. The role compares
+case-insensitively, with spaces removed, against the name of the part
+definition that types the story's role. So `As an operator` matches
+`Operator`, and `As a field technician` matches `FieldTechnician`. The
+capability and the benefit must otherwise equal the SysML strings with
+whitespace normalised. The tooling makes these comparisons, so the
+narrative cannot drift from the model. Further description lines may
 follow the three.
 
 ### 11.2.3 Scenarios and criterion names
@@ -176,8 +184,8 @@ reads:
 # language: en
 @US_001_SeeReadingsOnDashboard
 Feature: See readings on the dashboard
-  As a Operator
-  I want see live temperature and humidity readings on a dashboard
+  As an operator
+  I want to see live temperature and humidity readings on a dashboard
   So that deployment-site conditions are visible without on-site visits
 
   @AC_latestReadingShown
@@ -398,9 +406,10 @@ section adjusts it in three places.
 2. **Human work is kept.** The skill's instruction to delete code
    written before its test and start over becomes: stop, write the
    failing test, and keep human-authored artefacts. Deleting
-   human-authored work needs the engineer's explicit confirmation,
-   because it is a destructive action under the explicit-request
-   discipline of §2.6 rule 7.
+   human-authored work is a destructive action, so it needs the
+   engineer's explicit confirmation, in the spirit of the
+   explicit-request discipline of §2.6 rule 7 (which governs content an
+   agent adds).
 3. **Prose stays exempt.** Methodology text, documentation, skill files
    and Markdown templates are prose, not code. Neither the cycle nor
    the companion skill-writing discipline, which pressure-tests skill
@@ -555,8 +564,10 @@ and it reads the dispositions from the file it finds.
 **Gherkin first.** The gate watches `*/stories/*.sysml` files, skipping
 templates (names that begin with `_`) and anything under `library/`. It
 applies the proposed edit to the file first, then compares the stories
-before and after. Only a story that the edit adds, or whose declaration
-it changes, must have `<dir>/<ID>.feature` carrying `@<ID>`. Untouched
+before and after. Only a story that the edit adds, or whose text it
+changes, must have `<dir>/<ID>.feature` carrying `@<ID>`. A story's
+text is its declaration and its body, that is, everything from the
+declaration line through its matching closing brace. Untouched
 stories in the same register file that still lack feature files draw a
 warning, not a denial, and deleting a story is never denied. The
 denial names the expected path, the tag rule and this section. For a

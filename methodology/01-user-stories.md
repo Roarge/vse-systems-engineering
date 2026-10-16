@@ -351,8 +351,8 @@ register file and states the same criterion as a scenario:
 ```gherkin
 @US_042_AckFromDashboard
 Feature: Acknowledge alarms from the dashboard
-  As a Operator
-  I want acknowledge alarms from the dashboard
+  As an operator
+  I want to acknowledge alarms from the dashboard
   So that the queue clears without opening each device
 
   @AC_ackAllWithinOneSecond
