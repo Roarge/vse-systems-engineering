@@ -1,0 +1,8 @@
+project_profile: full
+
+storymeta:
+  required_fields:
+    - points
+    - "priority"
+    - status   # mandatory at every profile
+  valid_statuses: [backlog, ready, inProgress, done]

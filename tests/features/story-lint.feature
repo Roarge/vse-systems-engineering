@@ -9,27 +9,23 @@ Feature: Story lint
   requirement nested inside the story's acceptance, and the scenario
   that states it carries the matching @AC_ tag.
 
-  @wip
   Scenario: A story without a feature file fails S1
     Given a story file US_901_Example without a feature file
     When the engineer runs the story lint
     Then the lint reports finding S1 for US_901_Example
 
-  @wip
   Scenario: A criterion without a matching scenario tag fails S4
     Given a story file US_901_Example with the acceptance criterion firstReading
     And a feature file for US_901_Example with no scenarios
     When the engineer runs the story lint
     Then the lint reports finding S4 for US_901_Example
 
-  @wip
   Scenario: Acceptance prose outside a named criterion fails S3
     Given a story file US_901_Example whose acceptance is legacy prose
     And a feature file for US_901_Example
     When the engineer runs the story lint
     Then the lint reports finding S3 for US_901_Example
 
-  @wip
   Scenario: A story whose criteria match its scenarios passes
     Given a story file US_901_Example with the acceptance criterion firstReading
     And a feature file for US_901_Example with a scenario tagged @AC_firstReading

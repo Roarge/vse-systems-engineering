@@ -1,0 +1,1175 @@
+#!/usr/bin/env python3
+"""Story lint: keep each user story and its Gherkin feature file in step.
+
+Methodology section 11 pairs every user story with a
+`<StoryIdentifier>.feature` file beside the `.sysml` file that declares
+it. Each scenario in the feature file states one acceptance criterion,
+and each criterion is mirrored in the model by a named requirement
+nested inside the story's `requirement :>> acceptance`. This lint checks
+both sides and the link between them, and it checks the story
+well-formedness rules of section 1.9.
+
+Usage, from the engineering root (the directory that holds
+`.iso-config.yaml`):
+
+    python3 tools/lint/story-wellformed.py [--only wellformed|gherkin|syntax]
+        [--format text|json] PATH...
+
+Each PATH is a `.sysml` file, a `.feature` file or a directory, which is
+searched with its subdirectories. Files whose names start with `_` are
+templates and are skipped.
+
+Rule sets
+---------
+* `--only wellformed`: section 1.9 rules 2, 3, 6 and 9 and the
+  `storymeta` fields, codes W2, W3, W6, W9 and W10, for the stories in
+  the `.sysml` files named or found. This is the
+  `precommit_story_wellformed` gate.
+* `--only gherkin`: findings S1 to S9 and F1 to F10 of section 11.9.1,
+  for every directory that holds a named file or that a named directory
+  search finds. This is the `precommit_gherkin` gate.
+* `--only syntax`: F1, F2, F7, F8 and F9 for the `.feature` files named
+  or found, with no story context.
+* No `--only`: wellformed and gherkin.
+
+A story is what the plugin's in-session Gherkin-first hook reads as one:
+a requirement usage declared as `requirement <ID> : UserStory` or
+`requirement <ID> : VSE_Library::UserStory`. Any other declaration that
+types or specialises UserStory is finding S9, so that a story the hook
+cannot read never passes unchecked.
+
+Finding S8 reads every verification and validation case, and every
+`satisfy`, in the model root (`model/` or `engineering/model/` under the
+current directory), as well as in the files linted, so naming only a
+stories directory is enough.
+
+The `storymeta` block of `.iso-config.yaml`, when present, sets
+`required_fields` (required once a story leaves backlog) and
+`valid_statuses`. Without it, status alone is required and the four
+statuses of section 1.5 are valid. Status itself is required whatever
+the story's state, because the other checks depend on it.
+
+Output
+------
+One finding per line, `<path>:<line>: <code> <message> (<reference>)`, or
+a JSON array of objects with the keys path, line, code, message and ref,
+sorted by path, line and code. Exit status 0 means clean, 1 means
+findings, and 2 means a usage or environment error, such as a missing
+path or a missing `tools/render/` beside `tools/lint/`.
+
+The lint uses the Python standard library only. It reads feature files
+with gherkin.py beside it and the model with ../render/sysml_model.py.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, Iterator, List, Optional, Tuple
+
+# The lint is installed into a project's tools/ directory, which is not
+# a place for bytecode caches.
+sys.dont_write_bytecode = True
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+RENDER = os.path.normpath(os.path.join(HERE, os.pardir, "render"))
+sys.path.insert(0, RENDER)
+sys.path.insert(0, HERE)
+
+IMPORT_ERROR = None  # type: Optional[str]
+try:
+    import gherkin
+    from gherkin import Finding
+except ImportError as error:
+    IMPORT_ERROR = "cannot import gherkin.py from {} ({})".format(HERE, error)
+try:
+    import sysml_model
+except ImportError as error:
+    IMPORT_ERROR = ("cannot import sysml_model.py from {} ({}). The story "
+                    "lint needs tools/render/ installed beside tools/lint/"
+                    .format(RENDER, error))
+
+MODES = ("wellformed", "gherkin", "syntax")
+STATUS_RANK = {"backlog": 0, "ready": 1, "inProgress": 2, "done": 2}
+DEFAULT_STATUSES = ["backlog", "ready", "inProgress", "done"]
+ENUMERATIONS = {"priority": "Priority", "status": "StoryStatus",
+                "invest": "InvestFlags"}
+VISIBILITY = ("public", "private", "protected")
+CONFIG = ".iso-config.yaml"
+
+_RE_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+_RE_CRITERION = re.compile(r"[a-z][A-Za-z0-9]*")
+_RE_TOKEN = re.compile(
+    r'(?P<space>\s+)'
+    r'|(?P<string>"(?:[^"\\]|\\.)*"?)'
+    r'|(?P<name>[A-Za-z_][A-Za-z0-9_]*)'
+    r'|(?P<number>[0-9][0-9.]*)'
+    r'|(?P<symbol>::>|::|:>>|:>|.)',
+    re.DOTALL,
+)
+
+# The section reference for the findings gherkin.py reports, and the fix
+# where its message does not already state it.
+PARSER_FINDINGS = {
+    "F1": ("§11.2.4", ""),
+    "F2": ("§11.2.2", "Write the feature in English, with "
+                      "'# language: en' or no language header"),
+    "F7": ("§11.2.4", "A Background holds Given steps only, once per "
+                      "Feature or Rule, before the first scenario"),
+    "F8": ("§11.2.4", ""),
+    "F9": ("§11.2.4", "Give each Scenario Outline an Examples table with "
+                      "a header row naming every placeholder and at least "
+                      "one data row"),
+}
+
+
+class LintError(Exception):
+    """A usage or environment error, reported with exit status 2."""
+
+
+# ---------------------------------------------------------------------------
+# Reading SysML: statements, stories and their shape
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Statement:
+    """Tokens up to `;`, `{` or `}`, with the block a `{` opens.
+
+    A `requirement` keyword always starts a new statement, as in the
+    hook library's scanner, so `#derive requirement X` reads as two.
+    """
+
+    words: List[str]
+    kinds: List[str]
+    line: int
+    end: str
+    body: List["Statement"] = field(default_factory=list)
+
+    def head(self) -> Tuple[List[str], List[str]]:
+        """Words and kinds after any leading visibility keyword."""
+        index = 0
+        while index < len(self.words) and self.words[index] in VISIBILITY:
+            index += 1
+        return self.words[index:], self.kinds[index:]
+
+    def text(self) -> str:
+        return " ".join(self.words)
+
+
+@dataclass
+class StoryBlock:
+    """A story declared in the canonical form, with its body."""
+
+    identifier: str
+    line: int
+    body: List[Statement]
+
+
+@dataclass
+class StoryScan:
+    """Stories in declaration order, and the (line, text) of every
+    declaration that types or specialises UserStory in another form."""
+
+    stories: List[StoryBlock] = field(default_factory=list)
+    unreadable: List[Tuple[int, str]] = field(default_factory=list)
+
+
+def _statements(text: str) -> List[Statement]:
+    """Statements of comment-free SysML text, blocks nested."""
+    root = []  # type: List[Statement]
+    stack = [root]
+    words = []  # type: List[str]
+    kinds = []  # type: List[str]
+    start = 0
+    line = 1
+    for match in _RE_TOKEN.finditer(text):
+        kind = match.lastgroup
+        value = match.group()
+        token_line = line
+        line += value.count("\n")
+        if kind == "space":
+            continue
+        if kind == "symbol" and value in ("{", "}", ";"):
+            if value == "{":
+                statement = Statement(words, kinds, start or token_line, "{")
+                stack[-1].append(statement)
+                stack.append(statement.body)
+            else:
+                if words:
+                    stack[-1].append(Statement(words, kinds, start, value))
+                if value == "}" and len(stack) > 1:
+                    stack.pop()
+            words, kinds = [], []
+            continue
+        if kind == "name" and value == "requirement" and words:
+            stack[-1].append(Statement(words, kinds, start, ""))
+            words, kinds = [], []
+        if not words:
+            start = token_line
+        words.append(value)
+        kinds.append(kind)
+    if words:
+        stack[-1].append(Statement(words, kinds, start, ""))
+    return root
+
+
+def _walk(statements: List[Statement]) -> Iterator[Statement]:
+    for statement in statements:
+        yield statement
+        yield from _walk(statement.body)
+
+
+def _story_identifier(statement: Statement) -> Optional[str]:
+    """The ID of `requirement <ID> : [VSE_Library::]UserStory`, ended by
+    `{` or `;`, or None."""
+    words, kinds = statement.words, statement.kinds
+    if statement.end not in ("{", ";") or len(words) < 4:
+        return None
+    if words[0] != "requirement" or kinds[1] != "name" or words[2] != ":":
+        return None
+    if words[3] == "UserStory":
+        rest = 4
+    elif words[3:6] == ["VSE_Library", "::", "UserStory"]:
+        rest = 6
+    else:
+        return None
+    if rest < len(words) and words[rest] == "::":
+        return None
+    return words[1]
+
+
+def _declared_name(words: List[str], kinds: List[str]) -> int:
+    """Index of the name a requirement statement declares, or -1."""
+    index = 1
+    if index < len(words) and words[index] == "def":
+        index += 1
+    if index < len(words) and words[index] == "<":
+        while index < len(words) and words[index] != ">":
+            index += 1
+        index += 1
+    if index < len(words) and kinds[index] == "name":
+        return index
+    return -1
+
+
+def _misdeclared(statement: Statement) -> bool:
+    """True for a requirement that types or specialises UserStory other
+    than in the canonical form."""
+    words, kinds = statement.words, statement.kinds
+    if not words or words[0] != "requirement":
+        return False
+    if _story_identifier(statement) is not None:
+        return False
+    name = _declared_name(words, kinds)
+    for index in range(1, len(words)):
+        if index == name or kinds[index] != "name":
+            continue
+        if words[index] != "UserStory":
+            continue
+        if index + 1 < len(words) and words[index + 1] == "::":
+            continue
+        return True
+    return False
+
+
+def read_stories(text: str) -> StoryScan:
+    """Stories and unreadable story declarations in SysML text."""
+    clean, _docs = sysml_model._strip_comments(text)
+    scan = StoryScan()
+    for statement in _walk(_statements(clean)):
+        identifier = _story_identifier(statement)
+        if identifier is not None:
+            scan.stories.append(
+                StoryBlock(identifier, statement.line, statement.body))
+        elif _misdeclared(statement):
+            scan.unreadable.append((statement.line, statement.text()))
+    return scan
+
+
+@dataclass
+class Criterion:
+    """A named requirement in or beside the story's acceptance."""
+
+    name: str
+    line: int
+    form: str = ""  # "", "sibling" or "typed"
+    type_name: str = ""
+
+
+@dataclass
+class StoryShape:
+    """What the story body declares, as the checks need it."""
+
+    subjects: List[Statement] = field(default_factory=list)
+    roles: List[Statement] = field(default_factory=list)
+    meta: Optional[Statement] = None
+    prose: List[int] = field(default_factory=list)
+    criteria: List[Criterion] = field(default_factory=list)
+    order: Dict[int, int] = field(default_factory=dict)
+
+    def names(self) -> List[str]:
+        return [criterion.name for criterion in self.criteria]
+
+
+def _typed(statement: Statement) -> bool:
+    """True when the statement carries `: <Type>`."""
+    words, kinds = statement.words, statement.kinds
+    return any(word == ":" and index + 1 < len(words)
+               and kinds[index + 1] == "name"
+               for index, word in enumerate(words))
+
+
+def _is_acceptance(words: List[str]) -> bool:
+    return words[1:3] == [":>>", "acceptance"] or words[1:2] == ["acceptance"]
+
+
+def _acceptance(shape: StoryShape, statement: Statement) -> None:
+    for inner in statement.body:
+        words, kinds = inner.head()
+        if not words:
+            continue
+        if words[0] == "doc":
+            shape.prose.append(inner.line)
+        elif (words[0] == "requirement" and len(words) > 1
+              and kinds[1] == "name" and words[1] != "def"):
+            criterion = Criterion(words[1], inner.line)
+            if len(words) > 2 and words[2] == ":":
+                criterion.form = "typed"
+                criterion.type_name = words[3] if len(words) > 3 else ""
+            shape.criteria.append(criterion)
+
+
+def story_shape(story: StoryBlock) -> StoryShape:
+    shape = StoryShape()
+    for position, statement in enumerate(story.body):
+        words, kinds = statement.head()
+        if not words:
+            continue
+        shape.order[id(statement)] = position
+        if words[0] == "subject":
+            shape.subjects.append(statement)
+        elif words[0] == "stakeholder":
+            shape.roles.append(statement)
+        elif words[:2] == ["@", "StoryMeta"]:
+            if shape.meta is None:
+                shape.meta = statement
+        elif words[0] == "requirement" and len(words) > 1:
+            if _is_acceptance(words):
+                _acceptance(shape, statement)
+            elif (len(words) > 3 and kinds[1] == "name"
+                  and words[2] == ":>" and words[3] == "acceptance"):
+                shape.criteria.append(
+                    Criterion(words[1], statement.line, "sibling"))
+    return shape
+
+
+# ---------------------------------------------------------------------------
+# Files
+# ---------------------------------------------------------------------------
+
+
+def _decode(data: bytes, display: str, code: str,
+            consequence: str) -> Tuple[Optional[str], List[Finding]]:
+    try:
+        return data.decode("utf-8"), []
+    except UnicodeDecodeError as error:
+        line = data[:error.start].count(b"\n") + 1
+        return None, [Finding(
+            display, line, code,
+            "byte 0x{:02x} is not UTF-8 text, so {}. Save the file as "
+            "UTF-8".format(data[error.start], consequence),
+            "§11.9.1")]
+
+
+def _read(full: Path, display: str, code: str,
+          consequence: str) -> Tuple[Optional[str], List[Finding]]:
+    try:
+        data = full.read_bytes()
+    except OSError as error:
+        return None, [Finding(
+            display, 1, code,
+            "the file cannot be read ({}), so {}".format(
+                error.strerror or error, consequence),
+            "§11.9.1")]
+    return _decode(data, display, code, consequence)
+
+
+@dataclass
+class SysmlFile:
+    display: str
+    full: Path
+    findings: List[Finding]
+    scan: StoryScan = field(default_factory=StoryScan)
+    model: Optional["sysml_model.Model"] = None
+
+    def values(self, identifier: str) -> "sysml_model.Story":
+        """What the model reader read for the story, or an empty story."""
+        story = self.model.story(identifier) if self.model else None
+        if story is None:
+            story = sysml_model.Story(identifier, self.display, "")
+        return story
+
+
+@dataclass
+class FeatureFile:
+    display: str
+    full: Path
+    findings: List[Finding]
+    feature: Optional["gherkin.Feature"] = None
+    lines: List[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        """True when the file parsed into a Feature with no F1 or F2."""
+        return self.feature is not None and not any(
+            finding.code in ("F1", "F2") for finding in self.findings)
+
+    def tag_names(self) -> List[str]:
+        return [tag.name for tag in self.feature.tags] if self.feature else []
+
+
+class Workspace:
+    """Every file the run reads, each read and parsed once."""
+
+    def __init__(self, project_root: Path):
+        self.project_root = project_root
+        self.sysml = {}  # type: Dict[Path, SysmlFile]
+        self.features = {}  # type: Dict[Path, FeatureFile]
+
+    def sysml_file(self, full: Path, display: str) -> SysmlFile:
+        key = full.resolve()
+        if key not in self.sysml:
+            text, findings = _read(full, display, "S9",
+                                   "the stories in it cannot be checked")
+            entry = SysmlFile(display, full, findings)
+            if text is not None:
+                entry.scan = read_stories(text)
+                entry.model = sysml_model.Model(
+                    project_root=full.parent, model_root="")
+                sysml_model.parse_file(full.parent, full, entry.model)
+            self.sysml[key] = entry
+        return self.sysml[key]
+
+    def feature_file(self, full: Path, display: str) -> FeatureFile:
+        key = full.resolve()
+        if key not in self.features:
+            text, findings = _read(full, display, "F1",
+                                   "the feature file cannot be parsed")
+            entry = FeatureFile(display, full, findings)
+            if text is not None:
+                result = gherkin.parse(text, display)
+                entry.feature = result.feature
+                entry.findings = [_parser_finding(finding)
+                                  for finding in result.findings]
+                entry.findings.extend(
+                    _parser_finding(finding)
+                    for finding in gherkin.check_structure(result, display))
+                entry.lines = text.split("\n")
+            self.features[key] = entry
+        return self.features[key]
+
+
+def _parser_finding(finding: Finding) -> Finding:
+    ref, fix = PARSER_FINDINGS.get(finding.code, (finding.ref, ""))
+    message = finding.message
+    if fix:
+        message = "{}. {}".format(message, fix)
+    return Finding(finding.path, finding.line, finding.code, message, ref)
+
+
+def _display(path: str, *parts: str) -> str:
+    return os.path.normpath(os.path.join(path, *parts))
+
+
+def _lintable(name: str) -> bool:
+    return not name.startswith("_") and name.endswith((".sysml", ".feature"))
+
+
+@dataclass
+class Scope:
+    """The files a run checks, as (full path, display path) pairs."""
+
+    sysml: Dict[Path, Tuple[Path, str]] = field(default_factory=dict)
+    features: Dict[Path, Tuple[Path, str]] = field(default_factory=dict)
+    directories: Dict[Path, Tuple[Path, str]] = field(default_factory=dict)
+
+    def add_file(self, full: Path, display: str) -> None:
+        target = self.sysml if full.name.endswith(".sysml") else self.features
+        target.setdefault(full.resolve(), (full, display))
+
+    def add_directory(self, full: Path, display: str) -> None:
+        self.directories.setdefault(full.resolve(), (full, display))
+
+
+def _collect(paths: List[str], project_root: Path) -> Scope:
+    scope = Scope()
+    for path in paths:
+        full = Path(path)
+        if not full.is_absolute():
+            full = project_root / path
+        if not full.exists():
+            raise LintError("no such file or directory: {}".format(path))
+        if full.is_file():
+            if _lintable(full.name):
+                scope.add_file(full, _display(path))
+                scope.add_directory(full.parent,
+                                    _display(os.path.dirname(path) or "."))
+            continue
+        for root, dirs, names in os.walk(str(full)):
+            dirs[:] = sorted(name for name in dirs
+                             if not name.startswith("."))
+            relative = os.path.relpath(root, str(full))
+            found = False
+            for name in sorted(names):
+                if _lintable(name):
+                    scope.add_file(Path(root) / name,
+                                   _display(path, relative, name))
+                    found = True
+            if found:
+                scope.add_directory(Path(root), _display(path, relative))
+    return scope
+
+
+def _directory_files(full: Path, display: str) -> List[Tuple[Path, str]]:
+    return [(full / name, _display(display, name))
+            for name in sorted(os.listdir(str(full)))
+            if _lintable(name) and (full / name).is_file()]
+
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+
+def _unquote(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def read_storymeta(config: Path) -> Dict[str, List[str]]:
+    """`required_fields` and `valid_statuses` of the `storymeta` block,
+    each as a flow list (`[a, b]`) or a block list (`- a`)."""
+    try:
+        text = config.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return {}
+    found = {}  # type: Dict[str, List[str]]
+    inside = False
+    key = None  # type: Optional[str]
+    for raw in text.splitlines():
+        line = re.sub(r"(^|\s)#.*$", "", raw).rstrip()
+        if not line.strip():
+            continue
+        if not line[0].isspace():
+            inside = line == "storymeta:"
+            key = None
+            continue
+        if not inside:
+            continue
+        stripped = line.strip()
+        if stripped.startswith("-"):
+            if key is not None:
+                found[key].append(_unquote(stripped[1:]))
+            continue
+        match = re.match(r"([A-Za-z_]+):\s*(.*)$", stripped)
+        key = None
+        if match and match.group(1) in ("required_fields", "valid_statuses"):
+            value = match.group(2)
+            if value.startswith("["):
+                found[match.group(1)] = [
+                    _unquote(item) for item in value.strip("[]").split(",")
+                    if item.strip()]
+            elif not value:
+                key = match.group(1)
+                found[key] = []
+    return found
+
+
+# ---------------------------------------------------------------------------
+# Wellformed rules: section 1.9 and the storymeta fields
+# ---------------------------------------------------------------------------
+
+
+def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
+                      ) -> List[Finding]:
+    findings = []  # type: List[Finding]
+    path = entry.display
+    required = storymeta.get("required_fields") or ["status"]
+    valid = storymeta.get("valid_statuses") or DEFAULT_STATUSES
+
+    def report(line: int, code: str, message: str, ref: str) -> None:
+        findings.append(Finding(path, line, code, message, ref))
+
+    for story in entry.scan.stories:
+        sid = story.identifier
+        shape = story_shape(story)
+        values = entry.values(sid)
+        status = values.meta.get("status", "")
+
+        # Rule 2: one typed subject, before the role.
+        if not shape.subjects:
+            report(story.line, "W2",
+                   "{} has no subject. Declare `subject :>> system : "
+                   "<PartDef>;` before the role".format(sid), "§1.9 rule 2")
+        elif len(shape.subjects) > 1:
+            report(shape.subjects[1].line, "W2",
+                   "{} declares {} subjects. Keep exactly one `subject :>> "
+                   "system : <PartDef>;`".format(sid, len(shape.subjects)),
+                   "§1.9 rule 2")
+        else:
+            subject = shape.subjects[0]
+            if not _typed(subject):
+                report(subject.line, "W2",
+                       "the subject of {} has no part definition. Write "
+                       "`subject :>> system : <PartDef>;`".format(sid),
+                       "§1.9 rule 2")
+            if shape.roles and (shape.order[id(subject)]
+                                > shape.order[id(shape.roles[0])]):
+                report(subject.line, "W2",
+                       "the subject of {} comes after its role. Declare the "
+                       "subject first".format(sid), "§1.9 rule 2")
+
+        # Rule 3: one role, typed by a part definition once past backlog.
+        if len(shape.roles) > 1:
+            report(shape.roles[1].line, "W3",
+                   "{} declares {} roles. Keep exactly one `stakeholder :>> "
+                   "role : <PartDef>;`".format(sid, len(shape.roles)),
+                   "§1.9 rule 3")
+        elif status and status != "backlog":
+            if not shape.roles:
+                report(story.line, "W3",
+                       "{} is {} but has no role. Declare `stakeholder :>> "
+                       "role : <PartDef>;` before a story leaves backlog"
+                       .format(sid, status), "§1.9 rule 3")
+            elif not _typed(shape.roles[0]):
+                report(shape.roles[0].line, "W3",
+                       "the role of {} has no part definition, which a {} "
+                       "story needs. Write `stakeholder :>> role : "
+                       "<PartDef>;`".format(sid, status), "§1.9 rule 3")
+
+        # Rule 6: the narrative capability and benefit stay.
+        for name, value in (("capability", values.capability),
+                            ("benefit", values.benefit)):
+            if not value:
+                report(story.line, "W6",
+                       "{} has no {}. Keep `attribute :>> {} = \"...\";` "
+                       "throughout the story's life".format(sid, name, name),
+                       "§1.9 rule 6")
+
+        # Rule 9: @StoryMeta with qualified enumeration values.
+        if shape.meta is None:
+            report(story.line, "W9",
+                   "{} has no @StoryMeta. Apply `@StoryMeta {{ status = "
+                   "StoryStatus::backlog; }}` with qualified values, in "
+                   "place of any metadata written in a doc comment"
+                   .format(sid), "§1.9 rule 9, §1.5")
+        else:
+            for assignment in shape.meta.body:
+                words, kinds = assignment.words, assignment.kinds
+                if len(words) < 3 or words[1] != "=":
+                    continue
+                value = words[2:]
+                if "::" in value or (len(value) == 1 and kinds[2] in (
+                        "number", "string")):
+                    continue
+                report(assignment.line, "W9",
+                       "`{} = {}` in the @StoryMeta of {} is not qualified. "
+                       "Write `{} = {}::{};`".format(
+                           words[0], " ".join(value), sid, words[0],
+                           ENUMERATIONS.get(words[0], "<Enumeration>"),
+                           " ".join(value)), "§1.9 rule 9, §1.5")
+
+        # Storymeta fields: status always, the rest once past backlog.
+        line = shape.meta.line if shape.meta is not None else story.line
+        if not status:
+            report(line, "W10",
+                   "{} has no status. Add `status = StoryStatus::backlog;` "
+                   "or its actual status to the @StoryMeta".format(sid),
+                   "§1.5")
+        elif status not in valid:
+            report(line, "W10",
+                   "{} has the status {}, which is not one of {}. Use one "
+                   "of the valid statuses".format(
+                       sid, status, ", ".join(valid)), "§1.5, §0.10.3")
+        if status != "backlog":
+            missing = [name for name in required
+                       if name != "status" and name not in values.meta]
+            for name in missing:
+                report(line, "W10",
+                       "{} is {} but its @StoryMeta has no {}. The project "
+                       "requires {} once a story leaves backlog (storymeta "
+                       "in .iso-config.yaml)".format(
+                           sid, status or "without a status", name,
+                           ", ".join(required)), "§1.5, §0.10.3")
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Gherkin rules: S1 to S9 and F1 to F10
+# ---------------------------------------------------------------------------
+
+
+def _description_lines(entry: FeatureFile) -> List[int]:
+    """The line number of each description line of the Feature."""
+    numbers = []  # type: List[int]
+    index = entry.feature.line
+    for text in entry.feature.description:
+        while (index < len(entry.lines)
+               and entry.lines[index].strip() != text):
+            index += 1
+        numbers.append(index + 1)
+        index += 1
+    return numbers
+
+
+def _criterion_tags(scenario) -> List["gherkin.Tag"]:
+    return [tag for tag in scenario.tags if tag.name.startswith("@AC_")]
+
+
+def _in_stories_directory(entry: FeatureFile, project_root: Path) -> bool:
+    full = entry.full.resolve()
+    try:
+        parts = full.relative_to(project_root.resolve()).parts
+    except ValueError:
+        parts = full.parts
+    return "stories" in parts[:-1]
+
+
+def _narrative_order(entry: FeatureFile) -> Optional[Finding]:
+    description = entry.feature.description
+    lines = _description_lines(entry)
+    expected = (("As a ", "As an "), ("I want ",), ("So that ",))
+    for index, prefixes in enumerate(expected):
+        if index < len(description) and description[index].startswith(
+                prefixes):
+            continue
+        if index < len(description):
+            line = lines[index]
+            found = "line {} reads '{}'".format(line, description[index])
+        else:
+            line = lines[-1] if lines else entry.feature.line
+            found = "the description has {} line{}".format(
+                len(description), "" if len(description) == 1 else "s")
+        return Finding(
+            entry.display, line, "F6",
+            "the Feature description opens with the narrative lines "
+            "'As a <role>', 'I want <capability>' and 'So that <benefit>', "
+            "in that order, but {}. Write the three lines first"
+            .format(found), "§11.2.2")
+    return None
+
+
+def _check_feature(entry: FeatureFile, project_root: Path) -> List[Finding]:
+    """F1 to F10 for one feature file, without its story."""
+    findings = list(entry.findings)
+    if not _in_stories_directory(entry, project_root):
+        findings.append(Finding(
+            entry.display, 1, "F10",
+            "{} is not under a stories/ directory. Move it beside the "
+            ".sysml file that declares its story".format(entry.full.name),
+            "§11.2.1"))
+    if not entry.ok:
+        return findings
+    feature = entry.feature
+    tags = feature.tags
+    if len(tags) != 1:
+        findings.append(Finding(
+            entry.display, feature.line, "F3",
+            "the Feature carries {} tags. It carries exactly one, "
+            "@<StoryIdentifier>, and no other".format(len(tags)),
+            "§11.2.2"))
+    elif not _RE_IDENTIFIER.fullmatch(tags[0].name[1:]):
+        findings.append(Finding(
+            entry.display, tags[0].line, "F3",
+            "the tag {} is not a story identifier. Tag the Feature with "
+            "@<StoryIdentifier>, the identifier matching "
+            "^[A-Za-z_][A-Za-z0-9_]*$".format(tags[0].name), "§11.2.1"))
+    elif tags[0].name[1:] + ".feature" != entry.full.name:
+        findings.append(Finding(
+            entry.display, tags[0].line, "F4",
+            "the file name {} differs from the story tag {}. Name the file "
+            "{}.feature, or correct the tag".format(
+                entry.full.name, tags[0].name, tags[0].name[1:]),
+            "§11.2.1"))
+    seen = {}  # type: Dict[str, int]
+    for scenario in feature.all_scenarios():
+        criterion_tags = _criterion_tags(scenario)
+        if not criterion_tags:
+            findings.append(Finding(
+                entry.display, scenario.line, "F5",
+                "scenario '{}' has no @AC_<name> tag. Tag it with the name "
+                "of the criterion it states".format(scenario.name),
+                "§11.2.3"))
+            continue
+        if len(criterion_tags) > 1:
+            findings.append(Finding(
+                entry.display, criterion_tags[1].line, "F5",
+                "scenario '{}' carries {} @AC_ tags. A scenario states one "
+                "criterion, so keep one tag and move the other criterion "
+                "to a scenario of its own".format(
+                    scenario.name, len(criterion_tags)), "§11.2.3"))
+        for tag in criterion_tags:
+            name = tag.name[len("@AC_"):]
+            if not _RE_CRITERION.fullmatch(name):
+                findings.append(Finding(
+                    entry.display, tag.line, "F5",
+                    "{} is not lowerCamelCase. Name the criterion to match "
+                    "^[a-z][A-Za-z0-9]*$, for example @AC_firstReading, "
+                    "and rename the nested requirement to match"
+                    .format(tag.name), "§11.2.3"))
+            if name in seen:
+                findings.append(Finding(
+                    entry.display, tag.line, "F5",
+                    "{} is already used by the scenario at line {}. "
+                    "Criterion names are unique within the Feature, so "
+                    "rename one criterion".format(tag.name, seen[name]),
+                    "§11.2.3"))
+            else:
+                seen[name] = tag.line
+    order = _narrative_order(entry)
+    if order is not None:
+        findings.append(order)
+    return findings
+
+
+def _words(text: str) -> str:
+    return " ".join(text.split())
+
+
+def _check_narrative(entry: FeatureFile, sid: str,
+                     values: "sysml_model.Story") -> List[Finding]:
+    """S6: the narrative lines against the story's role, capability and
+    benefit. Run only when the order (F6) is right."""
+    findings = []  # type: List[Finding]
+    description = entry.feature.description
+    lines = _description_lines(entry)
+    role_line, want_line, benefit_line = description[:3]
+    article = "As an " if role_line.startswith("As an ") else "As a "
+    role = role_line[len(article):]
+    if values.role and ("".join(role.split()).lower()
+                        != values.role.lower()):
+        findings.append(Finding(
+            entry.display, lines[0], "S6",
+            "'{}' does not name the role of {}, which is {}. Write "
+            "'As a <role>' with the role's part definition name, spaces "
+            "and case aside".format(role_line, sid, values.role),
+            "§11.2.2"))
+    want = _words(want_line[len("I want "):])
+    wanted = [want]
+    if want.startswith("to "):
+        wanted.append(want[len("to "):])
+    if values.capability and _words(values.capability) not in wanted:
+        findings.append(Finding(
+            entry.display, lines[1], "S6",
+            "'{}' does not repeat the capability of {}, \"{}\". Write "
+            "'I want to {}' or 'I want {}'".format(
+                want_line, sid, values.capability, values.capability,
+                values.capability), "§11.2.2"))
+    benefit = _words(benefit_line[len("So that "):])
+    if values.benefit and _words(values.benefit) != benefit:
+        findings.append(Finding(
+            entry.display, lines[2], "S6",
+            "'{}' does not repeat the benefit of {}, \"{}\". Write "
+            "'So that {}'".format(benefit_line, sid, values.benefit,
+                                  values.benefit), "§11.2.2"))
+    return findings
+
+
+@dataclass
+class World:
+    """Cases and satisfy relationships across the model root and the
+    files linted, keyed by story identifier."""
+
+    verified: Dict[str, set] = field(default_factory=dict)
+    satisfied: Dict[str, List[Tuple[str, str]]] = field(default_factory=dict)
+
+    def add(self, entry: SysmlFile) -> None:
+        if entry.model is None:
+            return
+        for case in entry.model.cases:
+            for target, member in case.verifies:
+                self.verified.setdefault(target, set()).add(member)
+        for satisfaction in entry.model.satisfactions:
+            self.satisfied.setdefault(satisfaction.requirement, []).append(
+                (satisfaction.element, entry.display))
+
+    def covers(self, sid: str, criterion: str) -> bool:
+        members = self.verified.get(sid, set())
+        return bool(members & {"", "acceptance",
+                               "acceptance." + criterion})
+
+
+def _world(workspace: Workspace, scope_files: List[SysmlFile]) -> World:
+    world = World()
+    entries = list(scope_files)
+    try:
+        model_root = sysml_model.find_model_root(workspace.project_root)
+    except sysml_model.ModelError:
+        model_root = None
+    if model_root is not None:
+        for root, dirs, names in os.walk(str(model_root)):
+            dirs[:] = sorted(name for name in dirs
+                             if not name.startswith("."))
+            for name in sorted(names):
+                if name.endswith(".sysml") and not name.startswith("_"):
+                    full = Path(root) / name
+                    display = os.path.relpath(
+                        str(full), str(workspace.project_root))
+                    entries.append(workspace.sysml_file(full, display))
+    seen = set()
+    for entry in entries:
+        if id(entry) not in seen:
+            seen.add(id(entry))
+            world.add(entry)
+    return world
+
+
+def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
+                 features: Dict[str, FeatureFile], world: World
+                 ) -> List[Finding]:
+    """S1 to S8 for one story in its directory."""
+    findings = []  # type: List[Finding]
+    path = entry.display
+    sid = story.identifier
+    shape = story_shape(story)
+    values = entry.values(sid)
+    status = values.meta.get("status", "")
+    rank = STATUS_RANK.get(status, -1)
+    name = sid + ".feature"
+    feature = features.get(name)
+
+    describing = sorted(other.full.name for other in features.values()
+                        if other.ok and "@" + sid in other.tag_names())
+    if len(describing) > 1:
+        findings.append(Finding(
+            path, story.line, "S2",
+            "{} is described by {} feature files ({}). Keep {} alone and "
+            "merge the others into it".format(
+                sid, len(describing), ", ".join(describing), name),
+            "§11.2.1"))
+    if feature is None:
+        findings.append(Finding(
+            path, story.line, "S1",
+            "{} has no feature file. Write {}, tagged @{} and opening "
+            "with the story's narrative lines".format(
+                sid, _display(directory, name), sid), "§11.2.1, §11.4"))
+    elif feature.ok and "@" + sid not in feature.tag_names():
+        findings.append(Finding(
+            path, story.line, "S1",
+            "{} does not carry the tag @{}. Tag its Feature with @{}"
+            .format(name, sid, sid), "§11.2.2"))
+    if shape.prose:
+        findings.append(Finding(
+            path, shape.prose[0], "S3",
+            "{} keeps acceptance prose outside a named criterion, the form "
+            "used before 5.0.0. Formalise its Given/When/Then text as "
+            "scenarios in {} and nest one `requirement <name> {{ doc /* "
+            "... */ }}` per scenario in `requirement :>> acceptance`"
+            .format(sid, name), "§11.3.1"))
+    for criterion in shape.criteria:
+        if criterion.form == "sibling":
+            findings.append(Finding(
+                path, criterion.line, "S7",
+                "criterion {} of {} is declared beside the acceptance, as "
+                "`requirement {} :> acceptance`. Nest it inside "
+                "`requirement :>> acceptance` as `requirement {} {{ ... }}`"
+                .format(criterion.name, sid, criterion.name, criterion.name),
+                "§11.3.1"))
+        elif criterion.form == "typed":
+            findings.append(Finding(
+                path, criterion.line, "S7",
+                "criterion {} of {} is typed by {}. Criteria are untyped, "
+                "so write `requirement {} {{ ... }}`".format(
+                    criterion.name, sid, criterion.type_name or "a definition",
+                    criterion.name), "§11.3.1"))
+
+    scenarios = None  # type: Optional[list]
+    if feature is not None and feature.ok:
+        scenarios = feature.feature.all_scenarios()
+        tags = [(tag.name[len("@AC_"):], tag.line)
+                for scenario in scenarios
+                for tag in _criterion_tags(scenario)]
+        tag_names = {tag for tag, _line in tags}
+        for criterion in shape.criteria:
+            if criterion.name not in tag_names:
+                findings.append(Finding(
+                    path, criterion.line, "S4",
+                    "criterion {} of {} has no scenario tagged @AC_{} in "
+                    "{}. Write the scenario, or remove the criterion"
+                    .format(criterion.name, sid, criterion.name, name),
+                    "§11.3.1"))
+        reported = set()
+        for tag, line in tags:
+            if tag not in shape.names() and tag not in reported:
+                reported.add(tag)
+                findings.append(Finding(
+                    feature.display, line, "S5",
+                    "@AC_{} has no matching criterion in {}. Nest "
+                    "`requirement {} {{ doc /* ... */ }}` in its "
+                    "`requirement :>> acceptance`, or remove the tag"
+                    .format(tag, sid, tag), "§11.3.1"))
+        if _narrative_order(feature) is None:
+            findings.extend(_check_narrative(feature, sid, values))
+        if rank >= 1 and not tags:
+            findings.append(Finding(
+                path, story.line, "S8",
+                "{} is {} but {} has no scenario tagged @AC_<name>. Write "
+                "at least one scenario, or set the status back to backlog"
+                .format(sid, status, name), "§11.4"))
+
+    if rank >= 2:
+        for criterion in shape.criteria:
+            if not world.covers(sid, criterion.name):
+                findings.append(Finding(
+                    path, criterion.line, "S8",
+                    "criterion {} of {} ({}) is reached by no verification "
+                    "or validation case. Add `verify {}.acceptance.{};` to "
+                    "a case objective, a stub is enough".format(
+                        criterion.name, sid, status, sid, criterion.name),
+                    "§11.4, §11.3.3"))
+
+    satisfactions = world.satisfied.get(sid, [])
+    no_scenarios = feature is None or (scenarios is not None
+                                       and not scenarios)
+    if satisfactions and no_scenarios:
+        element, source = satisfactions[0]
+        findings.append(Finding(
+            path, story.line, "S8",
+            "`satisfy {} by {}` in {} allocates design to a story with no "
+            "scenarios. Write the scenarios in {} first".format(
+                sid, element, source, name), "§11.4"))
+    return findings
+
+
+def _check_directory(workspace: Workspace, full: Path, display: str,
+                     world: World) -> List[Finding]:
+    findings = []  # type: List[Finding]
+    sysml_entries = []  # type: List[SysmlFile]
+    features = {}  # type: Dict[str, FeatureFile]
+    for file_full, file_display in _directory_files(full, display):
+        if file_full.name.endswith(".sysml"):
+            sysml_entries.append(
+                workspace.sysml_file(file_full, file_display))
+        else:
+            entry = workspace.feature_file(file_full, file_display)
+            features[file_full.name] = entry
+            findings.extend(_check_feature(entry, workspace.project_root))
+    for entry in sysml_entries:
+        for line, text in entry.scan.unreadable:
+            findings.append(Finding(
+                entry.display, line, "S9",
+                "`{}` types or specialises UserStory in a form the story "
+                "tooling cannot read, so the story is not checked. Declare "
+                "it as `requirement <ID> : UserStory {{ ... }}`".format(text),
+                "§1.9 rule 1, §11.9.1"))
+        for story in entry.scan.stories:
+            findings.extend(
+                _check_story(story, entry, display, features, world))
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Entry points
+# ---------------------------------------------------------------------------
+
+
+def _sort_key(finding: Finding):
+    number = int(finding.code[1:]) if finding.code[1:].isdigit() else 0
+    return (finding.path, finding.line, finding.code[:1], number,
+            finding.message)
+
+
+def lint_paths(paths: List[str], only: Optional[str],
+               project_root: Path) -> List[Finding]:
+    """Findings for `paths`, sorted by path, line and code.
+
+    Relative paths are taken from `project_root`, which is also where the
+    model root and `.iso-config.yaml` are looked for. Raise LintError for
+    a missing path, an unknown mode, or a missing gherkin.py or
+    sysml_model.py.
+    """
+    if IMPORT_ERROR is not None:
+        raise LintError(IMPORT_ERROR)
+    if only is not None and only not in MODES:
+        raise LintError("unknown rule set {}, expected one of {}".format(
+            only, ", ".join(MODES)))
+    project_root = Path(project_root)
+    scope = _collect(paths, project_root)
+    workspace = Workspace(project_root)
+    findings = []  # type: List[Finding]
+
+    if only == "syntax":
+        # A feature file's own findings are the parser's: F1, F2, F7, F8
+        # and F9.
+        for full, display in scope.features.values():
+            findings.extend(workspace.feature_file(full, display).findings)
+        return sorted(findings, key=_sort_key)
+
+    # Every .sysml file a rule set checks, each once, so that a file that
+    # cannot be read is reported once whichever rule set read it.
+    checked = []  # type: List[SysmlFile]
+    if only in (None, "wellformed"):
+        storymeta = read_storymeta(project_root / CONFIG)
+        for full, display in scope.sysml.values():
+            entry = workspace.sysml_file(full, display)
+            checked.append(entry)
+            findings.extend(_check_wellformed(entry, storymeta))
+
+    if only in (None, "gherkin"):
+        in_directories = [
+            workspace.sysml_file(file_full, file_display)
+            for full, display in scope.directories.values()
+            for file_full, file_display in _directory_files(full, display)
+            if file_full.name.endswith(".sysml")]
+        checked.extend(in_directories)
+        world = _world(workspace, in_directories)
+        for full, display in scope.directories.values():
+            findings.extend(_check_directory(workspace, full, display, world))
+
+    reported = set()
+    for entry in checked:
+        if id(entry) not in reported:
+            reported.add(id(entry))
+            findings.extend(entry.findings)
+    return sorted(findings, key=_sort_key)
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="story-wellformed.py",
+        description="Check user stories against their Gherkin feature "
+                    "files (methodology sections 1.9 and 11).")
+    parser.add_argument("--only", choices=MODES,
+                        help="run one rule set (default: wellformed and "
+                             "gherkin)")
+    parser.add_argument("--format", choices=("text", "json"), default="text",
+                        help="output format (default: text)")
+    parser.add_argument("paths", nargs="+", metavar="PATH",
+                        help=".sysml file, .feature file or directory")
+    args = parser.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="backslashreplace")
+    try:
+        findings = lint_paths(args.paths, args.only, Path.cwd())
+    except LintError as error:
+        sys.stderr.write("story-wellformed.py: {}\n".format(error))
+        return 2
+    if args.format == "json":
+        print(json.dumps([finding.as_dict() for finding in findings],
+                         indent=2))
+    else:
+        for finding in findings:
+            print(finding.format())
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

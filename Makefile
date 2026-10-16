@@ -273,10 +273,13 @@ test-python:
 # The plugin's own Gherkin scenarios under tests/features/, run by the
 # standard-library runner in tests/bdd/. A scenario tagged @wip is
 # skipped. A directory that holds no .feature file passes with a zero
-# summary.
+# summary. The story lint then checks the same files in syntax mode
+# (F1, F2, F7, F8 and F9), because they describe the plugin rather than
+# a story and carry no story tag.
 test-bdd:
 	@echo "Running the plugin's Gherkin scenarios..."
 	@python3 tests/bdd/run.py tests/features
+	@python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
 
 # Every tests/hooks/test-*.sh file runs, found by glob, so a new hook
 # test joins the suite by its file name alone. The first failing file

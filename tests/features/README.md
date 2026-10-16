@@ -19,11 +19,20 @@ From the repository root:
 make test-bdd
 ```
 
-which runs the same command as CI:
+which runs the same commands as CI:
 
 ```sh
 python3 tests/bdd/run.py tests/features
+python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
 ```
+
+The second command is the story lint in syntax mode. It checks that
+each file parses, uses English, keeps any Background to Given steps
+before the first scenario, orders steps Given, When, Then, and gives
+every Scenario Outline complete Examples (findings F1, F2, F7, F8 and
+F9 of methodology §11.9.1). It runs even on scenarios tagged `@wip`,
+which the runner skips. These files describe the plugin rather than a
+user story, so the story checks do not apply to them.
 
 The runner, `tests/bdd/run.py`, needs the Python standard library only.
 It prints one line per scenario, marked `PASS`, `FAIL`, `UNDEFINED` or

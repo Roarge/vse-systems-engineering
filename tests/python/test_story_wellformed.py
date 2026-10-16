@@ -1,0 +1,488 @@
+"""Unit tests for templates/tools/lint/story-wellformed.py, the story lint.
+
+Each fixture under tests/fixtures/lint/ is a tiny project with a model/
+tree. The directory named after a finding code holds stories that draw
+that finding and a story ending in `_Clean` that does not, its passing
+twin. A test lints the fixture and compares the findings as
+(path, line, code) triples in output order, so the triple list fixes
+both what is reported and what is not. The line numbers were read off
+the fixture files by hand.
+
+The lint is tested in two ways: lint_paths() in process, and the
+command line as a subprocess, the way the pre-commit hook runs it.
+
+Run from the repository root:
+
+    python3 -m unittest discover -s tests/python -t . -v
+"""
+
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(HERE))
+LINT_DIR = os.path.join(REPO, "templates", "tools", "lint")
+LINT = os.path.join(LINT_DIR, "story-wellformed.py")
+FIXTURES = os.path.join(REPO, "tests", "fixtures", "lint")
+CORPUS = os.path.join(REPO, "tests", "fixtures", "stories")
+
+# The lint ships as a loose script, so it is loaded from its file. No
+# bytecode is written beside it, because the directory is mirrored byte
+# for byte into the demo.
+sys.dont_write_bytecode = True
+_SPEC = importlib.util.spec_from_file_location("story_wellformed", LINT)
+story_wellformed = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = story_wellformed
+_SPEC.loader.exec_module(story_wellformed)
+
+STK = "model/core/stories/stakeholder/"
+SYSML = STK + "stakeholder-stories.sysml"
+
+
+def triples(findings):
+    return [(finding.path, finding.line, finding.code)
+            for finding in findings]
+
+
+def lint(fixture, only="gherkin", paths=("model",)):
+    """Lint a fixture project in process, paths relative to its root."""
+    return triples(story_wellformed.lint_paths(
+        list(paths), only, Path(FIXTURES) / fixture))
+
+
+def run_cli(args, cwd, lint=LINT):
+    return subprocess.run(
+        [sys.executable, lint] + list(args), cwd=cwd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True, check=False)
+
+
+class ScratchCopy:
+    """A fixture copied into a temporary directory, removed on exit."""
+
+    def __init__(self, fixture):
+        self.fixture = fixture
+
+    def __enter__(self):
+        self.scratch = tempfile.mkdtemp(prefix="vse-lint-test-")
+        self.root = os.path.join(self.scratch, "project")
+        shutil.copytree(os.path.join(FIXTURES, self.fixture), self.root)
+        return self.root
+
+    def __exit__(self, *exc):
+        shutil.rmtree(self.scratch, ignore_errors=True)
+
+
+class CleanTests(unittest.TestCase):
+    def test_clean_project_has_no_findings(self):
+        # Both rule sets, a library that defines UserStory, a #derive
+        # story typed by VSE_Library::UserStory, criteria reached by name,
+        # by acceptance and by story, a satisfied story with scenarios,
+        # and template files whose names start with _.
+        self.assertEqual(lint("clean", None), [])
+
+
+class StorySideTests(unittest.TestCase):
+    def test_S1_missing_feature(self):
+        # US_111 has no feature file, US_112's feature carries another
+        # story's tag (which is also F4), US_113 is the twin.
+        self.assertEqual(lint("S1"), [
+            (STK + "US_112_WrongTag.feature", 2, "F4"),
+            (SYSML, 4, "S1"),
+            (SYSML, 20, "S1"),
+        ])
+
+    def test_S1_clean(self):
+        self.assertEqual(lint("clean"), [])
+
+    def test_S2_two_features_for_one_story(self):
+        # The copy is tagged @US_121_TwoFeatures but named otherwise.
+        self.assertEqual(lint("S2"), [
+            (STK + "US_121_TwoFeaturesCopy.feature", 2, "F4"),
+            (SYSML, 4, "S2"),
+        ])
+
+    def test_S3_legacy_prose(self):
+        # Prose in `requirement :>> acceptance`, in the pre-4.0
+        # `requirement acceptance[1]`, and beside a named criterion. The
+        # finding sits on the doc line.
+        self.assertEqual(lint("S3"), [
+            (SYSML, 14, "S3"),
+            (SYSML, 28, "S3"),
+            (SYSML, 42, "S3"),
+        ])
+
+    def test_S4_criterion_without_scenario(self):
+        # readingUnit has no @AC_readingUnit scenario. The finding sits on
+        # the criterion line.
+        self.assertEqual(lint("S4"), [(SYSML, 17, "S4")])
+
+    def test_S5_tag_without_criterion(self):
+        self.assertEqual(lint("S5"), [
+            (STK + "US_151_ExtraTag.feature", 14, "S5"),
+        ])
+
+    def test_S6_narrative_mismatch(self):
+        # Role, capability and benefit each differ once. The twins use a
+        # two-word role, "I want" without "to", "As an" with a capital
+        # role, and runs of spaces on either side.
+        self.assertEqual(lint("S6"), [
+            (STK + "US_161_OtherRole.feature", 4, "S6"),
+            (STK + "US_162_OtherCapability.feature", 5, "S6"),
+            (STK + "US_163_OtherBenefit.feature", 6, "S6"),
+        ])
+
+    def test_S7_sibling_and_typed_criteria(self):
+        self.assertEqual(lint("S7"), [
+            (SYSML, 13, "S7"),
+            (SYSML, 28, "S7"),
+        ])
+
+    def test_S8_story_ordering(self):
+        # US_181: ready with no tagged scenario. US_182: inProgress with
+        # readingUnit reached by no case. US_186 and US_189: a satisfy
+        # for a story with no scenarios (US_189 has no feature file at
+        # all). US_183, US_184 and US_185 are reached by name, by
+        # acceptance and by story. US_187 is backlog, US_188 is satisfied
+        # and has a scenario.
+        self.assertEqual(lint("S8"), [
+            (SYSML, 4, "S8"),
+            (SYSML, 27, "S8"),
+            (SYSML, 81, "S8"),
+            (SYSML, 117, "S1"),
+            (SYSML, 117, "S8"),
+        ])
+
+    def test_S8_reads_cases_from_the_model_root(self):
+        # Only the stories directory is named, and the cases and the
+        # satisfy relationships elsewhere under model/ still count.
+        self.assertEqual(lint("S8", paths=[STK]), [
+            (SYSML, 4, "S8"),
+            (SYSML, 27, "S8"),
+            (SYSML, 81, "S8"),
+            (SYSML, 117, "S1"),
+            (SYSML, 117, "S8"),
+        ])
+
+    def test_S9_unreadable_story_declarations(self):
+        # A definition, a subsetting usage and a usage typed by another
+        # library's UserStory. The other library's own definition of
+        # UserStory is not a finding, and neither is US_195, typed by a
+        # member of UserStory, which is not a story either.
+        self.assertEqual(lint("S9"), [
+            (SYSML, 8, "S9"),
+            (SYSML, 12, "S9"),
+            (SYSML, 16, "S9"),
+        ])
+
+    def test_S9_story_file_that_is_not_utf8(self):
+        with ScratchCopy("register") as root:
+            path = os.path.join(root, SYSML)
+            with open(path, "rb") as handle:
+                lines = handle.read().split(b"\n")
+            lines[5] += b" \xff"
+            with open(path, "wb") as handle:
+                handle.write(b"\n".join(lines))
+            findings = story_wellformed.lint_paths(["model"], None,
+                                                   Path(root))
+        self.assertEqual(triples(findings), [(SYSML, 6, "S9")])
+
+    def test_register_file_four_stories(self):
+        # Four stories in one register file, each paired with its own
+        # feature file. Only the third has none.
+        self.assertEqual(lint("register"), [(SYSML, 36, "S1")])
+
+    def test_story_identification_agrees_with_corpus(self):
+        # The shared corpus also drives the in-session scanner in
+        # hooks/lib/test-first.sh, so the two agree on what a story is.
+        names = sorted(name for name in os.listdir(CORPUS)
+                       if name.endswith(".sysml"))
+        self.assertTrue(names)
+        for name in names:
+            with self.subTest(corpus=name):
+                with open(os.path.join(CORPUS, name),
+                          encoding="utf-8") as handle:
+                    stories = story_wellformed.read_stories(
+                        handle.read()).stories
+                with open(os.path.join(CORPUS, name[:-6] + ".ids"),
+                          encoding="utf-8") as handle:
+                    expected = handle.read().split()
+                self.assertEqual(
+                    [story.identifier for story in stories], expected)
+
+    def test_corpus_declarations_outside_the_canonical_form(self):
+        with open(os.path.join(CORPUS, "requirement-def.sysml"),
+                  encoding="utf-8") as handle:
+            scan = story_wellformed.read_stories(handle.read())
+        self.assertEqual([line for line, _text in scan.unreadable],
+                         [12, 16, 20])
+
+
+class FeatureSideTests(unittest.TestCase):
+    def test_F1_parse_error(self):
+        self.assertEqual(lint("F1"), [
+            (STK + "US_201_Unparsable.feature", 1, "F1"),
+        ])
+
+    def test_F1_feature_file_that_is_not_utf8(self):
+        with ScratchCopy("F1") as root:
+            path = os.path.join(root, STK, "US_202_Clean.feature")
+            with open(path, "rb") as handle:
+                lines = handle.read().split(b"\n")
+            lines[4] += b" \xff"
+            with open(path, "wb") as handle:
+                handle.write(b"\n".join(lines))
+            findings = story_wellformed.lint_paths(["model"], "gherkin",
+                                                   Path(root))
+        self.assertEqual(triples(findings), [
+            (STK + "US_201_Unparsable.feature", 1, "F1"),
+            (STK + "US_202_Clean.feature", 5, "F1"),
+        ])
+
+    def test_F2_language(self):
+        self.assertEqual(lint("F2"), [
+            (STK + "US_211_Norwegian.feature", 1, "F2"),
+        ])
+
+    def test_F3_story_tag(self):
+        # Two tags, no tag (also S1) and a tag that is not a valid story
+        # identifier (also S1).
+        self.assertEqual(lint("F3"), [
+            (STK + "US_221_TwoTags.feature", 3, "F3"),
+            (STK + "US_222_NoTag.feature", 2, "F3"),
+            (STK + "US_223_InvalidTag.feature", 2, "F3"),
+            (SYSML, 20, "S1"),
+            (SYSML, 36, "S1"),
+        ])
+
+    def test_F4_file_name(self):
+        self.assertEqual(lint("F4"), [
+            (STK + "US_231_Renamed.feature", 2, "F4"),
+            (SYSML, 4, "S1"),
+        ])
+
+    def test_F5_criterion_tags(self):
+        # Missing, repeated, not lowerCamelCase, and used twice. A @wip
+        # tag beside a criterion tag is allowed.
+        feature = STK + "US_241_ScenarioTags.feature"
+        self.assertEqual(lint("F5"), [
+            (feature, 14, "F5"),
+            (feature, 19, "F5"),
+            (feature, 25, "F5"),
+            (feature, 31, "F5"),
+        ])
+
+    def test_F6_narrative_order(self):
+        # No narrative, the lines out of order, and other text first. The
+        # twin has a further description line after the three.
+        self.assertEqual(lint("F6"), [
+            (STK + "US_251_NoNarrative.feature", 3, "F6"),
+            (STK + "US_252_OutOfOrder.feature", 4, "F6"),
+            (STK + "US_253_TextFirst.feature", 4, "F6"),
+        ])
+
+    def test_F7_background(self):
+        self.assertEqual(lint("F7"), [
+            (STK + "US_261_LateBackground.feature", 14, "F7"),
+        ])
+
+    def test_F8_step_order(self):
+        self.assertEqual(lint("F8"), [
+            (STK + "US_271_ThenFirst.feature", 12, "F8"),
+        ])
+
+    def test_F9_outline_examples(self):
+        self.assertEqual(lint("F9"), [
+            (STK + "US_281_NoExamples.feature", 9, "F9"),
+        ])
+
+    def test_F10_outside_stories(self):
+        self.assertEqual(lint("F10"), [
+            ("model/core/requirements/US_291_Misplaced.feature", 1, "F10"),
+        ])
+
+
+class WellformedTests(unittest.TestCase):
+    def test_W2_subject(self):
+        # No subject, two subjects, the subject after the role, and an
+        # untyped subject.
+        self.assertEqual(lint("W2", "wellformed"), [
+            (SYSML, 4, "W2"),
+            (SYSML, 17, "W2"),
+            (SYSML, 28, "W2"),
+            (SYSML, 37, "W2"),
+        ])
+
+    def test_W3_role(self):
+        # No role at ready, two roles, and an untyped role at
+        # inProgress. A backlog story may have no role yet.
+        self.assertEqual(lint("W3", "wellformed"), [
+            (SYSML, 4, "W3"),
+            (SYSML, 18, "W3"),
+            (SYSML, 28, "W3"),
+        ])
+
+    def test_W6_narrative(self):
+        self.assertEqual(lint("W6", "wellformed"), [
+            (SYSML, 4, "W6"),
+            (SYSML, 13, "W6"),
+        ])
+
+    def test_W9_storymeta_form(self):
+        # A legacy doc comment in place of @StoryMeta, and two
+        # unqualified enumeration values on one line.
+        self.assertEqual(lint("W9", "wellformed"), [
+            (SYSML, 4, "W9"),
+            (SYSML, 15, "W9"),
+            (SYSML, 15, "W9"),
+        ])
+
+    def test_W10_storymeta_fields_from_config(self):
+        # The config lists points, priority and status (as a block list)
+        # and the four statuses. Points missing at ready, an unknown
+        # status, and no status at all. A backlog story need not carry
+        # the other fields yet.
+        self.assertEqual(lint("W10", "wellformed"), [
+            (SYSML, 5, "W10"),
+            (SYSML, 15, "W10"),
+            (SYSML, 35, "W10"),
+        ])
+
+    def test_W10_defaults_without_config(self):
+        # Without .iso-config.yaml only status is required and the four
+        # statuses of section 1.5 are valid.
+        with ScratchCopy("W10") as root:
+            os.remove(os.path.join(root, ".iso-config.yaml"))
+            findings = story_wellformed.lint_paths(["model"], "wellformed",
+                                                   Path(root))
+        self.assertEqual(triples(findings), [
+            (SYSML, 15, "W10"),
+            (SYSML, 35, "W10"),
+        ])
+
+
+class ModeTests(unittest.TestCase):
+    def test_only_syntax_skips_story_rules(self):
+        self.assertEqual(lint("S1", "syntax"), [])
+        self.assertEqual(lint("F3", "syntax"), [])
+        self.assertEqual(lint("F5", "syntax"), [])
+        self.assertEqual(lint("F10", "syntax"), [])
+        self.assertEqual(lint("F8", "syntax"), [
+            (STK + "US_271_ThenFirst.feature", 12, "F8"),
+        ])
+
+    def test_only_wellformed_skips_gherkin_rules(self):
+        self.assertEqual(lint("S1", "wellformed"), [])
+
+    def test_only_gherkin_skips_wellformed_rules(self):
+        codes = {code for _path, _line, code in lint("W2", "gherkin")}
+        self.assertEqual(codes, {"S1"})
+
+    def test_no_only_runs_both(self):
+        self.assertEqual(lint("W6", None), [
+            (SYSML, 4, "S1"),
+            (SYSML, 4, "W6"),
+            (SYSML, 13, "S1"),
+            (SYSML, 13, "W6"),
+            (SYSML, 22, "S1"),
+        ])
+
+    def test_findings_carry_a_section_reference(self):
+        for fixture in ("S1", "S3", "S6", "S8", "S9", "F3", "F5", "F6",
+                        "F10", "W2", "W9", "W10"):
+            findings = story_wellformed.lint_paths(
+                ["model"], None, Path(FIXTURES) / fixture)
+            self.assertTrue(findings, fixture)
+            for finding in findings:
+                with self.subTest(fixture=fixture, finding=finding):
+                    self.assertTrue(finding.ref.startswith("§"))
+                    if finding.code.startswith("S"):
+                        self.assertRegex(finding.message, r"\bUS_\d+_")
+
+
+class CommandLineTests(unittest.TestCase):
+    def test_exit_codes(self):
+        clean = os.path.join(FIXTURES, "clean")
+        self.assertEqual(run_cli(["model"], clean).returncode, 0)
+        self.assertEqual(
+            run_cli(["model"], os.path.join(FIXTURES, "S1")).returncode, 1)
+        missing = run_cli(["no-such-path"], clean)
+        self.assertEqual(missing.returncode, 2)
+        self.assertIn("no-such-path", missing.stderr)
+        self.assertEqual(run_cli(["--only", "everything", "model"],
+                                 clean).returncode, 2)
+        self.assertEqual(run_cli([], clean).returncode, 2)
+
+    def test_text_format(self):
+        result = run_cli(["model"], os.path.join(FIXTURES, "S4"))
+        self.assertEqual(result.returncode, 1)
+        lines = result.stdout.splitlines()
+        self.assertEqual(len(lines), 1)
+        self.assertRegex(
+            lines[0],
+            r"^model/core/stories/stakeholder/stakeholder-stories\.sysml:17:"
+            r" S4 .*readingUnit.* \(§[0-9.]+(, §[0-9.]+)*\)$")
+
+    def test_json_format(self):
+        result = run_cli(["--format", "json", "model"],
+                         os.path.join(FIXTURES, "S1"))
+        self.assertEqual(result.returncode, 1)
+        findings = json.loads(result.stdout)
+        self.assertEqual(
+            [(item["path"], item["line"], item["code"]) for item in findings],
+            [
+                (STK + "US_112_WrongTag.feature", 2, "F4"),
+                (SYSML, 4, "S1"),
+                (SYSML, 20, "S1"),
+            ])
+        for item in findings:
+            self.assertEqual(sorted(item),
+                             ["code", "line", "message", "path", "ref"])
+
+    def test_json_format_clean(self):
+        result = run_cli(["--format", "json", "model"],
+                         os.path.join(FIXTURES, "clean"))
+        self.assertEqual((result.returncode, json.loads(result.stdout)),
+                         (0, []))
+
+    def test_render_module_missing_exit_2(self):
+        # The lint is installed beside tools/render/. Without it the lint
+        # cannot read the model, and it says so instead of passing.
+        with tempfile.TemporaryDirectory() as scratch:
+            lint_copy = os.path.join(scratch, "tools", "lint")
+            shutil.copytree(LINT_DIR, lint_copy,
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            result = run_cli(
+                ["model"], os.path.join(FIXTURES, "clean"),
+                lint=os.path.join(lint_copy, "story-wellformed.py"))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("render", result.stderr)
+        self.assertEqual(result.stdout, "")
+
+    def test_gherkin_module_missing_exit_2(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            tools = os.path.join(scratch, "tools")
+            shutil.copytree(LINT_DIR, os.path.join(tools, "lint"),
+                            ignore=shutil.ignore_patterns("__pycache__",
+                                                          "gherkin.py"))
+            shutil.copytree(os.path.join(REPO, "templates", "tools",
+                                         "render"),
+                            os.path.join(tools, "render"),
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            result = run_cli(
+                ["model"], os.path.join(FIXTURES, "clean"),
+                lint=os.path.join(tools, "lint", "story-wellformed.py"))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("gherkin.py", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+
+if __name__ == "__main__":
+    unittest.main()
