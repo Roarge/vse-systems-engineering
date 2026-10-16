@@ -111,10 +111,20 @@ tc_setup_repo() {
 #
 # Each spec is <gate>=<block|warn|info|off>, or override=<disp>, the
 # older form that means precommit_lint. Every spec lands in one
-# gate_overrides block, in the order given.
+# gate_overrides block, in the order given. A spec without "=" is
+# refused with return 2 before anything is written.
 tc_config() {
     local profile="$1" toolchain="$2" spec gate
     shift 2
+    for spec in "$@"; do
+        case "$spec" in
+            *=*) : ;;
+            *)
+                printf "tc_config: '%s' is not a <gate>=<disposition> spec\n" "$spec" >&2
+                return 2
+                ;;
+        esac
+    done
     {
         printf 'project_profile: %s\n' "$profile"
         if [ "$toolchain" != "-" ]; then
@@ -424,6 +434,18 @@ $(_tc_context)"
     fi
 }
 
+# tc_assert_line <exact-line> <text> <case>: one line of the text is
+# exactly the expected line, not merely a line that contains it.
+tc_assert_line() {
+    local line="$1" text="$2" name="$3"
+    if printf '%s\n' "$text" | grep -qxF -- "$line"; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected a line equal to: ${line}
+$(_tc_context)"
+    fi
+}
+
 tc_assert_not_grep() {
     local pattern="$1" text="$2" name="$3"
     if printf '%s\n' "$text" | grep -qF -- "$pattern"; then
@@ -493,14 +515,26 @@ ${text}"
 # tc_assert_json <jq-filter> <case>: stdout is exactly one JSON value
 # and the filter holds on it. A hook that prints two objects fails even
 # when both satisfy the filter, because the output contract allows
-# exactly one.
+# exactly one. A failure shows what jq wrote on stderr, such as the
+# error for a filter it cannot compile, and a missing jq fails with a
+# line that says so.
 tc_assert_json() {
-    local filter="$1" name="$2"
-    if printf '%s' "$OUT" | jq -e "$filter" > /dev/null 2>&1 \
-        && printf '%s' "$OUT" | jq -e -s 'length == 1' > /dev/null 2>&1; then
+    local filter="$1" name="$2" jq_err="" held=0
+    if ! command -v jq > /dev/null 2>&1; then
+        tc_fail "$name" "jq is not installed, so no JSON assertion can hold
+$(_tc_context)"
+        return 0
+    fi
+    if jq_err="$(printf '%s' "$OUT" | jq -e "$filter" 2>&1 > /dev/null)" \
+        && jq_err="$(printf '%s' "$OUT" | jq -e -s 'length == 1' 2>&1 > /dev/null)"; then
+        held=1
+    fi
+    if [ "$held" -eq 1 ]; then
         tc_pass "$name"
     else
-        tc_fail "$name" "expected one JSON value satisfying: ${filter}
+        tc_fail "$name" "expected one JSON value satisfying: ${filter}${jq_err:+
+--- jq ---
+${jq_err}}
 $(_tc_context)"
     fi
 }

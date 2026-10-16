@@ -47,8 +47,8 @@ EOF
     TC_HOOK_ROOT="$root" tc_run_lifecycle echo-stdin "$payload"
     tc_assert_rc 0 "lifecycle runner: the stub hook exits 0"
     tc_assert_eq "$payload" "$OUT" "lifecycle runner: the JSON payload reaches the hook on stdin"
-    tc_assert_grep "cwd=${expected_cwd}" "$ERR" "lifecycle runner: the hook runs in the scratch repository"
-    tc_assert_grep "root=${root}" "$ERR" "lifecycle runner: CLAUDE_PLUGIN_ROOT names the hook root"
+    tc_assert_line "cwd=${expected_cwd}" "$ERR" "lifecycle runner: the hook runs in the scratch repository"
+    tc_assert_line "root=${root}" "$ERR" "lifecycle runner: CLAUDE_PLUGIN_ROOT names the hook root"
 }
 
 # Other runners keep an empty stdin, so a hook that reads stdin cannot
@@ -110,6 +110,21 @@ case_config_no_specs() {
         "config: no spec writes no gate_overrides block"
 }
 
+# A spec without "=" names no disposition. Writing it as "gate: gate"
+# would hand the hook under test a value nobody meant, so the helper
+# refuses it and leaves the configuration file as it was.
+case_config_rejects_spec_without_equals() {
+    local errf rc=0
+    tc_config light -
+    errf="$(mktemp "${TC_ROOT}/err.XXXXXX")"
+    ( tc_config standard - precommit_gherkin ) 2> "$errf" || rc=$?
+    tc_assert_eq 2 "$rc" "config: a spec without = returns 2"
+    tc_assert_grep "'precommit_gherkin' is not a <gate>=<disposition> spec" "$(cat "$errf")" \
+        "config: the refusal names the spec and the expected form"
+    tc_assert_eq "project_profile: light" "$(cat "${REPO}/.iso-config.yaml")" \
+        "config: a refused spec leaves the configuration file unchanged"
+}
+
 case_config_append() {
     tc_config standard -
     tc_config_append <<'EOF'
@@ -142,6 +157,42 @@ case_assert_json_rejects_false_filter() {
     tc_assert_grep "FAIL: false filter" "$result" "assert_json: a filter that does not hold fails"
 }
 
+# A filter jq cannot compile fails the assertion, and the failure shows
+# jq's own message, so a typo in a test reads as a typo rather than as
+# a hook that printed the wrong JSON.
+case_assert_json_shows_jq_error() {
+    local result
+    result="$(probe '{"decision":"deny"}' tc_assert_json '.decision ==' "bad filter")"
+    tc_assert_grep "FAIL: bad filter" "$result" "assert_json: a filter jq cannot compile fails"
+    tc_assert_grep "jq: error" "$result" "assert_json: the failure shows jq's error"
+}
+
+# Without jq no JSON assertion can hold, and the failure says why
+# rather than reporting a hook fault. The PATH holds sed alone, which
+# the failure report itself needs.
+case_assert_json_reports_missing_jq() {
+    local bin result
+    bin="$(tc_mktemp_d)"
+    ln -s "$(command -v sed)" "${bin}/sed"
+    result="$(PATH="$bin" probe '{"decision":"deny"}' tc_assert_json '.decision == "deny"' "no jq")"
+    tc_assert_grep "FAIL: no jq" "$result" "assert_json: a missing jq fails the assertion"
+    tc_assert_grep "jq is not installed" "$result" "assert_json: the failure names the missing jq"
+}
+
+# tc_assert_line compares whole lines, so a line that only starts with
+# the expected text does not pass for it.
+case_assert_line_exact() {
+    local result
+    result="$(tc_assert_line "cwd=/a" "first
+cwd=/a
+last" "exact line")"
+    tc_assert_eq "PASS: exact line" "$result" "assert_line: an exact line among others passes"
+    result="$(tc_assert_line "cwd=/a" "cwd=/a/b" "longer line")"
+    tc_assert_grep "FAIL: longer line" "$result" "assert_line: a longer line does not pass"
+    result="$(tc_assert_line "cwd=/a" "x cwd=/a" "embedded line")"
+    tc_assert_grep "FAIL: embedded line" "$result" "assert_line: text inside a line does not pass"
+}
+
 case_assert_json_silent() {
     local result
     result="$(probe '' tc_assert_json_silent "empty")"
@@ -156,10 +207,14 @@ case_runners_drop_outer_vse_iso_config
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs
+case_config_rejects_spec_without_equals
 case_config_append
 case_assert_json_accepts_one_object
 case_assert_json_rejects_two_objects
 case_assert_json_rejects_false_filter
+case_assert_json_shows_jq_error
+case_assert_json_reports_missing_jq
+case_assert_line_exact
 case_assert_json_silent
 
 if tc_summary "test-harness"; then
