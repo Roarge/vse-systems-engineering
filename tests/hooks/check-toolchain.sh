@@ -105,6 +105,43 @@ tc_run_lib java
 tc_assert_rc 2 "java: 17.0.2 is rejected"
 tc_assert_grep "is major 17, need 21 or later" "$ERR" "java: 17 reason names the major"
 
+# A JVM prints "Picked up JAVA_TOOL_OPTIONS: ..." on stderr ahead of
+# its version line whenever that variable is set, which CI runners and
+# managed workstations often do. The version is read from the first
+# line that names one, so the banner must not hide it. The stub takes
+# the whole version line, because a legacy JVM says "java version"
+# where a modern one says "openjdk version".
+tc_stub_java_banner_first() {
+    local version_line="$1"
+    tc_stub java <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+if [ "\${1:-}" = "-version" ]; then
+    echo 'Picked up JAVA_TOOL_OPTIONS: -Dfoo=bar' >&2
+    echo '${version_line}' >&2
+    exit 0
+fi
+cat > /dev/null
+exit 0
+EOF
+}
+
+case_java_banner_first() {
+    tc_env
+
+    tc_stub_java_banner_first 'openjdk version "21.0.12" 2026-07-21'
+    tc_run_lib_fn vse_tc_java
+    tc_assert_rc 0 "java: a JAVA_TOOL_OPTIONS banner before 21.0.12 is skipped"
+
+    tc_stub_java_banner_first 'java version "1.8.0_402"'
+    tc_run_lib_fn vse_tc_java
+    tc_assert_rc 1 "java: a JAVA_TOOL_OPTIONS banner before 1.8.0_402 is rejected"
+    tc_assert_grep "is major 8, need 21 or later" "$ERR" \
+        "java: the reason past a banner names major 8"
+}
+
+case_java_banner_first
+
 tc_stub_java "21.0.12"
 tc_run_lib java
 tc_assert_rc 0 "java: 21.0.12 is accepted"

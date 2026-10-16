@@ -127,7 +127,7 @@ vse_tc_candidates() {
 # Resolve a Java 21 or later binary into VSE_TC_JAVA. Order: VSE_JAVA,
 # JAVA_HOME/bin/java, java on PATH. Returns 1 with VSE_TC_REASON set.
 vse_tc_java() {
-    local candidate major
+    local candidate line major
     VSE_TC_JAVA=""
     VSE_TC_REASON=""
     for candidate in "${VSE_JAVA:-}" "${JAVA_HOME:+${JAVA_HOME}/bin/java}" "$(command -v java 2>/dev/null || true)"; do
@@ -135,9 +135,15 @@ vse_tc_java() {
         # an empty or non-executable candidate is skipped.
         # shellcheck disable=SC2015
         [ -n "$candidate" ] && [ -x "$candidate" ] || continue
-        major="$("$candidate" -version 2>&1 | sed -n '1s/.*version "\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*.*/\1/p')"
+        # The JVM prints "Picked up JAVA_TOOL_OPTIONS: ..." ahead of the
+        # version whenever that variable is set, so the version comes
+        # from the first line that names one, not from line 1. awk
+        # reads to the end rather than exiting early, so the JVM never
+        # writes into a closed pipe.
+        line="$("$candidate" -version 2>&1 | awk '!seen && /version "/ { print; seen = 1 }')"
+        major="$(printf '%s\n' "$line" | sed -n 's/.*version "\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*.*/\1/p')"
         if [ "$major" = "1" ]; then
-            major="$("$candidate" -version 2>&1 | sed -n '1s/.*version "1\.\([0-9][0-9]*\).*/\1/p')"
+            major="$(printf '%s\n' "$line" | sed -n 's/.*version "1\.\([0-9][0-9]*\).*/\1/p')"
         fi
         if [ -n "$major" ] && [ "$major" -ge 21 ] 2>/dev/null; then
             VSE_TC_JAVA="$candidate"
