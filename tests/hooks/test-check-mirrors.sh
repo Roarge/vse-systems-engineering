@@ -10,8 +10,10 @@
 # cache) never ships, so it is skipped. Every other file, tracked or
 # not, is compared, so an untracked file on one side still fails.
 #
-# make runs with a scratch HOME, so a contributor's global git ignore
-# file cannot hide a difference from the target.
+# make runs with a scratch HOME, without XDG_CONFIG_HOME or
+# GIT_CONFIG_GLOBAL and with GIT_CONFIG_NOSYSTEM set, so no global or
+# system git configuration, and no global git ignore file, can hide a
+# difference from the target.
 #
 # Run: bash tests/hooks/test-check-mirrors.sh
 set -euo pipefail
@@ -62,6 +64,7 @@ fresh() {
 
 run_target() {
     _tc_capture env -C "$REPO" -u MAKEFLAGS -u MAKELEVEL -u MFLAGS \
+        -u XDG_CONFIG_HOME -u GIT_CONFIG_GLOBAL \
         HOME="$FAKEHOME" GIT_CONFIG_NOSYSTEM=1 GIT_CEILING_DIRECTORIES="$(dirname "$REPO")" \
         make --no-print-directory check-mirrors
 }

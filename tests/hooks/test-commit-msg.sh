@@ -48,8 +48,8 @@ case_cr_root_config() {
     tc_env
     tc_run_githook commit-msg "$MSG_FILE"
     tc_assert_rc 1 "root configuration: the commit without a CR reference is stopped"
-    tc_assert_grep "does not
-reference a Change Request" "$ERR" "root configuration: the finding is stated"
+    tc_assert_line "[commit-msg] This commit modifies baselined artefacts but the message does not" "$ERR" \
+        "root configuration: the finding is stated"
 }
 
 case_cr_brownfield_config() {
