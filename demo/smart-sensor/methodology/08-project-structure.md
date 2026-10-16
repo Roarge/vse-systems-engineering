@@ -80,7 +80,11 @@ model/core/
 ├── domain/                         # glossary, item defs, common value types
 ├── stories/
 │   ├── stakeholder/                # §4 stories (UserStory usages)
+│   │   ├── stakeholder-stories.sysml
+│   │   └── <ID>.feature            # one Gherkin feature per story (§11.2)
 │   └── system/                     # §5 stories (derive from stakeholder)
+│       ├── system-stories.sysml
+│       └── <ID>.feature            # one Gherkin feature per story (§11.2)
 ├── use-cases/                      # §1.4.5 elaborations of system stories
 ├── functional-architecture/        # §6 functions and their properties
 ├── logical-architecture/           # §6 selected logical architecture
@@ -129,6 +133,7 @@ logical-architecture/components/<component-a>/
 ├── context/                        # component's view of its environment
 ├── stories/                        # component's stories — at this depth these
 │                                   #   are the subsystem stories of §0.6.7
+│   └── <ID>.feature                # one Gherkin feature per story (§11.2)
 ├── use-cases/                      # component-specific elaborations
 ├── functional-architecture/        # component's functions (if needed at scope)
 ├── logical-architecture/           # ← recurses if the component decomposes further
@@ -212,7 +217,10 @@ folder per §8.3.2.
 ### 8.3.4 Naming conventions
 
 - **Folder and file names:** lowercase kebab-case (`base-architecture`,
-  `system-stories.sysml`). Git-friendly across platforms.
+  `system-stories.sysml`). Git-friendly across platforms. The one
+  exception is a story's feature file, which takes the story identifier
+  as its stem (`US_042_AckFromDashboard.feature`, §11.2.1), so that the
+  tooling can pair the two without a lookup table.
 - **SysML v2 package names:** PascalCase with project-name prefix and
   underscore separator, matching SYSMOD convention
   (`FFDS_BaseArchitecture`, `Aiwell_SystemContext`). The textual short
@@ -280,6 +288,12 @@ A story branch:
   criteria are correspondingly stricter (§8.6.3).
 - **Release branches** (`release/<tag>`) — used only if the project
   produces tagged releases of the model. Optional.
+- **Refactoring branches** (`refactor/<slug>`). For restructuring
+  implementation code without changing its behaviour, with the tests
+  unchanged. Where test first applies (§11.5), a code change on such a
+  branch needs no new test, so the test-first gates turn their finding
+  into a reminder there (§11.9). The branch patterns are listed in
+  `test_first.refactor_branches`, which defaults to `refactor/*`.
 
 ## 8.5 Pull Request Workflow
 
@@ -292,14 +306,23 @@ A draft PR shall be opened **as soon as the branch contains a usable
 stub** — typically within the first commit. The intent is visibility,
 not completeness. The opening commit minimum is:
 
-- the story file exists in the package appropriate to its level —
+- the story file exists in the package appropriate to its level:
   `model/core/stories/stakeholder/` for §4 stories,
   `model/core/stories/system/` for §5 stories, or
   `model/core/logical-architecture/components/<component>/stories/`
-  (recursively) for §7 component stories;
-- the story declares `role`, `capability`, `benefit`, and at least one
-  `acceptance` criterion (even if textual);
+  (recursively) for §7 component stories
+- the story's feature file, `<ID>.feature`, sits beside the story file
+  with the story tag, the narrative and at least one scenario tagged
+  `@AC_<name>` (§11.2)
+- the story declares `role`, `capability`, `benefit`, and a named
+  `acceptance` criterion for each scenario (§11.3)
+- a verification or validation case stub reaches every criterion
+  (§11.4)
 - `StoryMeta.status` is set to `inProgress`.
+
+The feature file is written before the story's SysML, and the case stub
+before any elaboration or design (§11.4), so the opening commit carries
+all three together.
 
 Opening the draft PR triggers:
 
@@ -369,6 +392,9 @@ The PR template shall include the following sections:
   framing is added or strengthened.
 - **Files changed by package** — automated section showing which Core
   packages are touched.
+- **Test-first evidence** (§11.7), where test first applies. For each
+  code change, the failing test command and its first failing lines,
+  recorded before the code that made the test pass.
 - **Draft PR checklist** (§8.6.2) — author confirms each item before
   marking ready.
 - **Final review checklist** (§8.6.3) — reviewer confirms each item
@@ -392,8 +418,9 @@ PR:
    stories, the component's part def from
    `core/logical-architecture/components/<component>/` for subsystem
    stories.
-4. Story declares at least one `acceptance` criterion in Given/When/Then
-   form or as a `verification def` reference.
+4. Story has its feature file, `<ID>.feature`, with at least one
+   scenario tagged `@AC_<name>`, and each scenario is mirrored by a
+   named criterion nested in `requirement :>> acceptance` (§11.3).
 5. If the story frames concerns, the `concern def`s exist in the
    appropriate concerns package — `core/concerns/` at system scope, or
    the enclosing component's `concerns/` at component scope.
@@ -424,8 +451,11 @@ In addition to confirming the §8.6.2 items:
 5. **Variation hygiene** (§6 stages only). Variations declare all
    feasible variants; `assert constraint` expresses cross-decision
    rules; the resolved architecture redefines every variation.
-6. **Verification-case stubs exist** for each acceptance criterion, even
-   if the verification case body is deferred.
+6. **Behaviour first and test first** (§11). Every acceptance criterion
+   is reached by a verification or validation case, even if only by a
+   stub whose body is deferred (§11.4). Where test first applies, the
+   Test-first evidence section shows a failing test before each code
+   change (§11.7).
 7. **The change is self-contained.** Story branches do not introduce
    half-finished work in unrelated packages. Unrelated improvements
    shall be raised as separate PRs.
@@ -480,7 +510,7 @@ state as follows:
 
 | `StoryMeta.status` | Repository state | Notes |
 |---|---|---|
-| `backlog` | story does not yet exist as a file | candidate themes only |
+| `backlog` | story does not yet exist as a file, or exists with its feature file and narrative (§11.4) | candidate themes, or a story awaiting its scenarios |
 | `ready` | story file exists on `main`; no open branch | story is queued; no work in flight |
 | `inProgress` | story branch exists; draft PR open | work in flight; iterative review |
 | `inProgress` (review) | branch exists; PR marked ready | awaiting final approval |

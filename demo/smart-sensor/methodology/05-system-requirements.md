@@ -121,8 +121,10 @@ package <SYS> Aiwell_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* p99 latency for batch acknowledgement
-                   shall be at most 1 s for batch sizes up to N=200. */
+            requirement p99LatencyWithinOneSecond {
+                doc /* p99 latency for batch acknowledgement
+                       shall be at most 1 s for batch sizes up to N=200. */
+            }
         }
     }
 
@@ -138,6 +140,13 @@ package <SYS> Aiwell_SystemStories {
 The `#derive` prefix tags the derived story. The `#derivation connection`
 records which original it derives from and shall be present, because the
 prefix alone is not a trace.
+
+Each system story has its own feature file beside the register file that
+declares it, written before the story (§11.4). Its narrative repeats the
+stakeholder's role with the system story's own capability and benefit,
+and its scenarios state the system-level criteria in system vocabulary,
+so `SYS_142_BatchAcknowledgement.feature` carries the scenario tagged
+`@AC_p99LatencyWithinOneSecond`.
 
 Quantity-typed attributes (`ISQ::DurationValue` with `[s]`) need
 `private import ISQ::*;` and `private import SI::*;`. The standard library
@@ -397,9 +406,13 @@ and `frame concern`.
 
 For each acceptance criterion in scope, declare a `verification def`
 (spec §7.23) whose `objective` includes a `verify` clause naming the
-member of the story usage by dot notation. Verification cases at this
-level exercise *system internals*, distinct from §4 validation cases that
-exercise stakeholder intent.
+member of the story usage by dot notation, down to the criterion
+(`verify <story>.acceptance.<criterion>`) where different cases verify
+different criteria. Verification cases at this level exercise *system
+internals*, distinct from §4 validation cases that exercise stakeholder
+intent. As at §4.3.6, the case is first written as a stub when the story
+moves to `inProgress`, before the story analysis of §5.4.3 (§11.4), and
+this step completes it.
 
 The `::` namespace form (`verify SYS_142_BatchAcknowledgement::sla`)
 addresses a definition member, and both reference implementations refuse it
@@ -411,7 +424,7 @@ verification def VC_BatchAckLatency {
 
     objective {
         verify SYS_142_BatchAcknowledgement.sla;
-        verify SYS_142_BatchAcknowledgement.acceptance;
+        verify SYS_142_BatchAcknowledgement.acceptance.p99LatencyWithinOneSecond;
     }
 
     action setup {
@@ -465,7 +478,8 @@ The packages live inside the component folder per §8.3.2.
   separate.
 - Security threat modelling (STRIDE, attack trees, etc.). Same.
 - Reliability calculation (MTBF, availability budgets). Same.
-- Verification case execution and reporting tooling.
+- Verification case execution and reporting tooling. Where test first
+  applies, scenario execution follows §11.8.
 - Choice of analysis approach. The §5.4.3.4 table is guidance, not a
   decision procedure.
 

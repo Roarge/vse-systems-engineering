@@ -124,20 +124,40 @@ over a model element is permitted but flagged as informal.
 ### 1.4.4 `acceptance` — mandatory, at least one before `ready`
 
 `acceptance` is a nested requirement usage inherited from `UserStory` and
-redefined by the story: `requirement :>> acceptance { doc /* Given ... */ }`.
-Several separately verifiable criteria nest inside the redefinition as named
-requirement usages, each expressing one acceptance criterion in Given/When/Then
-form (or an equivalent declarative form).
+redefined by the story. Each acceptance criterion is a named requirement
+usage nested inside the redefinition, and each one is stated as a Gherkin
+scenario (a plain-text Given/When/Then example) in the story's feature
+file, `<ID>.feature`, which sits beside the file that declares the story
+(§11.2):
 
-Acceptance criteria may be authored as text initially. Once test models
-exist, a separate `verification def` (spec §8.2.2.23) declares an
-`objective { verify <story>.acceptance; }` clause (or
-`verify <story>.acceptance.<criterion>;`) naming what is to be verified. The
-acceptance criterion remains a subrequirement of the story. The verification
-case is a peer.
+```sysml
+requirement :>> acceptance {
+    requirement latestReadingShown {
+        doc /* Given the device is online and reporting,
+               when the operator opens the dashboard,
+               then the latest reading is displayed within 5 seconds
+               of arrival at the cloud broker. */
+    }
+}
+```
 
-A User Story shall declare at least one acceptance criterion before being
-marked `ready`.
+The scenario that states this criterion carries the tag
+`@AC_latestReadingShown`, and criterion names and scenario tags stay one
+to one (§11.3). The scenario is the normative Given/When/Then statement.
+The `doc` restates it so that the model reads on its own. Acceptance
+prose placed directly in the redefinition, outside a named criterion, is
+the form used before plugin version 5.0.0, and a story in that form is
+migrated when it is next changed.
+
+A separate `verification def` (spec §8.2.2.23) names what it verifies in
+its objective. `verify <story>.acceptance` covers every criterion of the
+story, and `verify <story>.acceptance.<criterion>` covers one (§11.3.3).
+The acceptance criterion remains a subrequirement of the story. The
+verification case is a peer.
+
+A User Story shall have its feature file from the moment it enters the
+model, and shall declare at least one scenario, mirrored by a named
+criterion, before being marked `ready` (§11.4).
 
 ### 1.4.5 Coupling `role` to an `actor` via use case `objective`
 
@@ -223,7 +243,9 @@ requirement US_042_AckFromDashboard : UserStory {
 
     frame concern : OpsConcerns::FastIncidentResponse;
 
-    requirement :>> acceptance { doc /* … */ }
+    requirement :>> acceptance {
+        requirement ackAllWithinOneSecond { doc /* … */ }
+    }
 }
 ```
 
@@ -277,13 +299,22 @@ The identifier is the usage name. An optional short name
 (`requirement <'US-42'> US_042_AckFromDashboard : UserStory`) is display only
 and is ignored by the tooling.
 
+The identifier is also the file stem of the story's feature file
+(`US_042_AckFromDashboard.feature`, §11.2.1). Each acceptance criterion
+is named in lowerCamelCase, matching `^[a-z][A-Za-z0-9]*$` and unique
+within its story (for example `ackAllWithinOneSecond`). The scenario that
+states the criterion carries the tag `@AC_<name>` (§11.2.3).
+
 ## 1.7 Authoring Patterns
 
 ### 1.7.1 Minimal form (text-only)
 
 A User Story authored at backlog entry shall include the agile-canonical
-members and at least one acceptance criterion. Typed bindings into the
-behavioral or analytical model are not required at this stage.
+members, and its feature file shall exist beside it with the story tag
+and the narrative (§11.4). The first scenario, with the named criterion
+that mirrors it, follows before the story is marked `ready`. Typed
+bindings into the behavioural or analytical model are not required at
+this stage.
 
 ```sysml
 package <SS> Aiwell_StakeholderStories {
@@ -304,12 +335,31 @@ package <SS> Aiwell_StakeholderStories {
         frame concern : FastIncidentResponse;
 
         requirement :>> acceptance {
-            doc /* Given N unacknowledged alarms shown,
-                   when the operator selects "Ack all",
-                   then all N transition to acknowledged within 1 s. */
+            requirement ackAllWithinOneSecond {
+                doc /* Given N unacknowledged alarms shown,
+                       when the operator selects "Ack all",
+                       then all N transition to acknowledged within 1 s. */
+            }
         }
     }
 }
+```
+
+The feature file `US_042_AckFromDashboard.feature` sits beside the
+register file and states the same criterion as a scenario:
+
+```gherkin
+@US_042_AckFromDashboard
+Feature: Acknowledge alarms from the dashboard
+  As an Operator
+  I want to acknowledge alarms from the dashboard
+  So that the queue clears without opening each device
+
+  @AC_ackAllWithinOneSecond
+  Scenario: Ack all clears every shown alarm within 1 s
+    Given N unacknowledged alarms are shown
+    When the operator selects "Ack all"
+    Then all N alarms transition to acknowledged within 1 s
 ```
 
 This form is sufficient for backlog management and human-facing planning
@@ -344,8 +394,10 @@ requirement US_042_AckFromDashboard : UserStory {
     }
 
     requirement :>> acceptance {
-        doc /* Given N unacknowledged alarms, when operator selects
-               "Ack all", then all N transition within 1 s. */
+        requirement ackAllWithinOneSecond {
+            doc /* Given N unacknowledged alarms, when operator selects
+                   "Ack all", then all N transition within 1 s. */
+        }
     }
 }
 ```
@@ -370,7 +422,7 @@ verification def VC_AckBatchTiming {
     subject sys : Aiwell_OnlineSentral;
 
     objective {
-        verify US_042_AckFromDashboard.acceptance;
+        verify US_042_AckFromDashboard.acceptance.ackAllWithinOneSecond;
     }
 }
 ```
@@ -382,7 +434,10 @@ readers and shall not be removed when typed bindings are introduced.
 The use case and the verification case are *peers* of the story, not
 nested inside it. The package layout in §8.3 reflects this — they live
 in `core/use-cases/` and `core/verification-validation/verification-cases/`
-respectively, while the story lives in `core/stories/<level>/`.
+respectively, while the story lives in `core/stories/<level>/`. The
+story's feature file is not a peer in that sense. It is the story's own
+statement of behaviour, so it sits in the same directory as the story
+(§11.2.1).
 
 ## 1.8 Relationships
 
@@ -401,8 +456,12 @@ A User Story participates in the model via the following relationships:
   `analysis def` by subsetting
   (`objective <n> :> <story> { subject :>> system = <caseSubject>; }`),
   whose performance is intended to satisfy the story (spec §7.21.2).
-- may have its acceptance verified by a `verify <story>.acceptance` clause
-  in the `objective` of one or more `verification def` (spec §8.2.2.23).
+- may have its acceptance verified, as a whole by a
+  `verify <story>.acceptance` clause or one criterion at a time by
+  `verify <story>.acceptance.<criterion>`, in the `objective` of one or
+  more `verification def` (spec §8.2.2.23).
+- is described by exactly one Gherkin feature file, `<ID>.feature`, whose
+  scenarios state its acceptance criteria (§11.3).
 - may be the `#original` or `#derive` end of a `#derivation connection`
   (§5.4.1).
 
@@ -417,8 +476,12 @@ The following rules apply to every User Story:
 3. A User Story shall redefine exactly one `role`
    (`stakeholder :>> role : <PartDef>;`) with a concrete part definition
    before transitioning out of `backlog` status.
-4. A User Story shall declare at least one acceptance criterion, in
-   `requirement :>> acceptance`, before transitioning to `ready` status.
+4. A User Story shall have its feature file (§11.2) and, before
+   transitioning to `ready` status, at least one Gherkin scenario tagged
+   `@AC_<name>`, mirrored by a requirement of the same name nested in
+   `requirement :>> acceptance` (§11.3). Acceptance prose outside a named
+   criterion is not used. The story lint reports this rule under the
+   `precommit_gherkin` gate (§11.9).
 5. Where a `use case def` declares a User Story as its `objective`, the
    objective subsets the story and binds the story's subject to the case
    subject:
@@ -430,8 +493,8 @@ The following rules apply to every User Story:
    (`attribute :>> capability = ...`) shall be retained throughout the
    story's lifecycle.
 7. `verify` targets a member of the story usage by dot notation
-   (`verify <story>.acceptance`), inside a `verification def` objective
-   only.
+   (`verify <story>.acceptance` or `verify <story>.acceptance.<criterion>`),
+   inside a `verification def` objective only.
 8. A system story records its derivation with the `#derive` prefix on the
    usage and a `#derivation connection` whose ends are tagged `#original`
    and `#derive` (§5.4.1).

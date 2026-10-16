@@ -35,7 +35,10 @@ mechanism in Claude Code: project-local files win.
 > Version 4.0.0 moved stories from `requirement def ... :> UserStory` to
 > requirement usages so that models validate under the OMG pilot
 > implementation and OpenSysML as well as Syside. See CHANGELOG 4.0.0 for
-> the migration.
+> the migration. Version 5.0.0 added §11, which states every acceptance
+> criterion as a Gherkin scenario in a feature file beside its story,
+> mirrored by a named criterion in the model, and adds four
+> Gherkin-first and test-first gates that block at every profile.
 
 ## Document map
 
@@ -52,6 +55,7 @@ mechanism in Claude Code: project-local files win.
 | `08-project-structure.md` | §8 Project Structure and Git Workflow | drafted |
 | `09-iso-29110-compliance.md` | §9 ISO/IEC TR 29110‑5‑6‑2 Compliance | drafted |
 | `10-project-management.md` | §10 Project Management | drafted |
+| `11-behaviour-and-test-driven-development.md` | §11 Behaviour-Driven and Test-Driven Development | drafted |
 | `iso-29110-hooks-guide.md` | Companion implementation guide for hook automation | drafted |
 
 ## Editing the spec

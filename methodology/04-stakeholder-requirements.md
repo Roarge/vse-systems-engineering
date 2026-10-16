@@ -146,8 +146,9 @@ A stakeholder story:
 - declares `capability` and `benefit` as narrative strings.
 - applies `@StoryMeta` with qualified enumeration values (§1.5).
 - frames one or more concerns from `core/concerns/` (§1.4.6).
-- declares at least one `acceptance` criterion before transitioning
-  to `ready` (§1.9 rule 4).
+- has its feature file written first, beside the register file, and
+  before transitioning to `ready` declares at least one scenario
+  mirrored by a named `acceptance` criterion (§1.9 rule 4, §11.4).
 
 ```sysml
 package <SS> Aiwell_StakeholderStories {
@@ -168,13 +169,19 @@ package <SS> Aiwell_StakeholderStories {
         frame concern : FastIncidentResponse;
 
         requirement :>> acceptance {
-            doc /* Given N unacknowledged alarms shown,
-                   when the operator selects "Ack all",
-                   then all N transition to acknowledged within 1 s. */
+            requirement ackAllWithinOneSecond {
+                doc /* Given N unacknowledged alarms shown,
+                       when the operator selects "Ack all",
+                       then all N transition to acknowledged within 1 s. */
+            }
         }
     }
 }
 ```
+
+The story's feature file, `US_042_AckFromDashboard.feature`, sits beside
+the register file and carries the scenario tagged
+`@AC_ackAllWithinOneSecond`, as shown in §1.7.1.
 
 ### 4.3.5 Elaborate story scenarios via use cases (optional)
 
@@ -217,9 +224,13 @@ acceptance criteria alone cannot capture the flow.
 
 For each acceptance criterion in scope, declare a `verification def`
 (spec §7.23) whose `objective` includes a `verify` clause naming the
-acceptance subrequirement. Validation cases — those that exercise
-stakeholder intent rather than system internals — reside in
-`core/verification-validation/validation-cases/`.
+criterion (`verify <story>.acceptance.<criterion>`), or
+`verify <story>.acceptance` when one case covers every criterion of the
+story. The case is first written as a stub, holding its subject and
+objective, when the story moves to `inProgress` and before any use case
+elaborates it (§11.4). This step completes the case. Validation cases,
+that is, those that exercise stakeholder intent rather than system
+internals, reside in `core/verification-validation/validation-cases/`.
 
 ```sysml
 package <VAL> Aiwell_ValidationCases {
@@ -230,7 +241,7 @@ package <VAL> Aiwell_ValidationCases {
         subject sys : Aiwell_OnlineSentral;
 
         objective {
-            verify US_042_AckFromDashboard.acceptance;
+            verify US_042_AckFromDashboard.acceptance.ackAllWithinOneSecond;
         }
 
         // Verification action body
@@ -271,9 +282,10 @@ The packages live inside the component folder per §8.3.2.
 | Stakeholder part | `part def StakeholderName;` | §7.11 |
 | Concern | `concern def Name { subject … ; stakeholder … ; require constraint … }` | §7.20.3 |
 | Story (per §1) | `requirement US_NNN_Short : UserStory { … }` | §1, §7.20.2 |
+| Acceptance criterion | `requirement :>> acceptance { requirement <name> { doc /* … */ } }`, stated as the scenario tagged `@AC_<name>` in `US_NNN_Short.feature` | §1.4.4, §11.3 |
 | Frame concern | `frame concern : ConcernPath::ConcernName;` | §7.20.3 |
 | Use case with story as objective | `use case def Name { subject sys : S; actor … ; objective <n> :> StoryName { subject :>> system = sys; } }` | §7.21, §7.24 |
-| Validation case | `verification def VAL_Name { subject … ; objective { verify <story>.acceptance; } }` | §7.23 |
+| Validation case | `verification def VAL_Name { subject … ; objective { verify <story>.acceptance.<criterion>; } }` | §7.23, §11.3.3 |
 
 ## 4.6 Well-formedness rules
 
@@ -341,6 +353,8 @@ candidates for review or culling.
 - Validation case execution and reporting. The verification defs
   declare *what* shall be validated; *how* and *when* is project-
   determined.
+- Scenario execution, except where test first applies, in which case
+  §11.8 governs it.
 
 ---
 

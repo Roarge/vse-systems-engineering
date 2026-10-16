@@ -2,8 +2,9 @@
 
 ## 9.1 Purpose
 
-This section demonstrates how the methodology specified in §0–§8 (and
-the Project Management process specified in §10) satisfies the Basic
+This section demonstrates how the methodology specified in §0–§8 (with
+the Project Management process specified in §10 and the behaviour-first
+and test-first discipline specified in §11) satisfies the Basic
 Profile of ISO/IEC TR 29110‑5‑6‑2:2014 — *Systems and software
 engineering — Lifecycle profiles for Very Small Entities (VSEs) — Part
 5‑6‑2: Systems engineering — Management and engineering guide: Generic
@@ -41,15 +42,17 @@ subset of the two processes. The boundary is:
 | SR.1 System Definition and Realization Initiation | §10.3 + §0.6 (full) |
 | SR.2 System Requirements Engineering | §1, §3, §4, §5 (full) |
 | SR.3 System Architectural Design | §6, §7 (full) |
-| SR.4 System Construction | **Out of scope** — handed off to detailed design (§0.9) |
-| SR.5 System Integration, Verification and Validation | §5.4.6, §7 (V&V *specification*); execution is project-determined |
+| SR.4 System Construction | **Partial**: test-first discipline (§11) where implementation code exists in the repository. Construction itself remains out of scope. |
+| SR.5 System Integration, Verification and Validation | §5.4.6, §7 (V&V *specification*), and §11 (every acceptance criterion a Gherkin scenario reached by a case, and run by `scenario_command` where test first applies). Execution is otherwise project-determined |
 | SR.6 Product Delivery | **Out of scope** — handed off |
 
 The methodology is therefore a *partial* implementation of the Basic
-Profile, complete for SR.1–SR.3 and PM, and providing the V&V
+Profile, complete for SR.1 to SR.3 and PM, and providing the V&V
 *specification* (cases, plans, procedures) that SR.5 requires for
-execution. SR.4 (Construction) and SR.6 (Product Delivery) are
-declared out of scope; a project that needs Basic Profile certification
+execution. For SR.4 (Construction) it supplies only the test-first
+discipline of §11, which applies to whatever implementation code the
+repository holds. Construction itself and SR.6 (Product Delivery) are
+declared out of scope. A project that needs Basic Profile certification
 across the full lifecycle shall combine this methodology with a
 construction and delivery process appropriate to its product type.
 
@@ -73,7 +76,7 @@ construction and delivery process appropriate to its product type.
 | SR.O1 — Tasks performed per current Project Plan | Full | §10.3 Project Plan integrates §1–§7 task structure; SR Initiation in §10.3 |
 | SR.O2 — System requirements defined, analysed, baselined, communicated | Full | §1 (UserStory base type); §4 (stakeholder stories + concerns); §5 (system stories with `require constraint`); StoryMeta lifecycle baselines via `done` status |
 | SR.O3 — System architectural design developed and baselined; consistency and traceability to requirements | Full | §6 (architectural analysis with `variation`/`variant`); §7 (subsystem decomposition with allocation); Traceability via `derive`, `frame concern`, `verify`, `allocation` |
-| SR.O4 — System elements produced/acquired with acceptance tests; traceability | Specification only | §5.4.6 and §7 specify verification cases. *Construction* of system elements is out of scope per §9.2 |
+| SR.O4 — System elements produced/acquired with acceptance tests; traceability | Specification, plus test-first discipline | §5.4.6 and §7 specify verification cases. §11 requires a failing test before implementation code wherever a harness can run it, and states each acceptance criterion as a Gherkin scenario. *Construction* of system elements is otherwise out of scope per §9.2 |
 | SR.O5 — System elements integrated; consistency and traceability to architecture | Specification only | §7.3.4 inter-subsystem interfaces; §10.4 references SR.5 integration tasks in the Plan. *Execution* is project-determined |
 | SR.O6 — System Configuration baselined and stored; change requests detected | Full | §8.3 repository; §8.4–§8.6 PR workflow; §10.8 CM Strategy; StoryMeta lifecycle |
 | SR.O7 — V&V tasks performed; defects corrected; reports stored | Specification + report templates | §4.3.6, §5.4.6, §7 V&V case definitions; *Verification Report* and *Validation Report* artefact templates in §10.10 |
@@ -129,7 +132,7 @@ rather than authored separately. The mapping:
 | Project Manager (PJM) | Owner of §10 PM activities; CODEOWNERS for `Project Plan`, *Progress Status Record* | Operational role |
 | Systems Engineer (SYS) | Owner of §1, §4, §5 author work; CODEOWNERS for `core/stories/`, `core/concerns/`, `core/context/` | Operational role |
 | Designer (DES) | Owner of §6, §7 author work; CODEOWNERS for `core/logical-architecture/`, `core/functional-architecture/`, `model/variations/` | Operational role |
-| Developer (DEV) | Out of scope (Construction) | Engaged at handoff |
+| Developer (DEV) | Out of scope (Construction), except that implementation code kept in the repository follows the test-first discipline of §11 | Engaged at handoff |
 | IVV Engineer (IVV) | Owner of `core/verification-validation/`; reviews V&V cases | Operational role |
 | Supplier (SUP) | Out of scope; engaged at handoff for purchased system elements | — |
 | Work Team (WT) | Aggregate role: SYS + DES + IVV (+ DEV/SUP when in scope) | Used in PM tasks |
@@ -155,7 +158,7 @@ their resolutions:
 | No Configuration Management Strategy as a labelled artefact | §10.8 formalises the strategy that §8.3 implements |
 | Justification Document not a labelled artefact | §10.3 adds the Justification Document as an aggregated artefact composed from trade-study `analysis def` instances and per-PR ADRs |
 | Traceability Matrix not a labelled artefact | §9.8 specifies how the Matrix is generated from model relations |
-| SR.4 Construction and SR.6 Delivery uncovered | Declared out of scope per §9.2; project-set determines the construction/delivery process |
+| SR.4 Construction and SR.6 Delivery uncovered | SR.4 is partially covered by the test-first discipline of §11. Construction itself and SR.6 Delivery are declared out of scope per §9.2, and the project determines the construction and delivery process |
 | Integration Report, System Operation Guide, etc. not produced | §10.10 provides templates; production is out-of-scope downstream task |
 | Meeting Record discipline unspecified | §10.4 specifies the *Meeting Record* artefact |
 | Progress Status Record not a labelled artefact | §10.5 specifies it; produced per iteration |
@@ -235,9 +238,10 @@ This methodology meets the objectives as follows:
   itself happens in the construction process (out of scope) and is
   governed by the Plan.
 
-- **SR.O7 (V&V performed)** — every PR runs the relevant verification
-  cases (§9.10 hooks); execution-time V&V occurs at construction
-  (out of scope).
+- **SR.O7 (V&V performed).** CI runs the gates on every PR, and runs
+  `test_command` and `scenario_command` where recorded (§9.10 hooks,
+  §11.8). Execution-time V&V of the realised system occurs at
+  construction (out of scope).
 
 ISO/IEC 29110 does not require "all requirements baselined before any
 design" — it requires that each requirement, when present, is
@@ -254,12 +258,15 @@ hooks specified in `iso-29110-hooks-guide.md` covers:
   violating artefact well-formedness, Story Meta lifecycle, or
   Traceability Matrix consistency. Lighter profiles warn or inform
   per §0.10.4, and the former pre-push checks are carried by the
-  §4.4 CI contracts of the hooks guide.
+  §4.4 CI contracts of the hooks guide. The Gherkin-first and
+  test-first gates block at every profile (§11.9).
 - **Claude Code session and tool hooks** that nudge author and
   reviewer behaviour toward ISO-compliant authoring patterns
   (Change Request before editing baselined artefacts, V&V case
   authoring after story changes, Meeting Record creation after
-  synchronous reviews).
+  synchronous reviews). The `PreToolUse` hook also denies an agent's
+  story edit that has no feature file, and a code edit that has no
+  test, per §11.9.
 - **CI generators** that produce ISO documents from the model on
   merge to `main`, ensuring §9.8 model-derived artefacts are always
   current.
@@ -288,15 +295,16 @@ repository as the audit record.
 ## 9.12 Limitations of this compliance claim
 
 This section documents *methodology* compliance — it asserts that a
-project executed in accordance with §0–§8 and §10 can satisfy the
+project executed in accordance with §0–§8, §10 and §11 can satisfy the
 ISO/IEC 29110‑5‑6‑2 Basic Profile objectives within the scope declared in
 §9.2. It does *not*:
 
 - guarantee that any specific project's artefacts are ISO-compliant
   at any given moment;
 - substitute for an ISO/IEC 29110 assessment per ISO/IEC TR 29110‑3;
-- cover the parts of the standard outside the scope of §9.2 (notably
-  SR.4 Construction and SR.6 Product Delivery).
+- cover the parts of the standard outside the scope of §9.2, notably
+  SR.4 Construction beyond the test-first discipline of §11, and SR.6
+  Product Delivery.
 
 A VSE seeking certification per ISO/IEC TR 29110‑3 shall:
 

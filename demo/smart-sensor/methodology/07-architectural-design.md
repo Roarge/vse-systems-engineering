@@ -275,8 +275,10 @@ package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
         frame concern : AlarmDataIntegrity;
 
         requirement :>> acceptance {
-            doc /* After kill -9 mid-commit, on restart, no alarm
-                   shall be in an indeterminate state. */
+            requirement noIndeterminateStateAfterRestart {
+                doc /* After kill -9 mid-commit, on restart, no alarm
+                       shall be in an indeterminate state. */
+            }
         }
     }
 }
@@ -285,6 +287,13 @@ package <ALARM_STORIES> AlarmManagementSubsystem_Stories {
 Each subsystem is a system in its own right. The recursion of §1–§5
 applies in its full generality: subsystem stakeholders, concerns,
 stories, behavioural elaborations, verification cases.
+
+§11 applies at this level as at every other. The component's `stories/`
+directory holds one feature file per subsystem story, so
+`ALM_002_DurableAcknowledgement.feature` sits beside the file that
+declares the story and carries the scenario tagged
+`@AC_noIndeterminateStateAfterRestart`. The feature file comes before
+the story, and the case stub before any further decomposition (§11.4).
 
 ### 7.3.6 Develop control laws
 
