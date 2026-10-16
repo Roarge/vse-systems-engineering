@@ -16,21 +16,60 @@ events. Claude does not invoke them. The contributor never copies them
 anywhere. They run because the harness reads `hooks.json` at plugin load
 time and wires them up.
 
-| Script                     | Event              | Matcher                | Purpose                                                                                              |
-|----------------------------|--------------------|------------------------|------------------------------------------------------------------------------------------------------|
-| `session-start.sh`         | `SessionStart`     | (none)                 | Detect VSE project / SysML repo / contributor mode and inject methodology context per §5.1.          |
-| `user-prompt-submit.sh`    | `UserPromptSubmit` | (none)                 | Reverse-engineering guard, baselined-edit reminder, meeting-record reminder per §5.2.                |
-| `pre-tool-use.sh`          | `PreToolUse`       | `Edit\|Write\|NotebookEdit` | Advisory reminder when edits target a baselined artefact per §5.3. The firm gate is `commit-msg`.    |
-| `post-tool-use.sh`         | `PostToolUse`      | `Write\|Edit`          | Post-edit reminders for stories, concerns, architecture, Project Plan per §5.4.                      |
-| `source-added-reminder.sh` | `PostToolUse`      | `Write\|Edit`          | Wiki-only contributor hook: appends source-added stub to wiki/LOG.md when sources/ files change.     |
-| `stop.sh`                  | `Stop`             | (none)                 | ADR / V&V capture prompts at end of agent response per §5.5.                                         |
-| `subagent-stop.sh`         | `SubagentStop`     | (none)                 | Aggregate compliance findings from subagents per §5.6.                                               |
-| `pre-compact.sh`           | `PreCompact`       | (none)                 | Snapshot ISO state before context compaction per §5.7.                                               |
-| `notification.sh`          | `Notification`     | (none)                 | Periodic reminders on stale Change Requests and risks per §5.8.                                      |
+| Script | Event | Matcher | Purpose |
+|---|---|---|---|
+| `session-start.sh` | `SessionStart` | (none) | Detect contributor mode, a SysML-only repository or a VSE project, and print context per §5.1. In a VSE project the context ends with the Behaviour-first and Test-first lines of methodology §11 (the Test-first line names the recorded `test_first.applies` value), a nudge when test tooling is found while that value is false or unrecorded, and a warning when `jq` is missing. In contributor mode it prints one pointer to `.claude/rules/tdd-bdd.md`. |
+| `user-prompt-submit.sh` | `UserPromptSubmit` | (none) | Reverse-engineering guard, baselined-edit reminder, meeting-record reminder per §5.2. |
+| `pre-tool-use.sh` | `PreToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | The in-session Gherkin-first and test-first gates of methodology §11.9.3, which deny the edit at `block`. Asks the human to confirm an edit that changes `gate_overrides` or `test_first` (methodology §11.10). Passes on the baselined-path and story reminders per §5.3. |
+| `post-tool-use.sh` | `PostToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Post-edit reminders for feature files, stories, concerns, architecture, the Project Plan, and code where test first applies, per §5.4. |
+| `source-added-reminder.sh` | `PostToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Wiki-only contributor hook. Reminds the agent to run `/vse-wiki-ingest` and appends a source-added stub to `wiki/LOG.md` when `sources/` files change. |
+| `stop.sh` | `Stop` | (none) | ADR and V&V (verification and validation) capture reminders for the user at the end of a turn, and the test-first finding for the agent once for each session and state, per §5.5. Silent while `stop_hook_active` is true. |
+| `subagent-stop.sh` | `SubagentStop` | (none) | Runs `stop.sh` for the `SubagentStop` event per §5.6. |
+| `pre-compact.sh` | `PreCompact` | (none) | Snapshot ISO state before context compaction per §5.7. |
+| `notification.sh` | `Notification` | (none) | Periodic reminders on stale Change Requests and risks per §5.8. |
 
-These scripts assume they run from the user project root, which is how
-the harness invokes them. They consume `stdin` for tool use events
-(`pre-tool-use.sh`, `post-tool-use.sh`) or no input at all (the rest).
+The matcher is a regular expression over the tool name, so
+`Edit|Write|MultiEdit|NotebookEdit` (escaped as `\|` in the table)
+covers the four file tools an agent edits with. The harness runs every
+lifecycle hook with the session's working directory, normally the user
+project root. The tool-use and stop hooks also read a JSON payload on
+stdin and find the project from the edited file or the payload's
+`cwd`, so they work from any directory.
+
+**Output contract.** What a hook prints reaches Claude only in the form
+its event expects (hooks guide §5).
+
+- `SessionStart` and `UserPromptSubmit`: plain text on stdout is added
+  to Claude's context. `session-start.sh` keeps that text to printable
+  ASCII.
+- `PreToolUse`, `PostToolUse`, `Stop` and `SubagentStop`: Claude never
+  sees plain stdout. A hook with something to say prints exactly one
+  JSON object, and a hook with nothing to say prints nothing. The
+  harness drops a malformed object, or any text beside it, so these
+  hooks print through `lib/hook-json.sh` and never with `echo`.
+- Diagnostics go to stderr, never to stdout, so they cannot corrupt
+  the JSON object.
+- The JSON hooks always exit 0. An internal error ends one with a line
+  on stderr and no decision, so a deny never comes from a crash. The
+  `pre-commit` and CI gates are the backstop.
+
+The JSON object uses these fields:
+
+| Field | Meaning |
+|---|---|
+| `hookSpecificOutput.hookEventName` | The event name, present whenever `hookSpecificOutput` is |
+| `hookSpecificOutput.permissionDecision` | `deny` or `ask`, at `PreToolUse` only. No hook ever answers `allow`, so the engineer's own permission settings still govern every call a hook lets through |
+| `hookSpecificOutput.permissionDecisionReason` | The reason the agent reads, clipped to 1,500 characters |
+| `hookSpecificOutput.additionalContext` | Text added to the agent's context |
+| `systemMessage` | Text shown to the human, not to the agent |
+
+For example, a denied edit:
+
+```json
+{"hookSpecificOutput": {"hookEventName": "PreToolUse",
+  "permissionDecision": "deny",
+  "permissionDecisionReason": "..."}}
+```
 
 **To add a new lifecycle hook:**
 
@@ -38,9 +77,12 @@ the harness invokes them. They consume `stdin` for tool use events
 2. Give it `set -euo pipefail` and a `#!/usr/bin/env bash` shebang.
 3. Make it executable: `chmod +x hooks/your-hook.sh`.
 4. Register it in `../hooks.json` under the correct lifecycle event.
-5. Test it by sourcing it directly with the same environment variables
-   the harness would set (do not rely on Claude to "feel" whether it
-   fires).
+5. Follow the output contract above. At a JSON event, print through
+   `lib/hook-json.sh`.
+6. Test it first, under `tests/hooks/`, with the same environment
+   variables and stdin payload the harness would provide
+   (`tc_run_lifecycle` in `tests/hooks/lib.sh`). Do not rely on Claude
+   to "feel" whether it fires.
 
 **Do not** expect these scripts to be copied into anyone's `.git/hooks/`
 or run in CI. That is what category 2 is for.
@@ -60,8 +102,9 @@ project under `<project>/.githooks/` and activated with
 | `prepare-commit-msg.sh`      | `<project>/.githooks/prepare-commit-msg` | Prepopulate the commit subject with the Story ID inferred from the branch name per §4.3.                                                             |
 | `post-merge.sh`              | `<project>/.githooks/post-merge`         | Regenerate model-derived artefacts when main advances per §4.5. Reports drift. Does not auto-commit.                                                |
 | `post-checkout.sh`           | `<project>/.githooks/post-checkout`      | Print methodology / branch status when switching branches per §4.6.                                                                                  |
-| `lib/iso-profile.sh`         | `<project>/.githooks/lib/iso-profile.sh` | Shared library. Resolves the rigour profile and the per-gate dispositions from `.iso-config.yaml` per methodology §0.10.4. Sourced, never invoked.  |
-| `lib/sysml-toolchain.sh`     | `<project>/.githooks/lib/sysml-toolchain.sh` | Shared library. Resolves the `sysml_toolchain` preference, probes availability (including the Syside licence), validates with the preferred tool and falls back along syside, omg-pilot, opensysml. Sourced by pre-commit and session-start, executed by CI, the Makefile check, the audit and the sysml-toolchain skill. |
+| `lib/iso-profile.sh`         | `<project>/.githooks/lib/iso-profile.sh` | Shared library (see below). |
+| `lib/sysml-toolchain.sh`     | `<project>/.githooks/lib/sysml-toolchain.sh` | Shared library (see below). |
+| `lib/test-first.sh`          | `<project>/.githooks/lib/test-first.sh`  | Shared library (see below). |
 
 No local `pre-push` hook ships. The four pre-push obligations of hooks
 guide §4.4 (story state on main, V&V coverage on done stories,
@@ -69,9 +112,34 @@ traceability matrix freshness, baseline integrity on release tags) are
 documented there as continuous-integration contracts, because a local
 hook cannot be the unbypassable gate those obligations need.
 
-Which of these scripts an install actually copies is a function of the
-project rigour profile. The per-tier install matrix is hooks guide
-§3.4, and the `attention-regime` skill executes it.
+## 3. Shared libraries (`lib/`)
+
+Four libraries hold the logic the hooks share. Each is sourced, never
+run as a hook, and sourcing one defines functions and does no other
+work.
+
+| Library | Sourced by | Installed into projects | Purpose |
+|---|---|---|---|
+| `lib/iso-profile.sh` | `pre-commit`, `pre-commit-traceability`, `commit-msg`, `post-merge`, and the lifecycle hooks `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh` and `session-start.sh` | yes, every profile | Resolves the `.iso-config.yaml` in force, the rigour profile and the per-gate dispositions per methodology §0.10.4, and reads nested records such as `test_first`. |
+| `lib/sysml-toolchain.sh` | `pre-commit` and `session-start.sh`. Also executed by CI, the Makefile check, the audit and the sysml-toolchain skill | yes, every profile | Resolves the `sysml_toolchain` preference, probes availability (including the Syside licence), validates with the preferred tool and falls back along syside, omg-pilot, opensysml. |
+| `lib/test-first.sh` | `pre-commit`, `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh` and `session-start.sh` | yes, every profile | Story scanning for Gherkin first, path classification, test evidence, refactor branches, test tooling detection (`vse_tf_detect`) and the recorded `test_first.applies` value (methodology §11.5 and §11.9). Requires `iso-profile.sh` to be sourced first. |
+| `lib/hook-json.sh` | `pre-tool-use.sh`, `post-tool-use.sh`, `source-added-reminder.sh` and `stop.sh` | no, it stays in the plugin | Prints the one JSON object of the output contract above, with `jq`, else `python3`, else a fixed literal that says neither is available, and reads fields from the stdin payload. |
+
+`sysml-toolchain.sh` is also executable, and it guards its command
+dispatch on `BASH_SOURCE`, so sourcing it defines functions only.
+
+## 4. Installing the project-side scripts
+
+Which of the project-side scripts an install copies is a function of
+the project rigour profile. The per-tier install matrix is hooks guide
+§3.4, which methodology §0.10 follows, and the `attention-regime` skill
+executes it. `pre-commit` carries the Gherkin-first and test-first
+gates of methodology §11.9, which block at every profile, so it
+installs at every profile together with its traceability delegate and
+all three project-side libraries. `commit-msg` installs at `standard`
+and `full`, and `post-merge` at `full` only. The same matrix also
+installs `tools/lint/` (the story lint and its Gherkin parser) and the
+compliance workflow at every profile.
 
 The `post-receive` server-side hook (§4.7) is documented in the hooks
 guide but not shipped here. It is a server-side responsibility. See
@@ -85,14 +153,15 @@ not listed in `hooks.json`.
 
 ```bash
 mkdir -p .githooks/lib
-# Installed at every profile.
+# Installed at every profile (light, standard, full).
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh"     .githooks/lib/iso-profile.sh
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" .githooks/lib/sysml-toolchain.sh
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/lib/test-first.sh"      .githooks/lib/test-first.sh
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/prepare-commit-msg.sh"  .githooks/prepare-commit-msg
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-checkout.sh"       .githooks/post-checkout
-# Added at standard and full.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit.sh"          .githooks/pre-commit
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" .githooks/pre-commit-traceability.sh
+# Added at standard and full.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/commit-msg.sh"          .githooks/commit-msg
 # Added at full.
 cp "${CLAUDE_PLUGIN_ROOT}/hooks/post-merge.sh"          .githooks/post-merge
@@ -100,9 +169,8 @@ chmod +x .githooks/* .githooks/lib/*
 git config core.hooksPath .githooks
 ```
 
-The two `lib/` files are the only scripts that are both sourced and
-executable. `sysml-toolchain.sh` guards its command dispatch on
-`BASH_SOURCE`, so sourcing it defines functions only.
+`lib/hook-json.sh` is not copied. Only the lifecycle hooks use it, and
+they run from the plugin tree.
 
 The destination filenames drop the `.sh` extension because git invokes
 hooks by exact filename per the hooks guide §3.
