@@ -598,8 +598,136 @@ case_trace_range_mode() {
     tc_env "VSE_PRECOMMIT_RANGE=no-such-ref...HEAD"
     tc_run_githook pre-commit-traceability.sh
     tc_assert_rc 1 "trace bad range: the delegate stops"
-    tc_assert_grep "pre-commit-traceability: Cannot list the files changed by the range 'no-such-ref...HEAD'" "$OUT" \
-        "trace bad range: the range is named"
+    tc_assert_grep "pre-commit-traceability: Cannot list the files changed by the range 'no-such-ref...HEAD'" "$ERR" \
+        "trace bad range: the range is named on stderr"
+    tc_assert_empty "$OUT" "trace bad range: nothing is printed on stdout"
+}
+
+# A damaged index cannot be listed, so the delegate stops and says so on
+# stderr.
+case_trace_cannot_list_staged() {
+    tc_setup_repo
+    trace_config
+    commit_readme
+    printf 'not an index\n' > "${REPO}/.git/index"
+    tc_env
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "trace cannot list: the delegate stops"
+    tc_assert_grep "pre-commit-traceability: Cannot list the staged files." "$ERR" \
+        "trace cannot list: the failure is named on stderr"
+    tc_assert_empty "$OUT" "trace cannot list: nothing is printed on stdout"
+}
+
+# A textconv driver (a diff filter that rewrites a file for display)
+# must not change what the gate reads. This one hides every line, so a
+# gate that used it would see no story at all.
+case_trace_textconv_ignored() {
+    tc_setup_repo
+    trace_config
+    commit_readme
+    printf '*.sysml diff=hide\n' | tc_write .gitattributes
+    git -C "$REPO" config diff.hide.textconv true
+    tc_stage .gitattributes
+    tc_commit "hide model files from diffs"
+    write_story
+    tc_env
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "trace textconv, staged: the story is read"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace textconv, staged: the finding names the story"
+
+    tc_commit "add the story"
+    tc_env "VSE_PRECOMMIT_RANGE=HEAD~1..HEAD"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "trace textconv, range: the story is read"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace textconv, range: the finding names the story"
+}
+
+# all lists the index, so a tracked file missing from the working tree
+# is read from the index, as the commit would record it.
+case_trace_all_reads_the_index() {
+    tc_setup_repo
+    trace_config
+    write_story
+    tc_commit "add the story"
+    rm "${REPO}/model/core/stories/stakeholder/s.sysml"
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "trace all, file missing: the story in the index is read"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace all, file missing: the finding names the story"
+    tc_assert_not_grep "No such file" "$ERR" "trace all, file missing: no shell error"
+}
+
+# The acceptance may be written without :>> (requirement acceptance
+# { ... }), and a criterion nested there is a member of its story too.
+case_trace_untyped_acceptance() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        requirement acceptance {
+            requirement alarmCleared : AlarmBehaviour {
+                doc /* Given an alarm, when it is acknowledged, then it leaves the queue. */
+            }
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    write_case verified
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "untyped acceptance: the commit proceeds"
+    tc_assert_grep "2 touched element(s) checked, no trace gaps" "$OUT" \
+        "untyped acceptance: the story and its case are checked, the criterion is not"
+    tc_assert_not_grep "alarmCleared" "$OUT" \
+        "untyped acceptance: the nested criterion is not reported as a requirement"
+}
+
+# The diff's removed lines are the old file, so a removed acceptance
+# opener opens nothing. The group that replaces it is not an
+# acceptance, so the requirement added inside it is touched.
+case_trace_acceptance_opener_removed() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        requirement :>> acceptance {
+            requirement alarmCleared : AlarmBehaviour;
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    write_case verified
+    tc_commit "add the story and its case"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+        requirement Alarms {
+            requirement alarmCleared : AlarmBehaviour;
+            requirement batchCleared : AlarmBehaviour;
+        }
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "acceptance opener removed: the commit is stopped"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "acceptance opener removed: exactly one gap is counted"
+    tc_assert_grep "requirement 'batchCleared' has no verification case" "$OUT" \
+        "acceptance opener removed: the added requirement is touched"
 }
 
 # A path with a space reaches git as one name.
@@ -1306,6 +1434,11 @@ case_trace_deep_verify_counts
 case_trace_nested_criterion_not_a_requirement
 case_trace_range_mode
 case_trace_filenames_with_spaces
+case_trace_cannot_list_staged
+case_trace_textconv_ignored
+case_trace_all_reads_the_index
+case_trace_untyped_acceptance
+case_trace_acceptance_opener_removed
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full

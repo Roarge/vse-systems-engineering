@@ -13,7 +13,9 @@
 # The file set follows pre-commit.sh. With VSE_PRECOMMIT_RANGE unset
 # the gate reads the staged set. CI sets it to a git range (such as
 # origin/main...HEAD), and the gate reads what that range adds, or to
-# "all", and the gate reads every tracked file whole.
+# "all", and the gate reads every tracked file whole, as the index
+# holds it. A textconv driver (a diff filter that rewrites a file for
+# display) never changes what the gate reads.
 #
 # A criterion nested inside a story's acceptance (requirement <name>
 # { ... } inside requirement :>> acceptance) is a member of its story,
@@ -71,9 +73,9 @@ file_set() {
 
 if ! CHANGED="$(file_set ACM)"; then
     if [ -n "$RANGE" ]; then
-        echo "pre-commit-traceability: Cannot list the files changed by the range '${RANGE}'. Set VSE_PRECOMMIT_RANGE to a range git can read, such as origin/main...HEAD, or to all."
+        echo "pre-commit-traceability: Cannot list the files changed by the range '${RANGE}'. Set VSE_PRECOMMIT_RANGE to a range git can read, such as origin/main...HEAD, or to all." >&2
     else
-        echo "pre-commit-traceability: Cannot list the staged files."
+        echo "pre-commit-traceability: Cannot list the staged files." >&2
     fi
     exit 1
 fi
@@ -270,16 +272,18 @@ added_model_text() {
 WHOLE_FILE=1000000
 
 # added_text <file>: the model text of the lines this change adds to
-# <file>. In "all" mode every line of the file counts as added.
+# <file>. In "all" mode every line of the file counts as added, and the
+# file is read from the index, which is what git ls-files listed, so a
+# tracked file missing from the working tree is still read.
 added_text() {
     local file="$1"
     if [ -z "$RANGE" ]; then
-        git diff --cached --no-color --no-ext-diff --unified="$WHOLE_FILE" -- "$file" \
+        git diff --cached --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" -- "$file" \
             | added_model_text 0
     elif [ "$RANGE" = "all" ]; then
-        added_model_text 1 < "$file"
+        git show ":$file" | added_model_text 1
     else
-        git diff --no-color --no-ext-diff --unified="$WHOLE_FILE" "$RANGE" -- "$file" \
+        git diff --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" "$RANGE" -- "$file" \
             | added_model_text 0
     fi
 }

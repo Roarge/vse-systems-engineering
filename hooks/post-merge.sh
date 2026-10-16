@@ -2,9 +2,9 @@
 # Project-side git post-merge hook.
 #
 # Per methodology/iso-29110-hooks-guide.md §4.5. Regenerate model-
-# derived artefacts when main advances. Cannot itself create commits
-# without surprising the user; it regenerates and reports drift.
-# Production of the follow-up commit is left to CI on main.
+# derived artefacts when main advances. The hook cannot create commits
+# itself without surprising the user, so it regenerates and reports
+# drift. Production of the follow-up commit is left to CI on main.
 #
 # Install as <project>/.githooks/post-merge.
 set -euo pipefail
@@ -95,12 +95,25 @@ while IFS= read -r renderer; do
     fi
 done <<< "$RENDERERS"
 
+# The drift report compares the derived artefacts with the index. git
+# diff exits 1 for a difference and 0 for none, and any other status
+# means git could not compare them, which is not drift. An engineering
+# root outside the repository holds nothing git can compare, so it gets
+# no report.
 if [ "$DREW" -eq 1 ]; then
-    if ! git diff --quiet -- "$ENG_ROOT/docs/" 2>/dev/null; then
-        echo "[post-merge] Derived artefacts regenerated. Commit the updates or run CI."
-    else
-        echo "[post-merge] Derived artefacts already current."
-    fi
+    TOP_REAL="$(pwd -P)"
+    ENG_REAL="$(CDPATH='' cd -- "$ENG_ROOT" 2>/dev/null && pwd -P)" || ENG_REAL=""
+    case "${ENG_REAL}/" in
+        "${TOP_REAL}/"*)
+            DIFF_STATUS=0
+            git diff --quiet -- "$ENG_ROOT/docs/" 2>/dev/null || DIFF_STATUS=$?
+            case "$DIFF_STATUS" in
+                0) echo "[post-merge] Derived artefacts already current." ;;
+                1) echo "[post-merge] Derived artefacts regenerated. Commit the updates or run CI." ;;
+                *) echo "[post-merge] git could not compare the derived artefacts with the index (git diff exit ${DIFF_STATUS}), so drift is not reported." >&2 ;;
+            esac
+            ;;
+    esac
 fi
 
 exit 0

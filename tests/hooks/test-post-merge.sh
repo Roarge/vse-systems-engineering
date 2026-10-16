@@ -110,6 +110,90 @@ case_stub_library_vse_iso_config() {
     assert_rendered "systems/" "partial install, VSE_ISO_CONFIG"
 }
 
+# --------------------------------------------------------- the drift report
+
+# install_docs_renderer <current|stale>: a renderer at the root that
+# writes docs/generated/matrix.md, committed with the content the
+# renderer writes when <current> is "current", and with older content
+# otherwise.
+install_docs_renderer() {
+    tc_write tools/render/stub.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p docs/generated
+printf 'matrix, regenerated\n' > docs/generated/matrix.md
+EOF
+    chmod +x "${REPO}/tools/render/stub.sh"
+    if [ "$1" = current ]; then
+        printf 'matrix, regenerated\n' | tc_write docs/generated/matrix.md
+    else
+        printf 'matrix, as committed\n' | tc_write docs/generated/matrix.md
+    fi
+    renderer_config | tc_write .iso-config.yaml
+    tc_stage .iso-config.yaml tools/render/stub.sh docs/generated/matrix.md
+    tc_commit "add the renderer and its output"
+}
+
+case_drift_reported() {
+    setup_main
+    install_docs_renderer stale
+    tc_env
+    tc_run_githook post-merge 0
+    tc_assert_rc 0 "drift: the hook exits 0"
+    tc_assert_line "[post-merge] Derived artefacts regenerated. Commit the updates or run CI." "$OUT" \
+        "drift: the regenerated artefacts are reported"
+}
+
+case_drift_current() {
+    setup_main
+    install_docs_renderer current
+    tc_env
+    tc_run_githook post-merge 0
+    tc_assert_rc 0 "no drift: the hook exits 0"
+    tc_assert_line "[post-merge] Derived artefacts already current." "$OUT" \
+        "no drift: the artefacts are reported current"
+}
+
+# git diff exits 1 for a difference and 128 when it cannot compare, here
+# because the index is damaged. Only 1 is drift.
+case_drift_git_error() {
+    setup_main
+    install_docs_renderer current
+    printf 'not an index\n' > "${REPO}/.git/index"
+    tc_env
+    tc_run_githook post-merge 0
+    tc_assert_rc 0 "drift check fails: the hook exits 0"
+    tc_assert_not_grep "regenerated. Commit the updates" "$OUT" \
+        "drift check fails: no drift is reported"
+    tc_assert_not_grep "already current" "$OUT" \
+        "drift check fails: the artefacts are not called current"
+    tc_assert_grep "[post-merge] git could not compare the derived artefacts" "$ERR" \
+        "drift check fails: the hook says the comparison failed"
+}
+
+# An engineering root outside the repository has no derived artefacts
+# git can compare, so the renderers run and no drift is reported.
+case_eng_root_outside() {
+    local outside
+    setup_main
+    outside="$(tc_mktemp_d)"
+    mkdir -p "${outside}/tools/render"
+    printf '#!/usr/bin/env bash\nprintf "rendered\\n" > rendered.marker\n' \
+        > "${outside}/tools/render/stub.sh"
+    chmod +x "${outside}/tools/render/stub.sh"
+    renderer_config > "${outside}/vse.yaml"
+    tc_env "VSE_ISO_CONFIG=${outside}/vse.yaml"
+    tc_run_githook post-merge 0
+    tc_assert_rc 0 "engineering root outside: the hook exits 0"
+    if [ -f "${outside}/rendered.marker" ]; then
+        tc_pass "engineering root outside: the renderer ran there"
+    else
+        tc_fail "engineering root outside: the renderer ran there" "no marker in ${outside}"
+    fi
+    tc_assert_not_grep "Derived artefacts" "$OUT" "engineering root outside: no drift report"
+    tc_assert_empty "$ERR" "engineering root outside: git reports no error"
+}
+
 case_no_config_silent() {
     setup_main
     tc_env
@@ -124,6 +208,10 @@ case_vse_iso_config
 case_stub_library_root_config
 case_stub_library_vse_iso_config
 case_no_config_silent
+case_drift_reported
+case_drift_current
+case_drift_git_error
+case_eng_root_outside
 
 if tc_summary "test-post-merge"; then
     exit 0
