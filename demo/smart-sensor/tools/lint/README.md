@@ -28,7 +28,10 @@ python3 tools/lint/story-wellformed.py model
 
 Each argument is a `.sysml` file, a `.feature` file or a directory,
 which is searched with its subdirectories. A file whose name starts
-with `_` is a template and is skipped.
+with `_` is a template and is skipped. A search reads regular files,
+directly or through a link, and dangling links, which it reports as
+unreadable. A named pipe, a socket or a device, or a link to one, is
+never opened, because reading it could block the lint for ever.
 
 | Option | Effect |
 |---|---|
@@ -45,7 +48,7 @@ message names the fix. Findings are sorted by path, line and code.
 |---|---|
 | 0 | No findings |
 | 1 | Findings |
-| 2 | A usage or environment error, such as a missing path, `tools/render/` missing beside `tools/lint/`, a file system error, or an unexpected error in the lint itself |
+| 2 | A usage or environment error, such as a missing path, `tools/render/` missing beside `tools/lint/`, a file system error, a failure to write the findings (a closed pipe or a full disk), or an unexpected error in the lint itself |
 
 An error is reported on one line of standard error, never as a
 traceback, so a gate can tell a broken run from a run with findings.
@@ -96,3 +99,6 @@ These behaviours are worth knowing.
 - **One disposition per finding.** A `.sysml` file that cannot be read,
   or is not UTF-8, is finding S9 under `--only gherkin` alone, so it is
   reported at the `precommit_gherkin` disposition and nowhere else.
+- **Each finding once.** A file that two searched directories reach,
+  one of them through a link, is checked in both, and each finding
+  about it is reported once.

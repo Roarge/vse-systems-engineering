@@ -17,7 +17,11 @@ Usage, from the engineering root (the directory that holds
 
 Each PATH is a `.sysml` file, a `.feature` file or a directory, which is
 searched with its subdirectories. Files whose names start with `_` are
-templates and are skipped.
+templates and are skipped. A search reads regular files, directly or
+through a link, and dangling links, which it reports as unreadable, so
+a named pipe, a socket or a device is never opened. A file that two
+searched directories reach, one through a link, draws each finding
+once.
 
 Rule sets
 ---------
@@ -74,8 +78,9 @@ a JSON array of objects with the keys path, line, code, message and ref,
 sorted by path, line and code. Exit status 0 means clean, 1 means
 findings, and 2 means a usage or environment error, such as a missing
 path, a missing `tools/render/` beside `tools/lint/`, a file system
-error, or an unexpected error in the lint itself. An error is one line
-on standard error, never a traceback.
+error, a failure to write the findings (a closed pipe or a full disk),
+or an unexpected error in the lint itself. An error is one line on
+standard error, never a traceback.
 
 The lint uses the Python standard library only. It reads feature files
 with gherkin.py beside it and the model with ../render/sysml_model.py.
@@ -595,6 +600,14 @@ def _lintable(name: str) -> bool:
     return not name.startswith("_") and name.endswith((".sysml", ".feature"))
 
 
+def _plain(full: Path) -> bool:
+    """True for a regular file, or for a link that leads to nothing,
+    which reading reports as a finding. A directory search never opens
+    a named pipe, a socket or a device, or a link to one, because a read
+    could block for ever."""
+    return full.is_file() or (full.is_symlink() and not full.exists())
+
+
 @dataclass
 class Scope:
     """The files a run checks, as (full path, display path) pairs."""
@@ -631,7 +644,7 @@ def _collect(paths: List[str], project_root: Path) -> Scope:
             relative = os.path.relpath(root, str(full))
             found = False
             for name in sorted(names):
-                if _lintable(name):
+                if _lintable(name) and _plain(Path(root) / name):
                     scope.add_file(Path(root) / name,
                                    _display(path, relative, name))
                     found = True
@@ -641,12 +654,12 @@ def _collect(paths: List[str], project_root: Path) -> Scope:
 
 
 def _directory_files(full: Path, display: str) -> List[Tuple[Path, str]]:
-    """The lintable files of one directory. A name that is not a
-    directory is kept even when it cannot be read, such as a dangling
-    link, so that reading it reports a finding."""
+    """The lintable files of one directory. A dangling link is kept, so
+    that reading it reports a finding, and a special file is not (see
+    _plain)."""
     return [(full / name, _display(display, name))
             for name in sorted(os.listdir(str(full)))
-            if _lintable(name) and not (full / name).is_dir()]
+            if _lintable(name) and _plain(full / name)]
 
 
 # ---------------------------------------------------------------------------
@@ -805,22 +818,23 @@ def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
                    "{} has no status. Add `status = StoryStatus::backlog;` "
                    "or its actual status to the @StoryMeta".format(sid),
                    "§1.5")
-            continue
-        if status not in valid:
-            report(line, "W10",
-                   "{} has the status {}, which is not one of {}. Use one "
-                   "of the valid statuses".format(
-                       sid, status, ", ".join(valid)), "§1.5, §0.10.3")
-        if status != "backlog":
-            missing = [name for name in required
-                       if name != "status" and name not in shape.meta_values]
-            for name in missing:
+        else:
+            if status not in valid:
                 report(line, "W10",
-                       "{} is {} but its @StoryMeta has no {}. The project "
-                       "requires {} once a story leaves backlog (storymeta "
-                       "in .iso-config.yaml)".format(
-                           sid, status, name, ", ".join(required)),
-                       "§1.5, §0.10.3")
+                       "{} has the status {}, which is not one of {}. Use "
+                       "one of the valid statuses".format(
+                           sid, status, ", ".join(valid)), "§1.5, §0.10.3")
+            if status != "backlog":
+                missing = [name for name in required
+                           if name != "status"
+                           and name not in shape.meta_values]
+                for name in missing:
+                    report(line, "W10",
+                           "{} is {} but its @StoryMeta has no {}. The "
+                           "project requires {} once a story leaves "
+                           "backlog (storymeta in .iso-config.yaml)".format(
+                               sid, status, name, ", ".join(required)),
+                           "§1.5, §0.10.3")
     return findings
 
 
@@ -1030,8 +1044,9 @@ def _world(workspace: Workspace, scope_files: List[SysmlFile]) -> World:
             dirs[:] = sorted(name for name in dirs
                              if not name.startswith("."))
             for name in sorted(names):
-                if name.endswith(".sysml") and not name.startswith("_"):
-                    full = Path(root) / name
+                full = Path(root) / name
+                if (name.endswith(".sysml") and not name.startswith("_")
+                        and _plain(full)):
                     display = os.path.relpath(
                         str(full), str(workspace.project_root))
                     entries.append(workspace.sysml_file(full, display))
@@ -1209,6 +1224,17 @@ def _sort_key(finding: Finding):
             finding.message)
 
 
+def _sorted_once(findings: List[Finding]) -> List[Finding]:
+    """The findings sorted, each once. A file that two directories in
+    scope reach, one of them through a link, is read once but checked
+    in each directory, so its findings would otherwise repeat."""
+    unique = {}  # type: Dict[Tuple[str, int, str, str, str], Finding]
+    for finding in findings:
+        unique.setdefault((finding.path, finding.line, finding.code,
+                           finding.message, finding.ref), finding)
+    return sorted(unique.values(), key=_sort_key)
+
+
 def lint_paths(paths: List[str], only: Optional[str],
                project_root: Path) -> List[Finding]:
     """Findings for `paths`, sorted by path, line and code.
@@ -1255,7 +1281,7 @@ def lint_paths(paths: List[str], only: Optional[str],
         # dispositions. The wellformed rule set skips such a file.
         for entry in in_directories:
             findings.extend(entry.findings)
-    return sorted(findings, key=_sort_key)
+    return _sorted_once(findings)
 
 
 def _environment_error(message: str) -> int:
@@ -1263,6 +1289,19 @@ def _environment_error(message: str) -> int:
     sys.stderr.write("story-wellformed.py: {}\n".format(
         " ".join(message.split())))
     return 2
+
+
+def _drop_stdout() -> None:
+    """Point standard output at the null device, so that the flush at
+    exit cannot fail again on the pipe or file that just failed."""
+    try:
+        null = os.open(os.devnull, os.O_WRONLY)
+        try:
+            os.dup2(null, sys.stdout.fileno())
+        finally:
+            os.close(null)
+    except (OSError, ValueError):
+        pass
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -1287,12 +1326,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     except Exception as error:  # A defect must not read as findings.
         return _environment_error("unexpected error, {}: {}".format(
             type(error).__name__, error))
-    if args.format == "json":
-        print(json.dumps([finding.as_dict() for finding in findings],
-                         indent=2))
-    else:
-        for finding in findings:
-            print(finding.format())
+    try:
+        if args.format == "json":
+            print(json.dumps([finding.as_dict() for finding in findings],
+                             indent=2))
+        else:
+            for finding in findings:
+                print(finding.format())
+        sys.stdout.flush()
+    except OSError as error:
+        # BrokenPipeError when the reader has gone, as with `| head`, or
+        # another OSError when the device fails, such as a full disk.
+        _drop_stdout()
+        return _environment_error("cannot write the findings ({})".format(
+            error.strerror or error))
     return 1 if findings else 0
 
 

@@ -258,6 +258,65 @@ class StorySideTests(unittest.TestCase):
             None: [dangling, missing_feature],
         })
 
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "needs named pipes")
+    def test_special_files_are_never_opened(self):
+        # A named pipe, or a link to one, named like a model or feature
+        # file would block a read for ever, so a directory search keeps
+        # regular files and links alone, and a link only when it does
+        # not lead to something else that exists. The pipes sit in a
+        # stories directory and, outside the paths named, in the model
+        # root that S8 reads. The lint runs as the hook runs it, with a
+        # time limit, and finds what it finds without the pipes.
+        def run(root, only, path):
+            try:
+                result = subprocess.run(
+                    [sys.executable, LINT, "--only", only, "--format",
+                     "json", path], cwd=root,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    universal_newlines=True, check=False, timeout=15)
+            except subprocess.TimeoutExpired:
+                self.fail("the lint blocked on a named pipe "
+                          "(--only {} {})".format(only, path))
+            return result.returncode, result.stdout, result.stderr
+
+        runs = [(only, path) for only in ("wellformed", "gherkin", "syntax")
+                for path in ("model", STK)]
+        with ScratchCopy("register") as root:
+            before = {key: run(root, *key) for key in runs}
+            other = os.path.join(root, "model", "core", "domain")
+            os.makedirs(other)
+            for directory in (os.path.join(root, STK), other):
+                os.mkfifo(os.path.join(directory, "pipe.sysml"))
+                os.mkfifo(os.path.join(directory, "pipe.feature"))
+                os.symlink("pipe.sysml",
+                           os.path.join(directory, "pipe-link.sysml"))
+            after = {key: run(root, *key) for key in runs}
+        self.assertEqual(after, before)
+
+    def test_file_reached_through_two_directories_reported_once(self):
+        # A link in a second stories directory reaches the same story
+        # file and feature file. Each finding about them is reported
+        # once, as when the first directory is linted alone.
+        team = "model/core/stories/team/"
+        with ScratchCopy("register") as root:
+            with open(os.path.join(root, SYSML), "ab") as handle:
+                handle.write(b"// \xff\n")
+            orphan = os.path.join(root, STK, "Orphan.feature")
+            with open(orphan, "w") as handle:
+                handle.write("Feature: Orphan\n  Scenario: Nothing\n"
+                             "    Given nothing\n")
+            alone = triples(story_wellformed.lint_paths(
+                [STK], "gherkin", Path(root)))
+            os.mkdir(os.path.join(root, team))
+            for name in ("stakeholder-stories.sysml", "Orphan.feature"):
+                os.symlink(os.path.join("..", "stakeholder", name),
+                           os.path.join(root, team, name))
+            both = triples(story_wellformed.lint_paths(
+                ["model"], "gherkin", Path(root)))
+        self.assertIn((SYSML, 68, "S9"), alone)
+        self.assertIn((STK + "Orphan.feature", 1, "F3"), alone)
+        self.assertEqual(both, alone)
+
     def test_register_file_four_stories(self):
         # Four stories in one register file, each paired with its own
         # feature file. Only the third has none.
@@ -594,14 +653,54 @@ class CommandLineTests(unittest.TestCase):
         def defect(*_args):
             raise RuntimeError("a defect in the lint")
 
+        # main() reconfigures standard output, so the test hands it a
+        # stand-in rather than the test runner's own.
         stderr = io.StringIO()
         with mock.patch.object(story_wellformed, "lint_paths", defect), \
+                mock.patch.object(sys, "stdout", io.StringIO()), \
                 contextlib.redirect_stderr(stderr):
             code = story_wellformed.main(["model"])
         self.assertEqual(code, 2)
         self.assertEqual(len(stderr.getvalue().splitlines()), 1,
                          stderr.getvalue())
         self.assertIn("a defect in the lint", stderr.getvalue())
+
+    def _assert_write_error(self, stdout):
+        """Run the lint on findings with `stdout` as its output, both
+        buffered, as by default, and unbuffered (PYTHONUNBUFFERED), and
+        expect exit 2 with one line on standard error."""
+        for unbuffered in (False, True):
+            environment = dict(os.environ)
+            environment.pop("PYTHONUNBUFFERED", None)
+            if unbuffered:
+                environment["PYTHONUNBUFFERED"] = "1"
+            with self.subTest(unbuffered=unbuffered):
+                result = subprocess.run(
+                    [sys.executable, LINT, "model"],
+                    cwd=os.path.join(FIXTURES, "S1"), env=environment,
+                    stdout=stdout, stderr=subprocess.PIPE,
+                    universal_newlines=True, check=False, timeout=60)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertEqual(len(result.stderr.splitlines()), 1,
+                                 result.stderr)
+                self.assertIn("story-wellformed.py: cannot write the "
+                              "findings", result.stderr)
+
+    def test_closed_output_exits_2_on_one_line(self):
+        # The reader of the findings has gone, as when the output is
+        # piped into head, so writing them fails with a broken pipe.
+        read_end, write_end = os.pipe()
+        os.close(read_end)
+        try:
+            self._assert_write_error(write_end)
+        finally:
+            os.close(write_end)
+
+    @unittest.skipUnless(os.path.exists("/dev/full"), "needs /dev/full")
+    def test_full_output_exits_2_on_one_line(self):
+        # Every write to /dev/full fails as a full disk would.
+        with open("/dev/full", "w") as full:
+            self._assert_write_error(full)
 
     def test_gherkin_module_missing_exit_2(self):
         with tempfile.TemporaryDirectory() as scratch:
