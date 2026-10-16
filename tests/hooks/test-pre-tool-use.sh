@@ -16,7 +16,9 @@
 #      path is denied while no test path has changed in the working
 #      tree or on the branch. A refactor branch draws a reminder.
 #   3. The self-bypass guard. An edit to .iso-config.yaml that changes
-#      gate_overrides or test_first asks the human to confirm.
+#      gate_overrides or test_first asks the human to confirm, and a
+#      new .iso-config.yaml below the one in force is compared with
+#      the configuration it would replace.
 #   4. Locating the project. The configuration is found by walking up
 #      from the edited file, whatever the hook's working directory, and
 #      contributor mode (the plugin repository) counts only the demo.
@@ -594,6 +596,66 @@ baselined_paths:
     ptu_assert_proceeds "config: a baselined_paths change is not asked"
 }
 
+# A new .iso-config.yaml below the one in force takes over the files in
+# its directory and below, so it is compared with the configuration it
+# would replace there, not with an empty file.
+case_config_nested_shadow_asks() {
+    local nested="src/.iso-config.yaml"
+    ptu_project light precommit_lint=warn
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  rationale: "pytest runs the code under src/."
+  code_paths: [src/*.py]
+  test_paths: [tests/*]
+EOF
+    git -C "$REPO" add -A
+    tc_commit "chore: start the project"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_denied "nested config: the project configuration gates a code edit under src/"
+
+    ptu_run "$(ptu_write_json "${REPO}/${nested}" "project_profile: light
+")"
+    ptu_assert_asked "nested config: a new config that drops gate_overrides and test_first asks"
+    ptu_assert_reason "gate_overrides and test_first" "nested config: the question names both sections"
+    ptu_assert_reason "${PTU_REAL}/${nested}" "nested config: the question names the new file"
+    ptu_assert_reason "${PTU_REAL}/.iso-config.yaml" "nested config: the question names the configuration it would replace"
+
+    ptu_run "$(ptu_write_json "${REPO}/${nested}" "project_profile: light
+gate_overrides:
+  precommit_lint: warn
+")"
+    ptu_assert_asked "nested config: a new config that drops only test_first asks"
+    ptu_assert_reason_lacks "gate_overrides and" "nested config: an unchanged gate_overrides is not named"
+
+    ptu_run "$(ptu_write_json "${REPO}/${nested}" "$(cat "${REPO}/.iso-config.yaml")")"
+    ptu_assert_proceeds "nested config: a copy that keeps both sections is not asked"
+
+    ptu_run "$(ptu_edit_json "${REPO}/${nested}" "" "project_profile: light
+")"
+    ptu_assert_asked "nested config: an Edit that creates the file asks too"
+
+    ptu_run "$(ptu_write_json "${REPO}/engineering/.iso-config.yaml" "project_profile: light
+")"
+    ptu_assert_asked "nested config: a new engineering/ config below the top-level one asks"
+
+    # A configuration a human already put in place is compared with
+    # itself, as any other edit is.
+    printf 'project_profile: light\n' | tc_write "$nested"
+    ptu_run "$(ptu_edit_json "${REPO}/${nested}" "project_profile: light" "project_profile: standard")"
+    ptu_assert_proceeds "nested config: an edit to an existing nested config is compared with that file"
+
+    # Brownfield layout: a new top-level configuration would take over
+    # from engineering/.iso-config.yaml.
+    ptu_project light precommit_lint=warn
+    mkdir -p "${REPO}/engineering"
+    mv "${REPO}/.iso-config.yaml" "${REPO}/engineering/.iso-config.yaml"
+    ptu_run "$(ptu_write_json "${REPO}/.iso-config.yaml" "project_profile: light
+")"
+    ptu_assert_asked "nested config: a new top-level config over engineering/.iso-config.yaml asks"
+    ptu_assert_reason "${PTU_REAL}/engineering/.iso-config.yaml" "nested config: the question names the engineering configuration"
+}
+
 # The baselined-path note of earlier releases reaches the agent as
 # context.
 case_baselined_path_context() {
@@ -694,6 +756,7 @@ case_test_first_not_applicable
 case_notebook_path_read
 case_config_gate_change_asks
 case_config_other_change_allowed
+case_config_nested_shadow_asks
 case_baselined_path_context
 case_no_jq_python_fallback
 case_no_jq_no_python_notice

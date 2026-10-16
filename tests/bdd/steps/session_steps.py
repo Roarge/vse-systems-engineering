@@ -157,6 +157,17 @@ def agent_changes_overrides(ctx):
              new_string="gate_overrides:\n  pretooluse_gherkin_first: off\n")
 
 
+@step(r"the agent writes a new (\S+/\.iso-config\.yaml) that leaves out gate_overrides")
+def agent_writes_nested_config(ctx, path):
+    """A configuration below the project's governs the files in its
+    directory and below, so leaving gate_overrides out of it would lower
+    every overridden gate there."""
+    if os.path.exists(os.path.join(world.repo(ctx), path)):
+        raise AssertionError(path + " already exists")
+    run_hook(ctx, "Write", path,
+             content="project_profile: {}\n".format(ctx.profile))
+
+
 @step(r"the agent edits (\S+)")
 def agent_edits(ctx, path):
     world.start(ctx)

@@ -22,7 +22,10 @@
 # It also guards the configuration and passes on two reminders:
 #
 #   3. An edit to .iso-config.yaml that changes gate_overrides or
-#      test_first asks the human to confirm it (methodology §11.10).
+#      test_first asks the human to confirm it (methodology §11.10). A
+#      new .iso-config.yaml below the configuration in force is
+#      compared with that configuration, which it would replace for
+#      the files in its directory and below.
 #   4. An edit to a baselined path draws the Change Request reminder,
 #      and an edit to a story file draws the §1.9 reminder.
 #
@@ -265,8 +268,15 @@ _ptu_section() {
     '
 }
 
+# The edited configuration is compared with the one that governs it
+# before the edit. That is the file itself when it exists. A new
+# .iso-config.yaml below the configuration in force (PTU_CONFIG, the
+# nearest one above) takes over the files in its directory and below,
+# so it is compared with PTU_CONFIG. Otherwise a new file that simply
+# leaves out gate_overrides or test_first would lower a gate for that
+# subtree unasked.
 ptu_config_guard() {
-    local section changed=""
+    local section before changed="" what
     [ "$PTU_BASE" = ".iso-config.yaml" ] || return 0
     _ptu_tool
     case "$PTU_TOOL" in
@@ -274,13 +284,26 @@ ptu_config_guard() {
         *) return 0 ;;
     esac
     _ptu_images
+    before="$PTU_PRE"
+    if [ "$PTU_CONFIG" != "$PTU_TARGET" ]; then
+        before="${PTU_WORK}/governing"
+        if ! vse_tf_disk_image "$PTU_CONFIG" > "$before"; then
+            echo "[pre-tool-use] Could not read ${PTU_CONFIG}." >&2
+            exit 70
+        fi
+    fi
     for section in gate_overrides test_first; do
-        if [ "$(_ptu_section "$section" < "$PTU_PRE")" != "$(_ptu_section "$section" < "$PTU_POST")" ]; then
+        if [ "$(_ptu_section "$section" < "$before")" != "$(_ptu_section "$section" < "$PTU_POST")" ]; then
             changed="${changed:+${changed} and }${section}"
         fi
     done
     [ -n "$changed" ] || return 0
-    vse_hj_add_decision ask "Self-bypass guard (methodology §11.10): this edit changes ${changed} in ${PTU_TARGET}. gate_overrides sets the gate dispositions and test_first decides which paths the test-first gates treat as code, so this change can lower a gate. An agent never lowers a gate without an explicit request from a human. Approve only if the user asked for this change."
+    if [ "$before" = "$PTU_PRE" ]; then
+        what="this edit changes ${changed} in ${PTU_TARGET}"
+    else
+        what="this edit creates ${PTU_TARGET}, a new configuration that would govern the files in its directory and below in place of ${PTU_CONFIG}, and its ${changed} settings differ from that configuration"
+    fi
+    vse_hj_add_decision ask "Self-bypass guard (methodology §11.10): ${what}. gate_overrides sets the gate dispositions and test_first decides which paths the test-first gates treat as code, so this change can lower a gate. An agent never lowers a gate without an explicit request from a human. Approve only if the user asked for this change."
 }
 
 # -------------------------------------------------- 1. Gherkin first

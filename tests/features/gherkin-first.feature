@@ -38,3 +38,7 @@ Feature: Gherkin first in session
   Scenario: Changing a gate override asks the engineer to confirm
     When the agent changes gate_overrides in .iso-config.yaml
     Then the engineer is asked to confirm the edit
+
+  Scenario: A new configuration that leaves out the gate overrides asks the engineer to confirm
+    When the agent writes a new model/.iso-config.yaml that leaves out gate_overrides
+    Then the engineer is asked to confirm the edit
