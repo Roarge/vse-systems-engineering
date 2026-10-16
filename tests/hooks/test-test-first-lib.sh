@@ -9,11 +9,14 @@
 #   1. The story scanner finds each `requirement <ID> : UserStory`
 #      declaration and its block text. It reads past strings, comments,
 #      KerML notes (//* ... */) and doc bodies, and it ignores
-#      definitions. The expected IDs come from the shared corpus under
-#      tests/fixtures/stories/, one .ids file beside each .sysml file.
+#      definitions. The demo registers and the VSE library are read
+#      live from the plugin tree, with their expected IDs in the cases.
+#      The hand-made corpus under tests/fixtures/stories/ carries one
+#      .ids file beside each .sysml file.
 #   2. The post-edit image applies a Write, Edit or MultiEdit payload
-#      to the file on disk, byte for byte, with jq or, failing that,
-#      python3.
+#      to the file on disk, with jq or, failing that, python3. The disk
+#      image takes the same path with no edit, so a pre-image and a
+#      post-image are normalised the same way.
 #   3. A feature file carries a story tag only on a tag line before
 #      its Feature: line.
 #   4. A path relative to the git top level is classified as never,
@@ -35,6 +38,21 @@ trap tc_teardown EXIT
 
 TF_LIB="${TC_PLUGIN_ROOT}/hooks/lib"
 TF_FIXTURES="${TC_PLUGIN_ROOT}/tests/fixtures/stories"
+
+# The live demo registers and the shipped library, read in place so the
+# scanner is checked against the files users actually have.
+TF_DEMO_STORIES="${TC_PLUGIN_ROOT}/demo/smart-sensor/model/core/stories"
+TF_STAKEHOLDER="${TF_DEMO_STORIES}/stakeholder/stakeholder-stories.sysml"
+TF_SYSTEM="${TF_DEMO_STORIES}/system/system-stories.sysml"
+TF_LIBRARY="${TC_PLUGIN_ROOT}/templates/common/library/vse-library.sysml"
+TF_STAKEHOLDER_IDS='US_001_SeeReadingsOnDashboard
+US_002_AcknowledgeAlertsBatched
+US_003_CalibrateInField
+US_004_RetainAlertHistory'
+TF_SYSTEM_IDS='SYS_001_DashboardLatency
+SYS_002_BatchAcknowledgement
+SYS_003_CalibrationOffsetCommit
+SYS_004_AlertRetentionWindow'
 
 # The driver bodies are expanded by the shell they are handed to.
 # shellcheck disable=SC2016
@@ -133,11 +151,9 @@ case_story_blocks_demo_register() {
     tc_setup_repo
     tc_env
 
-    run_tf_stdin "${TF_FIXTURES}/stakeholder-stories.sysml" vse_tf_story_blocks
+    run_tf_stdin "$TF_STAKEHOLDER" vse_tf_story_blocks
     tc_assert_rc 0 "story blocks: the stakeholder register scans"
-    tc_assert_line_count 4 "$(cat "${TF_FIXTURES}/stakeholder-stories.ids")" \
-        "story blocks: the stakeholder corpus lists four IDs"
-    tc_assert_eq "$(cat "${TF_FIXTURES}/stakeholder-stories.ids")" "$(ids_of "$OUT")" \
+    tc_assert_eq "$TF_STAKEHOLDER_IDS" "$(ids_of "$OUT")" \
         "story blocks: the four demo stakeholder stories, in order"
     tc_assert_line_count 4 "$OUT" "story blocks: one line per stakeholder story"
     block="$(block_of US_001_SeeReadingsOnDashboard "$OUT")"
@@ -148,10 +164,8 @@ case_story_blocks_demo_register() {
     tc_assert_not_match 'US_002' "$block" \
         "story blocks: a block stops before the next story"
 
-    run_tf_stdin "${TF_FIXTURES}/system-stories.sysml" vse_tf_story_blocks
-    tc_assert_line_count 4 "$(cat "${TF_FIXTURES}/system-stories.ids")" \
-        "story blocks: the system corpus lists four IDs"
-    tc_assert_eq "$(cat "${TF_FIXTURES}/system-stories.ids")" "$(ids_of "$OUT")" \
+    run_tf_stdin "$TF_SYSTEM" vse_tf_story_blocks
+    tc_assert_eq "$TF_SYSTEM_IDS" "$(ids_of "$OUT")" \
         "story blocks: the four demo system stories, each after #derive"
     block="$(block_of SYS_001_DashboardLatency "$OUT")"
     tc_assert_match '^requirement SYS_001_DashboardLatency : UserStory \{' "$block" \
@@ -163,7 +177,7 @@ case_story_blocks_demo_register() {
 case_story_blocks_ignores_library() {
     tc_setup_repo
     tc_env
-    run_tf_stdin "${TF_FIXTURES}/vse-library.sysml" vse_tf_story_blocks
+    run_tf_stdin "$TF_LIBRARY" vse_tf_story_blocks
     tc_assert_rc 0 "library: the scan succeeds"
     tc_assert_empty "$OUT" "library: the definition and the doc example are not stories"
 }
@@ -202,8 +216,8 @@ case_story_blocks_requirement_def_not_matched() {
         "definitions: only usages typed by UserStory or VSE_Library::UserStory count"
 }
 
-# Every corpus file scans to the IDs its .ids file lists, so a fixture
-# added for the Python lint is checked here too.
+# Every hand-made corpus file scans to the IDs its .ids file lists, so a
+# fixture added for the Python lint is checked here too.
 case_story_blocks_fixture_corpus() {
     local sysml ids name count=0
     tc_setup_repo
@@ -223,7 +237,7 @@ case_story_blocks_fixture_corpus() {
             tc_assert_empty "$OUT" "corpus: ${name} holds no story"
         fi
     done
-    tc_assert_eq 8 "$count" "corpus: eight fixtures are present"
+    tc_assert_eq 5 "$count" "corpus: five fixtures are present"
 }
 
 # Forms the corpus does not carry: CRLF line ends, a story with no
@@ -257,6 +271,13 @@ US_6" "$(ids_of "$OUT")" "edge forms: a dangling requirement keyword starts noth
     printf 'requirement US_7 : UserStory::Part {\n}\nrequirement US_8 : VSE_Library::UserStory::Part {\n}\n' > "$input"
     run_tf_stdin "$input" vse_tf_story_blocks
     tc_assert_empty "$OUT" "edge forms: a type nested under UserStory is not UserStory"
+
+    printf 'requirement US_9 : UserStory ::> base {\n}\nrequirement US_10 : VSE_Library::UserStory ::> base;\n' > "$input"
+    run_tf_stdin "$input" vse_tf_story_blocks
+    tc_assert_eq "US_9
+US_10" "$(ids_of "$OUT")" "edge forms: a reference subsetting (::>) after the type keeps the story"
+    tc_assert_eq "requirement US_9 : UserStory ::> base { }" "$(block_of US_9 "$OUT")" \
+        "edge forms: ::> is read as one token, not as :: and >"
 }
 
 case_touched_only_changed_block() {
@@ -264,7 +285,7 @@ case_touched_only_changed_block() {
     tc_setup_repo
     tc_env
     dir="$(tc_mktemp_d)"
-    pre="${TF_FIXTURES}/stakeholder-stories.sysml"
+    pre="$TF_STAKEHOLDER"
     post="${dir}/post.sysml"
 
     sed -e 's/in one action/in a single action/' \
@@ -280,7 +301,7 @@ case_touched_only_changed_block() {
     tc_assert_eq "US_005_New" "$OUT" "touched: a new story is touched and a deleted one is not listed"
 
     run_tf vse_tf_touched_stories "${dir}/absent.sysml" "$pre"
-    tc_assert_eq "$(cat "${TF_FIXTURES}/stakeholder-stories.ids")" "$OUT" \
+    tc_assert_eq "$TF_STAKEHOLDER_IDS" "$OUT" \
         "touched: with no pre-image every story is new"
 
     run_tf vse_tf_touched_stories "$pre" "$pre"
@@ -334,7 +355,7 @@ case_post_image_rename_by_name_only() {
     tc_setup_repo
     target="${REPO}/model/core/stories/stakeholder/stakeholder-stories.sysml"
     mkdir -p "$(dirname "$target")"
-    cp "${TF_FIXTURES}/stakeholder-stories.sysml" "$target"
+    cp "$TF_STAKEHOLDER" "$target"
     expected="$(tc_mktemp_d)/expected"
     sed 's/US_002_AcknowledgeAlertsBatched :/US_002_AcknowledgeAlertsInBatches :/' "$target" > "$expected"
     for engine in $TF_ENGINES; do
@@ -354,7 +375,7 @@ case_post_image_replace_all() {
     local engine target expected
     tc_setup_repo
     target="${REPO}/stories.sysml"
-    cp "${TF_FIXTURES}/stakeholder-stories.sysml" "$target"
+    cp "$TF_STAKEHOLDER" "$target"
     expected="$(tc_mktemp_d)/expected"
     sed 's/role : Operator;/role : Supervisor;/g' "$target" > "$expected"
     for engine in $TF_ENGINES; do
@@ -372,7 +393,7 @@ case_post_image_edit_inside_doc() {
     local engine target expected
     tc_setup_repo
     target="${REPO}/stories.sysml"
-    cp "${TF_FIXTURES}/stakeholder-stories.sysml" "$target"
+    cp "$TF_STAKEHOLDER" "$target"
     expected="$(tc_mktemp_d)/expected"
     sed 's/displayed within 5 seconds/displayed within 3 seconds/' "$target" > "$expected"
     for engine in $TF_ENGINES; do
@@ -393,7 +414,7 @@ case_post_image_delete_comment_closer() {
     local engine target expected
     tc_setup_repo
     target="${REPO}/stories.sysml"
-    cp "${TF_FIXTURES}/stakeholder-stories.sysml" "$target"
+    cp "$TF_STAKEHOLDER" "$target"
     expected="$(tc_mktemp_d)/expected"
     sed 's|of arrival at the cloud broker\. \*/|of arrival at the cloud broker.|' "$target" > "$expected"
     for engine in $TF_ENGINES; do
@@ -445,7 +466,7 @@ case_post_image_multiedit() {
     local engine target expected json
     tc_setup_repo
     target="${REPO}/stories.sysml"
-    cp "${TF_FIXTURES}/stakeholder-stories.sysml" "$target"
+    cp "$TF_STAKEHOLDER" "$target"
     expected="$(tc_mktemp_d)/expected"
     sed -e 's/US_001_SeeReadingsOnDashboard/US_001_ViewReadingsLive/' \
         -e 's/Priority::medium/Priority::low/g' "$target" > "$expected"
@@ -487,6 +508,54 @@ case_post_image_no_json_tool() {
     run_tf vse_tf_post_image "${dir}/payload.json" "${dir}/target"
     tc_assert_rc 3 "post image: exit 3 when neither jq nor python3 is present"
     tc_assert_empty "$OUT" "post image: nothing printed without a JSON tool"
+    run_tf vse_tf_disk_image "${dir}/target"
+    tc_assert_rc 3 "disk image: exit 3 when neither jq nor python3 is present"
+    tc_env
+}
+
+# jq reads its input as UTF-8 and turns a byte that is not valid UTF-8
+# into U+FFFD, while python3 keeps it. A pre-image read raw from disk
+# would then differ from a jq post-image in every story holding such a
+# byte, and an edit to one story would touch another. The disk image
+# goes through the same engine as the post image, so only the edited
+# story is touched, whichever engine runs.
+case_disk_image_symmetric_latin1() {
+    local engine dir target pre
+    tc_setup_repo
+    dir="$(tc_mktemp_d)"
+    target="${dir}/stories.sysml"
+    pre="${dir}/pre"
+    # \351 is e-acute in Latin-1, a lone byte that is not valid UTF-8.
+    printf 'package P {\n    requirement US_1 : UserStory {\n        doc /* caf\351 */\n    }\n    requirement US_2 : UserStory {\n        doc /* old text */\n    }\n}\n' \
+        > "$target"
+    for engine in $TF_ENGINES; do
+        tf_engine "$engine"
+        run_tf_to "$pre" vse_tf_disk_image "$target"
+        tc_assert_rc 0 "disk image (${engine}): the register is read"
+        tf_post_image "$engine" "$(tf_payload_edit "old text" "new text" false)" "$target"
+        tc_assert_rc 0 "disk image (${engine}): the edit to US_2 applies"
+        tc_env
+        run_tf vse_tf_touched_stories "$pre" "$TF_IMAGE"
+        tc_assert_eq "US_2" "$OUT" \
+            "disk image (${engine}): a Latin-1 byte in US_1 does not touch US_1"
+    done
+}
+
+case_disk_image_plain() {
+    local engine dir
+    tc_setup_repo
+    dir="$(tc_mktemp_d)"
+    printf 'caf\303\251 "quoted" \\ back\r\n\nlast line, no newline' > "${dir}/utf8"
+    : > "${dir}/empty"
+    for engine in $TF_ENGINES; do
+        tf_engine "$engine"
+        run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/utf8"
+        tc_assert_rc 0 "disk image (${engine}): a UTF-8 file is read"
+        tf_assert_same "${dir}/utf8" "${dir}/image" "disk image (${engine}): valid UTF-8 comes back byte for byte"
+        run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/missing"
+        tc_assert_rc 0 "disk image (${engine}): a missing file is not an error"
+        tf_assert_same "${dir}/empty" "${dir}/image" "disk image (${engine}): a missing file reads as empty"
+    done
     tc_env
 }
 
@@ -745,6 +814,23 @@ case_evidence_branch_since_main() {
     tc_assert_match "^reason: .*merge base with origin/develop" "$OUT" "evidence: origin/develop when develop is absent"
 }
 
+# protected_branches may be written as a flow list too.
+case_evidence_protected_flow_list() {
+    tf_evidence_repo
+    printf 'protected_branches: [release/*, "develop"]  # integration\n' >> "${REPO}/.iso-config.yaml"
+    git -C "$REPO" checkout -q -b develop
+    printf 'def test_dev(): pass\n' | tc_write tests/test_dev.py
+    tc_stage tests/test_dev.py
+    tc_commit "develop test"
+    git -C "$REPO" checkout -q -b feat/on-develop
+    printf 'x = 4\n' | tc_write src/app.py
+    tc_stage src/app.py
+    tc_commit "code"
+    run_tf vse_tf_evidence "$REPO"
+    tc_assert_rc 1 "evidence: measured from a develop branch named in a flow list"
+    tc_assert_match "^reason: .*merge base with develop" "$OUT" "evidence: the flow-list entry is the base"
+}
+
 case_evidence_shallow() {
     local clone
     tf_evidence_repo
@@ -810,6 +896,27 @@ case_refactor_branch() {
     tc_assert_rc 1 "refactor: a detached HEAD is not a refactor branch"
 }
 
+# The PreToolUse hook runs in the session's directory, which need not be
+# the repository of the edited file, so the top level can be named.
+case_refactor_branch_toplevel() {
+    local elsewhere
+    tf_evidence_repo
+    git -C "$REPO" checkout -q -b refactor/split
+    elsewhere="$(tc_mktemp_d)"
+    run_tf_at "$elsewhere" vse_tf_refactor_branch "$REPO"
+    tc_assert_rc 0 "refactor: the branch of the named top level is read"
+    git -C "$REPO" checkout -q -b feat/x
+    run_tf_at "$elsewhere" vse_tf_refactor_branch "$REPO"
+    tc_assert_rc 1 "refactor: a feature branch in the named top level is not a refactor branch"
+
+    git -C "$elsewhere" init -q -b refactor/here
+    git -C "$elsewhere" -c user.email=t@example.invalid -c user.name=t commit -q --allow-empty -m init
+    run_tf_at "$elsewhere" vse_tf_refactor_branch "$REPO"
+    tc_assert_rc 1 "refactor: the named top level wins over the working directory"
+    run_tf_at "$elsewhere" vse_tf_refactor_branch
+    tc_assert_rc 0 "refactor: with no top level the working directory is read"
+}
+
 case_detect_pytest() {
     local dir
     tc_setup_repo
@@ -841,6 +948,38 @@ case_detect_none() {
     tc_assert_rc 1 "detect: exit 1 for a missing directory"
 }
 
+# Only a "test" key inside the "scripts" object of package.json is an
+# npm test script. The same key elsewhere, such as directories.test,
+# names something else.
+case_detect_npm_test_in_scripts() {
+    local dir
+    tc_setup_repo
+    tc_env
+    dir="$(tc_mktemp_d)"
+    printf '{"name": "x", "directories": {"test": "spec"}}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_rc 1 "detect: directories.test is not a test script"
+    tc_assert_empty "$OUT" "detect: nothing printed for directories.test"
+
+    printf '{\n  "directories": {"test": "spec"},\n  "scripts": {\n    "build": "tsc"\n  }\n}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_empty "$OUT" "detect: a scripts object with no test key is not a test script"
+
+    printf '{"scripts": {"build": "tsc"}, "directories": {"test": "spec"}}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_empty "$OUT" "detect: the scripts object ends at its closing brace"
+    printf '{"config": {"scripts": {}, "test": "x"}}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_empty "$OUT" "detect: a scripts object below the top level does not count"
+    printf '{"scripts": {"x": {"test": "y"}}}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_empty "$OUT" "detect: a test key nested deeper inside scripts does not count"
+
+    printf '{\n  "description": "a \\"test\\": {",\n  "scripts": {\n    "lint": "eslint .",\n    "test": "node --test"\n  }\n}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_eq "npm-test" "$OUT" "detect: scripts.test over several lines, after a string holding braces"
+}
+
 # tf_detect_one <key> <setup-command>: a fresh directory, set up by the
 # command run inside it, detects exactly <key>.
 tf_detect_one() {
@@ -865,6 +1004,7 @@ case_detect_each_key() {
     tf_detect_one ctest 'printf "project(x)\nenable_testing()\n" > CMakeLists.txt'
     tf_detect_one make-test 'printf "all:\n\ttrue\n\ntest: all\n\ttrue\n" > Makefile'
     tf_detect_one tests-dir 'mkdir tests'
+    tf_detect_one tests-dir 'mkdir test'
     tf_detect_one spec-dir 'mkdir spec'
     tf_detect_one behave 'printf "[behave]\n" > behave.ini'
     tf_detect_one cucumber 'printf "module.exports = {}\n" > cucumber.js'
@@ -893,6 +1033,21 @@ case_applies_values() {
 }
 
 # ------------------------------------------------ paths and config
+
+# test-first.sh reads the configuration through iso-profile.sh, so
+# sourcing it without that library, or beside an older copy that lacks
+# iso_list, fails at once with one line.
+case_requires_profile_library() {
+    tc_setup_repo
+    tc_env
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    tc_run_in "$REPO" bash -c '. "$1/test-first.sh"' guard "$TF_LIB"
+    tc_assert_rc 1 "guard: test-first.sh alone refuses to load"
+    tc_assert_grep "Source iso-profile.sh before test-first.sh." "$ERR" "guard: the refusal names iso-profile.sh"
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    tc_run_in "$REPO" bash -c 'iso_section_list() { :; }; iso_section_scalar() { :; }; . "$1/test-first.sh"' guard "$TF_LIB"
+    tc_assert_rc 1 "guard: an iso-profile.sh without iso_list is refused"
+}
 
 case_find_config_nested_demo() {
     local outer top
@@ -948,6 +1103,9 @@ case_canonical_missing_tail() {
     tc_assert_eq "${real}/sub/file.txt" "$OUT" "canonical: a relative path resolves against the working directory"
     run_tf vse_tf_canonical /
     tc_assert_eq "/" "$OUT" "canonical: the root directory"
+    ln -s "${real}/present.txt" "${real}/file-link"
+    run_tf vse_tf_canonical "${link}/file-link"
+    tc_assert_eq "${real}/file-link" "$OUT" "canonical: a final link to a file is kept, its directory resolved"
 }
 
 case_story_blocks_demo_register
@@ -966,6 +1124,8 @@ case_post_image_empty_old_string
 case_post_image_multiedit
 case_post_image_write
 case_post_image_no_json_tool
+case_disk_image_symmetric_latin1
+case_disk_image_plain
 case_post_image_unsupported_tool
 case_feature_tag_bom_crlf
 case_feature_tag_prefix_id_rejected
@@ -978,14 +1138,18 @@ case_evidence_rename_extra_field
 case_evidence_untracked_test
 case_evidence_deleted_test_ignored
 case_evidence_branch_since_main
+case_evidence_protected_flow_list
 case_evidence_shallow
 case_evidence_detached
 case_evidence_unborn
 case_refactor_branch
+case_refactor_branch_toplevel
 case_detect_pytest
 case_detect_none
+case_detect_npm_test_in_scripts
 case_detect_each_key
 case_applies_values
+case_requires_profile_library
 case_find_config_nested_demo
 case_canonical_missing_tail
 

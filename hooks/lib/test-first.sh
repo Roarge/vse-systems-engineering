@@ -13,24 +13,26 @@
 # Functions (each returns 0 on success, and failures use an explicit
 # return, so errexit is not load-bearing inside them):
 #
-#   vse_tf_canonical <path>            absolute path, symlinks resolved
+#   vse_tf_canonical <path>            absolute path, directories resolved
 #   vse_tf_find_config <abs-path>      nearest .iso-config.yaml
 #   vse_tf_story_blocks                stdin SysML, stdout ID<TAB>block
 #   vse_tf_touched_stories <pre> <post>  IDs new or changed in post
 #   vse_tf_feature_has_tag <file> <ID>   0 when tagged @<ID>
 #   vse_tf_post_image <payload> <file>   file content after the edit
+#   vse_tf_disk_image <file>           file content before the edit
 #   vse_tf_classify <relpath>          never, test, code or other
 #   vse_tf_evidence <toplevel>         evidence: <path>, or reason: ...
-#   vse_tf_refactor_branch             0 on a refactor branch
+#   vse_tf_refactor_branch [<toplevel>]  0 on a refactor branch
 #   vse_tf_detect <dir>                one key per detected test tool
 #   vse_tf_applies                     true, false or nothing
 #
 # Configuration comes from iso-profile.sh, which shall be sourced
-# first: ISO_CONFIG_FILE names the file, and iso_section_scalar and
-# iso_section_list read the test_first record. Sourcing this file does
-# no other work. A caller that found the configuration by walking up
-# from an edited file exports VSE_ISO_CONFIG before sourcing
-# iso-profile.sh, so both libraries read the same file.
+# first: ISO_CONFIG_FILE names the file, iso_section_scalar and
+# iso_section_list read the test_first record, and iso_list reads
+# protected_branches. Sourcing this file does no other work. A caller
+# that found the configuration by walking up from an edited file
+# exports VSE_ISO_CONFIG before sourcing iso-profile.sh, so both
+# libraries read the same file.
 #
 # File content never passes through awk -v or the environment. Text
 # goes in on stdin or as a file, so its size and bytes are kept.
@@ -46,7 +48,9 @@
 # iso-profile.sh. The PreToolUse hook sources the plugin's own copy.
 set -euo pipefail
 
-if ! command -v iso_section_list >/dev/null 2>&1; then
+if ! command -v iso_section_scalar >/dev/null 2>&1 \
+    || ! command -v iso_section_list >/dev/null 2>&1 \
+    || ! command -v iso_list >/dev/null 2>&1; then
     echo "[test-first] Source iso-profile.sh before test-first.sh." >&2
     # The exit is reached only when the file is run instead of sourced.
     # shellcheck disable=SC2317
@@ -55,9 +59,11 @@ fi
 
 # ------------------------------------------------------------- paths
 
-# Print the absolute form of <path> with every symbolic link in its
-# existing part resolved. The path need not exist: the nearest existing
-# ancestor is resolved with pwd -P and the missing tail is put back. A
+# Print the absolute form of <path> with every symbolic link among its
+# existing directories resolved. The path need not exist: the nearest
+# existing directory is resolved with pwd -P and the rest is put back
+# as written. So a final component that is not a directory is kept as
+# it is, and a final symbolic link to a file is not resolved. A
 # relative path is taken from the working directory.
 vse_tf_canonical() {
     local path="$1" dir base tail="" real
@@ -134,8 +140,9 @@ vse_tf_find_config() {
 # ":", 4 after "VSE_Library", 5 after "VSE_Library::", 6 after the
 # UserStory type, waiting for "{" (a block) or ";" (no body). In states
 # 1 to 5 any unexpected token resets the state. State 6 passes over
-# other tokens, such as a multiplicity, and ends at a "}" or at "::"
-# straight after the type (a type nested under UserStory). A new
+# other tokens, such as a multiplicity or a reference subsetting
+# ("::>", read as one token before "::" is tried), and ends at a "}" or
+# at "::" straight after the type (a type nested under UserStory). A new
 # "requirement" keyword always starts a new declaration, so a keyword
 # left dangling by a partial edit does not hide the story after it.
 # shellcheck disable=SC2016
@@ -199,6 +206,9 @@ function tokens(m, ln,    n, i, j, c) {
             match(substr(m, i), /^[A-Za-z_][A-Za-z0-9_]*/)
             feed(substr(m, i, RLENGTH), ln, i)
             i += RLENGTH
+        } else if (c == ":" && substr(m, i + 1, 2) == ":>") {
+            feed("::>", ln, i)
+            i += 3
         } else if (c == ":" && substr(m, i + 1, 1) == ":") {
             feed("::", ln, i)
             i += 2
@@ -444,12 +454,18 @@ except (OSError, ValueError, AttributeError, TypeError) as error:
 '
 
 # Print the content <target-file> would have after the Write, Edit or
-# MultiEdit call in <payload-file> (the PreToolUse JSON), byte for byte.
-# Write gives tool_input.content. Edit replaces old_string with
-# new_string in the file on disk. MultiEdit applies tool_input.edits in
-# order. A missing file reads as empty. Uses jq, else python3 in
-# isolated mode. Returns 2 for a malformed payload or another tool, and
-# 3 when neither jq nor python3 is present.
+# MultiEdit call in <payload-file> (the PreToolUse JSON). Write gives
+# tool_input.content. Edit replaces old_string with new_string in the
+# file on disk. MultiEdit applies tool_input.edits in order. A missing
+# file reads as empty. Uses jq, else python3 in isolated mode. Returns 2
+# for a malformed payload or another tool, and 3 when neither jq nor
+# python3 is present.
+#
+# The text passes through the engine, which normalises it. Valid UTF-8
+# comes back byte for byte. A byte that is not valid UTF-8 is kept by
+# python3 but turned into U+FFFD by jq. So compare a post image only
+# with the pre-image vse_tf_disk_image prints: both take the same path
+# and are normalised identically.
 vse_tf_post_image() {
     local payload="$1" target="$2" input=/dev/null
     if [ -f "$target" ] && [ -r "$target" ]; then
@@ -464,6 +480,18 @@ vse_tf_post_image() {
         return 0
     fi
     return 3
+}
+
+# An empty MultiEdit, which changes nothing.
+_VSE_TF_NO_EDIT='{"tool_name": "MultiEdit", "tool_input": {"edits": []}}'
+
+# Print the content of <file> before any edit, normalised exactly as
+# vse_tf_post_image normalises a post image: the file goes through the
+# same function and engine with an edit list that changes nothing. A
+# missing file reads as empty. Returns 3 when neither jq nor python3 is
+# present.
+vse_tf_disk_image() {
+    vse_tf_post_image <(printf '%s' "$_VSE_TF_NO_EDIT") "$1"
 }
 
 # ----------------------------------------------------- classification
@@ -568,35 +596,9 @@ vse_tf_classify() {
 
 # ----------------------------------------------------------- evidence
 
-# Print the items of the top-level block list <key> (one "- item" per
-# line, as protected_branches is written), quotes and comments removed.
-# Uses the value reader of iso-profile.sh.
-_vse_tf_block_list() {
-    [ -n "${ISO_CONFIG_FILE:-}" ] || return 0
-    # shellcheck disable=SC2154
-    LC_ALL=C awk -v key="$1" "${_ISO_AWK_LIB}"'
-        { sub(/\r$/, "") }
-        !inside {
-            if (index($0, key ":") == 1)
-                inside = 1
-            next
-        }
-        {
-            line = $0
-            sub(/^[ \t]+/, "", line)
-        }
-        substr(line, 1, 1) == "-" {
-            item = iso_item(iso_value(substr(line, 2), 0))
-            if (item != "")
-                print item
-            next
-        }
-        /^[^ \t#]/ { exit }
-    ' "$ISO_CONFIG_FILE"
-}
-
 # Print the refs a branch is measured against, in order: each literal
-# protected_branches entry and the same branch on origin, then
+# protected_branches entry (read by iso_list, so an inline flow list
+# and a block sequence both count) and the same branch on origin, then
 # origin/main, main, origin/master and master. An entry holding a glob
 # character names no single branch and is skipped.
 _vse_tf_base_candidates() {
@@ -607,7 +609,7 @@ _vse_tf_base_candidates() {
         esac
         printf '%s\norigin/%s\n' "$entry" "$entry"
     done <<EOF
-$(_vse_tf_block_list protected_branches)
+$(iso_list protected_branches)
 EOF
     printf '%s\n' origin/main main origin/master master
 }
@@ -689,13 +691,14 @@ EOF
     return 1
 }
 
-# Return 0 when the branch checked out in the working directory's
-# repository matches a test_first.refactor_branches glob. An absent key
-# means [refactor/*], and an explicit empty list names no branch. A
-# detached HEAD is never a refactor branch.
+# Return 0 when the branch checked out in <toplevel>, or in the working
+# directory's repository when no top level is named, matches a
+# test_first.refactor_branches glob. An absent key means [refactor/*],
+# and an explicit empty list names no branch. A detached HEAD is never
+# a refactor branch.
 vse_tf_refactor_branch() {
-    local branch globs
-    branch="$(git symbolic-ref --short -q HEAD 2>/dev/null)" || return 1
+    local top="${1:-.}" branch globs
+    branch="$(git -C "$top" symbolic-ref --short -q HEAD 2>/dev/null)" || return 1
     globs="$(iso_section_list test_first refactor_branches)"
     if [ -z "$globs" ]; then
         [ -z "$(iso_section_scalar test_first refactor_branches)" ] || return 1
@@ -711,6 +714,59 @@ _vse_tf_file_has() {
     [ -f "$1" ] && grep -qF -- "$2" "$1" 2>/dev/null
 }
 
+# Return 0 when the package.json <file> has a "test" key in its
+# top-level "scripts" object, other than the npm placeholder ("no test
+# specified"). The reader follows strings, with their escapes, and the
+# nesting of objects and arrays, so the same key elsewhere, such as
+# directories.test, does not count.
+_vse_tf_npm_test() {
+    [ -f "$1" ] || return 1
+    LC_ALL=C awk '
+        { text = text $0 "\n" }
+        END {
+            n = length(text)
+            for (i = 1; i <= n; i++) {
+                c = substr(text, i, 1)
+                if (c == "\"") {
+                    s = ""
+                    for (i++; i <= n; i++) {
+                        c = substr(text, i, 1)
+                        if (c == "\\") {
+                            s = s c substr(text, i + 1, 1)
+                            i++
+                        } else if (c == "\"") {
+                            break
+                        } else {
+                            s = s c
+                        }
+                    }
+                    if (value) {
+                        if (scripts && depth == 2 && key == "test" && !index(s, "no test specified"))
+                            hit = 1
+                        value = 0
+                    } else {
+                        last = s
+                    }
+                } else if (c == ":") {
+                    key = last
+                    value = 1
+                } else if (c == "{" || c == "[") {
+                    depth++
+                    if (c == "{" && value && depth == 2 && key == "scripts")
+                        scripts = 1
+                    value = 0
+                } else if (c == "}" || c == "]") {
+                    if (depth == 2)
+                        scripts = 0
+                    depth--
+                } else if (c == ",") {
+                    value = 0
+                }
+            }
+            exit !hit
+        }' "$1"
+}
+
 # Return 0 when <dir> holds any of the named files.
 _vse_tf_any_file() {
     local dir="$1" name
@@ -722,12 +778,12 @@ _vse_tf_any_file() {
 }
 
 # Print one key per test tool found in <dir>, in this order, and return
-# 1 when none is found. The test-first skill uses the same table.
+# 1 when none is found. The test-first skill mirrors this table.
 #
 #   pytest     pytest.ini, conftest.py, [tool.pytest in pyproject.toml,
 #              [tool:pytest] in setup.cfg, [pytest] in tox.ini
-#   npm-test   a "test" script in package.json other than the npm
-#              placeholder ("no test specified")
+#   npm-test   a "test" key in the "scripts" object of package.json,
+#              other than the npm placeholder ("no test specified")
 #   jest       jest.config.*, or a "jest" key in package.json
 #   vitest     vitest.config.*
 #   cargo      Cargo.toml
@@ -736,7 +792,8 @@ _vse_tf_any_file() {
 #   gradle     build.gradle or build.gradle.kts with src/test/
 #   ctest      enable_testing or add_test in CMakeLists.txt
 #   make-test  a test: target in the Makefile
-#   tests-dir  a tests/ or test/ directory
+#   tests-dir  a tests/ or test/ directory (test/ is the common name in
+#              JavaScript and Go projects, so both count)
 #   spec-dir   a spec/ directory
 #   behave     behave.ini, .behaverc, a [behave] section, features/steps/
 #   cucumber   cucumber.js and its kin, features/step_definitions/,
@@ -753,9 +810,7 @@ vse_tf_detect() {
         printf 'pytest\n'
         found=0
     fi
-    if [ -f "${dir}/package.json" ] && LC_ALL=C awk '
-            /"test"[ \t]*:/ && !/no test specified/ { hit = 1 }
-            END { exit !hit }' "${dir}/package.json"; then
+    if _vse_tf_npm_test "${dir}/package.json"; then
         printf 'npm-test\n'
         found=0
     fi
