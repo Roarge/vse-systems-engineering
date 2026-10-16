@@ -14,7 +14,6 @@ Feature: Stop reminders that never loop
     And the file src/reading.py has changed in the working tree
     And no test file has changed
 
-  @wip
   Scenario Outline: The <hook> hook is silent while a stop hook is active
     When the <hook> hook runs with stop_hook_active set to true
     Then the <hook> hook stays silent
@@ -24,18 +23,15 @@ Feature: Stop reminders that never loop
       | Stop         |
       | SubagentStop |
 
-  @wip
   Scenario: The first stop in a state draws the test-first reminder
     When the Stop hook runs
     Then the agent receives the test-first reminder
 
-  @wip
   Scenario: A second stop in the same state draws no reminder
     Given the Stop hook has sent the test-first reminder for the current state
     When the Stop hook runs
     Then the agent receives no test-first reminder
 
-  @wip
   Scenario: A stop in a new state draws the reminder again
     Given the Stop hook has sent the test-first reminder for the current state
     And the file src/sensor.py has changed in the working tree
