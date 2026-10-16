@@ -243,9 +243,17 @@ jobs:
           # byte-identical copies of the methodology, the SysML
           # library, the renderers and the story lint. A change to one
           # side lands in the same commit as the other. A file pair is
-          # compared with cmp and a directory pair with diff -rq.
-          # Python bytecode caches are skipped, because they are
-          # gitignored and never ship.
+          # compared with cmp. A directory pair is compared file by
+          # file over the names git lists on either side (tracked
+          # files, and untracked files that no .gitignore rule
+          # ignores). So an OS or editor artefact or a bytecode cache,
+          # which is ignored and never ships, is skipped, and a new
+          # file that is not yet added still counts. A tracked file
+          # missing from both sides is not a difference.
+          if ! git rev-parse --git-dir >/dev/null 2>&1; then
+            echo "::error::check-mirrors lists files through git, so run it inside a git checkout"
+            exit 1
+          fi
           EXIT_CODE=0
           CHECKED=0
           for pair in \
@@ -257,7 +265,20 @@ jobs:
             copy=${pair#*:}
             CHECKED=$((CHECKED + 1))
             if [ -d "$src" ]; then
-              diff -rq --exclude=__pycache__ "$src" "$copy"
+              REPORT=$( { git -C "$src" ls-files -z -co --exclude-standard
+                          git -C "$copy" ls-files -z -co --exclude-standard 2>/dev/null; } \
+                | tr '\0' '\n' | LC_ALL=C sort -u | while IFS= read -r f; do
+                  if [ ! -e "$src/$f" ] && [ ! -e "$copy/$f" ]; then
+                    continue
+                  elif [ ! -e "$copy/$f" ]; then
+                    echo "Only in $src: $f"
+                  elif [ ! -e "$src/$f" ]; then
+                    echo "Only in $copy: $f"
+                  elif ! cmp -s "$src/$f" "$copy/$f"; then
+                    echo "Files $src/$f and $copy/$f differ"
+                  fi
+                done )
+              [ -z "$REPORT" ] || { printf '%s\n' "$REPORT"; false; }
             else
               cmp "$src" "$copy"
             fi || {
