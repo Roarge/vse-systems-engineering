@@ -1,0 +1,19 @@
+# Test before code for the plugin's own development
+# (.claude/rules/tdd-bdd.md). The block uses the schema of a VSE
+# project's test_first record (methodology §11.5.2), and
+# tests/hooks/check-test-first.sh reads it through VSE_ISO_CONFIG with
+# the same library the project-side gates use. A test_paths glob wins
+# over a code_paths glob, so tests/bdd/steps/ is test code although
+# tests/bdd/*.py also matches it, and a "*" matches any characters,
+# "/" included. The check reads code_paths and test_paths. The other
+# keys record the judgement the way a project's record does.
+#
+# The file is deliberately not named .iso-config.yaml, so the
+# configuration walker never takes the plugin repository for a VSE
+# project.
+test_first:
+  applies: true
+  rationale: "Bash under hooks/ is tested from tests/hooks/. Python under templates/tools/ and tests/bdd/ is tested with unittest under tests/python/. Prose, skills, wiki, methodology and CI YAML are exempt, and Makefile parity checks the CI YAML."
+  test_command: "make test-hooks test-python test-bdd"
+  code_paths: [hooks/*.sh, hooks/lib/*.sh, templates/tools/*.py, tests/bdd/*.py, Makefile]
+  test_paths: [tests/hooks/*, tests/python/*, tests/features/*, tests/fixtures/*, tests/bdd/steps/*]

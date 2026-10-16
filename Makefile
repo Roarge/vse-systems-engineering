@@ -11,10 +11,10 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-routing \
-        check-mirrors check-toolchain test-python test-bdd test-hooks \
-        check-demo-generated
+        check-mirrors check-test-first check-toolchain test-python test-bdd \
+        test-hooks check-demo-generated
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-mirrors check-toolchain test-python test-bdd test-hooks check-demo-generated
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated
 	@echo "All checks passed."
 
 validate:
@@ -273,6 +273,15 @@ check-mirrors:
 	 done; \
 	 echo "  Checked $$CHECKED mirror pairs."; \
 	 exit $$EXIT_CODE
+
+# Test before code for the plugin itself (.claude/rules/tdd-bdd.md). A
+# range that changes a code path named in tests/test-first.yaml shall
+# also change a test path. The range defaults to origin/main...HEAD,
+# the branch's changes since it left main, and VSE_PRECOMMIT_RANGE
+# names another. CI passes the pull request's range.
+check-test-first:
+	@echo "Checking that code changes arrive with tests..."
+	@bash tests/hooks/check-test-first.sh
 
 # The behavioural hook tests under tests/hooks/. Every toolchain is
 # stubbed, so the assertions hold with no SysML tool installed, which

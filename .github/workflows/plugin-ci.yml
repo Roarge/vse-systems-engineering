@@ -10,7 +10,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
+      # The full history, so the test-first check can find the merge
+      # base of a pull request's range.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate plugin manifest JSON
         run: |
@@ -288,6 +292,26 @@ jobs:
           done
           echo "Checked $CHECKED mirror pairs."
           exit $EXIT_CODE
+
+      - name: Check that code changes arrive with tests
+        env:
+          VSE_PRECOMMIT_RANGE: ${{ github.event.pull_request.base.sha }}...${{ github.sha }}
+        run: |
+          # Test before code for the plugin itself. A pull request that
+          # changes a code path named in tests/test-first.yaml shall
+          # also change a test path. The range is the pull request's
+          # base...the commit under test, so the check reads the
+          # changes since their merge base. A push to main carries
+          # changes that were checked as a pull request, so the step
+          # is skipped there with a notice.
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "::notice::The test-first check runs on pull requests only, so it is skipped on this push."
+            exit 0
+          fi
+          if ! bash tests/hooks/check-test-first.sh; then
+            echo "::error::tests/hooks/check-test-first.sh found code changed with no test change, or could not read the range"
+            exit 1
+          fi
 
       - name: Check the SysML toolchain library
         run: |
