@@ -61,6 +61,27 @@ case_other_runners_read_empty_stdin() {
     tc_assert_empty "$OUT" "other runners: stdin is empty"
 }
 
+# The profile library honours VSE_ISO_CONFIG, so a value exported by an
+# outer run would steer every case to the wrong configuration. The
+# sandboxed runners drop it, and a case that needs it passes it through
+# tc_env.
+case_runners_drop_outer_vse_iso_config() {
+    local show
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    show='printf "%s\n" "${VSE_ISO_CONFIG-unset}"'
+    export VSE_ISO_CONFIG="/outer/run/.iso-config.yaml"
+    tc_env
+    tc_run_in "$REPO" bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer VSE_ISO_CONFIG: tc_run_in drops it"
+    tc_run_lib_fn bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer VSE_ISO_CONFIG: the hook runners drop it"
+    tc_env VSE_ISO_CONFIG=/from/tc-env.yaml
+    tc_run_in "$REPO" bash -c "$show"
+    tc_assert_eq "/from/tc-env.yaml" "$OUT" "VSE_ISO_CONFIG: tc_env still passes it through"
+    tc_env
+    unset VSE_ISO_CONFIG
+}
+
 # -------------------------------------------------- project configuration
 
 case_config_two_gates() {
@@ -129,6 +150,7 @@ case_assert_json_silent() {
 
 case_stdin_reaches_hook
 case_other_runners_read_empty_stdin
+case_runners_drop_outer_vse_iso_config
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs
