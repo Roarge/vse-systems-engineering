@@ -7,6 +7,7 @@ test can check which steps and cleanups ran, and in which order.
 """
 
 import os
+import sys
 
 from steps import step
 
@@ -53,6 +54,25 @@ def cleanup_that_raises(ctx):
         raise RuntimeError("cleanup went wrong")
 
     ctx.cleanup(fail)
+
+
+# sys.exit raises SystemExit, which is not an Exception. An in-process
+# command-line main() does the same on --help or a bad argument.
+@step(r"a step that exits with status (\d+)")
+def step_that_exits(ctx, status):
+    sys.exit(int(status))
+
+
+@step(r"a cleanup that exits with status (\d+)")
+def cleanup_that_exits(ctx, status):
+    ctx.cleanup(lambda: sys.exit(int(status)))
+
+
+# Ctrl-C raises KeyboardInterrupt, which must stop the run, not fail one
+# scenario and carry on.
+@step(r"a step that is interrupted")
+def step_that_is_interrupted(ctx):
+    raise KeyboardInterrupt
 
 
 @step(r"the context is fresh")

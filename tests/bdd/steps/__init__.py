@@ -41,6 +41,13 @@ from typing import Callable, List, Tuple
 # the step modules registered them.
 REGISTRY = []  # type: List[Tuple[re.Pattern, Callable]]
 
+# What a step or a cleanup may raise and still only fail its scenario.
+# SystemExit is not an Exception, but sys.exit() in a step (or an
+# in-process command-line main() given --help or a bad argument) must
+# fail that scenario, not end the run with the step's exit status.
+# KeyboardInterrupt (Ctrl-C) stays out, so an interrupt stops the run.
+STEP_ERRORS = (Exception, SystemExit)
+
 
 def step(pattern: str) -> Callable:
     """Register the decorated function for steps whose whole text matches
@@ -67,16 +74,16 @@ class Context:
         self._cleanups.append(function)
         return function
 
-    def run_cleanups(self) -> List[Exception]:
+    def run_cleanups(self) -> List[BaseException]:
         """Run every registered cleanup, last registered first, and return
-        the exceptions they raised. A failing cleanup does not stop the
-        others."""
-        errors = []  # type: List[Exception]
+        the exceptions they raised, sys.exit() included. A failing
+        cleanup does not stop the others."""
+        errors = []  # type: List[BaseException]
         while self._cleanups:
             function = self._cleanups.pop()
             try:
                 function()
-            except Exception as error:
+            except STEP_ERRORS as error:
                 errors.append(error)
         return errors
 

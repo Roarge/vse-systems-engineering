@@ -24,11 +24,13 @@ steps run first, then those of the scenario's Rule, then the scenario's
 own. A scenario tagged `@wip` (work in progress), directly or through
 its Rule or Feature, is skipped unless `--include-wip` is given.
 
-A step stops its scenario when it raises an exception (failed), when no
-definition matches it (undefined), or when more than one does
-(ambiguous, which counts as failed). The cleanups the scenario
-registered run after its last step either way, and a cleanup that
-raises fails a scenario that had passed.
+A step stops its scenario when it raises an exception or calls
+sys.exit() (failed), when no definition matches it (undefined), or when
+more than one does (ambiguous, which counts as failed). The cleanups the
+scenario registered run after its last step either way, and a cleanup
+that raises or calls sys.exit() fails a scenario that had passed. An
+interrupt (Ctrl-C) stops the whole run once the interrupted scenario's
+cleanups have run.
 
 Output is one line per scenario, `PASS`, `FAIL`, `UNDEFINED` or `SKIP`
 followed by `<path>:<line> <name>`, with indented detail lines under a
@@ -63,7 +65,12 @@ sys.path.insert(0, os.path.join(REPO, "templates", "tools", "lint"))
 sys.path.insert(0, HERE)
 
 import gherkin  # noqa: E402
-from steps import REGISTRY, Context, load_step_modules  # noqa: E402
+from steps import (  # noqa: E402
+    REGISTRY,
+    STEP_ERRORS,
+    Context,
+    load_step_modules,
+)
 
 WIP_TAG = "@wip"
 
@@ -117,7 +124,7 @@ def definitions(text: str) -> List[Tuple[str, Callable, tuple]]:
     return found
 
 
-def format_error(error: Exception) -> List[str]:
+def format_error(error: BaseException) -> List[str]:
     """The traceback of `error` without the runner's own frame, as
     indented detail lines."""
     text = "".join(traceback.format_exception(
@@ -132,33 +139,36 @@ def run_scenario(path: str,
     ctx = Context()
     status = "PASS"
     details = []  # type: List[str]
-    for item in steps:
-        where = "  {}:{}: ".format(path, item.line)
-        label = "{} {}".format(item.keyword, item.text)
-        found = definitions(item.text)
-        if not found:
-            status = "UNDEFINED"
-            details.append(where + "undefined: " + label)
-            break
-        if len(found) > 1:
-            status = "FAIL"
-            details.append(where + "ambiguous: " + label)
-            details.extend("    matches {!r} ({}.{})".format(
-                pattern, function.__module__, function.__name__)
-                for pattern, function, _ in found)
-            break
-        _, function, groups = found[0]
-        ctx.doc_string = (item.doc_string.content
-                          if item.doc_string is not None else None)
-        ctx.table = item.table
-        try:
-            function(ctx, *groups)
-        except Exception as error:
-            status = "FAIL"
-            details.append(where + "failed: " + label)
-            details.extend(format_error(error))
-            break
-    errors = ctx.run_cleanups()
+    try:
+        for item in steps:
+            where = "  {}:{}: ".format(path, item.line)
+            label = "{} {}".format(item.keyword, item.text)
+            found = definitions(item.text)
+            if not found:
+                status = "UNDEFINED"
+                details.append(where + "undefined: " + label)
+                break
+            if len(found) > 1:
+                status = "FAIL"
+                details.append(where + "ambiguous: " + label)
+                details.extend("    matches {!r} ({}.{})".format(
+                    pattern, function.__module__, function.__name__)
+                    for pattern, function, _ in found)
+                break
+            _, function, groups = found[0]
+            ctx.doc_string = (item.doc_string.content
+                              if item.doc_string is not None else None)
+            ctx.table = item.table
+            try:
+                function(ctx, *groups)
+            except STEP_ERRORS as error:
+                status = "FAIL"
+                details.append(where + "failed: " + label)
+                details.extend(format_error(error))
+                break
+    finally:
+        # An interrupt still propagates, but only after the cleanups.
+        errors = ctx.run_cleanups()
     if errors:
         if status == "PASS":
             status = "FAIL"

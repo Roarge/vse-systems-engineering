@@ -245,6 +245,63 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(lines[-1], summary(0, 1, 0, 0))
         self.assertEqual(code, 1, out + err)
 
+    def test_exit_from_a_step_fails_the_scenario(self):
+        # sys.exit(0) in a step must not end the run with status 0 and
+        # no summary, which would read as a green run.
+        path = feature("exit.feature")
+        code, out, err = self.run_bdd(path)
+        lines = out.splitlines()
+        self.assertIn(
+            "FAIL {}:3 A step that exits the interpreter fails its scenario"
+            .format(path), lines
+        )
+        self.assertIn(
+            "  {}:6: failed: And a step that exits with status 0"
+            .format(path), lines
+        )
+        self.assertIn("SystemExit: 0", out)
+        self.assertIn(
+            "PASS {}:9 A later scenario still runs after an exit"
+            .format(path), lines
+        )
+        # The exit stops its scenario, its cleanup runs, the next runs.
+        self.assertEqual(self.logged(), [
+            "before the exit", "cleanup after the exit", "later scenario ran",
+        ])
+        self.assertEqual(lines[-1], summary(1, 1, 0, 0))
+        self.assertEqual(code, 1, out + err)
+
+    def test_exit_from_a_cleanup_fails_the_scenario(self):
+        path = feature("cleanup_exit.feature")
+        code, out, err = self.run_bdd(path)
+        lines = out.splitlines()
+        self.assertIn(
+            "FAIL {}:3 A cleanup that exits the interpreter fails a passing "
+            "scenario".format(path), lines
+        )
+        self.assertIn("  cleanup failed:", lines)
+        self.assertIn("SystemExit: 0", out)
+        self.assertIn(
+            "PASS {}:8 A later scenario still runs after a cleanup exits"
+            .format(path), lines
+        )
+        # The cleanup registered before the exiting one still runs.
+        self.assertEqual(self.logged(), [
+            "scenario ran", "first cleanup", "later scenario ran",
+        ])
+        self.assertEqual(lines[-1], summary(1, 1, 0, 0))
+        self.assertEqual(code, 1, out + err)
+
+    def test_interrupt_stops_the_run_after_cleanups(self):
+        path = feature("interrupt.feature")
+        code, out, err = self.run_bdd(path)
+        self.assertIn("KeyboardInterrupt", err)
+        # The interrupted scenario's cleanup runs, and nothing after it.
+        self.assertEqual(self.logged(), [
+            "before the interrupt", "cleanup after the interrupt",
+        ])
+        self.assertNotEqual(code, 0, out + err)
+
     def test_parse_error_exit_2(self):
         broken = feature("parse_error.feature")
         code, out, err = self.run_bdd(broken, feature("passing.feature"))
