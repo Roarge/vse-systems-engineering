@@ -237,6 +237,37 @@ jobs:
               ;;
           esac
 
+      - name: Check the demo mirrors
+        run: |
+          # The demo is a standalone project, so it carries
+          # byte-identical copies of the methodology, the SysML
+          # library, the renderers and the story lint. A change to one
+          # side lands in the same commit as the other. A file pair is
+          # compared with cmp and a directory pair with diff -rq.
+          # Python bytecode caches are skipped, because they are
+          # gitignored and never ship.
+          EXIT_CODE=0
+          CHECKED=0
+          for pair in \
+            methodology:demo/smart-sensor/methodology \
+            templates/common/library/vse-library.sysml:demo/smart-sensor/model/library/vse-library.sysml \
+            templates/tools/render:demo/smart-sensor/tools/render \
+            templates/tools/lint:demo/smart-sensor/tools/lint; do
+            src=${pair%%:*}
+            copy=${pair#*:}
+            CHECKED=$((CHECKED + 1))
+            if [ -d "$src" ]; then
+              diff -rq --exclude=__pycache__ "$src" "$copy"
+            else
+              cmp "$src" "$copy"
+            fi || {
+              echo "::error::$src and $copy are not byte-identical"
+              EXIT_CODE=1
+            }
+          done
+          echo "Checked $CHECKED mirror pairs."
+          exit $EXIT_CODE
+
       - name: Check the SysML toolchain library
         run: |
           # Every toolchain is stubbed by the test, so the assertions
@@ -248,16 +279,30 @@ jobs:
             exit 1
           fi
 
+      - name: Run the Python unit tests
+        run: |
+          # Standard library unittest only, because pytest is not
+          # importable by python3 locally or on this runner.
+          python3 -m unittest discover -s tests/python -t . -v
+
+      - name: Run the plugin's Gherkin scenarios
+        run: |
+          # The standard-library runner in tests/bdd/. A scenario
+          # tagged @wip is skipped. A directory that holds no .feature
+          # file passes with a zero summary.
+          python3 tests/bdd/run.py tests/features
+
       - name: Test the hook scripts
         run: |
-          if ! bash tests/hooks/test-pre-commit.sh; then
-            echo "::error::tests/hooks/test-pre-commit.sh reported a failing case"
-            exit 1
-          fi
-          if ! bash tests/hooks/test-session-start.sh; then
-            echo "::error::tests/hooks/test-session-start.sh reported a failing case"
-            exit 1
-          fi
+          # Every tests/hooks/test-*.sh file runs, found by glob, so a
+          # new hook test joins the suite by its file name alone. The
+          # first failing file stops the run.
+          for t in tests/hooks/test-*.sh; do
+            if ! bash "$t"; then
+              echo "::error::$t reported a failing case"
+              exit 1
+            fi
+          done
 
       - name: Check the demo's generated artefacts
         run: |

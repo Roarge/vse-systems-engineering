@@ -11,9 +11,10 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-routing \
-        check-toolchain test-hooks check-demo-generated
+        check-mirrors check-toolchain test-python test-bdd test-hooks \
+        check-demo-generated
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-toolchain test-hooks check-demo-generated
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-mirrors check-toolchain test-python test-bdd test-hooks check-demo-generated
 	@echo "All checks passed."
 
 validate:
@@ -223,6 +224,36 @@ check-config:
 	     ;; \
 	 esac
 
+# The demo is a standalone project, so it carries byte-identical copies
+# of the methodology, the SysML library, the renderers and the story
+# lint. A change to one side lands in the same commit as the other. A
+# file pair is compared with cmp and a directory pair with diff -rq.
+# Python bytecode caches are skipped, because they are gitignored and
+# never ship.
+check-mirrors:
+	@echo "Checking the demo mirrors..."
+	@EXIT_CODE=0; \
+	 CHECKED=0; \
+	 for pair in \
+	   methodology:demo/smart-sensor/methodology \
+	   templates/common/library/vse-library.sysml:demo/smart-sensor/model/library/vse-library.sysml \
+	   templates/tools/render:demo/smart-sensor/tools/render \
+	   templates/tools/lint:demo/smart-sensor/tools/lint; do \
+	   src=$${pair%%:*}; \
+	   copy=$${pair#*:}; \
+	   CHECKED=$$((CHECKED + 1)); \
+	   if [ -d "$$src" ]; then \
+	     diff -rq --exclude=__pycache__ "$$src" "$$copy"; \
+	   else \
+	     cmp "$$src" "$$copy"; \
+	   fi || { \
+	     echo "ERROR: $$src and $$copy are not byte-identical"; \
+	     EXIT_CODE=1; \
+	   }; \
+	 done; \
+	 echo "  Checked $$CHECKED mirror pairs."; \
+	 exit $$EXIT_CODE
+
 # The behavioural hook tests under tests/hooks/. Every toolchain is
 # stubbed, so the assertions hold with no SysML tool installed, which
 # is what CI runs. The real-tool section of check-toolchain.sh prints
@@ -232,9 +263,27 @@ check-toolchain:
 	@echo "Checking the SysML toolchain library..."
 	@bash tests/hooks/check-toolchain.sh
 
+# The Python unit tests under tests/python/. They use the standard
+# library unittest module, because pytest is not importable by python3
+# locally or in CI.
+test-python:
+	@echo "Running the Python unit tests..."
+	@python3 -m unittest discover -s tests/python -t . -v
+
+# The plugin's own Gherkin scenarios under tests/features/, run by the
+# standard-library runner in tests/bdd/. A scenario tagged @wip is
+# skipped. A directory that holds no .feature file passes with a zero
+# summary.
+test-bdd:
+	@echo "Running the plugin's Gherkin scenarios..."
+	@python3 tests/bdd/run.py tests/features
+
+# Every tests/hooks/test-*.sh file runs, found by glob, so a new hook
+# test joins the suite by its file name alone. The first failing file
+# stops the run. check-toolchain.sh runs under its own target.
 test-hooks:
 	@echo "Testing the hook scripts..."
-	@bash tests/hooks/test-pre-commit.sh && bash tests/hooks/test-session-start.sh
+	@for t in tests/hooks/test-*.sh; do bash "$$t" || exit 1; done
 
 # Methodology section 9.8 Contract 3: the demo's model-derived
 # artefacts are regenerated and shall match what is committed. The
