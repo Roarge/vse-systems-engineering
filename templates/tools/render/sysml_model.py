@@ -306,11 +306,13 @@ class Model:
 def _strip_comments(text: str) -> Tuple[str, List[str]]:
     """Remove comments, keeping `doc` bodies and the line structure.
 
-    Line comments disappear. Block comments disappear too, except when the
-    preceding token is `doc`, in which case the body is captured and a
-    marker takes its place so the parser can attach it to the construct
-    being read. The newlines inside every block comment are preserved so
-    that line-oriented reading downstream is not thrown off.
+    Line comments disappear. KerML notes, `//* ... */`, disappear too,
+    and they may span lines, so `//*` is checked before `//`. Block
+    comments disappear as well, except when the preceding token is `doc`,
+    in which case the body is captured and a marker takes its place so
+    the parser can attach it to the construct being read. The newlines
+    inside every note and block comment are preserved so that
+    line-oriented reading downstream is not thrown off.
     """
     docs: List[str] = []
     out: List[str] = []
@@ -334,6 +336,16 @@ def _strip_comments(text: str) -> Tuple[str, List[str]]:
             in_string = True
             out.append(char)
             index += 1
+            continue
+        if char == "/" and following == "/" and text[index + 2:index + 3] == "*":
+            end = text.find("*/", index + 3)
+            if end == -1:
+                body = text[index + 3:]
+                index = length
+            else:
+                body = text[index + 3:end]
+                index = end + 2
+            out.append("\n" * body.count("\n"))
             continue
         if char == "/" and following == "/":
             while index < length and text[index] != "\n":
