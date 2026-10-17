@@ -83,8 +83,9 @@ package VSE_Library {
                  - may `frame` one or more `concern def` instances
                    (per §1.4.6).
                §1.9 well-formedness rules apply: typed role, typed
-               subject, at least one acceptance before `ready`,
-               retained narrative capability and benefit. */
+               subject, retained narrative capability and benefit, a
+               feature file always, and at least one @AC_-tagged
+               scenario mirrored by a named criterion before `ready`. */
 
         // The subject is declared first because the language requires
         // the subject to be the first parameter of a requirement
