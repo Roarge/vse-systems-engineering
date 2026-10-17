@@ -4,7 +4,7 @@ This project follows the story-driven AMBSE methodology shipped by the `vse-syst
 
 ## Behaviour first, test first
 
-Every story has a Gherkin feature file, `<ID>.feature`, beside it. Gherkin is the plain-text Given/When/Then format, and each scenario in the file is one acceptance criterion. Write the feature file first, then the story with a named criterion for each scenario, then the case stubs that reach each criterion, and only then the design (§11.4). Where test first applies (`test_first.applies` in `.iso-config.yaml`, §11.5), write the failing test before the code that makes it pass, and keep the failing output for the pull request's Test-first evidence section (§11.7). The pre-commit hook and CI block a story without its feature file, and a code change without a test change, at every profile unless a recorded override lowers the gate (§11.9).
+Every story has a Gherkin feature file, `<ID>.feature`, beside it. Gherkin is the plain-text Given/When/Then format, and each scenario in the file is one acceptance criterion. Write the feature file first, then the story with a named criterion for each scenario, then the case stubs that reach each criterion, and only then the design (§11.4). Where test first applies (`test_first.applies` in `.iso-config.yaml`, §11.5), write the failing test before the code that makes it pass, and keep the failing output for the pull request's Test-first evidence section (§11.7). The pre-commit hook and CI block a story without its feature file, and a code change without a test change, where test first applies, at every profile unless a recorded override lowers the gate (§11.9).
 
 ## Branch names
 

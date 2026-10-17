@@ -187,8 +187,9 @@ check-routing:
 # stays a warning until demo sync promotes it. The test_first block and
 # the four test-first and Gherkin gates ship commented out, so a new
 # project starts at the profile defaults and records its own judgement.
-# A commented block is a "# <name>:" line followed by commented keys
-# indented two spaces or more, and it ends at the first other line.
+# A commented block is a "# <name>:" header line followed by commented
+# keys indented under the header (two blanks or more after the #), and
+# it ends at the first other line.
 check-config:
 	@echo "Checking ISO configuration files..."
 	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \

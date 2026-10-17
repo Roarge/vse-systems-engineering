@@ -243,9 +243,9 @@ jobs:
           # The test_first block and the four test-first and Gherkin
           # gates ship commented out, so a new project starts at the
           # profile defaults and records its own judgement. A commented
-          # block is a "# <name>:" line followed by commented keys
-          # indented two spaces or more, and it ends at the first other
-          # line.
+          # block is a "# <name>:" header line followed by commented
+          # keys indented under the header (two blanks or more after the
+          # #), and it ends at the first other line.
           if grep -qE '^(test_first|gate_overrides):' templates/iso-config/.iso-config.yaml; then
             echo "::error::templates/iso-config/.iso-config.yaml records an active test_first or gate_overrides block. Both ship commented out, so a new project starts at the profile defaults and records its own test-first judgement with /vse-test-first"
             exit 1
