@@ -1,7 +1,7 @@
 ---
 name: project-setup
-description: Bootstrap a new VSE systems engineering project per the methodology §8 layout. Enters Plan Mode before any file system change.
-when_to_use: Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding, placing work under an engineering/ subdirectory, or producing an ISO/IEC 29110 compliant layout.
+description: Bootstrap a new VSE systems engineering project per the methodology §8 layout, with the story lint, the Gherkin feature templates and the test-first record. Enters Plan Mode before any file system change.
+when_to_use: Use when starting a new project, scaffolding from scratch (greenfield), adopting VSE on an existing repo (brownfield), copying the methodology spec into the project, laying down model/core scaffolding with the story, feature and case templates, placing work under an engineering/ subdirectory, recording at setup whether test first applies, or producing an ISO/IEC 29110 compliant layout.
 user-invocable: true
 ---
 
@@ -54,13 +54,14 @@ Ask the user only for the values that cannot be inferred. Confirm inferred value
 - **Project short code.** A 3 to 5 letter prefix used for SysML package names per `methodology/08-project-structure.md` §8.3.4 (for example `Aiwell`, `FFDS`, `SnowMelt`). Ask the user. The skill never invents this.
 - **Rigour profile.** Ask once, here. See the profile question below. The answer is `PROFILE` from this point on and it scales the scaffold, the configuration, and the tailoring record.
 - **SysML toolchain.** Ask once, here, immediately after the profile. See the toolchain question below. The answer is `TOOLCHAIN` from this point on and decides the editor wiring Step 4 copies and the validator the hooks and CI run.
+- **Test first.** Ask once, here, immediately after the toolchain. See the test-first question below. The answer is `TEST_FIRST` from this point on and decides the `test_first` block Step 4 writes and the Test-first records of Steps 7 and 8.
 - **Acquirer name.** Optional at setup. Used in the SOW reference inside `docs/project-plan.md`. May be left blank and filled in later.
 - **Author name.** Default to `git config user.name`. Ask if missing.
 - **Engineering root prefix.** This is the mode-specific scaffold target.
   - Greenfield default: repo root.
   - Brownfield default: `engineering/` subdirectory. Rationale: SysML modelling artefacts stay separate from the host project's implementation tree.
   - Override: repo root, accepted only when no implementation code is detected, or when the user confirms after the warning.
-  - Override: a custom subdirectory name (for example `mbse/`, `systems/`).
+  - Override: a custom subdirectory name (for example `mbse/`, `systems/`). The commit-time story gates cannot reach the story lint under a custom sub-path (Step 4, `tools/lint/`), so recommend `engineering/` before accepting one.
 
 The chosen scaffold target is `<ENG_ROOT>` from this point on. For greenfield with a fresh directory, `<ENG_ROOT>` equals `PROJECT_ROOT`. For brownfield with the default, `<ENG_ROOT>` equals `<PROJECT_ROOT>/engineering`.
 
@@ -68,9 +69,11 @@ The chosen scaffold target is `<ENG_ROOT>` from this point on. For greenfield wi
 
 The rigour profile scales how much ceremony the project carries. It is recorded once, it is changed at any time, and it is defined normatively in `methodology/00-methodology-overview.md` §0.10. Offer the three tiers with these one-line glosses, verbatim:
 
-- **`light`.** Solo work, prototypes, exploration. The methodology guides, nothing blocks, minimal artefact set.
-- **`standard`.** Small team, real product. Gates warn, core artefacts required, full ceremony optional. This is the default.
+- **`light`.** Solo work, prototypes, exploration. The methodology guides, only the Gherkin-first and test-first gates of §11 block, minimal artefact set.
+- **`standard`.** Small team, real product. Profile-scaled gates warn, core artefacts required, full ceremony optional. This is the default.
 - **`full`.** Audit-ready ISO/IEC 29110 conformance. Complete §9 mapping, blocking gates, full artefact set.
+
+Say what the profile does not change. The four gates of methodology §11.9 block at every profile until a recorded override lowers one (§0.10.4). A story needs its feature file before its SysML. The feature file is written in Gherkin, the plain-text Given/When/Then format that Cucumber-family test tools read, with one scenario per acceptance criterion. Where test first applies, code needs its failing test first. A disciplined engineer works that way anyway, so even `light` asks nothing extra of a project that does.
 
 Where the user is unsure, offer the two-question heuristic from §0.10.2:
 
@@ -99,11 +102,28 @@ Before asking, run `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh status` a
 
 **Installation is not setup's job.** If the chosen tool is not detected, say so and name `/vse-toolchain` as the post-scaffold route (Step 10). The scaffold still records the choice.
 
+### The test-first question
+
+Test-driven development (TDD) writes a failing automated test before the code that makes it pass. Whether it applies to this project is a recorded judgement (methodology §11.5.1), and viable means mandatory: where a test harness (the tooling that runs tests and reports pass or fail) can test a kind of code, that code is written test first. `@test-first` owns the judgement, so ask through it, read-only here:
+
+1. Run its Step 2 detection report at `PROJECT_ROOT`, the git top level that `code_paths`, `test_paths` and `test_command` are relative to. The probes source the hook libraries under `${CLAUDE_PLUGIN_ROOT}/hooks/lib/` and only read. In greenfield mode there is nothing to detect yet, so the judgement rests on the code the project plans to hold.
+2. Put its Step 3 judgement to the engineer, once, with a proposal for every key of the `test_first` record (§11.5.2).
+
+The answer takes one of three forms:
+
+- **Applies.** `applies: true`, a one-line rationale, `test_command`, `code_paths` and `test_paths`, plus `scenario_command` when a scenario runner is wired (§11.8).
+- **Does not apply.** `applies: false` and a rationale, for example a project that holds models and documents only.
+- **No decision.** No default is forced. If the engineer declines to decide, write no record and say what that means: until `/vse-test-first` records the judgement, the commit-time test-first gate reports a finding at its disposition (block, unless an override lowers it) whenever it detects test tooling or a change to code-like files.
+
+**Brownfield with an existing `.iso-config.yaml`.** If it carries a `test_first` block, read it with `@test-first` Step 1 and do not ask. A judgement already recorded is the project's decision.
+
+None of the four records of §11.5.3 exists yet, so this skill writes them during execution in the forms `@test-first` Step 4 gives: the `test_first` block in Step 4, the Project Plan line and the SEMP row in Step 7, and the `CLAUDE.md` line in Step 8. The verification of `@test-first` Step 6, which runs `test_command`, follows the scaffold through the Step 10 hand-off.
+
 ## Step 2: Enter Plan Mode
 
 Enter Plan Mode. Draft a concrete plan that lists, in this order:
 
-0. The chosen profile and the chosen toolchain, and the one-line statement of what they change about the scaffold below (which `docs/` artefacts are written, which `baselined_paths` and `storymeta.required_fields` defaults are recorded).
+0. The chosen profile, the chosen toolchain and the test-first judgement, and the one-line statement of what they change about the scaffold below (which `docs/` artefacts are written, which `baselined_paths` and `storymeta.required_fields` defaults are recorded, and whether a `test_first` block is written).
 1. Every directory that the skill will create, grouped by purpose.
 2. Every file that the skill will copy from `${CLAUDE_PLUGIN_ROOT}/methodology/` or `${CLAUDE_PLUGIN_ROOT}/templates/`, with destination paths.
 3. Every file that the skill will generate from a template (project plan, SEMP stub, risk register stub, CM strategy stub, correction register, progress status record, `CLAUDE.md`, `.iso-config.yaml`).
@@ -112,7 +132,7 @@ Enter Plan Mode. Draft a concrete plan that lists, in this order:
 6. For brownfield projects with detected implementation code: a note that the as-is architecture survey (Step 6.5) will be offered, and that the offer is opt-in. The plan does not predict the survey outputs because the classification is a runtime decision; the plan names the four candidate output paths (`model/core/base-architecture/<sc>_BaseArchitecture.sysml`, `model/core/base-architecture/<sc>_BaseArchitecture_CM.sysml`, `model/core/as-is/<sc>_AsIs.sysml`, `docs/as-is-classification.md`) so the user knows what may appear if they accept.
 7. The `git init` and initial commit, for greenfield only.
 
-Surface the plan via `ExitPlanMode`. Execute only after approval. If the user requests changes to the engineering root, the short code, the profile, or the optional folders, revise the plan and surface it again.
+Surface the plan via `ExitPlanMode`. Execute only after approval. If the user requests changes to the engineering root, the short code, the profile, the test-first judgement, or the optional folders, revise the plan and surface it again.
 
 ## Step 3: Pre-execution Safety Checks
 
@@ -131,16 +151,18 @@ Create or extend the following at `<PROJECT_ROOT>`:
 - `CHANGELOG.md`. Greenfield writes a fresh empty Keep-a-Changelog skeleton. Brownfield leaves any existing file alone.
 - `.github/pull_request_template.md`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull-request-template.md`. Embeds the §8.6 review checklists.
 - `.github/CODEOWNERS`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/github/CODEOWNERS` (created in Phase 7) as a placeholder. The user customises it later.
-- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the six edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO/IEC 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
+- `.iso-config.yaml`. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/iso-config/.iso-config.yaml` and then apply the seven edits below. Placement: this file goes to `<ENG_ROOT>` (the §0.10.2 recording location) when `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`, which are the two locations the hook library resolves. When the engineer chose a custom scaffold sub-path, keep the file at `<PROJECT_ROOT>` so the git hooks still find it, and note the deviation in the tailoring record. Drives baselined-path enforcement and ISO/IEC 29110 hook behaviour per `methodology/iso-29110-hooks-guide.md` §8.
   1. Substitute the `{{PLUGIN_VERSION}}` placeholder with the installed plugin version read from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, so `@project-audit` can detect version drift later.
   2. Set `project_profile` to the tier chosen in Step 1.
   3. Set `baselined_paths` to that tier's default from the §0.10.3 obligation table. The template ships the `standard` list and carries the other two as comments. `light` is the empty list `[]`, which keeps the Change Request machinery dormant. `full` is the five-entry list. `methodology/` is deliberately absent at every tier.
   4. Set `storymeta.required_fields` to that tier's default: `[status]` at `light`, `[status, priority]` at `standard`, `[points, priority, status]` at `full`.
   5. Leave the `renderers:` block active with the three keys the template ships, matching the three scripts copied to `<ENG_ROOT>/tools/render/` in the bullet below. The three commented keys stay commented, because those scripts do not ship yet. The block stays active in both layouts. The post-merge hook resolves renderer paths from the directory that holds this file, that is `<ENG_ROOT>`, and rejects any path that does not start with `tools/render/`, so the shipped paths reach the scripts whether `<ENG_ROOT>` is `<PROJECT_ROOT>` or `<PROJECT_ROOT>/engineering`. When the engineer chose a custom scaffold sub-path, the config stays at `<PROJECT_ROOT>` while the scripts land under `<custom>/tools/render/`, so comment the `renderers:` block out and note the deviation in the tailoring record, because the hook resolves the paths from the directory holding the config and finds no scripts there.
   6. The template ships the toolchain line commented out (`# sysml_toolchain: syside`). When a choice was made, uncomment it and set the value to `TOOLCHAIN`. When no choice was made, leave it commented, so the key stays absent, the `syside` default applies visibly, and `@project-audit` invites the decision later.
+  7. The template ships the `test_first` block commented out. When Step 1 recorded a judgement, write the block as `@test-first` Step 4 item 1 describes: replace the commented block (`# test_first:` and the commented keys below it), keep the explanatory comment above it, indent each key two spaces under `test_first:`, write lists in brackets, and quote any value that holds `#` or `:`. With `applies: false`, write `applies` and `rationale` only. When no judgement was made, leave the block commented. If the PreToolUse hook asks the human to confirm the write (§11.10), that is expected: the engineer's Step 1 answer is the explicit request it guards.
 
   Leave the commented `gate_overrides` block commented. A project raises or lowers a single gate later by uncommenting one key, and an override written at setup that nobody asked for is a surprise the engineer meets at their first blocked commit.
 - `tools/render/`. Copy all four files from `${CLAUDE_PLUGIN_ROOT}/templates/tools/render/` to `<ENG_ROOT>/tools/render/` and set the executable bit on each. The three renderer scripts (`traceability-matrix.py`, `stakeholder-reqs-doc.py`, `system-reqs-doc.py`) are the entries named in the `renderers:` block, and `sysml_model.py` is the shared model reader they import. They are invoked with no arguments from the directory that holds `model/`, they discover the model per the `model/` then `engineering/model/` convention, and they write to `docs/generated/`. They need Python 3 and nothing else. This populates the §9.8 renderer half of `tools/`, which Step 7 otherwise leaves for the project to fill.
+- `tools/lint/`. Copy the three files of `${CLAUDE_PLUGIN_ROOT}/templates/tools/lint/` (`story-wellformed.py`, `gherkin.py` and `README.md`) to `<ENG_ROOT>/tools/lint/`, beside `tools/render/`, and set the executable bit on the two scripts. `story-wellformed.py` is the story lint of methodology §11.9.1, and `gherkin.py` is the parser it reads feature files with. The lint reads the model through `tools/render/sysml_model.py`, which is why it sits beside `tools/render/`, and it needs Python 3 and nothing else. The `pre-commit` hook and CI run it from the directory that holds `.iso-config.yaml`, for the `precommit_story_wellformed` and `precommit_gherkin` gates, and `@story-orchestrator` runs it to confirm a story. `@attention-regime` installs the same files at every profile and refreshes them on a reinstall. Under a custom scaffold sub-path the config stays at `<PROJECT_ROOT>` while the lint lands under `<custom>/tools/lint/`, so the gates look for it at `<PROJECT_ROOT>/tools/lint/`, report it missing at the `precommit_gherkin` disposition, and block every commit that touches a story. Say so in the plan and recommend `engineering/`.
 - `.githooks/`. Create the directory empty for now. Population is deferred to `@attention-regime`. Add a placeholder `README.md` that points to `methodology/iso-29110-hooks-guide.md` §3.
 - `syside.toml`. Only when `TOOLCHAIN` is `syside` or no choice was made. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/common/syside.toml` to `<PROJECT_ROOT>`. Configures the Syside tooling (three-level discovery starts at the project root). The pilot and OpenSysML read no project file.
 - `.lsp.json` at `<PROJECT_ROOT>/.lsp.json`, verbatim, chosen by `TOOLCHAIN`:
@@ -158,7 +180,7 @@ Do not ignore `docs/generated/`. Model-derived artefacts are committed, because 
 
 ## Step 5: Copy the Methodology Specification
 
-Copy the entire contents of `${CLAUDE_PLUGIN_ROOT}/methodology/` to `<ENG_ROOT>/methodology/`. The copy is verbatim, preserving all twelve markdown files, the companion `iso-29110-hooks-guide.md`, and any README at the methodology root. File mode bits are preserved.
+Copy the entire contents of `${CLAUDE_PLUGIN_ROOT}/methodology/` to `<ENG_ROOT>/methodology/`. The copy is verbatim, preserving the twelve section files (§0 to §11, `00-methodology-overview.md` through `11-behaviour-and-test-driven-development.md`), the companion `iso-29110-hooks-guide.md`, and the README at the methodology root. File mode bits are preserved.
 
 The copy travels with the project so the methodology version is pinned to the repository state, the project's CI can validate against the local copy, and methodology amendments go through the same PR workflow as model changes per §8.4.3.
 
@@ -224,6 +246,10 @@ The template imports every sub-package the scaffold itself declares. The five im
 `model/core/as-is/` receives a copy of `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/as-is/_template.sysml`, the bare contingent-package shell. The directory is populated only when the brownfield as-is survey in Step 6.5 produces contingent rows, otherwise the bare shell stands. The directory is *empty in greenfield mode* (greenfield projects have no current state to capture) and is created with `.gitkeep` only.
 
 `model/core/base-architecture/` receives a copy of `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/base-architecture/_template.sysml`, the example library-package skeleton. In brownfield mode, the survey in Step 6.5 may overwrite this template with survey-populated content for mandated elements.
+
+`model/core/stories/stakeholder/` and `model/core/stories/system/` each receive the two story templates of the matching folder under `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/`: `_template.feature`, the Gherkin feature template, and `_template.sysml`, the story register template. `model/core/verification-validation/verification-cases/` and `model/core/verification-validation/validation-cases/` each receive the case template `_template.sysml` of the matching folder under `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/`. Substitute `{{PROJECT_NAME}}` and `{{PROJECT_SHORT_CODE}}` in the `.sysml` copies as in `core.sysml`. The `.feature` templates carry no placeholder.
+
+Together the six files show the behaviour-first order of methodology §11.4 on one example story: the feature file first, then the story with one named criterion per scenario, then a case that reaches each criterion. A file whose name begins with `_` is a template, and the story lint and the in-session Gherkin-first gate skip it (§11.9.1, §11.9.3), so no real story is written into one. `_template.feature` stays as the pattern each story's feature file is copied from (§11.2.1). Each `.sysml` template declares a package that `core.sysml` imports, and a second file declaring the same package collides with it in validation. So when the first real story or case of a folder is written, the template copy is renamed to a working name, such as `stakeholder-stories.sysml` for the stakeholder register (§8.3.1), and its example is replaced in the same commit.
 
 ## Step 6.5: As-Is Architecture Survey (brownfield only)
 
@@ -323,7 +349,7 @@ These three are agent discipline rather than ceremony, so they are hard at every
 Create the following at `<ENG_ROOT>`:
 
 - `sketches/`. Empty. Holds diagrams, hand sketches, and images per §8.2.
-- `tools/`. Already carries `tools/render/` from Step 4. Add a `README.md` listing the renderer and lint scripts described in `methodology/iso-29110-hooks-guide.md` §3.1, recording the three shipped renderers as installed and the lint scripts as deferred.
+- `tools/`. Already carries `tools/render/` and `tools/lint/` from Step 4. Add a `README.md` listing the renderer and lint scripts described in `methodology/iso-29110-hooks-guide.md` §3.1, recording the three shipped renderers and the story lint (`tools/lint/story-wellformed.py`, with its parser `gherkin.py`) as installed and `plan-complete.py` as deferred.
 - `docs/`. Scaffold the ISO/IEC 29110 work products and supporting folders. **The artefact set is scaled by the profile chosen in Step 1**, per the §0.10.3 obligation table. Write the artefacts marked for the project's tier and omit the rest. An omitted artefact is available on demand later through the skill that owns it, so omission costs the project nothing except the empty file it does not have to look at.
 
   | Artefact | Home section | light | standard | full |
@@ -343,8 +369,8 @@ Create the following at `<ENG_ROOT>`:
 
   Sources for the generated files:
 
-  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}` and `{{SYSML_TOOLCHAIN}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` followed by the Toolchain line. Where the project deviates from the tier defaults, name the deviation on the Profile line.
-  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`. Substitute `{{SYSML_TOOLCHAIN_NAME}}` and `{{SYSML_TOOLCHAIN_VERSION}}` in the modelling-tool bullet and the development-tools table.
+  - `docs/project-plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/project-plan.md` per `methodology/10-project-management.md` §10.3. Substitute `{{PROFILE}}`, `{{SYSML_TOOLCHAIN}}` and `{{TEST_FIRST}}` alongside `{{PROJECT_NAME}}`, `{{DATE}}`, and `{{AUTHOR}}`, which writes the tailoring record under the Profile and tailoring heading in the form `Profile: <tier>. Tailoring per methodology §0.10 defaults.` followed by the Toolchain line and the Test-first line. Where the project deviates from the tier defaults, name the deviation on the Profile line.
+  - `docs/semp.md` from `${CLAUDE_PLUGIN_ROOT}/templates/sr/semp.md`. Substitute `{{SYSML_TOOLCHAIN_NAME}}` and `{{SYSML_TOOLCHAIN_VERSION}}` in the modelling-tool bullet and the development-tools table, and `{{TEST_HARNESS}}` in that table's row whose Purpose cell begins `Test-first tools:`.
   - `docs/risk-register.md` from the risk-register template per §10.7.
   - `docs/cm-strategy.md` from the cm-strategy template per §10.8.
   - `docs/correction-register.md` from `${CLAUDE_PLUGIN_ROOT}/templates/pm/correction-register.md`.
@@ -359,6 +385,14 @@ Create the following at `<ENG_ROOT>`:
   | `omg-pilot` | OMG SysML v2 Pilot Implementation | release 2026-07 (kernel 0.61.0) |
   | `opensysml` | Open-MBEE OpenSysML | v0.6.0 |
 
+  The test-first placeholders follow the Step 1 judgement, in the forms of methodology §11.5.3 and `@test-first` Step 4. Step 8 uses the `CLAUDE.md` column.
+
+  | Judgement | `{{TEST_FIRST}}` in `docs/project-plan.md` | `{{TEST_FIRST}}` in `CLAUDE.md` | `{{TEST_HARNESS}}` in `docs/semp.md` |
+  |---|---|---|---|
+  | Applies | `applies, <harness>`, for example `applies, pytest` | `applies, test command <test_command>`, with the command in backticks | The harness and any scenario runner, for example `pytest, behave`, and in the Version cell the versions they report, where known |
+  | Does not apply | `not applicable, <reason>`, for example `not applicable, no implementation code` | The same text as the Plan | `none` |
+  | No decision | Remove the Test-first line, because the tailoring record holds decisions and none was made. `/vse-test-first` appends it later | `not recorded, /vse-test-first records it` | `not recorded` |
+
   The four directories written at every tier are empty and carry a `.gitkeep`. `docs/generated/` holds renderer outputs and is tracked, per the Contract 3 committed-copy design stated in Step 4.
 
   Report the omissions in Step 11 rather than silently skipping them, so the engineer knows what the tier decided and can ask for any of it later.
@@ -367,7 +401,7 @@ Create the following at `<ENG_ROOT>`:
 
 `CLAUDE.md` lives at `<ENG_ROOT>` so the harness picks it up when the user works inside the engineering subdirectory. The content is generated from `${CLAUDE_PLUGIN_ROOT}/templates/common/CLAUDE.md` and frames the VSE companion guidance for the project.
 
-Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), `{{PROFILE}}` (the tier chosen in Step 1), and `{{SYSML_TOOLCHAIN}}` (the recorded toolchain in the Step 7 form). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`, and the Toolchain line does the same for the SysML v2 validator.
+Substitute every placeholder the template carries: `{{PROJECT_NAME}}`, `{{PROJECT_SHORT_CODE}}`, `{{ACQUIRER}}`, `{{AUTHOR}}`, `{{DATE}}`, `{{ENGINEERING_ROOT}}` (the `<ENG_ROOT>` path relative to `<PROJECT_ROOT>`, or `.` when they are the same directory), `{{PROFILE}}` (the tier chosen in Step 1), `{{SYSML_TOOLCHAIN}}` (the recorded toolchain in the Step 7 form), and `{{TEST_FIRST}}` (the Step 1 judgement in the `CLAUDE.md` form of the Step 7 table). The Profile line in the project facts is what a later session reads when it wants the tier without parsing `.iso-config.yaml`, the Toolchain line does the same for the SysML v2 validator, and the Test-first line for the test-first judgement (§11.5.3).
 
 The template is delimited by the marker pair it ships with, which is the pair the merge logic below matches on:
 
@@ -401,7 +435,8 @@ After successful scaffolding, surface the following routes and let the user pick
 
 - `@story-orchestrator`. The first stakeholder story may be authored against §4 of the methodology now that `model/core/stories/stakeholder/` exists.
 - `@project-plan` if the engineer wants to author the Project Plan immediately, populating `docs/project-plan.md` per §10.3.
-- `@attention-regime` to populate `.githooks/` with the project-side scripts described in `methodology/iso-29110-hooks-guide.md` §4 and to wire the harness-side reminders. The hook set it installs follows the recorded profile per §3.4 of that guide, so mention the tier when routing.
+- `@attention-regime` to populate `.githooks/` with the project-side scripts described in `methodology/iso-29110-hooks-guide.md` §4 and to wire the harness-side reminders. The hook set it installs follows the recorded profile per §3.4 of that guide, so mention the tier when routing. At every profile it installs `pre-commit` and the CI workflow, which carry the Gherkin-first and test-first gates of §11.9, so recommend it before the first story commit.
+- `/vse-test-first` (`@test-first`) to verify the recorded judgement, which runs `test_command` from the git top level, and to offer any CI set-up step the harness needs. When Step 1 recorded no judgement, this is the route that makes it.
 - `@needs-and-requirements` to begin §4 stakeholder elicitation directly, producing the first `concern def` set and stakeholder `part def`s.
 - `/vse-toolchain` (`@sysml-toolchain`) when the chosen toolchain was not detected in Step 1, to install it user-level and verify it.
 
@@ -411,7 +446,7 @@ The skill suggests routes. The engineer chooses.
 
 Report a concise summary listing every directory created, every file copied from the plugin, every file generated from a template, and the commit (if any) that was made. Format the report so the engineer can scan it before deciding the next route.
 
-Open the report with the recorded profile and the artefacts the tier omitted from `docs/`, naming for each the skill that writes it on request. The engineer should never discover a missing artefact by looking for it. Name the recorded toolchain beside the profile, say whether Step 1 detected it on this machine, and name the editor wiring that followed from it.
+Open the report with the recorded profile and the artefacts the tier omitted from `docs/`, naming for each the skill that writes it on request. The engineer should never discover a missing artefact by looking for it. Name the recorded toolchain beside the profile, say whether Step 1 detected it on this machine, and name the editor wiring that followed from it. Name the test-first judgement beside them, with the records written (the `test_first` block, the `CLAUDE.md` line, the Project Plan line, and the SEMP row where the tier writes a SEMP). When no judgement was made, say so, and say what the commit-time test-first gate does until `/vse-test-first` records one.
 
 For brownfield projects, the report also names the outcome of the as-is survey (Step 6.5): whether it ran, the count of mandated rows, the count of contingent rows, and the count of skipped rows. If the survey was declined, the report names the resumption marker in `docs/as-is-classification.md` and points at `@architecture-design` as the re-entry skill.
 
