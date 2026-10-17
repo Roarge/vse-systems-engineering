@@ -24,5 +24,10 @@ model/core/verification-validation/  @smart-sensor-demo-owner
 # Methodology spec (elevated review per §2.6 rule 4)
 methodology/                    @smart-sensor-demo-owner
 
+# Hook configuration: gate dispositions and the test-first record
+# (methodology §0.10.4, §11.5). Lowering a gate or changing test_first
+# is a tailoring decision, so a human owner reviews it (§11.10).
+.iso-config.yaml                @smart-sensor-demo-owner
+
 # Base Architecture (elevated review per §2.6 rule 4)
 model/core/base-architecture/   @smart-sensor-demo-owner

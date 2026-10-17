@@ -10,12 +10,13 @@ Test first does not apply to this project, because it holds no implementation co
 
 ## Branch model (§8.4)
 
-`main` is the project's accepted state. Direct commits to `main` are prohibited. Every change reaches `main` through a feature branch and a pull request. Four kinds of feature branch are recognised, each with a fixed naming pattern.
+`main` is the project's accepted state. Direct commits to `main` are prohibited. Every change reaches `main` through a feature branch and a pull request. Five kinds of feature branch are recognised, each with a fixed naming pattern.
 
 - **Story branches** (`story/<US_id>_<short-name>` or `story/<theme-name>`) are the standard case. They advance one story or a small coherent group of stories through a workflow stage.
 - **Methodology branches** (`methodology/<topic>`) carry changes to the spec under `methodology/`.
 - **Architectural branches** (`arch/<decision-name>`) carry §6 trade studies. They are typically longer-lived and are reviewed under the §8.6.3 stricter criteria.
 - **Release branches** (`release/<tag>`) are optional and used only if the project produces tagged model releases.
+- **Refactoring branches** (`refactor/<slug>`) restructure implementation code without changing its behaviour, with the tests unchanged. The kind matters only where test first applies, because there the test-first gates turn their finding into a reminder on such a branch (§8.4.3, §11.9). Test first does not apply to this demo, so it has no use for one while it holds no code.
 
 Hot-fixes follow the same workflow at elevated priority. They do not bypass the PR step.
 
@@ -47,7 +48,7 @@ Edits to baselined artefacts (Project Plan, baselined stories, baselined archite
 
 ## Hooks
 
-This project ships project-side git hooks under `.githooks/`, activated by `git config core.hooksPath .githooks`. The hooks enforce SysML lint, story well-formedness, the Gherkin conformance of stories and feature files, conventional-commit patterns, baselined-artefact protection, V&V coverage on `done` stories, and traceability matrix freshness. See `methodology/iso-29110-hooks-guide.md` §4.
+Setting a project up with the plugin (`/vse-setup`, which hands the install to `@attention-regime`) installs project-side git hooks under the project's `.githooks/`, activated by `git config core.hooksPath .githooks`. This demo ships no `.githooks/`, so the hooks described here run only in a project set up that way. They enforce SysML lint, story well-formedness, the Gherkin conformance of stories and feature files, conventional-commit patterns, baselined-artefact protection, V&V coverage on `done` stories, and traceability matrix freshness. See `methodology/iso-29110-hooks-guide.md` §4.
 
 The Claude Code lifecycle hooks declared by the `vse-systems-engineering` plugin run automatically inside Claude Code sessions. They surface methodology reminders, and the in-session Gherkin-first gate stops an agent edit that adds or changes a story whose feature file is missing (§11.9.3).
 

@@ -131,7 +131,7 @@ hook.
 | Tool | Purpose | Version |
 |------|---------|---------|
 | OMG SysML v2 Pilot Implementation | SysML v2 validation (preferred, `omg-pilot`) | release 2026-07, kernel 0.61.0 |
-| OpenJDK | Java runtime for the pilot | 21.0.12 |
+| OpenJDK | Java runtime for the pilot | 21.0.12.1 |
 | OpenSysML | SysML v2 validation (fallback) | v0.6.0 |
 | Sensmetry Syside | SysML 2.0 modelling and validation (optional) | per `syside.toml` |
 | none | Test-first tools: test first does not apply, because the demo holds no implementation code (`test_first` in `.iso-config.yaml`, methodology §11.5.3) | not applicable |
