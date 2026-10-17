@@ -184,7 +184,11 @@ check-routing:
 
 # The placeholder check is an error from the pre-overhaul hygiene
 # release onwards, because the placeholder now exists. The demo pin
-# stays a warning until demo sync promotes it.
+# stays a warning until demo sync promotes it. The test_first block and
+# the four test-first and Gherkin gates ship commented out, so a new
+# project starts at the profile defaults and records its own judgement.
+# A commented block is a "# <name>:" line followed by commented keys
+# indented two spaces or more, and it ends at the first other line.
 check-config:
 	@echo "Checking ISO configuration files..."
 	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \
@@ -223,6 +227,25 @@ check-config:
 	     exit 1; \
 	     ;; \
 	 esac
+	@if grep -qE '^(test_first|gate_overrides):' templates/iso-config/.iso-config.yaml; then \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml records an active test_first or gate_overrides block. Both ship commented out, so a new project starts at the profile defaults and records its own test-first judgement with /vse-test-first"; \
+	   exit 1; \
+	 fi; \
+	 MISSING=$$(awk '\
+	   BEGIN { \
+	     n = split("test_first.applies test_first.rationale test_first.test_command test_first.scenario_command test_first.code_paths test_first.test_paths test_first.refactor_branches gate_overrides.precommit_gherkin gate_overrides.precommit_test_first gate_overrides.pretooluse_gherkin_first gate_overrides.pretooluse_test_first", want, " "); \
+	   } \
+	   /^# [a-z_][a-z_]*:[ \t]*$$/ { block = $$0; sub(/^# /, "", block); sub(/:.*/, "", block); next } \
+	   block != "" && /^#[ \t][ \t][ \t]*[a-z_][a-z_]*:/ { key = $$0; sub(/^#[ \t]*/, "", key); sub(/:.*/, "", key); seen[block "." key] = 1; next } \
+	   { block = "" } \
+	   END { sep = ""; for (i = 1; i <= n; i++) if (!(want[i] in seen)) { printf "%s%s", sep, want[i]; sep = " " } }' \
+	   templates/iso-config/.iso-config.yaml); \
+	 if [ -n "$$MISSING" ]; then \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml lacks these keys in its commented test_first and gate_overrides blocks: $$MISSING"; \
+	   exit 1; \
+	 else \
+	   echo "  templates/iso-config/.iso-config.yaml carries the commented test_first block and the four test-first and Gherkin gates in its commented gate_overrides."; \
+	 fi
 
 # The demo is a standalone project, so it carries byte-identical copies
 # of the methodology, the SysML library, the renderers and the story

@@ -45,7 +45,7 @@ iso_ref: "SR.2"
 - **Rationale:** (why this element requirement exists)
 - **Satisfies:** REQ-xxx
 - **Priority:** Essential / Desirable / Optional
-- **Acceptance criteria:** (measurable condition for verification)
+- **Acceptance criteria:** (the `@AC_<name>` scenarios of the component story's feature file, each a measurable condition for verification, methodology §11.3)
 - **Verification method:** Test / Analysis / Inspection / Demonstration
 
 #### SER-002: (requirement title)

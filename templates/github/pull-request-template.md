@@ -8,8 +8,9 @@ is recorded as `project_profile` in `.iso-config.yaml`.
 ## Story or change summary
 
 <!-- For story branches: the story's narrative form (As a <role>, I want
-     <capability>, so that <benefit>). For methodology and architectural
-     branches: the change rationale. One paragraph. -->
+     <capability>, so that <benefit>), as its feature file states it.
+     For methodology and architectural branches: the change rationale.
+     One paragraph. -->
 
 ## Stories advanced
 
@@ -29,7 +30,20 @@ is recorded as `project_profile` in `.iso-config.yaml`.
 ## Files changed by package
 
 <!-- Automated section if your CI populates it. Otherwise list the
-     model/core/ packages and docs/ files touched. Group by package. -->
+     model/core/ packages and docs/ files touched, feature files
+     included. Group by package. -->
+
+## Test-first evidence (§11.7)
+
+<!-- Required at every profile where test first applies, that is, where
+     test_first.applies is true in .iso-config.yaml (§11.5). For each
+     code change, paste the failing test command and its first failing
+     lines, captured before the code that made the test pass. Example:
+       $ pytest -q tests/test_alarm_queue.py
+       FAILED tests/test_alarm_queue.py::test_ack_clears_alarm
+     A change made on a refactor branch with the tests unchanged says
+     so here. Where test first does not apply, write "Not applicable"
+     with the reason recorded in test_first.rationale. -->
 
 ## Author readiness checklist (§8.6.2)
 
@@ -38,7 +52,7 @@ For every story advanced by this PR:
 - [ ] `[standard]` Story declares `role`, typed by a part def from the appropriate stakeholders package.
 - [ ] Story declares `capability` and `benefit` strings (narrative form retained per §1.7.2).
 - [ ] `[standard]` Story declares `subject` referencing a part def from the enclosing scope.
-- [ ] Story declares at least one `acceptance` criterion in Given/When/Then form (or as a `verification def` reference).
+- [ ] Story has its feature file, `<ID>.feature`, beside it, with at least one scenario tagged `@AC_<name>`, and each scenario is mirrored by a named criterion nested in `requirement :>> acceptance` (§11.2, §11.3).
 - [ ] `[full]` Framed `concern def`s exist in the appropriate concerns package.
 - [ ] `[full]` Use cases (if any) declare the story as `objective` with conformant `subject` and `actor` types per §1.4.5.
 - [ ] `[standard]` The `StoryMeta` fields listed in `storymeta.required_fields` are set.
@@ -60,7 +74,7 @@ In addition to confirming the author items:
 - [ ] **Trace integrity**: `derive` from system stories to stakeholder stories, from subsystem stories to system stories. No dangling references.
 - [ ] `[full]` **No methodology drift**: methodology amendments are not smuggled through a story PR.
 - [ ] `[full]` **Variation hygiene** (§6 work only): variations declare all feasible variants, `assert constraint` covers cross-decision rules, the resolved architecture redefines every variation.
-- [ ] `[standard]` **Verification-case stubs exist** for each acceptance criterion, even if the case body is deferred.
+- [ ] `[standard]` **Behaviour first and test first** (§11): every acceptance criterion is reached by a verification or validation case, even if only by a stub whose body is deferred (§11.4). Where test first applies, the Test-first evidence section shows a failing test before each code change (§11.7).
 - [ ] **Self-contained**: no half-finished work in unrelated packages.
 - [ ] **Still the right change**: the story matches the intent that prompted it.
 

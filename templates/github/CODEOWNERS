@@ -34,5 +34,12 @@ model/core/verification-validation/  @{{IVV_GIT_HANDLE}}
 # Methodology spec (elevated review per §2.6 rule 4)
 methodology/                    @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 
+# Hook configuration: gate dispositions and the test-first record
+# (methodology §0.10.4, §11.5). Lowering a gate or changing test_first
+# is a tailoring decision, so a human owner reviews it (§11.10). With
+# no slash, the pattern matches the file at any depth, so it also
+# covers engineering/.iso-config.yaml in a brownfield layout.
+.iso-config.yaml                @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
+
 # Base Architecture (elevated review per §2.6 rule 4)
 model/core/base-architecture/   @{{DES_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}

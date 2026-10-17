@@ -22,10 +22,15 @@ iso_ref: "PM.1"
      the history stays readable. Name any deviation from the profile
      defaults on the same line (a path added back to baselined_paths, a
      gate_overrides entry, a plan element omitted or added). See
-     methodology §0.10.2. -->
+     methodology §0.10.2. The Test-first line records the judgement of
+     §11.5 in the form "applies, pytest" or "not applicable, no
+     implementation code". A later change to it, and any single change
+     exempted from test first with its reason (§11.7), go on a new
+     line. Lowering one of the four gates of §11.9 names its reason. -->
 
 Profile: {{PROFILE}}. Tailoring per methodology §0.10 defaults.
 Toolchain: {{SYSML_TOOLCHAIN}} (SysML v2 validator for the hooks and CI, recorded {{DATE}}).
+Test-first: {{TEST_FIRST}} (recorded {{DATE}}).
 
 <!-- VSE-TASK: PM.1.15 -->
 

@@ -58,7 +58,7 @@ iso_ref: "SR.2"
 - **Rationale:** (why this requirement exists)
 - **Satisfies:** STK-001
 - **Priority:** Essential / Desirable / Nice-to-have
-- **Acceptance criterion:** (specific, measurable test)
+- **Acceptance criterion:** (the `@AC_<name>` scenario of the story's feature file that states the specific, measurable test, methodology §11.3)
 - **Verification method:** Inspection / Analysis / Demonstration / Test
 
 #### REQ-002: (requirement title)

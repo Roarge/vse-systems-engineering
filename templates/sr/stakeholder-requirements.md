@@ -56,6 +56,12 @@ iso_ref: "SR.2"
 >
 > Corresponding SysML 2.0 models go in `models/stakeholder-needs.sysml`
 > with IDs using the STK- prefix.
+>
+> Acceptance criteria are Gherkin scenarios (Given/When/Then) in the
+> story's feature file, `<ID>.feature` beside the story, each tagged
+> `@AC_<name>` and mirrored by a named criterion in the model
+> (methodology §11.2, §11.3). Quote or cite the scenarios here rather
+> than restating them.
 
 ### STK-001: (need title)
 
@@ -63,7 +69,7 @@ iso_ref: "SR.2"
 - **Need:** (description in stakeholder language)
 - **Rationale:** (why this matters)
 - **Priority:** Essential / Desirable / Nice-to-have
-- **Acceptance criteria:** (how the stakeholder will judge satisfaction)
+- **Acceptance criteria:** (the `@AC_<name>` scenarios of the story's feature file, which say how the stakeholder will judge satisfaction)
 
 ### STK-002: (need title)
 
