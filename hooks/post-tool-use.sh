@@ -22,8 +22,8 @@
 # every reminder for one call goes into one JSON object, printed through
 # hooks/lib/hook-json.sh as hookSpecificOutput.additionalContext, or
 # nothing at all is printed. Diagnostics go to stderr. The exit status
-# is always 0: an internal error ends the hook silently, with one line
-# on stderr.
+# is always 0: a payload that cannot be read, or an internal error,
+# ends the hook silently, with one line on stderr.
 #
 # Locating the project, as in pre-tool-use.sh, through the shared
 # vse_tf_locate_project. The hook may run from any working directory,
@@ -69,7 +69,13 @@ cat > "$POST_PAYLOAD"
 
 # ------------------------------------------------------------- target
 
-POST_RAW="$(vse_hj_read "$POST_PAYLOAD" .tool_input.file_path)"
+# A payload that cannot be read (malformed, or neither jq nor python3
+# works) is not an internal error. The hook says so in one plain line
+# on stderr and stays silent.
+if ! POST_RAW="$(vse_hj_read "$POST_PAYLOAD" .tool_input.file_path)"; then
+    echo "[post-tool-use] Could not read the hook payload, so no follow-up reminder was given for this edit." >&2
+    exit 0
+fi
 if [ -z "$POST_RAW" ]; then
     POST_RAW="$(vse_hj_read "$POST_PAYLOAD" .tool_input.notebook_path)"
 fi

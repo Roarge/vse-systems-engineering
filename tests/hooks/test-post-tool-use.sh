@@ -236,6 +236,18 @@ case_post_json_shape() {
     post_run '{"tool_name": "Write", "tool_input": '
     tc_assert_rc 0 "shape: a malformed payload exits 0"
     tc_assert_json_silent "shape: a malformed payload prints nothing on stdout"
+    tc_assert_grep "[post-tool-use] Could not read the hook payload" "$ERR" \
+        "shape: a malformed payload is named in a plain line on stderr"
+    tc_assert_not_grep "Internal error" "$ERR" "shape: a malformed payload is not an internal error"
+
+    tc_env PATH="$(tc_bin_without jq python3)"
+    post_run "$(post_json Write "${REPO}/src/reading.py")"
+    tc_assert_rc 0 "shape: exit 0 with neither jq nor python3"
+    tc_assert_json_silent "shape: with neither jq nor python3 nothing is printed on stdout"
+    tc_assert_grep "[post-tool-use] Could not read the hook payload" "$ERR" \
+        "shape: a missing JSON engine is named in a plain line on stderr"
+    tc_assert_not_grep "Internal error" "$ERR" "shape: a missing JSON engine is not an internal error"
+    tc_env
 
     post_run '{"tool_name": "Write", "tool_input": {"content": "x"}}'
     tc_assert_json_silent "shape: no file path is silent"

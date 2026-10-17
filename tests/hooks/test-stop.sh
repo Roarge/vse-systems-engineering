@@ -449,14 +449,22 @@ case_stop_outside_project_silent() {
         "location: contributor mode counts the demo configuration"
 }
 
+# A payload that cannot be read is not an internal error: the hook says
+# so in one plain line on stderr and exits 0, silent on stdout.
 case_stop_output_contract() {
     stop_test_first_project light
     tc_run_lifecycle stop '{"session_id": "x", "stop_hook_active": '
     tc_assert_rc 0 "contract: a malformed payload exits 0"
     tc_assert_json_silent "contract: a malformed payload is silent"
+    tc_assert_grep "[stop] Could not read the Stop payload" "$ERR" \
+        "contract: a malformed payload is named in a plain line on stderr"
+    tc_assert_not_grep "Internal error" "$ERR" "contract: a malformed payload is not an internal error"
     tc_run_lifecycle subagent-stop '{"session_id": "x", "stop_hook_active": '
     tc_assert_rc 0 "contract: a malformed payload exits 0 at SubagentStop"
     tc_assert_json_silent "contract: a malformed payload is silent at SubagentStop"
+    tc_assert_grep "[stop] Could not read the SubagentStop payload" "$ERR" \
+        "contract: a malformed payload is named at SubagentStop"
+    tc_assert_not_grep "Internal error" "$ERR" "contract: a malformed payload is not an internal error at SubagentStop"
 
     tc_env TMPDIR="$STOP_TMP" PATH="$STOP_BIN_NO_JQ"
     stop_run false session-py
@@ -468,6 +476,9 @@ case_stop_output_contract() {
     stop_run false session-none
     tc_assert_rc 0 "contract: exit 0 with neither jq nor python3"
     tc_assert_json_silent "contract: with neither jq nor python3 the hook cannot read stop_hook_active and stays silent"
+    tc_assert_grep "[stop] Could not read the Stop payload" "$ERR" \
+        "contract: a missing JSON engine is named in a plain line on stderr"
+    tc_assert_not_grep "Internal error" "$ERR" "contract: a missing JSON engine is not an internal error"
     tc_env TMPDIR="$STOP_TMP"
 }
 

@@ -13,7 +13,7 @@
 # caps the consecutive continuations. So the hook:
 #
 #   1. exits silently when stop_hook_active is true, or when the
-#      payload cannot be read.
+#      payload cannot be read (with one plain line on stderr).
 #   2. sends every reminder meant for the human as a top-level
 #      systemMessage, which the user sees and which continues nothing.
 #   3. uses additionalContext only for the test-first finding.
@@ -102,9 +102,15 @@ cat > "$STOP_PAYLOAD"
 # shellcheck source=/dev/null
 . "${STOP_LIB}/hook-json.sh"
 
-# A stop hook already continued this turn. A payload that cannot be
-# read fails here too, because vse_hj_read returns non-zero.
-STOP_ACTIVE="$(vse_hj_read "$STOP_PAYLOAD" .stop_hook_active)"
+# A payload that cannot be read (malformed, or neither jq nor python3
+# works) is not an internal error. The hook says so in one plain line
+# on stderr and stays silent.
+if ! STOP_ACTIVE="$(vse_hj_read "$STOP_PAYLOAD" .stop_hook_active)"; then
+    echo "[stop] Could not read the ${STOP_EVENT} payload, so nothing was checked." >&2
+    exit 0
+fi
+
+# A stop hook already continued this turn.
 case "$STOP_ACTIVE" in
     ""|false) : ;;
     *) exit 0 ;;
