@@ -98,7 +98,6 @@ def told_profile(ctx, profile):
         raise AssertionError("no {} profile, {}".format(profile, _shown(ctx)))
 
 
-
 @step(r"the session is told that test first applies")
 def told_test_first_applies(ctx):
     if not _line(ctx, "Test-first: test_first.applies is true."):

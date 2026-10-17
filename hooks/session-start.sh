@@ -23,12 +23,14 @@
 # Mode 2 also states the behaviour-first and test-first policy of
 # methodology section 11: a Behaviour-first line, a Test-first line that
 # names the recorded test_first.applies value, a nudge when test tooling
-# is found while that value is false or unrecorded, and a warning when
-# jq is missing. Where test first applies, or is not recorded, the
-# Test-first line points at the superpowers TDD skill. Where the
-# recorded value is false, it says test first is not required here and
-# that Gherkin first still applies, with no pointer to the skill. Mode 1 prints one pointer to the plugin's own rules for
-# the same discipline.
+# is found in the located project (its engineering root, and the git top
+# level when that differs) while that value is false or unrecorded, and
+# a warning when jq is missing. Where test first applies, or is not
+# recorded, the Test-first line points at the superpowers TDD skill.
+# Where the recorded value is false, it says test first is not required
+# here and that Gherkin first still applies, with no pointer to the
+# skill. Mode 1 prints one pointer to the plugin's own rules for the
+# same discipline.
 #
 # Plain text on stdout is added to the conversation as context, which is
 # the SessionStart output contract (hooks guide section 5), so this hook
@@ -296,9 +298,21 @@ else
 fi
 
 # Test tooling in the project while the record says no, or says
-# nothing, suggests the judgement is missing or out of date.
+# nothing, suggests the judgement is missing or out of date. The tooling
+# is looked for in the located project, at the engineering root and at
+# the git top level when that differs, not in the directory the session
+# started in. A tool found at both places is named once.
 if [ -n "$TEST_FIRST_LIB" ] && [ "$TF_APPLIES" != "true" ]; then
-    TF_TOOLS="$(vse_tf_detect . 2>/dev/null | awk 'NR > 1 { printf ", " } { printf "%s", $0 }' || true)"
+    TF_TOP="${VSE_TF_TOP:-}"
+    if [ -z "$TF_TOP" ]; then
+        TF_TOP="$(git -C "$ENG_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
+    fi
+    TF_TOOLS="$( {
+        vse_tf_detect "$ENG_ROOT" 2>/dev/null || true
+        if [ -n "$TF_TOP" ] && [ "$TF_TOP" != "$ENG_ROOT" ]; then
+            vse_tf_detect "$TF_TOP" 2>/dev/null || true
+        fi
+    } | awk '!seen[$0]++ { printf "%s%s", (n++ ? ", " : ""), $0 }')"
     if [ -n "$TF_TOOLS" ]; then
         echo "Test-first nudge: test tooling found (${TF_TOOLS}) while test_first.applies is ${TF_SHOWN}. Record or revisit the judgement with /vse-test-first (methodology section 11.5)."
     fi

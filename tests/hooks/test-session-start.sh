@@ -12,9 +12,9 @@
 # the git top level, then from engineering/ below it. A methodology/
 # folder without a configuration still draws the report, as a fallback
 # for projects that predate the configuration. The Methodology line
-# names the project's own methodology/ folder, else the plugin's copy. The hook is advisory, so every case also
-# asserts exit 0 and plain-text output, which is what reaches the
-# conversation.
+# names the project's own methodology/ folder, else the plugin's copy.
+# The hook is advisory, so every case also asserts exit 0 and
+# plain-text output, which is what reaches the conversation.
 #
 # A pair of cases pins the budget the availability probe runs under,
 # because the hook has to set it before the library is sourced for the
@@ -23,9 +23,9 @@
 # The policy cases pin what the session is told about working behaviour
 # first and test first (methodology section 11): the Behaviour-first
 # and Test-first lines in a VSE project, the nudge when test tooling is
-# found while test_first.applies is false or unrecorded, the warning
-# when jq is missing, and the one pointer to the contributor rules in
-# the plugin repository (mode 1).
+# found in the located project while test_first.applies is false or
+# unrecorded, the warning when jq is missing, and the one pointer to the
+# contributor rules in the plugin repository (mode 1).
 #
 # A VSE project below its git top level (greenfield and brownfield
 # layouts) has its own configuration read, the same file the gates
@@ -436,6 +436,53 @@ case_mode2_from_subdirectory() {
         "subdirectory: the Methodology line names the project's folder"
 }
 
+# The test tooling nudge looks for tooling in the located project, at
+# its engineering root and at the git top level when that differs, not
+# in the working directory the session started in.
+case_mode2_nudge_located() {
+    local top
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    mkdir -p "${top}/src/deep"
+    printf 'project_profile: light\ntest_first:\n  applies: false\n' > "${top}/.iso-config.yaml"
+    : > "${top}/pytest.ini"
+    tc_env
+    run_hook_in "${top}/src/deep"
+    tc_assert_rc 0 "located nudge (subdirectory): exit 0"
+    tc_assert_grep "Test-first nudge: test tooling found (pytest) while test_first.applies is false." "$OUT" \
+        "located nudge (subdirectory): the project's tooling is found from below it"
+
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    mkdir -p "${top}/engineering/src" "${top}/src/deep"
+    printf 'project_profile: light\n' > "${top}/engineering/.iso-config.yaml"
+    : > "${top}/engineering/pytest.ini"
+    tc_env
+    run_hook_in "$top"
+    tc_assert_grep "Test-first nudge: test tooling found (pytest) while test_first.applies is not recorded." "$OUT" \
+        "located nudge (brownfield): tooling at the engineering root is found from the top level"
+    : > "${top}/go.mod"
+    run_hook_in "${top}/engineering/src"
+    tc_assert_grep "Test-first nudge: test tooling found (pytest, go) while test_first.applies is not recorded." "$OUT" \
+        "located nudge (brownfield): tooling at the top level is found from below the engineering root"
+    : > "${top}/pytest.ini"
+    rm "${top}/go.mod"
+    run_hook_in "${top}/engineering/src"
+    tc_assert_grep "Test-first nudge: test tooling found (pytest) while test_first.applies is not recorded." "$OUT" \
+        "located nudge (brownfield): a tool found at both places is named once"
+
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    mkdir -p "${top}/src/deep"
+    printf 'project_profile: light\n' > "${top}/.iso-config.yaml"
+    : > "${top}/src/deep/pytest.ini"
+    tc_env
+    run_hook_in "${top}/src/deep"
+    tc_assert_rc 0 "located nudge (working directory only): exit 0"
+    tc_assert_not_grep "Test-first nudge:" "$OUT" \
+        "located nudge (working directory only): tooling below the project directory is not the project's"
+}
+
 # At the project directory the Methodology line keeps its short form.
 case_mode2_methodology_line() {
     local dir
@@ -523,6 +570,7 @@ case_mode2_preset_config_path
 
 case_mode2_config_only
 case_mode2_from_subdirectory
+case_mode2_nudge_located
 case_mode2_methodology_line
 case_mode2_methodology_fallback
 case_mode2_contributor_template

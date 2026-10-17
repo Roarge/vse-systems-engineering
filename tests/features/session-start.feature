@@ -40,3 +40,10 @@ Feature: Session start report
       Then the session is asked to record test first with /vse-test-first
       And the session is told that test tooling was found
       And the session is pointed at the superpowers test-driven-development skill
+
+    Scenario: A session started below the project directory still finds the project's test tooling
+      Given a VSE project at the light profile
+      And test first is not recorded
+      And the project holds the file pytest.ini
+      When a session starts in the directory src/deep
+      Then the session is told that test tooling was found
