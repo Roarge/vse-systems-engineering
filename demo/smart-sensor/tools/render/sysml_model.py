@@ -116,7 +116,8 @@ def _load_gherkin():
         return None
     module = importlib.util.module_from_spec(spec)
     # The parser's dataclasses look their module up by name while the
-    # file runs, so it is registered first, and removed if it fails.
+    # file runs, so it is registered first, and removed if it fails or
+    # is not used.
     sys.modules[_GHERKIN_MODULE] = module
     try:
         spec.loader.exec_module(module)
@@ -124,6 +125,7 @@ def _load_gherkin():
         del sys.modules[_GHERKIN_MODULE]
         return None
     if not callable(getattr(module, "parse", None)):
+        del sys.modules[_GHERKIN_MODULE]
         return None
     return module
 

@@ -266,12 +266,13 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual([scenario for _label, scenario in scenarios(model)],
                          [None, None, None])
 
-    def installed_scenarios(self, lint=None, before=""):
+    def installed_scenarios(self, lint=None, before="", after=""):
         """The (label, scenario) pairs a fresh interpreter reads with a
         copy of sysml_model.py under tools/render/. `lint` is the text of
         tools/lint/gherkin.py beside it (None installs no tools/lint/),
-        and `before` is code that runs before sysml_model is imported,
-        with the tools directory in TOOLS."""
+        `before` is code that runs before sysml_model is imported, with
+        the tools directory in TOOLS, and `after` is code that runs once
+        the pairs are printed."""
         write(self.root, STORY_DIR + "US_901_Example.feature", FEATURE)
         tools = tempfile.mkdtemp(prefix="vse-render-only-")
         self.addCleanup(shutil.rmtree, tools, ignore_errors=True)
@@ -289,7 +290,8 @@ class ScenarioTests(unittest.TestCase):
             "import sysml_model\n"
             "model = sysml_model.load_model(sys.argv[2])\n"
             "print([(a.label, a.scenario) for s in model.stories"
-            " for a in s.acceptances])\n")
+            " for a in s.acceptances])\n"
+            + after)
         completed = subprocess.run(
             [sys.executable, "-I", "-c", code, tools, self.root],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -312,6 +314,17 @@ class ScenarioTests(unittest.TestCase):
             self.installed_scenarios(lint="VERSION = 1\n"),
             "[('firstReading', None), ('latestReadingShown', None), "
             "('alarmRaised', None)]\n")
+
+    def test_a_sibling_parser_without_parse_is_not_left_registered(self):
+        # A copy that is not used is removed from sys.modules, as a copy
+        # that fails to import is, so no later import finds it under the
+        # private name.
+        self.assertEqual(
+            self.installed_scenarios(
+                lint="VERSION = 1\n",
+                after="print('_vse_render_gherkin' in sys.modules)\n"),
+            "[('firstReading', None), ('latestReadingShown', None), "
+            "('alarmRaised', None)]\nFalse\n")
 
     def test_an_unrelated_gherkin_module_is_never_used(self):
         # The Cucumber package installs a top-level module named gherkin,
