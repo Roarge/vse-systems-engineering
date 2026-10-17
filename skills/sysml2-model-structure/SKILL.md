@@ -163,9 +163,18 @@ package HS_ArchDesign {
 
 ```sysml
 package HS_Interfaces {
-    interface def SensorToController { /* logical interface only */ }
+    port def LevelPort;
+    interface def SensorToController {
+        /* logical interface only */
+        end sensor : LevelPort;
+        end controller : ~LevelPort;
+    }
 }
 ```
+
+An interface definition connects two ports, so it declares two ends.
+The `~` marks a conjugated port, that is, the same port definition seen
+from the other side, with each direction reversed.
 
 ```sysml
 package HS_Verification {
