@@ -1,7 +1,7 @@
 ---
 name: document-export
-description: Convert completed markdown work products to docx, pptx, or pdf for delivery. Not for authoring, editing, or populating templates.
-when_to_use: Use when the user asks to export, build, publish, or hand off a finished work product in a binary format.
+description: Convert completed markdown work products to docx, pptx, or pdf for delivery, including requirements specifications whose acceptance criteria are Gherkin scenarios. Not for authoring, editing, or populating templates.
+when_to_use: Use when the user asks to export, build, publish, or hand off a finished work product in a binary format, including a StRS or SyRS export that must carry the scenarios of its stories.
 user-invocable: true
 ---
 
@@ -62,7 +62,7 @@ Ask the user what to export:
 
 1. **Single file**: "Export the Project Plan" produces `build/project-plan.docx`
 2. **Category**: "Export all PM documents" produces all `docs/pm/*.md` as docx
-3. **All**: "Export everything" produces all `docs/pm/*.md` and `docs/sr/*.md`
+3. **All**: "Export everything" produces all `docs/pm/*.md` and `docs/sr/*.md`, and the rendered documents in `docs/generated/`
 
 Map document names to file paths:
 
@@ -75,14 +75,56 @@ Map document names to file paths:
 | Correction Register | docs/pm/correction-register.md |
 | Product Acceptance | docs/pm/product-acceptance.md |
 | SEMP | docs/sr/semp.md |
-| StRS | docs/sr/stakeholder-requirements.md |
-| SyRS | docs/sr/system-requirements.md |
-| Traceability Matrix | docs/sr/traceability-matrix.md |
+| StRS | docs/generated/stakeholder-requirements.md, rendered from the stories and their feature files under model/core/stories/stakeholder/ |
+| SyRS | docs/generated/system-requirements.md, rendered from the stories and their feature files under model/core/stories/system/ and the component stories/ folders |
+| Traceability Matrix | docs/generated/traceability-matrix.md |
 | System Design | docs/sr/system-design.md |
 | IVV Plan | docs/sr/ivv-plan.md |
 | Verification Report | docs/sr/verification-report.md |
 | Validation Report | docs/sr/validation-report.md |
 | Maintenance Guide | docs/sr/maintenance-guide.md |
+
+### Requirements specifications and their scenarios
+
+The StRS and the SyRS are rendered, not authored. The requirements
+renderers that `@project-setup` installs under `tools/render/` write
+them into `docs/generated/` from the stories and from the feature file,
+`<ID>.feature`, beside each story. Each acceptance criterion is printed
+as the scenario tagged `@AC_<name>` in that file (§11.3). A scenario is
+one Given/When/Then example in Gherkin, the plain-text format that
+Cucumber-family test tools read and run. So when an export of either
+document includes acceptance criteria, the feature files are part of
+its source, and an export taken from a copy rendered before a feature
+file changed carries stale criteria.
+
+Before exporting either document, check that it is current by
+rendering it again in a scratch directory and comparing. Run this from
+the engineering root, shown for the StRS (use `system-reqs-doc.py` and
+`docs/generated/system-requirements.md` for the SyRS):
+
+```bash
+doc=docs/generated/stakeholder-requirements.md
+tmp=$(mktemp -d)
+cp -R model tools "$tmp"/
+(cd "$tmp" && python3 -B tools/render/stakeholder-reqs-doc.py >/dev/null)
+diff -q "$tmp/$doc" "$doc"
+rm -rf "$tmp"
+```
+
+Copying `tools/` keeps `tools/lint/`, whose Gherkin parser the renderer
+uses to read the feature files. Any output from `diff` means a story or
+a feature file changed after the document was rendered. This skill
+writes only to `build/`, so ask the engineer to regenerate the document
+first (`python3 tools/render/stakeholder-reqs-doc.py` from the
+engineering root) and commit it, then export.
+
+A criterion with no matching scenario, or one whose feature file is
+missing or does not parse, is printed with its `doc` text alone. The
+story lint finds these as S1, S4 and F1
+(`python3 tools/lint/story-wellformed.py --only gherkin model`, from the
+engineering root). Name any such criterion in the Step 5 report and
+route the gap to `@story-orchestrator` rather than delivering the
+document as complete.
 
 ## Step 3: Ensure Build Directory
 
@@ -169,7 +211,7 @@ Total: 2/3 files exported successfully
 
 When the user asks to "export all work products" or "build all documents":
 
-1. Enumerate all `.md` files in `docs/pm/` and `docs/sr/`
+1. Enumerate all `.md` files in `docs/pm/`, `docs/sr/` and `docs/generated/`, checking the StRS and the SyRS as in Step 2
 2. Export each to the requested format (default: docx)
 3. Place all outputs in `build/`
 4. Report results
