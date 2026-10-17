@@ -1,6 +1,6 @@
 ---
 name: needs-and-requirements
-description: Elicit stakeholder needs and derive system requirements as `UserStory` usages linked through `derive` and `frame concern`, each with Gherkin scenarios as its acceptance criteria.
+description: Elicit stakeholder needs and derive system requirements as `UserStory` usages linked through `derive` and `frame concern`, each with Gherkin scenarios as its acceptance criteria, run as tests where test first applies.
 when_to_use: Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), writing the Gherkin scenarios that state a story's acceptance criteria, framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
 user-invocable: true
 ---
@@ -69,7 +69,7 @@ Themes are working notes, not modelled SysML elements. Prioritisation is recorde
 
 For each prioritised theme, author one or more story usages (`requirement US_<n>_<Short> : UserStory`) per §1, behaviour first (§11.4): the story's feature file before the story, and each scenario before the criterion that mirrors it. Each stakeholder story shall:
 
-- have its feature file, `<US_id>.feature`, beside the register file that declares the story, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/stakeholder/_template.feature`. The file carries the one tag `@<US_id>`, the narrative lines `As a <role>`, `I want <capability>` and `So that <benefit>` (`As an` and `I want to` where English needs them), and one scenario per acceptance criterion, tagged `@AC_<name>` with `<name>` in lowerCamelCase (words run together, the first in lower case, as in `ackAllWithinOneSecond`) and steps in the order Given, When, Then (per §11.2),
+- have its feature file, `<US_id>.feature`, beside the register file that declares the story, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/stakeholder/_template.feature`. The file carries the one tag `@<US_id>`, the narrative lines `As a <role>`, `I want <capability>` and `So that <benefit>` (`As an` and `I want to` where English needs them), and one scenario per acceptance criterion, tagged `@AC_<name>` with `<name>` in lowerCamelCase (words run together, the first in lower case, each later word capitalised, as in `ackAllWithinOneSecond`) and steps in the order Given, When, Then (per §11.2),
 - redefine its `subject` (`subject :>> system : <PartDef>`) with a part def from §2 (Base Architecture) or §3 (System Context), typically the project's system part def, declared before `role` (per §1.9 rule 2),
 - redefine `role` with a part def from `model/core/stakeholders/` (`stakeholder :>> role : <PartDef>`, per §1.4.1 / §1.9 rule 3),
 - declare narrative `capability` and `benefit` strings, which the feature file's narrative repeats word for word (per §11.2.2),
@@ -198,9 +198,9 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 
 - `model/core/stakeholders/<role>.sysml`. One `part def` per stakeholder role.
 - `model/core/concerns/<concern>.sysml`. One `concern def` per concern, with `subject`, `stakeholder`, and `require constraint`.
-- `model/core/stories/stakeholder/<US_id>.feature`. One Gherkin feature file per stakeholder story, beside the file that declares it, one scenario per acceptance criterion (§11.2).
+- `model/core/stories/stakeholder/<US_id>_<short>.feature`. One Gherkin feature file per stakeholder story, beside the file that declares it, one scenario per acceptance criterion (§11.2). Its stem is the full story identifier, as in `US_001_SeeReadingsOnDashboard.feature`.
 - `model/core/stories/stakeholder/<US_id>_<short>.sysml`. Stakeholder stories per §1, with `frame concern` to the concern register and one named criterion per scenario.
-- `model/core/stories/system/<US_id>.feature`. One Gherkin feature file per system story, beside the file that declares it (§11.2).
+- `model/core/stories/system/<US_id>_<short>.feature`. One Gherkin feature file per system story, beside the file that declares it, with the full story identifier as its stem (§11.2).
 - `model/core/stories/system/<US_id>_<short>.sysml`. System stories with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
 - `model/core/use-cases/<name>.sysml`. Optional use-case elaborations whose `objective` names the story.
 - `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that reach acceptance criteria by name, exercising stakeholder intent.
