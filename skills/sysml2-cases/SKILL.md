@@ -134,9 +134,13 @@ verification def VAL_001_OperatorSeeReadings {
 
 Prefer the narrowest form when different cases verify different
 criteria, so that the traceability matrix shows which case verifies
-which scenario. The `::` namespace form addresses a definition member,
-and the reference implementations refuse it (§5.4.6). A criterion name
-the story does not declare fails validation as an unresolved reference.
+which scenario. Only the `<story>::<member>` form is retired: `::`
+after the story addresses a definition member, and the reference
+implementations refuse it (§5.4.6). A package may still qualify the
+story at the front of the chain, so
+`Stories::US_001.acceptance.latestReadingShown` is valid. A criterion
+name the story does not declare fails validation as an unresolved
+reference.
 
 Every criterion of a story at `inProgress` or `done` is reached by at
 least one case. A stub, holding the subject and the objective with the
@@ -184,7 +188,10 @@ definition and reference it from the case subject or actors.
    cases typically do not.
 6. **Story criteria are reached by dot notation.** A `verify` clause
    on a story names the story, its `acceptance`, or one criterion the
-   story declares (`<story>.acceptance.<name>`), never the `::` form.
+   story declares (`<story>.acceptance.<name>`), never the
+   `<story>::<member>` form. A package-qualified story at the front of
+   the chain, such as `Stories::US_001.acceptance.latestReadingShown`,
+   is valid.
 
 ## Red Flags
 
@@ -196,8 +203,8 @@ WARN the engineer if:
   actor should be external)
 - An analysis case has no `return` feature
 - Verdict handling is missing in a verification body that expects one
-- A `verify` clause names a story criterion with `::`, or names a
-  criterion the story does not declare
+- A `verify` clause names a story criterion in the `<story>::<member>`
+  form, or names a criterion the story does not declare
 - A story at `inProgress` or `done` has a criterion that no case
   reaches. The story lint reports it as S8, and the `precommit_gherkin`
   gate blocks the commit at every profile (§11.4, §11.9)

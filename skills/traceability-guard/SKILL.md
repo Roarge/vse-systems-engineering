@@ -270,10 +270,10 @@ Add the criterion coverage table beneath it, one row per acceptance
 criterion, so the reader sees which case verifies which scenario
 (§11.3.3):
 
-| Story | Criterion (`@AC_` tag) | Cases reaching it | Status |
-|-------|------------------------|-------------------|--------|
-| US_001 | latestReadingShown | VAL_001 | Complete |
-| SYS_001 | p99LatencyWithinOneSecond | (missing) | Gap |
+| Story | Criterion (`@AC_` tag) | Scenario in feature file | Cases reaching it | Status |
+|-------|------------------------|--------------------------|-------------------|--------|
+| US_001 | latestReadingShown | yes | VAL_001 | Complete |
+| SYS_001 | p99LatencyWithinOneSecond | yes | (missing) | Gap |
 
 ## Fix Suggestions
 

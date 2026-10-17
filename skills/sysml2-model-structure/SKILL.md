@@ -71,6 +71,7 @@ package HS_Actors {
 
 ```sysml
 package HS_StakeholderNeeds {
+    private import ScalarValues::String;
     requirement def SN_WaterLevelVisibility {
         attribute id : String = "SN-0001";
     }
@@ -80,6 +81,7 @@ package HS_StakeholderNeeds {
 ```sysml
 package HS_UseCases {
     private import HS_Actors::Operator;
+    private import HS_ArchDesign::SensorSystem;
     use case def UC_MonitorWaterLevel {
         subject sensorSystem : SensorSystem;
         actor operator : Operator;
