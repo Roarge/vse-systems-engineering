@@ -409,3 +409,34 @@ jobs:
             echo "::error::demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."
             exit 1
           fi
+
+      - name: Install OpenSysML v0.6.0
+        run: |
+          # The second reference toolchain of the demo's validation
+          # record, installed user-level the way the sysml-toolchain
+          # skill installs it. The checksum is from the release's
+          # SHA256SUMS.txt, and a mismatch stops the step with nothing
+          # extracted.
+          set -euo pipefail
+          DL="$(mktemp -d)"
+          curl -fsSL -o "$DL/opensysml-linux-amd64.tar.gz" \
+            https://github.com/Open-MBEE/OpenSysML/releases/download/v0.6.0/opensysml-linux-amd64.tar.gz
+          echo "15d4a2d12a0adaadcbb1ed53946061a113c793e60a9e159b790936938323fc38  $DL/opensysml-linux-amd64.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$DL/opensysml-linux-amd64.tar.gz" -C "$HOME/.local/bin" sysml sysml-lsp
+          rm -rf "$DL"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Validate the demo model and the model templates with OpenSysML
+        run: |
+          # The demo model, and the model templates with their
+          # placeholders filled, validated with OpenSysML. A verify
+          # path that names a criterion resolves only when the story
+          # nests that criterion (methodology section 11.3). The
+          # script fails when sysml is missing, so a broken install
+          # cannot pass here, where the Makefile target would skip.
+          sysml -version
+          if ! bash tests/hooks/validate-demo.sh; then
+            echo "::error::tests/hooks/validate-demo.sh found OpenSysML findings in the demo model or the model templates, or OpenSysML is unavailable"
+            exit 1
+          fi

@@ -12,9 +12,9 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-templates check-routing \
         check-mirrors check-test-first check-toolchain test-python test-bdd \
-        test-hooks check-demo-generated
+        test-hooks check-demo-generated validate-demo
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated validate-demo
 	@echo "All checks passed."
 
 validate:
@@ -370,4 +370,20 @@ check-demo-generated:
 	 else \
 	   echo "ERROR: demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."; \
 	   exit 1; \
+	 fi
+
+# The demo model, and the model templates with their placeholders
+# filled, validated with OpenSysML, the demo's second reference
+# toolchain. A verify path that names a criterion, such as
+# US_001_SeeReadingsOnDashboard.acceptance.latestReadingShown, resolves
+# only when the story nests that criterion (methodology section 11.3).
+# CI installs OpenSysML v0.6.0 with its pinned checksum and then runs
+# the script, which fails when sysml is missing. Here the target skips
+# with a notice when sysml is not on PATH.
+validate-demo:
+	@echo "Validating the demo model and the model templates with OpenSysML..."
+	@if ! command -v sysml >/dev/null 2>&1; then \
+	   echo "  SKIPPED: sysml (OpenSysML) not on PATH. CI installs OpenSysML v0.6.0 and runs this check."; \
+	 else \
+	   bash tests/hooks/validate-demo.sh; \
 	 fi
