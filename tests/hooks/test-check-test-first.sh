@@ -302,6 +302,37 @@ case_refactor_branch_github_head_ref() {
     tc_assert_not_grep "Notice:" "$OUT" "GITHUB_HEAD_REF and a refactor branch checked out: no notice"
 }
 
+# The record decides which branches are refactor branches: a glob the
+# plugin's file names replaces refactor/*, and an empty list names no
+# branch at all. The scratch record is rewritten in the working tree
+# only, so the range still holds the code change alone.
+case_refactor_branches_recorded() {
+    setup_branch
+    git -C "$REPO" checkout -q -b tidy/x
+    commit_paths "tidy a hook" hooks/x.sh
+    sed -i.bak 's#^  refactor_branches:.*#  refactor_branches: [tidy/*]#' "${REPO}/tests/test-first.yaml"
+    rm -f "${REPO}/tests/test-first.yaml.bak"
+    tc_assert_grep "refactor_branches: [tidy/*]" "$(cat "${REPO}/tests/test-first.yaml")" \
+        "recorded tidy/*: the scratch record names tidy/*"
+    tc_env
+    run_check
+    tc_assert_rc 0 "recorded tidy/*: code alone on tidy/x passes"
+    tc_assert_line "$NOTICE" "$OUT" "recorded tidy/*: tidy/x draws the notice"
+
+    setup_branch
+    git -C "$REPO" checkout -q -b refactor/tidy
+    commit_paths "tidy a hook" hooks/x.sh
+    sed -i.bak 's#^  refactor_branches:.*#  refactor_branches: []#' "${REPO}/tests/test-first.yaml"
+    rm -f "${REPO}/tests/test-first.yaml.bak"
+    tc_assert_grep "refactor_branches: []" "$(cat "${REPO}/tests/test-first.yaml")" \
+        "recorded []: the scratch record names no branch"
+    tc_env
+    run_check
+    tc_assert_rc 1 "recorded []: code alone on refactor/tidy fails"
+    tc_assert_grep "$FAILURE" "$OUT" "recorded []: the finding is stated"
+    tc_assert_not_grep "Notice:" "$OUT" "recorded []: no notice"
+}
+
 # ---------------------------------------------------------------- errors
 
 case_bad_range() {
@@ -363,6 +394,7 @@ case_main_moved_on
 case_subdirectory
 case_refactor_branch_checked_out
 case_refactor_branch_github_head_ref
+case_refactor_branches_recorded
 case_bad_range
 case_no_origin_main
 case_missing_config
