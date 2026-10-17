@@ -854,9 +854,12 @@ request to ask, and a request to ask over added context.
 Claude Code refuses the tool call and shows the reason to the agent,
 which then writes the feature file and retries. The reason names the
 expected file, the rule and the methodology section, and stays under
-1,500 characters. A `warn` disposition sends the same finding as
-`additionalContext` instead, and the call proceeds. An `ask` decision
-puts the call to the human for confirmation.
+1,500 characters. A `warn` disposition sends the finding as
+`additionalContext` instead, and the call proceeds. The edit has then
+happened, so a warning never asks the agent to retry it. It asks for
+the feature file or the failing test next. An `info` disposition adds
+one line of context, and `off` skips the gate. An `ask` decision puts
+the call to the human for confirmation.
 
 The hook never prints `"permissionDecision": "allow"`. An explicit allow
 would skip the engineer's own permission prompts, while printing no
@@ -962,8 +965,19 @@ same state, or the turn would loop.
 - Reminders meant for the human go out as `systemMessage`. The human
   sees them, and they do not continue the conversation.
 - Only the test-first finding uses `additionalContext`, so that the
-  agent acts on it. It goes out once per session and per working-tree
-  state, tracked by a marker file under `$TMPDIR`.
+  agent acts on it.
+- The reminders go out once per session and per working-tree state,
+  and so does the finding. The state is a checksum of `HEAD` and
+  `git status`, and a marker file under `$TMPDIR` records what was said
+  in it, with one line for the reminders and one for the finding. A
+  second stop in a state already spoken in is silent. A finding that
+  falls due in a state where only the reminders went out (after a
+  switch from a refactor branch at the same commit, say) is still sent
+  once.
+- `Stop` keeps its marker at `${TMPDIR:-/tmp}/vse-stop.<session_id>`
+  and `SubagentStop` keeps a separate one at
+  `${TMPDIR:-/tmp}/vse-subagent-stop.<session_id>` (§5.6), so a
+  subagent never uses up what the main agent is told.
 
 **Configuration:**
 
@@ -1008,23 +1022,33 @@ if echo "$recent_changes" | grep -qE '^.M docs/.*verification-report'; then
     notes+="[ISO/IEC 29110 prompt] Verification activity detected. Per SR.O7, link the Verification Report to its IVV procedure and update the story's StoryMeta. "
 fi
 
-# Test first (methodology §11.9): once per session and working-tree state.
-# test_first_applies and code_changed_without_test stand for the shipped
-# helpers in lib/test-first.sh.
+# Each thing is said once per session and working-tree state. The
+# marker keeps a "reminders <state>" or "finding <state>" line for each
+# thing said, so the finding still goes out in a state where only the
+# reminders did. SubagentStop keeps its own marker (§5.6).
 session=$(printf '%s' "$payload" | jq -r '.session_id // "none"')
 marker="${TMPDIR:-/tmp}/vse-stop.$session"
-state=$(printf '%s' "$recent_changes" | cksum)
-if test_first_applies && code_changed_without_test &&
-   [[ "$(cat "$marker" 2>/dev/null || true)" != "$state" ]]; then
-    printf '%s\n' "$state" > "$marker"
-    jq -n --arg c "Code changed with no test change. Write the failing test before more code (methodology §11.7)." \
-          --arg m "$notes" \
-        '{hookSpecificOutput: {hookEventName: "Stop", additionalContext: $c}}
-         + (if $m == "" then {} else {systemMessage: $m} end)'
-    exit 0
+state=$({ git rev-parse -q --verify HEAD || true; printf '%s' "$recent_changes"; } | cksum)
+said() { grep -qxF -- "$1 $state" "$marker" 2>/dev/null; }
+
+# Test first (methodology §11.9). test_first_applies and
+# code_changed_without_test stand for the shipped helpers in
+# lib/test-first.sh.
+finding=""
+if test_first_applies && code_changed_without_test && ! said finding; then
+    finding="Code changed with no test change. Write the failing test before more code (methodology §11.7)."
+    printf 'finding %s\n' "$state" >> "$marker"
+fi
+if [[ -n "$notes" ]] && ! said reminders; then
+    printf 'reminders %s\n' "$state" >> "$marker"
+else
+    notes=""
 fi
 
-[[ -n "$notes" ]] && jq -n --arg m "$notes" '{systemMessage: $m}'
+[[ -z "$finding$notes" ]] && exit 0
+jq -n --arg c "$finding" --arg m "$notes" \
+    '(if $c == "" then {} else {hookSpecificOutput: {hookEventName: "Stop", additionalContext: $c}} end)
+     + (if $m == "" then {} else {systemMessage: $m} end)'
 exit 0
 ```
 
@@ -1056,8 +1080,11 @@ compliance issues to the orchestrating session.
 
 It follows the §5.5 contract. It exits silently when `stop_hook_active`
 is `true`, its reminders go out as `systemMessage`, and only the
-test-first finding uses `additionalContext`, once per session and
-working-tree state.
+test-first finding uses `additionalContext`. The reminders and the
+finding each go out once per session and working-tree state. Its
+marker, `${TMPDIR:-/tmp}/vse-subagent-stop.<session_id>`, is separate
+from the `Stop` marker, so a subagent never uses up what the main agent
+is told.
 
 ### 5.7 `PreCompact`
 
@@ -1138,11 +1165,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # The full history, so a check over the change a pull request
+        # or push brings can reach its base (§4.4).
+        with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install -r tools/requirements.txt
       - name: Story well-formedness (§1.9)
-        run: python3 tools/lint/story-wellformed.py model/
+        # --only wellformed runs the §1.9 rule set alone. The Gherkin
+        # rule set is the precommit_gherkin gate, which the shipped
+        # traceability-check.yml runs at its configured disposition.
+        run: python3 tools/lint/story-wellformed.py --only wellformed model/
       - name: Plan completeness (§10.3.1)
         run: python3 tools/lint/plan-complete.py docs/project-plan.md
       - name: Traceability integrity (§9.8)
