@@ -113,7 +113,7 @@ The answer takes one of three forms:
 
 - **Applies.** `applies: true`, a one-line rationale, `test_command`, `code_paths` and `test_paths`, plus `scenario_command` when a scenario runner is wired (§11.8).
 - **Does not apply.** `applies: false` and a rationale, for example a project that holds models and documents only.
-- **No decision.** No default is forced. If the engineer declines to decide, write no record and say what that means: until `/vse-test-first` records the judgement, the commit-time test-first gate reports a finding at its disposition (block, unless an override lowers it) whenever it detects test tooling or a change to code-like files.
+- **No decision.** No default is forced. If the engineer declines to decide, write no record and say what that means: until `/vse-test-first` records the judgement, the commit-time test-first gate reports a finding at its disposition (block, unless an override lowers it) whenever it detects test tooling. Without a record it has no code paths to watch, so where it detects no tooling it prints one line asking for the record.
 
 **Brownfield with an existing `.iso-config.yaml`.** If it carries a `test_first` block, read it with `@test-first` Step 1 and do not ask. A judgement already recorded is the project's decision.
 
