@@ -61,28 +61,28 @@ Report which tools are available before proceeding.
 Ask the user what to export:
 
 1. **Single file**: "Export the Project Plan" produces `build/project-plan.docx`
-2. **Category**: "Export all PM documents" produces all `docs/pm/*.md` as docx
-3. **All**: "Export everything" produces all `docs/pm/*.md` and `docs/sr/*.md`, and the rendered documents in `docs/generated/`
+2. **Category**: "Export all PM documents" produces the PM documents of the table below (Project Plan to Product Acceptance) as docx
+3. **All**: "Export everything" produces every document in the table below, the rendered documents in `docs/generated/` among them
 
-Map document names to file paths:
+Map document names to file paths. The work products sit directly under `docs/`, one file per document, where `@project-setup` writes them. Meeting records and V&V reports sit in the folders that the skills writing them name.
 
 | Name | Source Path |
 |------|------------|
-| Project Plan | docs/pm/project-plan.md |
-| Progress Status | docs/pm/progress-status.md |
-| Meeting Record | docs/pm/meeting-record.md |
-| Change Request | docs/pm/change-request.md |
-| Correction Register | docs/pm/correction-register.md |
-| Product Acceptance | docs/pm/product-acceptance.md |
-| SEMP | docs/sr/semp.md |
+| Project Plan | docs/project-plan.md |
+| Progress Status | docs/progress-status-record.md |
+| Meeting Record | a file under docs/meetings/, one per meeting |
+| Change Request | none, because a Change Request is a GitHub Issue that `@change-request` opens, not a file under docs/ |
+| Correction Register | docs/correction-register.md |
+| Product Acceptance | docs/product-acceptance-record.md |
+| SEMP | docs/semp.md |
 | StRS | docs/generated/stakeholder-requirements.md, rendered from the stories and their feature files under model/core/stories/stakeholder/ |
 | SyRS | docs/generated/system-requirements.md, rendered from the stories and their feature files under model/core/stories/system/ and the component stories/ folders |
 | Traceability Matrix | docs/generated/traceability-matrix.md |
-| System Design | docs/sr/system-design.md |
-| IVV Plan | docs/sr/ivv-plan.md |
-| Verification Report | docs/sr/verification-report.md |
-| Validation Report | docs/sr/validation-report.md |
-| Maintenance Guide | docs/sr/maintenance-guide.md |
+| System Design | docs/system-design.md |
+| IVV Plan | docs/ivv-plan.md, prepared by hand while no IVV renderer exists (`@verification-validation` Workflow E) |
+| Verification Report | docs/verification-reports/<case>-<date>.md |
+| Validation Report | docs/validation-reports/<case>-<date>.md |
+| Maintenance Guide | docs/maintenance-guide.md |
 
 ### Requirements specifications and their scenarios
 
@@ -122,7 +122,11 @@ A criterion with no matching scenario, or one whose feature file is
 missing or does not parse, is printed with its `doc` text alone. The
 story lint finds these as S1, S4 and F1
 (`python3 tools/lint/story-wellformed.py --only gherkin model`, from the
-engineering root). Name any such criterion in the Step 5 report and
+engineering root). When the project has no `tools/lint/`, run the
+plugin's copy, `${CLAUDE_PLUGIN_ROOT}/templates/tools/lint/story-wellformed.py`,
+with the same arguments from the same directory, the fallback that
+project-audit uses. That copy reads the model through its sibling
+`${CLAUDE_PLUGIN_ROOT}/templates/tools/render/`. Name any such criterion in the Step 5 report and
 route the gap to `@story-orchestrator` rather than delivering the
 document as complete.
 
@@ -152,7 +156,7 @@ For each file to export:
 
 **DOCX:**
 ```bash
-pandoc docs/pm/project-plan.md \
+pandoc docs/project-plan.md \
   -o build/project-plan.docx \
   --from markdown \
   --to docx \
@@ -166,7 +170,7 @@ The plugin ships no reference document. If the project provides its own house st
 
 **PPTX:**
 ```bash
-pandoc docs/pm/progress-status.md \
+pandoc docs/progress-status-record.md \
   -o build/progress-status.pptx \
   --from markdown \
   --to pptx
@@ -174,7 +178,7 @@ pandoc docs/pm/progress-status.md \
 
 **PDF:**
 ```bash
-pandoc docs/pm/project-plan.md \
+pandoc docs/project-plan.md \
   -o build/project-plan.pdf \
   --from markdown \
   --to pdf \
@@ -211,7 +215,7 @@ Total: 2/3 files exported successfully
 
 When the user asks to "export all work products" or "build all documents":
 
-1. Enumerate all `.md` files in `docs/pm/`, `docs/sr/` and `docs/generated/`, checking the StRS and the SyRS as in Step 2
+1. Enumerate the `.md` files of the Step 2 table: the work products directly under `docs/`, the reports under `docs/meetings/`, `docs/verification-reports/` and `docs/validation-reports/`, and the rendered documents in `docs/generated/`, checking the StRS and the SyRS as in Step 2
 2. Export each to the requested format (default: docx)
 3. Place all outputs in `build/`
 4. Report results
@@ -380,8 +384,8 @@ Reference: https://docs.sensmetry.com/examples/report_generation.html
 - `document-skills:docx`, `document-skills:pptx`, `document-skills:pdf`:
   preferred export tools when available
 - `${CLAUDE_PLUGIN_ROOT}/templates/pm/`, `${CLAUDE_PLUGIN_ROOT}/templates/sr/`:
-  original templates (source files are in `docs/pm/` and `docs/sr/` after
-  project setup)
+  original templates (the filled-in source files are directly under
+  `docs/` after project setup, as the Step 2 table lists)
 
 ## Knowledge base
 
