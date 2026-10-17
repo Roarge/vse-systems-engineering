@@ -8,7 +8,9 @@ Feature: Stop reminders that never loop
   stop_hook_active to true while the agent is already carrying on
   because a stop hook asked it to. Each hook keeps its own record of
   the states it has spoken in, so a subagent never uses up what the
-  main agent is told.
+  main agent is told. The record keeps the reminders for the engineer
+  and the test-first reminder for the agent apart, so one never uses up
+  the other.
 
   Background:
     Given a VSE project at the light profile
@@ -50,3 +52,12 @@ Feature: Stop reminders that never loop
     And the Stop hook has reminded the engineer to write an ADR for the current state
     When the Stop hook runs
     Then the engineer receives no reminder
+
+  Scenario: A finding that falls due after a reminder in the same state is still sent
+    Given the file model/core/logical-architecture/sensor.sysml has changed in the working tree
+    And the branch refactor/tidy is checked out
+    And the Stop hook has reminded the engineer to write an ADR for the current state
+    And the branch feat/x is checked out
+    When the Stop hook runs
+    Then the agent receives the test-first reminder
+    And the engineer receives no reminder

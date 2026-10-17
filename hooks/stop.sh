@@ -18,7 +18,8 @@
 #      systemMessage, which the user sees and which continues nothing.
 #   3. uses additionalContext only for the test-first finding.
 #   4. says each thing once for each session and state of the working
-#      tree: a second stop in a state already spoken in is silent.
+#      tree: the reminders once, and the finding once, so a second stop
+#      in a state already spoken in is silent.
 #
 # The reminders. At Stop, an architecture change in the working tree
 # suggests an ADR (§10.5.3), and a verification or validation report
@@ -33,17 +34,21 @@
 # the PreToolUse gate. A refactor branch, or the in-session gate
 # pretooluse_test_first set to off, draws nothing.
 #
-# The marker. The state is a checksum of HEAD and git status. The
-# states already spoken in are kept one per line in a marker for each
-# event and session: ${TMPDIR:-/tmp}/vse-stop.<session_id> for Stop and
+# The marker. The state is a checksum of HEAD and git status. What was
+# said in each state is kept in a marker for each event and session,
+# ${TMPDIR:-/tmp}/vse-stop.<session_id> for Stop and
 # ${TMPDIR:-/tmp}/vse-subagent-stop.<session_id> for SubagentStop, so a
 # subagent never uses up what the main agent is told, and concurrent
-# sessions never share a marker. The session id is reduced to letters,
-# digits, "_" and "-", so the marker never lands outside TMPDIR. The
-# marker is replaced by a rename from the hook's own work directory,
-# never written through a symbolic link. When it cannot be recorded,
-# the finding goes to the user as a systemMessage instead, so it can
-# never continue the turn twice.
+# sessions never share a marker. The marker holds one line for each
+# thing said, "reminders <state>" or "finding <state>". So a finding
+# that falls due in a state where only the reminders went out (after a
+# switch from a refactor branch at the same commit, say) is still sent
+# once. The session id is reduced to letters, digits, "_" and "-", so
+# the marker never lands outside TMPDIR. The marker is replaced by a
+# rename from the hook's own work directory, never written through a
+# symbolic link. When it cannot be recorded, the finding goes to the
+# user as a systemMessage instead, so it can never continue the turn
+# twice.
 #
 # Locating the project, through the shared vse_tf_locate_project. The
 # project is located through its .iso-config.yaml: the first one found
@@ -294,24 +299,27 @@ else
 fi
 STOP_STATE="$({ if [ -n "$STOP_TOP" ]; then git -C "$STOP_TOP" rev-parse -q --verify HEAD 2>/dev/null || true; fi; cat "$STOP_STATUS"; } | cksum)"
 
-# _stop_seen: 0 when the marker, a plain file, already holds the state.
+# _stop_seen <kind>: 0 when the marker, a plain file, already records
+# <kind> (reminders or finding) for the state.
 _stop_seen() {
     [ -f "$STOP_MARKER" ] && [ ! -L "$STOP_MARKER" ] \
-        && grep -qxF -- "$STOP_STATE" "$STOP_MARKER" 2>/dev/null
+        && grep -qxF -- "$1 $STOP_STATE" "$STOP_MARKER" 2>/dev/null
 }
 
-# _stop_record: add the state to the marker. The new marker is written
-# in the work directory, which sits in TMPDIR on the same file system,
-# and renamed over the old one. A symbolic link at the marker path is
-# removed first and never read, so nothing is written through it.
-# Returns 1 when the marker cannot be replaced.
+# _stop_record <kind>...: record each <kind> for the state. The new
+# marker is written in the work directory, which sits in TMPDIR on the
+# same file system, and renamed over the old one. A symbolic link at the
+# marker path is removed first and never read, so nothing is written
+# through it. Returns 1 when the marker cannot be replaced.
 _stop_record() {
-    local next="${STOP_WORK}/marker"
+    local next="${STOP_WORK}/marker" kind
     {
         if [ -f "$STOP_MARKER" ] && [ ! -L "$STOP_MARKER" ]; then
             cat "$STOP_MARKER"
         fi
-        printf '%s\n' "$STOP_STATE"
+        for kind in "$@"; do
+            printf '%s %s\n' "$kind" "$STOP_STATE"
+        done
     } > "$next" 2>/dev/null || return 1
     if [ -L "$STOP_MARKER" ]; then
         rm -f "$STOP_MARKER" 2>/dev/null || return 1
@@ -322,21 +330,35 @@ _stop_record() {
     mv -f "$next" "$STOP_MARKER" 2>/dev/null
 }
 
-if _stop_seen; then
+# What this state has already been told is not said again.
+STOP_KINDS=()
+if [ -n "$STOP_REMINDERS" ]; then
+    if _stop_seen reminders; then
+        STOP_REMINDERS=""
+    else
+        STOP_KINDS+=(reminders)
+    fi
+fi
+if [ -n "$STOP_FINDING" ]; then
+    if _stop_seen finding; then
+        STOP_FINDING=""
+    else
+        STOP_KINDS+=(finding)
+    fi
+fi
+if [ "${#STOP_KINDS[@]}" -eq 0 ]; then
     exit 0
 fi
 
 # ---------------------------------------------------------------- run
 
 vse_hj_add_system_message "$STOP_REMINDERS"
-if [ -n "$STOP_FINDING" ]; then
-    if _stop_record; then
-        vse_hj_add_context "$STOP_FINDING"
-    else
-        echo "[stop] Could not record ${STOP_MARKER}, so the test-first finding goes to the user instead of the agent." >&2
-        vse_hj_add_system_message "$STOP_FINDING"
-    fi
-elif ! _stop_record; then
+if _stop_record "${STOP_KINDS[@]}"; then
+    vse_hj_add_context "$STOP_FINDING"
+elif [ -n "$STOP_FINDING" ]; then
+    echo "[stop] Could not record ${STOP_MARKER}, so the test-first finding goes to the user instead of the agent." >&2
+    vse_hj_add_system_message "$STOP_FINDING"
+else
     echo "[stop] Could not record ${STOP_MARKER}, so these reminders may be repeated in this state." >&2
 fi
 vse_hj_emit "$STOP_EVENT"

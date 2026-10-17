@@ -20,9 +20,12 @@
 #      the main agent's finding.
 #   3. Every other reminder goes out as a top-level systemMessage,
 #      which the user sees and which does not continue the turn, also
-#      once for each session and state. Only Stop carries the ADR and
-#      SR.O7 reminders, and the SubagentStop note names the project's
-#      methodology/ folder, else the plugin's copy.
+#      once for each session and state. The marker records the
+#      reminders and the finding apart, so a finding that falls due in
+#      a state where only a reminder went out is still sent once. Only
+#      Stop carries the ADR and SR.O7 reminders, and the SubagentStop
+#      note names the project's methodology/ folder, else the plugin's
+#      copy.
 #   4. The marker never lands outside $TMPDIR, and a marker that cannot
 #      be recorded turns the finding into a systemMessage.
 #   5. Locating the project from the payload's cwd, and the output
@@ -333,6 +336,30 @@ case_stop_reminders_once_per_state() {
         "reminders once: the completion note returns in a new state"
 }
 
+# The marker records the reminders and the finding separately. A switch
+# from a refactor branch to another branch at the same commit keeps the
+# state, but makes the finding due. It goes out once, and the reminders
+# already given in that state are not repeated.
+case_stop_finding_after_reminder() {
+    local event label
+    for event in Stop SubagentStop; do
+        label="after a reminder (${event})"
+        stop_test_first_project light
+        printf 'part def Sensor;\n' | tc_write model/core/logical-architecture/sensor.sysml
+        git -C "$REPO" checkout -q -b refactor/tidy
+        if [ "$event" = "Stop" ]; then stop_run false session-1; else subagent_run false session-1; fi
+        tc_assert_json '.systemMessage != null and .hookSpecificOutput == null' \
+            "${label}: on the refactor branch only the reminder goes out"
+        git -C "$REPO" checkout -q -b feat/x
+        if [ "$event" = "Stop" ]; then stop_run false session-1; else subagent_run false session-1; fi
+        stop_assert_finding "$event" "${label}: the finding goes out once the branch is not a refactor branch"
+        tc_assert_json '.systemMessage == null' "${label}: the reminder already given is not repeated"
+        if [ "$event" = "Stop" ]; then stop_run false session-1; else subagent_run false session-1; fi
+        tc_assert_rc 0 "${label}: exit 0"
+        tc_assert_json_silent "${label}: a third stop in the same state is silent"
+    done
+}
+
 # The ADR and SR.O7 reminders are for the end of the agent's turn, not
 # for each subagent.
 case_subagent_stop_no_stop_reminders() {
@@ -490,6 +517,7 @@ case_stop_once_per_state
 case_stop_finding_conditions
 case_stop_reminders_are_system_message
 case_stop_reminders_once_per_state
+case_stop_finding_after_reminder
 case_subagent_stop_no_stop_reminders
 case_subagent_stop_methodology
 case_stop_marker_stays_in_tmpdir
