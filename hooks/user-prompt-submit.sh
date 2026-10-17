@@ -10,6 +10,13 @@
 #   2. Synchronous-review mentions -> PM.O4 Meeting Record reminder.
 #   3. Reverse-engineering prompts -> §2.6 rule 7 guard.
 #
+# The project is located from the working directory as SessionStart
+# locates it (hooks/README.md section 1): through its .iso-config.yaml,
+# the canonical project marker, with vse_tf_locate_workdir, else by a
+# methodology/ or engineering/methodology/ folder, the fallback for
+# projects that predate the configuration and for an install without
+# hooks/lib/. Outside a project the hook is silent.
+#
 # stdin: JSON payload from Claude Code with the user prompt.
 # stdout: appended to the prompt context.
 # Exit 0 always.
@@ -18,8 +25,20 @@ set -euo pipefail
 INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | jq -r '.prompt // .user_message // ""' 2>/dev/null || echo "")
 
+UPS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+UPS_PROJECT=""
+if [ -r "${UPS_LIB}/iso-profile.sh" ] && [ -r "${UPS_LIB}/test-first.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/iso-profile.sh"
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/test-first.sh"
+    if vse_tf_locate_workdir "$(pwd -P)"; then
+        UPS_PROJECT=1
+    fi
+fi
+
 # Skip silently outside a VSE project.
-if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
+if [ -z "$UPS_PROJECT" ] && [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 

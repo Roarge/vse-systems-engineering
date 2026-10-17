@@ -5,11 +5,30 @@
 # reminders (overdue risks, stale Change Requests). Unobtrusive. Does
 # not gate work.
 #
+# The project is located from the working directory as SessionStart
+# locates it (hooks/README.md section 1): through its .iso-config.yaml,
+# the canonical project marker, with vse_tf_locate_workdir, else by a
+# methodology/ or engineering/methodology/ folder, the fallback for
+# projects that predate the configuration and for an install without
+# hooks/lib/. Outside a project the hook is silent.
+#
 # Exit 0 always.
 set -euo pipefail
 
+NOTE_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+NOTE_PROJECT=""
+if [ -r "${NOTE_LIB}/iso-profile.sh" ] && [ -r "${NOTE_LIB}/test-first.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${NOTE_LIB}/iso-profile.sh"
+    # shellcheck source=/dev/null
+    . "${NOTE_LIB}/test-first.sh"
+    if vse_tf_locate_workdir "$(pwd -P)"; then
+        NOTE_PROJECT=1
+    fi
+fi
+
 # Skip silently outside a VSE project.
-if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
+if [ -z "$NOTE_PROJECT" ] && [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 

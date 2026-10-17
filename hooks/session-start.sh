@@ -14,8 +14,9 @@
 #      repository only a configuration under demo/ counts. A
 #      methodology/ or engineering/methodology/ folder without a
 #      configuration still draws the report, as a fallback for projects
-#      that predate the configuration. The gates never use that
-#      fallback.
+#      that predate the configuration. The UserPromptSubmit, PreCompact
+#      and Notification hooks locate the project the same way, with the
+#      same fallback. The gates never use that fallback.
 #
 # When none match, exits 0 with no output.
 #
