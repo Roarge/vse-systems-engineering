@@ -84,7 +84,7 @@ When Step 1 has produced a register with two or more named personas, each carryi
 
 **What to pass.** A short message containing the system concept (one or two sentences), the persona list with role, concerns, and priority for each, and the paths to any prior specifications, regulatory references, or competitor documents the agent should consult.
 
-**Return contract.** The subagent returns a suggestion-shaped markdown package: per-persona interview script, candidate need statements in stakeholder language attributed to each persona, and a cross-persona conflict summary. Present this verbatim to the engineer and explicitly invite editing. Only candidates that survive engineer review become stakeholder stories through Step 4. The subagent never writes files.
+**Return contract.** The subagent returns a suggestion-shaped markdown package: per-persona interview script, candidate need statements in stakeholder language attributed to each persona, a Draft scenarios section with Given/When/Then scenarios and a proposed lowerCamelCase criterion name for each candidate need, and a cross-persona conflict summary. Present this verbatim to the engineer and explicitly invite editing. Only candidates that survive engineer review become stakeholder stories through Step 4, and their edited scenarios seed the feature file written there before the story. The subagent never writes files.
 
 ### Step 5: Optional use-case elaboration
 
