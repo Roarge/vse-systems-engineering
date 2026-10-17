@@ -12,7 +12,7 @@
 # Then it runs the Gherkin rule set of the story lint (methodology
 # §11.9.1) over the stories, twice, and expects no finding either time:
 #
-#   1. as shipped, with each story in backlog;
+#   1. as shipped, with each story in backlog.
 #   2. with each story at inProgress, where finding S8 requires a case
 #      to reach every acceptance criterion, so the case templates are
 #      checked as well.
