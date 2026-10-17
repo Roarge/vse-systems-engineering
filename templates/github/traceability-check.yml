@@ -311,10 +311,9 @@ jobs:
       - name: Run the recorded scenarios (scenario_command)
         # Runs where test first applies and test_first records
         # scenario_command (methodology §11.8), from the same directory
-        # as the tests. The runner reads
-        # the feature files beside the stories, in its strict mode, so
-        # an undefined or pending step fails. A failing scenario fails
-        # the workflow at every profile.
+        # as the tests. The runner reads the feature files beside the
+        # stories, in its strict mode, so an undefined or pending step
+        # fails. A failing scenario fails the workflow at every profile.
         if: steps.test-first.outputs.scenario_command != ''
         env:
           SCENARIO_COMMAND: ${{ steps.test-first.outputs.scenario_command }}

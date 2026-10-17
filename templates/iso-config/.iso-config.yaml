@@ -58,8 +58,9 @@ project_profile: standard
 # change to code. The values below describe a project with Python code.
 # A project with no implementation code records applies: false and a
 # rationale that says so. applies: true requires code_paths, test_paths
-# and test_command. CI runs test_command and scenario_command, when
-# recorded, from the top-level directory of the git repository.
+# and test_command. CI runs test_command and scenario_command where test
+# first applies (applies: true) and the command is recorded, from the
+# top-level directory of the git repository.
 # test_first:
 #   applies: true          # true | false, judgement per section 11.5
 #   rationale: "pytest under tests/. bash scripts: bats viable. SysML: not viable, no execution runtime."
