@@ -20,9 +20,20 @@ jobs:
       - name: Create build directory
         run: mkdir -p build/diagrams
 
+      # The sources are the @document-export skill's Step 2 table, where
+      # the skills write them: under docs/, or engineering/docs/ in a
+      # brownfield project. A source the project does not have is skipped.
       - name: Export PM documents
         run: |
-          for f in docs/pm/*.md; do
+          DOCS=docs
+          if [ -d engineering/docs ]; then DOCS=engineering/docs; fi
+          for f in "$DOCS/project-plan.md" "$DOCS/progress-status-record.md" \
+                   "$DOCS"/meetings/*.md "$DOCS/correction-register.md" \
+                   "$DOCS/product-acceptance-record.md"; do
+            if [ ! -f "$f" ]; then
+              echo "Skipping ${f}: not in this project."
+              continue
+            fi
             filename=$(basename "$f" .md)
             echo "Exporting ${filename}..."
             pandoc "$f" -o "build/${filename}.docx" --from markdown --to docx
@@ -30,7 +41,17 @@ jobs:
 
       - name: Export SR documents
         run: |
-          for f in docs/sr/*.md; do
+          DOCS=docs
+          if [ -d engineering/docs ]; then DOCS=engineering/docs; fi
+          for f in "$DOCS/semp.md" "$DOCS/generated/stakeholder-requirements.md" \
+                   "$DOCS/generated/system-requirements.md" \
+                   "$DOCS/generated/traceability-matrix.md" "$DOCS/system-design.md" \
+                   "$DOCS/ivv-plan.md" "$DOCS"/verification-reports/*.md \
+                   "$DOCS"/validation-reports/*.md "$DOCS/maintenance-guide.md"; do
+            if [ ! -f "$f" ]; then
+              echo "Skipping ${f}: not in this project."
+              continue
+            fi
             filename=$(basename "$f" .md)
             echo "Exporting ${filename}..."
             pandoc "$f" -o "build/${filename}.docx" --from markdown --to docx
