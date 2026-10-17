@@ -16,7 +16,15 @@ Each section below is one system story, that is one `requirement` usage typed by
 
 **Acceptance criteria**
 
-1. Given the device is online and reporting at the nominal interval, when a reading is captured at time t, then the dashboard renders that reading no later than t + 5 seconds at the 95th percentile over a 1-hour window.
+1. `readingRenderedInTime`
+
+   ```gherkin
+   @AC_readingRenderedInTime
+   Scenario: A captured reading is rendered within 5 seconds at the 95th percentile
+     Given the device is online and reporting at the nominal interval
+     When a reading is captured at time t
+     Then the dashboard renders that reading no later than t + 5 seconds at the 95th percentile over a 1-hour window
+   ```
 
 ## SYS_002_BatchAcknowledgement
 
@@ -28,7 +36,15 @@ Each section below is one system story, that is one `requirement` usage typed by
 
 **Acceptance criteria**
 
-1. Given N unacknowledged alerts (N up to 1000) are shown, when the operator selects "Acknowledge all", then all N transition within 1 second.
+1. `allAlertsTransitioned`
+
+   ```gherkin
+   @AC_allAlertsTransitioned
+   Scenario: A batch of up to 1000 alerts transitions within 1 second
+     Given N unacknowledged alerts (N up to 1000) are shown
+     When the operator selects "Acknowledge all"
+     Then all N transition within 1 second
+   ```
 
 ## SYS_003_CalibrationOffsetCommit
 
@@ -40,7 +56,16 @@ Each section below is one system story, that is one `requirement` usage typed by
 
 **Acceptance criteria**
 
-1. Given a calibration command carrying a reference value, when the device accepts it on the maintenance port, then the stored offset survives a power cycle and the next reading published to the cloud carries the corrected value.
+1. `offsetPersistedAndApplied`
+
+   ```gherkin
+   @AC_offsetPersistedAndApplied
+   Scenario: The stored offset survives a power cycle and corrects the next published reading
+     Given a calibration command carrying a reference value
+     When the device accepts it on the maintenance port
+     Then the stored offset survives a power cycle
+     And the next reading published to the cloud carries the corrected value
+   ```
 
 ## SYS_004_AlertRetentionWindow
 
@@ -52,4 +77,12 @@ Each section below is one system story, that is one `requirement` usage typed by
 
 **Acceptance criteria**
 
-1. Given an alert raised at time t, when an audit query runs at any instant between t and t plus the retention period, then the store returns that alert with a digest that matches the value recorded at t.
+1. `alertReturnedWithRecordedDigest`
+
+   ```gherkin
+   @AC_alertReturnedWithRecordedDigest
+   Scenario: An audit query inside the retention period returns the alert with its recorded digest
+     Given an alert raised at time t
+     When an audit query runs at any instant between t and t plus the retention period
+     Then the store returns that alert with a digest that matches the value recorded at t
+   ```

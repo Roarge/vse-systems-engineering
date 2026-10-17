@@ -2,6 +2,9 @@
 //
 // Each story enters in §1.7.1 minimal form (subject, role,
 // capability, benefit, at least one acceptance, frame concern).
+// Its acceptance criteria are the scenarios of its feature file,
+// <ID>.feature beside this file, each mirrored here by a named
+// criterion nested in `requirement :>> acceptance` (§11.3).
 // Identifier convention: US_<n>_<ShortName>.
 
 package SmartSensor_StakeholderStories {
@@ -23,10 +26,12 @@ package SmartSensor_StakeholderStories {
         frame concern : StableMonitoring;
 
         requirement :>> acceptance {
-            doc /* Given the device is online and reporting,
-                   when the operator opens the dashboard,
-                   then the latest reading is displayed within 5 seconds
-                   of arrival at the cloud broker. */
+            requirement latestReadingShown {
+                doc /* Given the device is online and reporting,
+                       when the operator opens the dashboard,
+                       then the latest reading is displayed within 5 seconds
+                       of arrival at the cloud broker. */
+            }
         }
     }
 
@@ -42,9 +47,11 @@ package SmartSensor_StakeholderStories {
         frame concern : AlertResponseTime;
 
         requirement :>> acceptance {
-            doc /* Given N unacknowledged alerts shown,
-                   when the operator selects "Acknowledge all",
-                   then all N transition to acknowledged within 1 second. */
+            requirement allAlertsAcknowledged {
+                doc /* Given N unacknowledged alerts shown,
+                       when the operator selects "Acknowledge all",
+                       then all N transition to acknowledged within 1 second. */
+            }
         }
     }
 
@@ -60,9 +67,11 @@ package SmartSensor_StakeholderStories {
         frame concern : DeviceServiceability;
 
         requirement :>> acceptance {
-            doc /* Given a portable reference probe at the deployment site,
-                   when the technician runs the calibration command via the maintenance port,
-                   then the device stores the calibration offset and reports it on the next reading. */
+            requirement offsetStoredAndReported {
+                doc /* Given a portable reference probe at the deployment site,
+                       when the technician runs the calibration command via the maintenance port,
+                       then the device stores the calibration offset and reports it on the next reading. */
+            }
         }
     }
 
@@ -85,11 +94,13 @@ package SmartSensor_StakeholderStories {
         frame concern : DataRetentionCompliance;
 
         requirement :>> acceptance {
-            doc /* Given an alert raised at time t, when the regulator's
-                   audit process queries the alert store at any time
-                   within the mandated retention window, then the alert
-                   is retrievable and a tamper-evidence check confirms
-                   the record is unmodified. */
+            requirement alertRetrievableUnmodified {
+                doc /* Given an alert raised at time t, when the regulator's
+                       audit process queries the alert store at any time
+                       within the mandated retention window, then the alert
+                       is retrievable and a tamper-evidence check confirms
+                       the record is unmodified. */
+            }
         }
     }
 }

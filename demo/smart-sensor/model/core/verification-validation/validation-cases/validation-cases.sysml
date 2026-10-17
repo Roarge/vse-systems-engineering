@@ -4,6 +4,8 @@
 // story directly. It tests whether the system satisfies the
 // stakeholder's intent, not whether the system meets its system-
 // internal specification (that is what a verification case is for).
+// Each case verifies the named acceptance criterion that mirrors the
+// story's scenario, by its full path (§11.3.3).
 //
 // Identifier convention: VAL_<n>_<ShortName>.
 
@@ -34,7 +36,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_001_SeeReadingsOnDashboard.acceptance;
+            verify US_001_SeeReadingsOnDashboard.acceptance.latestReadingShown;
         }
     }
 
@@ -59,7 +61,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_003_CalibrateInField.acceptance;
+            verify US_003_CalibrateInField.acceptance.offsetStoredAndReported;
         }
     }
 
@@ -88,7 +90,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_002_AcknowledgeAlertsBatched.acceptance;
+            verify US_002_AcknowledgeAlertsBatched.acceptance.allAlertsAcknowledged;
         }
     }
 
@@ -120,7 +122,7 @@ package SmartSensor_ValidationCases {
         subject system : SmartSensor_System;
 
         objective {
-            verify US_004_RetainAlertHistory.acceptance;
+            verify US_004_RetainAlertHistory.acceptance.alertRetrievableUnmodified;
         }
     }
 }

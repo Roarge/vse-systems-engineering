@@ -15,7 +15,15 @@ Each section below is one stakeholder story, that is one `requirement` usage typ
 
 **Acceptance criteria**
 
-1. Given the device is online and reporting, when the operator opens the dashboard, then the latest reading is displayed within 5 seconds of arrival at the cloud broker.
+1. `latestReadingShown`
+
+   ```gherkin
+   @AC_latestReadingShown
+   Scenario: The latest reading appears within 5 seconds of arrival
+     Given the device is online and reporting
+     When the operator opens the dashboard
+     Then the latest reading is displayed within 5 seconds of arrival at the cloud broker
+   ```
 
 ## US_002_AcknowledgeAlertsBatched
 
@@ -26,7 +34,15 @@ Each section below is one stakeholder story, that is one `requirement` usage typ
 
 **Acceptance criteria**
 
-1. Given N unacknowledged alerts shown, when the operator selects "Acknowledge all", then all N transition to acknowledged within 1 second.
+1. `allAlertsAcknowledged`
+
+   ```gherkin
+   @AC_allAlertsAcknowledged
+   Scenario: Every shown alert is acknowledged within 1 second
+     Given N unacknowledged alerts are shown
+     When the operator selects "Acknowledge all"
+     Then all N transition to acknowledged within 1 second
+   ```
 
 ## US_003_CalibrateInField
 
@@ -37,7 +53,16 @@ Each section below is one stakeholder story, that is one `requirement` usage typ
 
 **Acceptance criteria**
 
-1. Given a portable reference probe at the deployment site, when the technician runs the calibration command via the maintenance port, then the device stores the calibration offset and reports it on the next reading.
+1. `offsetStoredAndReported`
+
+   ```gherkin
+   @AC_offsetStoredAndReported
+   Scenario: The calibration offset is stored and reported on the next reading
+     Given a portable reference probe at the deployment site
+     When the technician runs the calibration command via the maintenance port
+     Then the device stores the calibration offset
+     And the device reports the calibration offset on the next reading
+   ```
 
 ## US_004_RetainAlertHistory
 
@@ -48,4 +73,13 @@ Each section below is one stakeholder story, that is one `requirement` usage typ
 
 **Acceptance criteria**
 
-1. Given an alert raised at time t, when the regulator's audit process queries the alert store at any time within the mandated retention window, then the alert is retrievable and a tamper-evidence check confirms the record is unmodified.
+1. `alertRetrievableUnmodified`
+
+   ```gherkin
+   @AC_alertRetrievableUnmodified
+   Scenario: An alert stays retrievable and unmodified within the retention window
+     Given an alert raised at time t
+     When the regulator's audit process queries the alert store at any time within the mandated retention window
+     Then the alert is retrievable
+     And a tamper-evidence check confirms the record is unmodified
+   ```

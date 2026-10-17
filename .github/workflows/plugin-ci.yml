@@ -410,6 +410,20 @@ jobs:
             exit 1
           fi
 
+      - name: Lint the demo's stories and feature files
+        run: |
+          # The story lint of methodology section 11.9.1, with both
+          # rule sets (the section 1.9 well-formedness checks and the
+          # Gherkin findings S1 to S9 and F1 to F10), run from the
+          # demo's engineering root the way a project runs it. Every
+          # demo story has its feature file and named criteria, so the
+          # lint finds nothing.
+          cd demo/smart-sensor
+          if ! python3 tools/lint/story-wellformed.py model; then
+            echo "::error::the demo's stories draw story lint findings, listed above"
+            exit 1
+          fi
+
       - name: Install OpenSysML v0.6.0
         run: |
           # The second reference toolchain of the demo's validation

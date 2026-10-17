@@ -15,6 +15,9 @@ story-driven agile MBSE methodology, ISO/IEC 29110 aligned.
 - **Profile:** standard (rigour profile per methodology §0.10)
 - **Toolchain:** omg-pilot (SysML v2 validator per `.iso-config.yaml`
   `sysml_toolchain`)
+- **Test-first:** not applicable, no implementation code (whether test
+  first applies and the test command, per `.iso-config.yaml`
+  `test_first`, methodology §11.5)
 
 ## Methodology
 
@@ -36,6 +39,13 @@ restate.
 
 ## Pointers, not restatements
 
+- Behaviour first: a story's Gherkin feature file and its scenarios
+  come before its SysML, its cases and any design: §11.2 to §11.4.
+- Test first: where it applies, the failing test comes before the
+  code, and an installed test-driven development skill governs the
+  cycle: §11.5 to §11.7.
+- Gates that block at every profile, and the self-bypass rule: §11.9
+  and §11.10.
 - Branch model, pull request workflow, and review checklists: §8.
 - Which artefacts and which gates this project owes at its profile:
   §0.10.
@@ -73,8 +83,9 @@ model/
     context/                System Context composite
     domain/                 Reading, Alert, AcknowledgementCommand
     stories/
-      stakeholder/          US_001..US_004
-      system/               SYS_001..SYS_004 (derive from stakeholder)
+      stakeholder/          US_001..US_004, one <ID>.feature per story
+      system/               SYS_001..SYS_004 (derive from stakeholder),
+                            one <ID>.feature per story
     use-cases/              §1.4.5 elaborations
     logical-architecture/
       interface-types/      Reusable interface defs
@@ -87,6 +98,9 @@ model/
     trade-studies/          AlertHistoryStorageTrade
     resolved/               Selected variant
   library/                  vse-library.sysml (UserStory, etc.)
+tools/
+  render/                   Renderers for docs/generated/ (§9.8)
+  lint/                     Story lint (§11.9.1)
 docs/
   generated/                Renderer output (two specifications, one matrix)
   project-plan.md           §10.3 Project Plan
@@ -110,4 +124,9 @@ docs/
 - Validation case IDs: `VAL_<n>_<ShortName>`.
 - Stories are requirement usages: `requirement US_<n>_<ShortName> :
   UserStory { ... }`. Verify targets use dot notation, as in
-  `verify US_<n>_<ShortName>.acceptance`.
+  `verify US_<n>_<ShortName>.acceptance.<criterion>`.
+- Feature files: `<ID>.feature` beside the register that declares the
+  story, tagged `@<ID>`, one `@AC_<criterion>` scenario per named
+  criterion, with criterion names in lowerCamelCase (words run
+  together, each after the first capitalised, as in
+  `latestReadingShown`) (§11.2, §11.3).

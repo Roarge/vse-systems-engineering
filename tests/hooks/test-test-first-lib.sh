@@ -150,7 +150,7 @@ case_story_blocks_demo_register() {
     block="$(block_of US_001_SeeReadingsOnDashboard "$OUT")"
     tc_assert_match '^requirement US_001_SeeReadingsOnDashboard : UserStory \{ @StoryMeta \{ points = 5;' "$block" \
         "story blocks: a block starts at the declaration, whitespace collapsed"
-    tc_assert_match 'of arrival at the cloud broker\. \*/ \} \}$' "$block" \
+    tc_assert_match 'of arrival at the cloud broker\. \*/ \} \} \}$' "$block" \
         "story blocks: a block ends at the matching closing brace"
     tc_assert_not_match 'US_002' "$block" \
         "story blocks: a block stops before the next story"
@@ -161,7 +161,7 @@ case_story_blocks_demo_register() {
     block="$(block_of SYS_001_DashboardLatency "$OUT")"
     tc_assert_match '^requirement SYS_001_DashboardLatency : UserStory \{' "$block" \
         "story blocks: the #derive prefix is not part of the block"
-    tc_assert_match 'over a 1-hour window\. \*/ \} \}$' "$block" \
+    tc_assert_match 'over a 1-hour window\. \*/ \} \} \}$' "$block" \
         "story blocks: a nested requirement does not end the story block"
 }
 

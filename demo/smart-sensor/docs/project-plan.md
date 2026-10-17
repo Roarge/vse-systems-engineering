@@ -42,6 +42,13 @@ full-profile value from §0.10.3 rather than the standard default
 the demo is meant to exercise the complete StoryMeta form (recorded
 2026-09-09).
 
+Test-first: not applicable, no implementation code (recorded
+2026-10-17). The demo holds SysML models and documents only, and its
+vendored `tools/render/` and `tools/lint/` are tested in the plugin
+repository where they are maintained. The four gates of §11.9 keep
+their default, block, and the stories follow the model-tier test first
+of §11.4.
+
 ## Methodology reference
 
 This project applies the story-driven AMBSE methodology shipped at `methodology/`. The project-local copy is authoritative for this project. Where the methodology reference disagrees with §10 of the SEMP, the methodology wins.

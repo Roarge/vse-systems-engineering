@@ -12,9 +12,9 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-templates check-routing \
         check-mirrors check-test-first check-toolchain test-python test-bdd \
-        test-hooks check-demo-generated validate-demo
+        test-hooks check-demo-generated check-demo-lint validate-demo
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated validate-demo
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated check-demo-lint validate-demo
 	@echo "All checks passed."
 
 validate:
@@ -371,6 +371,17 @@ check-demo-generated:
 	   echo "ERROR: demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."; \
 	   exit 1; \
 	 fi
+
+# The demo's stories against their feature files. The story lint of
+# methodology section 11.9.1 runs with both rule sets (the section 1.9
+# well-formedness checks and the Gherkin findings S1 to S9 and F1 to
+# F10) from the demo's engineering root, the way a project runs it.
+# Every demo story has its feature file and named criteria, so the lint
+# finds nothing.
+check-demo-lint:
+	@echo "Linting the demo's stories and feature files..."
+	@cd demo/smart-sensor && python3 tools/lint/story-wellformed.py model
+	@echo "  The demo's stories pass the story lint."
 
 # The demo model, and the model templates with their placeholders
 # filled, validated with OpenSysML, the demo's second reference

@@ -2,8 +2,9 @@
 //
 // Per methodology §5.4.6, a verification case targets a system-side
 // requirement usage. Each case here takes one system story, verifying
-// both the sharpened constraint that formalises its benefit and its
-// `acceptance` clause, and ties to the same trace as the originating
+// both the sharpened constraint that formalises its benefit and the
+// named acceptance criterion that mirrors the story's scenario, by its
+// full path (§11.3.3), and ties to the same trace as the originating
 // stakeholder story.
 //
 // Identifier convention: VC_<n>_<ShortName>.
@@ -31,7 +32,7 @@ package SmartSensor_VerificationCases {
 
         objective {
             verify SYS_001_DashboardLatency.dashboardSla;
-            verify SYS_001_DashboardLatency.acceptance;
+            verify SYS_001_DashboardLatency.acceptance.readingRenderedInTime;
         }
     }
 
@@ -52,7 +53,7 @@ package SmartSensor_VerificationCases {
 
         objective {
             verify SYS_002_BatchAcknowledgement.batchAckSla;
-            verify SYS_002_BatchAcknowledgement.acceptance;
+            verify SYS_002_BatchAcknowledgement.acceptance.allAlertsTransitioned;
         }
     }
 
@@ -80,7 +81,7 @@ package SmartSensor_VerificationCases {
 
         objective {
             verify SYS_003_CalibrationOffsetCommit.calibrationCommitSla;
-            verify SYS_003_CalibrationOffsetCommit.acceptance;
+            verify SYS_003_CalibrationOffsetCommit.acceptance.offsetPersistedAndApplied;
         }
     }
 
@@ -105,7 +106,7 @@ package SmartSensor_VerificationCases {
 
         objective {
             verify SYS_004_AlertRetentionWindow.retentionWindowSla;
-            verify SYS_004_AlertRetentionWindow.acceptance;
+            verify SYS_004_AlertRetentionWindow.acceptance.alertReturnedWithRecordedDigest;
         }
     }
 }
