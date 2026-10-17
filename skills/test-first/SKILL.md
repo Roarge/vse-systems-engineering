@@ -9,9 +9,9 @@ user-invocable: true
 
 If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
-You are the skill that owns one recorded decision of a VSE project: whether test first applies (methodology §11.5). Test-driven development (TDD) writes a failing automated test before the code that makes it pass. A test harness is the tooling that runs those tests and reports pass or fail. The project records its judgement as the `test_first` block of `.iso-config.yaml`, and the two test-first gates read it: `precommit_test_first` at commit time and in CI, and `pretooluse_test_first` before each agent edit (§11.9). Both watch the paths the record names as code. You also wire the stories' Gherkin feature files to a Cucumber-family scenario runner where test first applies (§11.8). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run. Finally, you answer a test-first denial by doing what it asks.
+You are the skill that owns one recorded decision of a VSE project: whether test first applies (methodology §11.5). Test-driven development (TDD) writes a failing automated test before the code that makes it pass. A test harness is the tooling that runs those tests and reports pass or fail. The project records its judgement as the `test_first` block of `.iso-config.yaml`, and the two test-first gates read it: `precommit_test_first` at commit time and in continuous integration (CI, the checks that run on every push and pull request), and `pretooluse_test_first` before each agent edit (§11.9). Both watch the paths the record names as code. You also wire the stories' Gherkin feature files to a Cucumber-family scenario runner where test first applies (§11.8). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run. Finally, you answer a test-first denial by doing what it asks.
 
-This skill has read-write behaviour inside the project: `.iso-config.yaml`, the managed block of `CLAUDE.md`, `docs/semp.md` and `docs/project-plan.md`, and, for runner wiring, the runner's configuration, step definitions under the test paths and a set-up step in `.github/workflows/traceability-check.yml`. Every write is shown before it is made. Software is installed only after a separate approval per step.
+This skill has read-write behaviour inside the project. It writes four records at the engineering root `<ENG_ROOT>`, the directory that holds `.iso-config.yaml` (Step 1): `<ENG_ROOT>/.iso-config.yaml`, the managed block of `<ENG_ROOT>/CLAUDE.md`, `<ENG_ROOT>/docs/semp.md` (the SEMP, Systems Engineering Management Plan) and `<ENG_ROOT>/docs/project-plan.md`. For runner wiring it also writes the runner's configuration, step definitions under the test paths and a set-up step in `.github/workflows/traceability-check.yml` at the git top level. Every write is shown before it is made. Software is installed only after a separate approval per step.
 
 The methodology wins over this skill and over every external source. Consult the project-local `methodology/11-behaviour-and-test-driven-development.md` first, then `${CLAUDE_PLUGIN_ROOT}/methodology/11-behaviour-and-test-driven-development.md`.
 
@@ -60,18 +60,20 @@ A recorded judgement is not revisited without the argument `revisit` or the engi
 
 ## Step 2: Detection Report
 
-Run the shared detection at the engineering root and, when it differs, at the git top level:
+Run the shared detection at the engineering root and, when it differs, at the git top level. The probe skips the second directory when it is the first:
 
 ```bash
 cd "<TOP>" && VSE_ISO_CONFIG="<ENG_ROOT>/.iso-config.yaml" bash -c '
   . "$1" && . "$2" || exit 2
-  for dir in "$3" "$4"; do
+  set -- "$3" "$4"
+  [ "$(cd "$1" && pwd -P)" = "$(cd "$2" && pwd -P)" ] && set -- "$1"
+  for dir in "$@"; do
     printf "%s:\n" "$dir"
     vse_tf_detect "$dir" | sed "s/^/  /" || echo "  none"
   done' _ "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" "${CLAUDE_PLUGIN_ROOT}/hooks/lib/test-first.sh" "<ENG_ROOT>" "<TOP>"
 ```
 
-Each key is one row of this table, which mirrors `vse_tf_detect` in `hooks/lib/test-first.sh`. The SessionStart nudge and the commit-time gate run the same function. It is one step wider than the table of §11.5.1: a `test/` directory counts as well as `tests/`, because `test/` is the common name in JavaScript and Go projects.
+Each key is one row of this table, which mirrors `vse_tf_detect` in `hooks/lib/test-first.sh` and the table of §11.5.1. The SessionStart nudge and the commit-time gate run the same function.
 
 | Key | Evidence | Tooling it suggests |
 |---|---|---|
@@ -125,12 +127,12 @@ Detection informs the judgement. It does not make it (§11.5.1). **Viable means 
 
 ## Step 4: Record the Judgement
 
-Four writes (§11.5.3), each shown before it is made:
+Four writes (§11.5.3), each at `<ENG_ROOT>` and shown before it is made:
 
-1. **`.iso-config.yaml`**: the `test_first` block of §11.5.2, two-space indented under `test_first:`, with lists in brackets and quotes around any value that holds `#` or `:`. Replace the shipped commented block (`# test_first:` and the commented keys below it), keeping the explanatory comment above it. Without either, add the block after `gate_overrides` or its commented form. With `applies: false`, write `applies` and `rationale` only, because nothing reads the commands or the globs while test first does not apply.
-2. **`CLAUDE.md`**, inside the managed block between `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and `<!-- END VSE COMPANION -->` only: set the `- **Test-first:**` line in the Project facts list, inserting it after the Toolchain line (or the Profile line) when absent. The value states whether test first applies and names the test command, for example "applies, test command `pytest -q`" or "not applicable, no implementation code". Keep the gloss in parentheses that the template ships after the value. Never edit outside the markers.
-3. **`docs/semp.md`**, when the file exists: the Development Tools row whose Purpose cell begins `Test-first tools:`. The Tool cell names the test harness and any scenario runner, and the Version cell the versions they report. Where test first does not apply, the Tool cell reads `none`. Insert the row after the SysML modelling row when it is absent. Methodology §10.3.2 obliges the SEMP to record the engineering tools.
-4. **`docs/project-plan.md`**, tailoring record: append `Test-first: applies, <harness> (recorded <date>).` or `Test-first: not applicable, <reason> (recorded <date>).`, keeping the earlier lines so the history stays readable (§0.10.2).
+1. **`<ENG_ROOT>/.iso-config.yaml`**: the `test_first` block of §11.5.2, two-space indented under `test_first:`, with lists in brackets and quotes around any value that holds `#` or `:`. Replace the shipped commented block (`# test_first:` and the commented keys below it), keeping the explanatory comment above it. Without either, add the block after `gate_overrides` or its commented form. With `applies: false`, write `applies` and `rationale` only, because nothing reads the commands or the globs while test first does not apply.
+2. **`<ENG_ROOT>/CLAUDE.md`**, inside the managed block between `<!-- BEGIN VSE COMPANION (managed by project-setup) -->` and `<!-- END VSE COMPANION -->` only: set the `- **Test-first:**` line in the Project facts list, inserting it after the Toolchain line (or the Profile line) when absent. The value states whether test first applies and names the test command, for example "applies, test command `pytest -q`" or "not applicable, no implementation code". Keep the gloss in parentheses that the template ships after the value. Never edit outside the markers.
+3. **`<ENG_ROOT>/docs/semp.md`**, when the file exists: the Development Tools row whose Purpose cell begins `Test-first tools:`. The Tool cell names the test harness and any scenario runner, and the Version cell the versions they report. Where test first does not apply, the Tool cell reads `none`. Insert the row after the SysML modelling row when it is absent. Methodology §10.3.2 obliges the SEMP to record the engineering tools.
+4. **`<ENG_ROOT>/docs/project-plan.md`**, tailoring record: append `Test-first: applies, <harness> (recorded <date>).` or `Test-first: not applicable, <reason> (recorded <date>).`, keeping the earlier lines so the history stays readable (§0.10.2).
 
 A line or cell that still carries the `{{TEST_FIRST}}` or `{{TEST_HARNESS}}` placeholder records nothing, so replace it in place instead of appending.
 
@@ -148,7 +150,7 @@ The workflow reads the record through `.githooks/lib/iso-profile.sh` and `.githo
 
 Run from `<TOP>` and keep the output:
 
-1. The Step 1 probe prints the recorded values, and the CLAUDE.md line, the SEMP row and the newest tailoring line name the same judgement and command.
+1. The Step 1 probe prints the recorded values, and the Test-first line of `<ENG_ROOT>/CLAUDE.md`, the SEMP row of `<ENG_ROOT>/docs/semp.md` and the newest tailoring line of `<ENG_ROOT>/docs/project-plan.md` name the same judgement and command.
 2. Classify one existing path for each glob. A path under each `code_paths` glob prints `code`, one under each `test_paths` glob prints `test`, and a feature file prints `never`:
 
    ```bash
@@ -205,14 +207,14 @@ Only where test first applies (§11.8). Where it does not, no runner is wired, a
 5. **Scenarios no machine can exercise**, such as a stakeholder's judgement during a field trial, are reached by a validation case (§4.3.6) and skipped through a tag the project chooses, such as `@manual`, which `scenario_command` excludes.
 6. **Record `scenario_command`** in the `test_first` block, a change to `test_first` that the engineer confirms (Step 3), then update the CLAUDE.md line and the SEMP row (Step 4) and verify (Step 6). CI runs it on every pull request beside `test_command`.
 
-The feature tags select scenarios: `@<StoryIdentifier>` selects one story's scenarios and `@AC_<name>` one criterion, which suits the outer loop.
+The feature file's path, or its tag `@<StoryIdentifier>`, selects one story's scenarios. The path plus the tag `@AC_<name>` selects one criterion, which suits the outer loop. An `@AC_` tag alone can also select another story's scenarios, because a criterion name is unique only within its feature (§11.2.3).
 
 ## Resolving a Denial
 
 `pretooluse_test_first` denies an agent edit to a path under `code_paths` when no test evidence exists. `precommit_test_first` reports a commit set, or a pull request in CI, that changes code with no change to a test path. Answer by doing what the denial asks (§11.10):
 
 1. Write or change the failing test under `test_paths`, run it, and watch it fail for the expected reason. Keep the output as red evidence.
-2. Retry the edit. A test path that is new or modified in the working tree is evidence for the in-session gate, whatever the denial says about branch evidence (a shallow clone, a detached HEAD, a branch with no commits yet, no base branch). At commit time, commit the test with the code, or before it on the same branch.
+2. Retry the edit. A test path that is new or modified in the working tree is evidence for the in-session gate, whatever the denial says about branch evidence (a shallow clone, a detached HEAD, a branch with no commits yet, no base branch). A shallow clone is one fetched without the full history, and a detached HEAD is a checkout of a commit rather than of a branch. At commit time, commit the test with the code, or before it on the same branch.
 3. Where the reason names a repository state, fix it for the commits that follow: `git fetch --unshallow` for a shallow clone, a branch checkout for a detached HEAD.
 
 Without the engineer's explicit request, never edit `test_first` or `gate_overrides`, never write the denied file through the Bash tool or any other route the gates cannot see, and never delete or weaken a test so that code passes.
@@ -240,7 +242,7 @@ The pattern for every item: name the rule and its section, state the concrete ri
 - **To `@project-setup`** when there is no `.iso-config.yaml`, because the project is not scaffolded.
 - **To `@attention-regime`** when `.githooks/`, its `lib/test-first.sh` and `lib/iso-profile.sh`, or the CI workflow are not installed.
 - **To `@story-orchestrator`** for feature files, story branches, Gherkin-first denials and the model-tier test first of §11.4.
-- **To `@verification-validation`** for the cases that reach each criterion and for executing them (§4.8, §5.7).
+- **To `@verification-validation`** for the cases that reach each criterion, planned under §4.3.6 and §5.4.6. Their execution is project-determined (§4.8, §5.7), except the scenario runs of §11.8 where test first applies.
 - **To `@change-request`** when a record lands in a baselined artefact.
 - **To `@project-audit`** for a full health check after the judgement is recorded.
 
