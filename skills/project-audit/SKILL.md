@@ -235,7 +235,7 @@ cd "<TOP>" && VSE_ISO_CONFIG="<ENG_ROOT>/.iso-config.yaml" bash -c '
   printf "detected: %s\n" "$(vse_tf_detect "$PWD" | paste -sd, -)"' _ "${CLAUDE_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" "${CLAUDE_PLUGIN_ROOT}/hooks/lib/test-first.sh"
 ```
 
-- `applies` empty: the judgement is unrecorded, or its value is neither `true` nor `false`. ERROR ("test_first not recorded"). Name the test tooling the probe detected, because while the record is open the commit-time test-first gate reports a finding at its disposition, block by default, whenever it detects test tooling. Without a record it has no code paths to watch, so where it detects no tooling it prints one line asking for the record. Unlike the profile and the toolchain, an absent record has no default meaning.
+- `applies` empty: the judgement is unrecorded, or its value is neither `true` nor `false`. ERROR ("test_first not recorded"). Name the test tooling the probe detected, because while the record is open the commit-time test-first gate reports a finding at its disposition, block by default, whenever it detects test tooling or a changed path matches a `code_paths` or `test_paths` glob already recorded (§11.9). Where neither holds, it prints one line asking for the record. Unlike the profile and the toolchain, an absent record has no default meaning.
 - `applies: true` without `code_paths`, `test_paths` or `test_command`: ERROR (§11.5.2). Without `code_paths` the test-first gates watch nothing.
 - `applies: false` while the probe detects test tooling: WARN ("§11.5.1, viable means mandatory, revisit the judgement"). The rationale is the engineer's tailoring decision, so this is never ERROR.
 - Otherwise PASS. The audit does not run `test_command`, because a test run can write to the project.

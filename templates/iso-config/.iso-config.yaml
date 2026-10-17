@@ -54,8 +54,10 @@ project_profile: standard
 # judgement unrecorded. /vse-test-first makes the judgement with the
 # engineer and records it here, in CLAUDE.md, in the SEMP and in the
 # Project Plan (section 11.5.3). While it is unrecorded, the commit-time
-# test-first gate asks for the record when it detects test tooling or a
-# change to code. The values below describe a project with Python code.
+# test-first gate asks for the record when it detects test tooling or
+# when a changed path matches a code_paths or test_paths glob already
+# recorded, and otherwise prints one line suggesting the record. The
+# values below describe a project with Python code.
 # A project with no implementation code records applies: false and a
 # rationale that says so. applies: true requires code_paths, test_paths
 # and test_command. CI runs test_command and scenario_command where test
