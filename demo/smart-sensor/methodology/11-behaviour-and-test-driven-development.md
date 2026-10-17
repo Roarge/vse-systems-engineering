@@ -304,7 +304,7 @@ Detection starts from the evidence of test tooling in the repository.
 | A Maven or Gradle project with a `src/test/` tree | JUnit-style tests |
 | A CMake project with CTest enabled | CTest |
 | A `test:` target in a `Makefile` | make test |
-| A `tests/` or `spec/` directory | A project test suite |
+| A `tests/`, `test/` or `spec/` directory | A project test suite |
 | A behave or Cucumber configuration | A Cucumber-family scenario runner |
 | `*.bats` files | Bats (Bash Automated Testing System) |
 

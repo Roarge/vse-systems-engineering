@@ -182,8 +182,10 @@ requirement SYS_143_AlarmFiltering : UserStory {
     }
 
     requirement :>> acceptance {
-        doc /* For any operator-described alarm in a 5000-alarm set,
-               operator shall reach it in at most 3 UI interactions. */
+        requirement alarmReachedInThreeInteractions {
+            doc /* For any operator-described alarm in a 5000-alarm set,
+                   operator shall reach it in at most 3 UI interactions. */
+        }
     }
 }
 ```

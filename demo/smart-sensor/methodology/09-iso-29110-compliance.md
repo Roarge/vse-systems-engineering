@@ -79,7 +79,7 @@ construction and delivery process appropriate to its product type.
 | SR.O4 — System elements produced/acquired with acceptance tests; traceability | Specification, plus test-first discipline | §5.4.6 and §7 specify verification cases. §11 requires a failing test before implementation code wherever a harness can run it, and states each acceptance criterion as a Gherkin scenario. *Construction* of system elements is otherwise out of scope per §9.2 |
 | SR.O5 — System elements integrated; consistency and traceability to architecture | Specification only | §7.3.4 inter-subsystem interfaces; §10.4 references SR.5 integration tasks in the Plan. *Execution* is project-determined |
 | SR.O6 — System Configuration baselined and stored; change requests detected | Full | §8.3 repository; §8.4–§8.6 PR workflow; §10.8 CM Strategy; StoryMeta lifecycle |
-| SR.O7 — V&V tasks performed; defects corrected; reports stored | Specification + report templates | §4.3.6, §5.4.6, §7 V&V case definitions; *Verification Report* and *Validation Report* artefact templates in §10.10 |
+| SR.O7 — V&V tasks performed; defects corrected; reports stored | Specification + report templates | §4.3.6, §5.4.6, §7 V&V case definitions; *Verification Report* and *Validation Report* artefact templates in §9.5 |
 
 ## 9.5 Artefact mapping
 
