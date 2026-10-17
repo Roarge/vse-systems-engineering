@@ -386,7 +386,8 @@ fi
 # 4. Test before code (methodology §11.9). With test_first.applies
 # true, a changed code path needs a changed test path in the file set,
 # or test evidence in the working tree or on the branch since its
-# merge base. On a refactor branch the finding is a reminder. With
+# merge base. On a refactor branch the finding is a reminder (in range
+# mode the branch is GITHUB_HEAD_REF when CI sets it). With
 # test_first unrecorded, detected test tooling or a changed file the
 # recorded paths classify as code or test is a finding that asks for
 # the record, and otherwise one line suggests it. With applies false
@@ -431,7 +432,11 @@ EOF
     if evidence="$(vse_tf_evidence "$TOP_REAL")"; then
         return 0
     fi
-    if vse_tf_refactor_branch "$TOP_REAL"; then
+    # In range mode CI checks a pull request out as a detached merge
+    # commit and names its branch in GITHUB_HEAD_REF, so that name is
+    # matched, as tests/hooks/check-test-first.sh does. A local commit
+    # matches the branch checked out.
+    if vse_tf_refactor_branch "$TOP_REAL" "${RANGE:+${GITHUB_HEAD_REF:-}}"; then
         echo "[pre-commit] Reminder: precommit_test_first: code changed with no change to a test path, on a refactor branch, so the commit proceeds. Keep the behaviour unchanged and the tests green (methodology §11.9.2)." >&2
         return 0
     fi

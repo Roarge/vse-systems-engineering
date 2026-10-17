@@ -307,12 +307,13 @@ _tc_capture() {
 # Sandboxed run inside $REPO. The stub directory shadows /usr/bin, HOME
 # and the pilot home are scratch, and every variable an installer or an
 # outer run might carry into the sandbox is removed, including the probe
-# budget and the configuration path, so a case that pins either sets it
-# deliberately through tc_env.
+# budget, the configuration path and the pull request branch CI names
+# (GITHUB_HEAD_REF), so a case that pins one sets it deliberately
+# through tc_env.
 _tc_sandboxed() {
     _tc_capture env -C "$REPO" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
-        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG \
+        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \
@@ -380,11 +381,12 @@ tc_run_lib_fn() {
 }
 
 # Run inside $REPO with the machine's real PATH and HOME, for the
-# installed-toolchain sections. The configuration path is dropped here
-# too, so an outer value cannot steer a real-tool case.
+# installed-toolchain sections. The configuration path and an outer
+# GITHUB_HEAD_REF are dropped here too, so an outer value cannot steer
+# a real-tool case.
 tc_run_real() {
     _tc_capture env -C "$REPO" \
-        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG \
+        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${TC_REAL_PATH}" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
         "$@"
@@ -447,7 +449,7 @@ tc_run_in() {
     shift
     _tc_capture env -C "$dir" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
-        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG \
+        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \

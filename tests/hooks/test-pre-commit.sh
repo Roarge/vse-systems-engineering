@@ -1314,6 +1314,40 @@ case_test_first_range_mode() {
     tc_assert_grep "reason: detached HEAD" "$ERR" "test first, range mode: the missing branch evidence is explained"
 }
 
+# CI checks a pull request out as a detached merge commit and names the
+# pull request's branch in GITHUB_HEAD_REF. In range mode that name
+# decides whether the branch is a refactor branch, as the plugin's own
+# check-test-first.sh decides it. A local commit (staged mode) never
+# reads it.
+case_test_first_range_mode_refactor_branch() {
+    local head
+    tc_setup_repo
+    test_first_config true light
+    commit_readme
+    git -C "$REPO" checkout -q -b refactor/tidy-readings
+    write_code
+    tc_commit "tidy the reading"
+    head="$(git -C "$REPO" rev-parse HEAD)"
+    git -C "$REPO" checkout -q --detach "$head"
+    tc_env "VSE_PRECOMMIT_RANGE=HEAD~1..HEAD" "GITHUB_HEAD_REF=refactor/tidy-readings"
+    tc_run_hook
+    tc_assert_rc 0 "range refactor: a pull request from a refactor branch passes"
+    tc_assert_match '^\[pre-commit\] Reminder: .*precommit_test_first.*refactor' "$ERR" \
+        "range refactor: the pull request's refactor branch draws the reminder"
+
+    tc_env "VSE_PRECOMMIT_RANGE=HEAD~1..HEAD" "GITHUB_HEAD_REF=feat/readings"
+    tc_run_hook
+    tc_assert_rc 1 "range refactor: a pull request from another branch stops the check"
+    tc_assert_not_grep "Reminder:" "$ERR" "range refactor: another branch draws no reminder"
+
+    git -C "$REPO" checkout -q -b feat/more-readings
+    write_code src/other.py
+    tc_env "GITHUB_HEAD_REF=refactor/tidy-readings"
+    tc_run_hook
+    tc_assert_rc 1 "range refactor: a local commit ignores GITHUB_HEAD_REF"
+    tc_assert_not_grep "Reminder:" "$ERR" "range refactor: a local commit draws no reminder from it"
+}
+
 # all reads every tracked file, which is the mode CI uses for a tag.
 case_range_all_mode() {
     tc_setup_repo
@@ -1466,6 +1500,7 @@ case_test_first_unrecorded_code_like
 case_range_mode_catches_story
 case_range_mode_skips_model_lint
 case_test_first_range_mode
+case_test_first_range_mode_refactor_branch
 case_range_all_mode
 case_range_bad_ref
 case_filenames_with_spaces

@@ -21,8 +21,8 @@ the gates it names.
 Git runs with a scratch HOME and without the system configuration, so
 no setting on the machine (a signing requirement, a global hooks
 directory) changes what a scenario sees. Variables an outer run might
-carry, such as VSE_ISO_CONFIG or a GIT_INDEX_FILE set by a git hook
-that runs the suite, are removed.
+carry, such as VSE_ISO_CONFIG, the GITHUB_HEAD_REF of a CI job, or a
+GIT_INDEX_FILE set by a git hook that runs the suite, are removed.
 """
 
 import os
@@ -54,7 +54,7 @@ QUIET_GATES = (("precommit_lint", "off"), ("precommit_traceability", "off"))
 SCAFFOLD = (".githooks", "tools", ".iso-config.yaml")
 
 DROPPED = ("VSE_ISO_CONFIG", "VSE_PRECOMMIT_RANGE", "CLAUDE_PLUGIN_ROOT",
-           "XDG_CONFIG_HOME")
+           "XDG_CONFIG_HOME", "GITHUB_HEAD_REF")
 
 
 def environment(ctx):

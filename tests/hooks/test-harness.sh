@@ -84,6 +84,30 @@ case_runners_drop_outer_vse_iso_config() {
     unset VSE_ISO_CONFIG
 }
 
+# GITHUB_HEAD_REF names a pull request's branch in CI, and the
+# project-side gates read it in range mode, so a value from the outer
+# run (a CI job on a refactor/* branch, say) would steer every case.
+# The sandboxed runners drop it, and a case that needs it passes it
+# through tc_env.
+case_runners_drop_outer_github_head_ref() {
+    local show
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    show='printf "%s\n" "${GITHUB_HEAD_REF-unset}"'
+    export GITHUB_HEAD_REF="refactor/outer-run"
+    tc_env
+    tc_run_in "$REPO" bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer GITHUB_HEAD_REF: tc_run_in drops it"
+    tc_run_lib_fn bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer GITHUB_HEAD_REF: the hook runners drop it"
+    tc_run_real bash -c "$show"
+    tc_assert_eq "unset" "$OUT" "outer GITHUB_HEAD_REF: the real-toolchain runner drops it"
+    tc_env GITHUB_HEAD_REF=refactor/from-tc-env
+    tc_run_lib_fn bash -c "$show"
+    tc_assert_eq "refactor/from-tc-env" "$OUT" "GITHUB_HEAD_REF: tc_env still passes it through"
+    tc_env
+    unset GITHUB_HEAD_REF
+}
+
 # -------------------------------------------------- project configuration
 
 case_config_two_gates() {
@@ -232,6 +256,7 @@ case_bin_without_named_tools() {
 case_stdin_reaches_hook
 case_other_runners_read_empty_stdin
 case_runners_drop_outer_vse_iso_config
+case_runners_drop_outer_github_head_ref
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs
