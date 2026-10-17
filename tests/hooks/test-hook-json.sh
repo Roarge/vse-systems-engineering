@@ -10,7 +10,8 @@
 #   1. The one-shot emitters print exactly one object of the shape the
 #      harness reads, with every string kept exactly: quotes,
 #      backslashes, newlines, tabs, non-ASCII and control characters.
-#      A permission reason longer than 1,500 characters is clipped.
+#      A permission reason longer than 1,499 characters is clipped, so
+#      it always stays under 1,500.
 #   2. The encoder is jq, else python3 in isolated mode, else a fixed
 #      literal. Each case runs once per engine, with the other tools
 #      taken off PATH, and an engine that fails hands over to the next,
@@ -287,33 +288,38 @@ hj_repeat() {
     printf '%s' "$s"
 }
 
+# The deny reasons stay under 1,500 characters, so the longest reason
+# kept whole is 1,499 characters, and a clipped one is its first 1,490
+# characters and "…and more" (9 characters), 1,499 in all.
 case_clip() {
-    local engine a1491 a1500 a1501 a1600 e1491 e1600 long
-    a1491="$(hj_repeat a 1491)"
-    a1500="$(hj_repeat a 1500)"
-    a1501="${a1500}a"
+    local engine a1490 a1499 a1500 a1600 e1490 e1600 long
+    a1490="$(hj_repeat a 1490)"
+    a1499="$(hj_repeat a 1499)"
+    a1500="${a1499}a"
     a1600="$(hj_repeat a 1600)"
-    e1491="$(hj_repeat 'é' 1491)"
+    e1490="$(hj_repeat 'é' 1490)"
     e1600="$(hj_repeat 'é' 1600)"
     long="$(hj_repeat 'context ' 400)"
     for engine in $HJ_ENGINES; do
         hj_engine "$engine"
+        run_hj vse_hj_deny PreToolUse "$a1499"
+        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "$a1499" \
+            "clip (${engine}): a reason of exactly 1,499 characters is kept"
         run_hj vse_hj_deny PreToolUse "$a1500"
-        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "$a1500" \
-            "clip (${engine}): a reason of exactly 1,500 characters is kept"
-        run_hj vse_hj_deny PreToolUse "$a1501"
-        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1491}…and more" \
-            "clip (${engine}): a reason of 1,501 characters is clipped"
+        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1490}…and more" \
+            "clip (${engine}): a reason of 1,500 characters is clipped"
+        tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length == 1499' \
+            "clip (${engine}): a reason of 1,500 characters is clipped to 1,499"
         run_hj vse_hj_deny PreToolUse "$a1600"
-        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1491}…and more" \
+        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1490}…and more" \
             "clip (${engine}): a long reason ends in …and more"
-        tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length == 1500' \
-            "clip (${engine}): a clipped reason is 1,500 characters"
+        tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length == 1499' \
+            "clip (${engine}): a clipped reason is 1,499 characters"
         run_hj vse_hj_ask PreToolUse "$a1600"
-        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1491}…and more" \
+        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${a1490}…and more" \
             "clip (${engine}): an ask reason is clipped too"
         run_hj vse_hj_deny PreToolUse "$e1600"
-        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${e1491}…and more" \
+        hj_assert_value '.hookSpecificOutput.permissionDecisionReason' "${e1490}…and more" \
             "clip (${engine}): the limit counts characters, not bytes"
         run_hj vse_hj_context PostToolUse "$long"
         hj_assert_value '.hookSpecificOutput.additionalContext' "$long" \
@@ -450,6 +456,58 @@ case_bad_event() {
             tc_assert_grep "[hook-json]" "$ERR" "bad event: ${fn} '${event}' names the problem on stderr"
         done
     done
+    tc_env
+}
+
+# A call that leaves out an argument returns 64 with nothing on stdout,
+# rather than ending the hook on an unbound variable under set -u.
+case_missing_argument() {
+    local call
+    hj_engine jq
+    while IFS= read -r call; do
+        # The words of each call are split on purpose.
+        # shellcheck disable=SC2086
+        run_hj $call
+        tc_assert_rc 64 "missing argument: '${call}' exits 64"
+        tc_assert_json_silent "missing argument: '${call}' prints nothing on stdout"
+        tc_assert_grep "[hook-json]" "$ERR" "missing argument: '${call}' names the problem on stderr"
+    done <<'CALLS'
+vse_hj_deny
+vse_hj_deny PreToolUse
+vse_hj_ask
+vse_hj_ask PreToolUse
+vse_hj_context
+vse_hj_context PostToolUse
+vse_hj_system_message
+vse_hj_add_decision
+vse_hj_add_decision deny
+vse_hj_add_context
+vse_hj_add_system_message
+vse_hj_emit
+vse_hj_read
+vse_hj_read /dev/null
+CALLS
+    tc_env
+}
+
+# An emit refused for its event still starts again empty, so the
+# findings of a refused call never leak into the next object.
+case_emit_bad_event_clears() {
+    hj_engine jq
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    tc_run_in "$REPO" bash -c '
+        . "$1"
+        vse_hj_add_decision deny "Gone."
+        vse_hj_add_context "Gone too."
+        vse_hj_emit "Pre Tool" || echo "emit returned $?" >&2
+        vse_hj_add_context "Kept."
+        vse_hj_emit PostToolUse
+    ' hj-driver "$HJ_LIB"
+    tc_assert_rc 0 "bad event clears: exit 0"
+    tc_assert_grep "emit returned 64" "$ERR" "bad event clears: the refused emit returns 64"
+    tc_assert_json '(.hookSpecificOutput | keys_unsorted == ["hookEventName", "additionalContext"])
+        and .hookSpecificOutput.additionalContext == "Kept."' \
+        "bad event clears: the next object holds only what was added after the refused emit"
     tc_env
 }
 
@@ -646,6 +704,63 @@ case_read_no_json_tool() {
     tc_env
 }
 
+# A jq that fails hands the read over to python3, as the encoder does.
+# When no engine works the read returns 3, as when neither is present.
+case_read_failing_engine_falls_back() {
+    local payload dir
+    payload="$(tc_mktemp_d)/payload.json"
+    hj_payload "$payload"
+    dir="$(tc_mktemp_d)"
+    printf '{"tool_name": "Edit",' > "${dir}/truncated.json"
+    tc_reset_stubs
+    tc_stub jq <<'STUB'
+#!/usr/bin/env bash
+echo "jq: simulated failure" >&2
+exit 5
+STUB
+    tc_env PATH="${STUBS}:${HJ_BIN_NO_JQ}"
+    run_hj vse_hj_read "$payload" .tool_name
+    tc_assert_rc 0 "read fallback: a failing jq hands over to python3"
+    tc_assert_eq "Edit" "$OUT" "read fallback: python3 reads the field"
+    run_hj vse_hj_read "${dir}/truncated.json" .tool_name
+    tc_assert_rc 2 "read fallback: a malformed payload still exits 2 after the hand-over"
+
+    tc_stub python3 <<'STUB'
+#!/usr/bin/env bash
+echo "xcode-select: note: no developer tools were found" >&2
+exit 1
+STUB
+    tc_env PATH="${STUBS}:${HJ_BIN_NO_JSON}"
+    run_hj vse_hj_read "$payload" .tool_name
+    tc_assert_rc 3 "read fallback: failing jq and python3 exit 3"
+    tc_assert_json_silent "read fallback: failing jq and python3 print nothing"
+    tc_assert_grep "[hook-json]" "$ERR" "read fallback: failing jq and python3 are named on stderr"
+
+    rm -f "${STUBS}/jq"
+    run_hj vse_hj_read "$payload" .tool_name
+    tc_assert_rc 3 "read fallback: a failing python3 with no jq exits 3"
+
+    tc_reset_stubs
+    tc_env
+    run_hj vse_hj_read "${dir}/truncated.json" .tool_name
+    tc_assert_rc 2 "read fallback: with both engines a malformed payload exits 2"
+}
+
+# A payload that starts with a UTF-8 byte order mark (some Windows
+# editors write one) reads the same with either engine.
+case_read_byte_order_mark() {
+    local engine payload
+    payload="$(tc_mktemp_d)/payload.json"
+    printf '\357\273\277{"tool_name": "Edit"}' > "$payload"
+    for engine in $HJ_ENGINES; do
+        hj_engine "$engine"
+        run_hj vse_hj_read "$payload" .tool_name
+        tc_assert_rc 0 "read byte order mark (${engine}): exit 0"
+        tc_assert_eq "Edit" "$OUT" "read byte order mark (${engine}): the field is read"
+    done
+    tc_env
+}
+
 case_read_python_isolated() {
     local payload
     payload="$(tc_mktemp_d)/payload.json"
@@ -767,10 +882,10 @@ case_accumulate_clip() {
         hj_engine "$engine"
         run_hj_seq vse_hj_add_decision deny "$a1000" ';;' \
             vse_hj_add_decision deny "$a1000" ';;' vse_hj_emit PreToolUse
-        tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length == 1500' \
-            "accumulate clip (${engine}): joined reasons are clipped to 1,500 characters"
+        tc_assert_json '.hookSpecificOutput.permissionDecisionReason | length == 1499' \
+            "accumulate clip (${engine}): joined reasons are clipped to 1,499 characters"
         hj_assert_value '.hookSpecificOutput.permissionDecisionReason' \
-            "${a1000}"$'\n\n'"${a1000:0:489}…and more" \
+            "${a1000}"$'\n\n'"${a1000:0:488}…and more" \
             "accumulate clip (${engine}): the clipped reason ends in …and more"
     done
     tc_env
@@ -844,6 +959,8 @@ case_no_json_tool
 case_failing_engine_falls_back
 case_python_isolated
 case_bad_event
+case_missing_argument
+case_emit_bad_event_clears
 case_read_strings
 case_read_booleans
 case_read_absent
@@ -852,6 +969,8 @@ case_read_not_one_value
 case_read_invalid_utf8
 case_read_bad_path
 case_read_no_json_tool
+case_read_failing_engine_falls_back
+case_read_byte_order_mark
 case_read_python_isolated
 case_accumulate_combined
 case_accumulate_partial

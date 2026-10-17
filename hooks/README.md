@@ -59,7 +59,7 @@ The JSON object uses these fields:
 |---|---|
 | `hookSpecificOutput.hookEventName` | The event name, present whenever `hookSpecificOutput` is |
 | `hookSpecificOutput.permissionDecision` | `deny` or `ask`, at `PreToolUse` only. No hook ever answers `allow`, so the engineer's own permission settings still govern every call a hook lets through |
-| `hookSpecificOutput.permissionDecisionReason` | The reason the agent reads, clipped to 1,500 characters |
+| `hookSpecificOutput.permissionDecisionReason` | The reason the agent reads, clipped so it stays under 1,500 characters (1,499 at most) |
 | `hookSpecificOutput.additionalContext` | Text added to the agent's context |
 | `systemMessage` | Text shown to the human, not to the agent |
 

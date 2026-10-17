@@ -38,9 +38,10 @@
 #
 #   vse_hj_read <payload-file> <path>   print one string or boolean field
 #
-# A permission reason longer than 1,500 characters is clipped to 1,500,
-# ending in "…and more". Context and system messages are not clipped.
-# An event that is not a plain word (letters only), or a decision other
+# A permission reason longer than 1,499 characters is clipped to 1,499,
+# ending in "…and more", so it always stays under 1,500. Context and
+# system messages are not clipped. A call that leaves out an argument,
+# an event that is not a plain word (letters only), or a decision other
 # than deny or ask, returns 64 with nothing on stdout and the problem
 # on stderr.
 #
@@ -59,7 +60,7 @@
 # accumulator, and does no other work.
 set -euo pipefail
 
-_VSE_HJ_REASON_LIMIT=1500
+_VSE_HJ_REASON_LIMIT=1499
 
 # The engines take the same seven arguments: event, decision (empty for
 # none), reason, a 1 when there is a context, the context, a 1 when
@@ -160,6 +161,19 @@ _vse_hj_build() {
     return 0
 }
 
+# _vse_hj_args <function> <needed> <given>: 0 when the call carries the
+# arguments the function needs, else 64 with the problem on stderr. The
+# public functions read their arguments as ${1-} and ${2-}, so a call
+# that leaves one out is refused here rather than ending the hook on an
+# unbound variable under set -u.
+_vse_hj_args() {
+    if [ "$3" -lt "$2" ]; then
+        echo "[hook-json] $1 needs $2 argument(s) and was given $3, so nothing was done." >&2
+        return 64
+    fi
+    return 0
+}
+
 # _vse_hj_check_event <event>: 0 for a plain word, else 64 with the
 # problem on stderr.
 _vse_hj_check_event() {
@@ -173,22 +187,26 @@ _vse_hj_check_event() {
 }
 
 vse_hj_deny() {
-    _vse_hj_check_event "$1" || return 64
-    _vse_hj_build "$1" deny "$2" 0 "" 0 ""
+    _vse_hj_args vse_hj_deny 2 "$#" || return 64
+    _vse_hj_check_event "${1-}" || return 64
+    _vse_hj_build "${1-}" deny "${2-}" 0 "" 0 ""
 }
 
 vse_hj_ask() {
-    _vse_hj_check_event "$1" || return 64
-    _vse_hj_build "$1" ask "$2" 0 "" 0 ""
+    _vse_hj_args vse_hj_ask 2 "$#" || return 64
+    _vse_hj_check_event "${1-}" || return 64
+    _vse_hj_build "${1-}" ask "${2-}" 0 "" 0 ""
 }
 
 vse_hj_context() {
-    _vse_hj_check_event "$1" || return 64
-    _vse_hj_build "$1" "" "" 1 "$2" 0 ""
+    _vse_hj_args vse_hj_context 2 "$#" || return 64
+    _vse_hj_check_event "${1-}" || return 64
+    _vse_hj_build "${1-}" "" "" 1 "${2-}" 0 ""
 }
 
 vse_hj_system_message() {
-    _vse_hj_build "" "" "" 0 "" 1 "$1"
+    _vse_hj_args vse_hj_system_message 1 "$#" || return 64
+    _vse_hj_build "" "" "" 0 "" 1 "${1-}"
 }
 
 # ---------------------------------------------------------- accumulator
@@ -209,7 +227,8 @@ _VSE_HJ_NL=$'\n'
 # paragraphs in call order. Any other decision returns 64, because the
 # hooks never emit allow.
 vse_hj_add_decision() {
-    local decision="$1" reason="$2"
+    local decision="${1-}" reason="${2-}"
+    _vse_hj_args vse_hj_add_decision 2 "$#" || return 64
     case "$decision" in
         deny|ask) : ;;
         *)
@@ -229,35 +248,42 @@ vse_hj_add_decision() {
 # vse_hj_add_context <text>: add a paragraph for the model. An empty
 # text adds nothing.
 vse_hj_add_context() {
-    [ -n "$1" ] || return 0
-    _VSE_HJ_CONTEXT="${_VSE_HJ_CONTEXT:+${_VSE_HJ_CONTEXT}${_VSE_HJ_BLANK}}$1"
+    _vse_hj_args vse_hj_add_context 1 "$#" || return 64
+    [ -n "${1-}" ] || return 0
+    _VSE_HJ_CONTEXT="${_VSE_HJ_CONTEXT:+${_VSE_HJ_CONTEXT}${_VSE_HJ_BLANK}}${1-}"
     return 0
 }
 
 # vse_hj_add_system_message <text>: add a line for the user. An empty
 # text adds nothing.
 vse_hj_add_system_message() {
-    [ -n "$1" ] || return 0
-    _VSE_HJ_SYSTEM="${_VSE_HJ_SYSTEM:+${_VSE_HJ_SYSTEM}${_VSE_HJ_NL}}$1"
+    _vse_hj_args vse_hj_add_system_message 1 "$#" || return 64
+    [ -n "${1-}" ] || return 0
+    _VSE_HJ_SYSTEM="${_VSE_HJ_SYSTEM:+${_VSE_HJ_SYSTEM}${_VSE_HJ_NL}}${1-}"
     return 0
 }
 
 # vse_hj_emit <event>: print what was added as one object, or nothing
 # when nothing was added, then start again empty. The reason is clipped
-# as one reason after the paragraphs are joined.
+# as one reason after the paragraphs are joined. A refused call (no
+# event, or one that is not a plain word) also starts again empty
+# before it returns 64, so its findings never reach a later object.
 vse_hj_emit() {
+    local decision="$_VSE_HJ_DECISION" reason="$_VSE_HJ_REASON"
+    local context="$_VSE_HJ_CONTEXT" system="$_VSE_HJ_SYSTEM"
     local has_context=0 has_system=0
-    _vse_hj_check_event "$1" || return 64
-    [ -z "$_VSE_HJ_CONTEXT" ] || has_context=1
-    [ -z "$_VSE_HJ_SYSTEM" ] || has_system=1
-    if [ -n "$_VSE_HJ_DECISION" ] || [ "$has_context" = 1 ] || [ "$has_system" = 1 ]; then
-        _vse_hj_build "$1" "$_VSE_HJ_DECISION" "$_VSE_HJ_REASON" \
-            "$has_context" "$_VSE_HJ_CONTEXT" "$has_system" "$_VSE_HJ_SYSTEM"
-    fi
     _VSE_HJ_DECISION=""
     _VSE_HJ_REASON=""
     _VSE_HJ_CONTEXT=""
     _VSE_HJ_SYSTEM=""
+    _vse_hj_args vse_hj_emit 1 "$#" || return 64
+    _vse_hj_check_event "${1-}" || return 64
+    [ -z "$context" ] || has_context=1
+    [ -z "$system" ] || has_system=1
+    if [ -n "$decision" ] || [ "$has_context" = 1 ] || [ "$has_system" = 1 ]; then
+        _vse_hj_build "${1-}" "$decision" "$reason" \
+            "$has_context" "$context" "$has_system" "$system"
+    fi
     return 0
 }
 
@@ -284,7 +310,7 @@ import sys
 
 try:
     with open(sys.argv[1], "rb") as handle:
-        value = json.loads(handle.read().decode("utf-8", "replace"))
+        value = json.loads(handle.read().decode("utf-8-sig", "replace"))
 except (OSError, ValueError) as error:
     sys.stderr.write("%s\n" % error)
     sys.exit(2)
@@ -318,6 +344,14 @@ _vse_hj_check_path() {
     return 0
 }
 
+# _vse_hj_print_read <captured>: print a read captured with its "x"
+# sentinel, followed by a newline, or nothing for an empty field.
+_vse_hj_print_read() {
+    local out="${1%x}"
+    [ -z "$out" ] || printf '%s\n' "$out"
+    return 0
+}
+
 # vse_hj_read <payload-file> <path>: print one field of the JSON
 # payload, followed by a newline, as jq -r prints it. The path is a dot
 # and names joined by dots, such as .tool_input.file_path, each name a
@@ -325,26 +359,42 @@ _vse_hj_check_path() {
 # string prints as it is, a boolean as true or false. A field that is
 # absent, null, empty or of another type prints nothing and returns 0.
 # Returns 2 when the payload cannot be read or is not exactly one JSON
-# value (an empty payload included), 3 when neither jq nor python3 is
-# available, and 64 for a path of another form. Uses jq, else python3
-# in isolated mode. A byte that is not valid UTF-8 reads as U+FFFD.
+# value (an empty payload included), 3 when no engine works (neither jq
+# nor python3 is available, or each one failed), and 64 for a missing
+# argument or a path of another form. Uses jq, and hands over to
+# python3 in isolated mode when jq fails, as the encoder does. jq
+# cannot tell a payload it cannot read from a failure of its own, so a
+# failing jq with no python3 returns 2. A byte that is not valid UTF-8
+# reads as U+FFFD, and a leading byte order mark is skipped.
 vse_hj_read() {
-    local payload="$1" path="$2" out
+    local payload="${1-}" path="${2-}" out rc=3
+    _vse_hj_args vse_hj_read 2 "$#" || return 64
     _vse_hj_check_path "$path" || return 64
     # The x keeps the trailing newlines a substitution would drop.
     if command -v jq >/dev/null 2>&1; then
-        out="$(jq -j -s --arg path "$path" "$_VSE_HJ_JQ_READ" "$payload" && printf x)" || out=""
-    elif command -v python3 >/dev/null 2>&1; then
-        out="$(python3 -I -c "$_VSE_HJ_PY_READ" "$payload" "$path" && printf x)" || out=""
+        if out="$(jq -j -s --arg path "$path" "$_VSE_HJ_JQ_READ" "$payload" && printf x)"; then
+            _vse_hj_print_read "$out"
+            return 0
+        fi
+        rc=2
+    fi
+    if command -v python3 >/dev/null 2>&1; then
+        [ "$rc" -ne 2 ] || echo "[hook-json] jq failed, trying python3." >&2
+        if out="$(python3 -I -c "$_VSE_HJ_PY_READ" "$payload" "$path" && printf x)"; then
+            _vse_hj_print_read "$out"
+            return 0
+        else
+            rc=$?
+        fi
+        # The reader exits 2 for a payload it cannot read. Any other
+        # failure is python3's own (the macOS stub that asks for the
+        # developer tools, say), so no engine works.
+        [ "$rc" -eq 2 ] || rc=3
+    fi
+    if [ "$rc" -eq 3 ]; then
+        echo "[hook-json] Could not read the hook payload because ${_VSE_HJ_NO_TOOL}, or each one failed." >&2
     else
-        echo "[hook-json] Could not read the hook payload because ${_VSE_HJ_NO_TOOL}." >&2
-        return 3
-    fi
-    if [ -z "$out" ]; then
         echo "[hook-json] Could not read the hook payload ${payload}." >&2
-        return 2
     fi
-    out="${out%x}"
-    [ -z "$out" ] || printf '%s\n' "$out"
-    return 0
+    return "$rc"
 }
