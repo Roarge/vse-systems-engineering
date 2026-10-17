@@ -357,9 +357,10 @@ test_first:
 `*` in one matches any characters, including `/`. A path that matches a
 `test_paths` glob is test code even when a `code_paths` glob also
 matches it, and a path that matches neither is not watched. Some paths
-are never code, whatever the globs say: the configuration file itself,
-every `*.feature` file, and the generated documents and vendored tools
-under the engineering root (`docs/generated/`, `tools/render/` and
+are never code, whatever the globs say: every file named
+`.iso-config.yaml` (the configuration in force or any other), every
+`*.feature` file, and the generated documents and vendored tools under
+the engineering root (`docs/generated/`, `tools/render/` and
 `tools/lint/`).
 
 Only `code_paths` decides what the test-first gates watch. The

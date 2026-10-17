@@ -615,12 +615,10 @@ EOF
 # Load what classification needs into globals, once per public call:
 # the engineering-root prefix (the configuration file's directory
 # relative to the git top level, with a trailing slash, empty at the top
-# level), the configuration file's own relative path, and the two glob
-# lists.
+# level) and the two glob lists.
 _vse_tf_load() {
     local config="${ISO_CONFIG_FILE:-}" dir top rel
     _VSE_TF_ENG=""
-    _VSE_TF_CONFIG_REL=""
     _VSE_TF_TEST_GLOBS=""
     _VSE_TF_CODE_GLOBS=""
     [ -n "$config" ] || return 0
@@ -632,7 +630,6 @@ _vse_tf_load() {
                 rel="${dir#"${top%/}"}"
                 rel="${rel#/}"
                 _VSE_TF_ENG="${rel:+${rel}/}"
-                _VSE_TF_CONFIG_REL="${_VSE_TF_ENG}${config##*/}"
                 ;;
         esac
     fi
@@ -645,12 +642,8 @@ _vse_tf_load() {
 _vse_tf_kind() {
     local rel="$1"
     _VSE_TF_KIND="other"
-    if [ -n "$_VSE_TF_CONFIG_REL" ] && [ "$rel" = "$_VSE_TF_CONFIG_REL" ]; then
-        _VSE_TF_KIND="never"
-        return 0
-    fi
     case "$rel" in
-        *.feature|"${_VSE_TF_ENG}"docs/generated/*|"${_VSE_TF_ENG}"tools/render/*|"${_VSE_TF_ENG}"tools/lint/*)
+        .iso-config.yaml|*/.iso-config.yaml|*.feature|"${_VSE_TF_ENG}"docs/generated/*|"${_VSE_TF_ENG}"tools/render/*|"${_VSE_TF_ENG}"tools/lint/*)
             _VSE_TF_KIND="never"
             return 0
             ;;
@@ -665,10 +658,11 @@ _vse_tf_kind() {
 
 # Print never, test, code or other for <relpath>, a path relative to
 # the git top level. Some paths are never code, whatever the globs say:
-# the configuration file itself, every *.feature file, and, under the
-# engineering root only, docs/generated/, tools/render/ and tools/lint/
-# (generated documents and vendored tools). Anchoring at the
-# engineering root keeps the plugin's own templates/tools/render/
+# every file named .iso-config.yaml (the one in force or any other, as
+# PreToolUse treats them, so every gate agrees), every *.feature file,
+# and, under the engineering root only, docs/generated/, tools/render/
+# and tools/lint/ (generated documents and vendored tools). Anchoring
+# at the engineering root keeps the plugin's own templates/tools/render/
 # classifiable as code. Then test_first.test_paths wins over
 # test_first.code_paths. Returns 2 for an absolute path or one that
 # leaves the top level.

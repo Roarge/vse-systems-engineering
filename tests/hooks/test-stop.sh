@@ -238,6 +238,14 @@ case_stop_finding_conditions() {
     stop_run
     stop_assert_no_context "conditions: the in-session test-first gate set to off draws no finding"
 
+    # A file named .iso-config.yaml is never code, even below a code
+    # path, so the finding agrees with PreToolUse.
+    stop_test_first_project light
+    rm "${REPO}/src/reading.py"
+    printf 'project_profile: light\n' | tc_write src/.iso-config.yaml
+    stop_run
+    stop_assert_no_context "conditions: a configuration file under a code path draws no finding"
+
     stop_test_first_project light
     git -C "$REPO" add src/reading.py
     tc_commit "feat: read"

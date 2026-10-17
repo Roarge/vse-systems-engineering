@@ -1220,6 +1220,20 @@ case_test_first_not_applicable() {
     tc_assert_not_grep "/vse-test-first" "$ERR" "test first false: no suggestion to record it"
 }
 
+# A file named .iso-config.yaml is never code, even below a code path,
+# so the commit gate agrees with PreToolUse (methodology §11.5.2).
+case_test_first_config_never_code() {
+    tc_setup_repo
+    test_first_config true light
+    commit_readme
+    printf 'project_profile: light\n' | tc_write src/.iso-config.yaml
+    tc_stage src/.iso-config.yaml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "test first: a configuration file under a code path is not code"
+    tc_assert_not_grep "precommit_test_first" "$ERR" "test first: the configuration file draws no finding"
+}
+
 case_test_first_unrecorded_no_code() {
     tc_setup_repo
     story_config light
@@ -1513,6 +1527,7 @@ case_test_first_code_with_test
 case_test_first_branch_evidence
 case_test_first_refactor_branch_reminder
 case_test_first_not_applicable
+case_test_first_config_never_code
 case_test_first_unrecorded_no_code
 case_test_first_unrecorded_detected
 case_test_first_unrecorded_code_like

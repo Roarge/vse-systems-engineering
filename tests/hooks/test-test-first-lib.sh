@@ -634,8 +634,14 @@ EOF
     done
     run_tf vse_tf_classify templates/tools/render/doc.py
     tc_assert_eq "code" "$OUT" "classify: the never-list is anchored at the engineering root"
-    run_tf vse_tf_classify sub/.iso-config.yaml
-    tc_assert_eq "code" "$OUT" "classify: only the resolved configuration file is never code"
+    # Every gate agrees with PreToolUse: a file named .iso-config.yaml
+    # is never code, wherever it sits, not only the resolved one.
+    for rel in sub/.iso-config.yaml src/deep/.iso-config.yaml; do
+        run_tf vse_tf_classify "$rel"
+        tc_assert_eq "never" "$OUT" "classify: ${rel}, a configuration file below the one in force, is never code"
+    done
+    run_tf vse_tf_classify src/iso-config.yaml
+    tc_assert_eq "code" "$OUT" "classify: only the exact name .iso-config.yaml is never code"
 
     # A brownfield project keeps its configuration under engineering/.
     tc_setup_repo
@@ -647,10 +653,12 @@ EOF
         run_tf vse_tf_classify "$rel"
         tc_assert_eq "never" "$OUT" "classify (brownfield): ${rel} is never code"
     done
-    for rel in .iso-config.yaml tools/render/doc.py docs/generated/x.md; do
+    for rel in tools/render/doc.py docs/generated/x.md; do
         run_tf vse_tf_classify "$rel"
         tc_assert_eq "code" "$OUT" "classify (brownfield): ${rel} outside the engineering root is code"
     done
+    run_tf vse_tf_classify .iso-config.yaml
+    tc_assert_eq "never" "$OUT" "classify (brownfield): a configuration file at the top level is never code"
 }
 
 case_classify_globs_cross_slash() {

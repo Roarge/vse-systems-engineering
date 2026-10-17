@@ -5,7 +5,8 @@ Feature: Test first
 
   Test first applies when the project's .iso-config.yaml records
   test_first with applies set to true. Its code_paths and test_paths
-  say which files are code and which are tests.
+  say which files are code and which are tests. A file named
+  .iso-config.yaml is never code, whatever the globs say, at every gate.
 
   Background:
     Given a VSE project at the light profile
@@ -41,3 +42,10 @@ Feature: Test first
       When the engineer commits a change to docs/project-plan.md
       Then the commit goes through
       And the engineer is told to record test first with /vse-test-first
+
+  Rule: A configuration file is never code
+
+    Scenario: A configuration file under a code path is committed without a test change
+      Given test first applies to code under src/ with tests under tests/
+      When the engineer commits a change to src/.iso-config.yaml
+      Then the commit goes through
