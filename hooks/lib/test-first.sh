@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Shared test-first and story-scanning helpers for the lifecycle hooks
-# (PreToolUse, PostToolUse, Stop, SubagentStop and SessionStart) and the
-# project-side pre-commit gate (methodology §11.9).
+# (PreToolUse, PostToolUse, Stop, SubagentStop and SessionStart, and the
+# project locator for UserPromptSubmit, PreCompact and Notification) and
+# the project-side pre-commit gate (methodology §11.9).
 #
 # Gherkin first (behaviour described as scenarios before the model
 # changes) needs three answers: which stories an edit adds or changes,
@@ -18,6 +19,8 @@
 #   vse_tf_locate_project <path>       the project for a lifecycle hook:
 #                                      sets VSE_TF_CONFIG, VSE_TF_ENG_ROOT
 #                                      and VSE_TF_TOP, 1 when none
+#   vse_tf_locate_workdir <dir>        the same, for a hook that knows
+#                                      only its working directory
 #   vse_tf_story_blocks                stdin SysML, stdout ID<TAB>block
 #   vse_tf_touched_stories <pre> <post>  IDs new or changed in post
 #   vse_tf_feature_has_tag <file> <ID>   0 when tagged @<ID>
@@ -198,6 +201,19 @@ vse_tf_locate_project() {
     [ -n "$VSE_TF_ENG_ROOT" ] || VSE_TF_ENG_ROOT=/
     VSE_TF_TOP="$top"
     return 0
+}
+
+# Locate the VSE project for a lifecycle hook that knows only its
+# working directory <dir> (SessionStart, UserPromptSubmit, PreCompact
+# and Notification). vse_tf_locate_project runs from <dir> first, then
+# from <dir>/engineering when that folder exists, so a brownfield
+# project below its git top level is found from its own root. Sets the
+# three variables and returns as vse_tf_locate_project does, so it is
+# called directly and never inside $(...).
+vse_tf_locate_workdir() {
+    vse_tf_locate_project "$1" && return 0
+    [ -d "${1%/}/engineering" ] || return 1
+    vse_tf_locate_project "${1%/}/engineering"
 }
 
 # ------------------------------------------------------ story scanner

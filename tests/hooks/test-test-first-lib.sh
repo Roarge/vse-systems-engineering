@@ -1090,24 +1090,33 @@ case_find_config_nested_demo() {
     tc_assert_eq "${outer}/.iso-config.yaml" "$OUT" "find config: outside git the walk continues upward"
 }
 
-# The lifecycle hooks locate the project they serve through one helper,
-# which sets three variables in the calling shell. The driver prints
-# them after the call and exits with the helper's status.
+# The lifecycle hooks locate the project they serve through one helper
+# (vse_tf_locate_project, or vse_tf_locate_workdir for a hook that knows
+# only its working directory), which sets three variables in the
+# calling shell. The driver calls the named helper, prints the
+# variables after the call and exits with the helper's status.
 # shellcheck disable=SC2016
 TF_LOCATE_DRIVER='
 lib="$1"
-shift
+fn="$2"
+shift 2
 . "${lib}/iso-profile.sh"
 . "${lib}/test-first.sh"
 rc=0
-vse_tf_locate_project "$@" || rc=$?
+"$fn" "$@" || rc=$?
 printf "config=%s\neng=%s\ntop=%s\n" "${VSE_TF_CONFIG-unset}" "${VSE_TF_ENG_ROOT-unset}" "${VSE_TF_TOP-unset}"
 exit "$rc"
 '
 
 # run_locate <path>: locate the project that governs <path>, from $REPO.
 run_locate() {
-    tc_run_in "$REPO" bash -c "$TF_LOCATE_DRIVER" tf-locate "$TF_LIB" "$@"
+    tc_run_in "$REPO" bash -c "$TF_LOCATE_DRIVER" tf-locate "$TF_LIB" vse_tf_locate_project "$@"
+}
+
+# run_locate_workdir <dir>: locate the project for a hook whose working
+# directory is <dir>, from $REPO.
+run_locate_workdir() {
+    tc_run_in "$REPO" bash -c "$TF_LOCATE_DRIVER" tf-locate "$TF_LIB" vse_tf_locate_workdir "$@"
 }
 
 # tf_assert_located <config> <eng> <top> <case>
@@ -1210,6 +1219,43 @@ case_locate_project_contributor_mode() {
     tf_assert_not_located "locate, contributor: a top-level configuration in the plugin repository is ignored"
 }
 
+# A hook that knows only its working directory (SessionStart,
+# UserPromptSubmit, PreCompact, Notification) locates the project from
+# that directory up, as vse_tf_locate_project does, and then from
+# engineering/ below it, so a brownfield project below its git top
+# level is found from its own root.
+case_locate_workdir() {
+    local top proj
+    tc_setup_repo
+    tc_env
+    top="$(cd "$REPO" && pwd -P)"
+    tc_config light -
+    mkdir -p "${REPO}/src/deep"
+    run_locate_workdir "${REPO}/src/deep"
+    tf_assert_located "${top}/.iso-config.yaml" "$top" "$top" \
+        "locate workdir: a directory below the project finds the configuration above it"
+    run_locate_workdir "$REPO"
+    tf_assert_located "${top}/.iso-config.yaml" "$top" "$top" \
+        "locate workdir: the project directory finds its own configuration"
+
+    rm -f "${REPO}/.iso-config.yaml"
+    proj="${REPO}/projects/sensor"
+    mkdir -p "${proj}/engineering"
+    printf 'project_profile: full\n' > "${proj}/engineering/.iso-config.yaml"
+    run_locate_workdir "$proj"
+    tf_assert_located "${top}/projects/sensor/engineering/.iso-config.yaml" \
+        "${top}/projects/sensor/engineering" "$top" \
+        "locate workdir: a brownfield project below the top level is found from its own root"
+
+    tc_env VSE_TF_CONFIG=stale VSE_TF_ENG_ROOT=stale VSE_TF_TOP=stale
+    run_locate_workdir "${REPO}/projects"
+    tf_assert_not_located "locate workdir: a directory above the project, earlier values cleared"
+    mkdir -p "${REPO}/plain/engineering"
+    run_locate_workdir "${REPO}/plain"
+    tf_assert_not_located "locate workdir: an engineering/ folder without a configuration"
+    tc_env
+}
+
 case_canonical_missing_tail() {
     local real link
     tc_setup_repo
@@ -1280,6 +1326,7 @@ case_find_config_nested_demo
 case_locate_project_layouts
 case_locate_project_none
 case_locate_project_contributor_mode
+case_locate_workdir
 case_canonical_missing_tail
 
 if tc_summary "test-test-first-lib"; then

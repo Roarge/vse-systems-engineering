@@ -6,15 +6,16 @@
 #   1. Contributor mode: wiki/CLAUDE.md present (plugin development repo).
 #   3. SysML-only repo: no VSE project found, .sysml content present.
 #   2. VSE project, located through its .iso-config.yaml, the canonical
-#      project marker, by vse_tf_locate_project, the helper the gates
-#      use: walking up from the working directory to the git top level
-#      (also engineering/.iso-config.yaml at the top), then from
-#      engineering/ below the working directory (a brownfield project
-#      below its top level). In the plugin repository only a
-#      configuration under demo/ counts. A methodology/ or
-#      engineering/methodology/ folder without a configuration still
-#      draws the report, as a fallback for projects that predate the
-#      configuration. The gates never use that fallback.
+#      project marker, by vse_tf_locate_workdir, the working-directory
+#      form of the helper the gates use: walking up from the working
+#      directory to the git top level (also engineering/.iso-config.yaml
+#      at the top), then from engineering/ below the working directory
+#      (a brownfield project below its top level). In the plugin
+#      repository only a configuration under demo/ counts. A
+#      methodology/ or engineering/methodology/ folder without a
+#      configuration still draws the report, as a fallback for projects
+#      that predate the configuration. The gates never use that
+#      fallback.
 #
 # When none match, exits 0 with no output.
 #
@@ -147,8 +148,7 @@ fi
 # in the plugin repository, or a monorepo subproject).
 ENG_ROOT=""
 if [ -n "$TEST_FIRST_LIB" ]; then
-    if vse_tf_locate_project "$(pwd -P)" \
-        || { [ -d engineering ] && vse_tf_locate_project "$(pwd -P)/engineering"; }; then
+    if vse_tf_locate_workdir "$(pwd -P)"; then
         ENG_ROOT="$VSE_TF_ENG_ROOT"
         if [ -z "${VSE_ISO_CONFIG:-}" ]; then
             VSE_ISO_CONFIG="$VSE_TF_CONFIG"
