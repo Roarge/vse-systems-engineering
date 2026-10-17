@@ -34,7 +34,7 @@ Locate `.iso-config.yaml` at the project root, then under `engineering/`. If `sy
 
 Run, from the project root, `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh status`, then `detect syside`, `detect omg-pilot`, `detect opensysml`, and `java`. Each `detect` exits 0 when the tool is usable and 2 with the reason on stderr otherwise. The Syside probe runs a real `syside check` on a one-line scratch model under a temporary directory, because `syside --version` and `syside check --help` succeed on an expired licence and only a real check reveals `License check failed`.
 
-Present one table: Tool, Found, Version, Status, Reason. Version commands: `syside --version` (succeeds on an expired licence), `java -version 2>&1 | head -n 1`, `sysml -version | head -n 1` (a build from `go install` prints `sysml dev`, which is accepted), and `ls ~/.local/share/sysml-pilot/sysml/jupyter-sysml-kernel-*-all.jar`. Also report the `command` in `.lsp.json` if the file exists, whether `syside.toml` exists, and whether `.githooks/lib/sysml-toolchain.sh` exists beside `.githooks/lib/iso-profile.sh`.
+Present one table: Tool, Found, Version, Status, Reason. Version commands: `syside --version` (succeeds on an expired licence), `java -version 2>&1 | awk '!seen && /version "/ { print; seen = 1 }'` (the first line that names a version, not line 1, because the JVM prints a `Picked up JAVA_TOOL_OPTIONS:` banner first whenever that variable is set), `sysml -version | head -n 1` (a build from `go install` prints `sysml dev`, which is accepted), and `ls ~/.local/share/sysml-pilot/sysml/jupyter-sysml-kernel-*-all.jar`. Also report the `command` in `.lsp.json` if the file exists, whether `syside.toml` exists, and whether `.githooks/lib/sysml-toolchain.sh` exists beside `.githooks/lib/iso-profile.sh`.
 
 With the argument `status`, stop after the table.
 
@@ -118,7 +118,7 @@ The other archives (`opensysml-linux-arm64.tar.gz`, `opensysml-darwin-amd64.tar.
 
 After each install, run from the project root and record the output:
 
-1. `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh java` prints the resolved binary, whose first `-version` line shows a major of 21 or more.
+1. `${CLAUDE_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh java` prints the resolved binary. Its `-version` output, read at the first line that contains `version "` as in Step 2 (a `JAVA_TOOL_OPTIONS` banner can come first), shows a major of 21 or more.
 2. `... detect <tool>` exits 0.
 3. Write `package VseToolchainProbe { part def Probe; }` to a file under `mktemp -d` and run `... validate --tool <tool> <file>`: exit 0 with no output. Write a second file `package VseToolchainBroken { part def X { attribute x : NoSuchType; } }` and run it: exit 1 with at least one `error:` line naming `NoSuchType` (the pilot prints two, the unresolved type and the typing rule it breaks). Remove the directory.
 4. `... status` names the preferred tool as available.
