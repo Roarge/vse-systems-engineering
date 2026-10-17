@@ -1,7 +1,7 @@
 ---
 name: traceability-guard
-description: Check SysML requirement traceability (satisfy and verify links) across the model.
-when_to_use: Use when checking trace gaps, generating traceability matrices, at story closure, or before a release baseline tag.
+description: Check SysML requirement traceability (satisfy and verify links) across the model, down to each acceptance criterion that mirrors a Gherkin scenario.
+when_to_use: Use when checking trace gaps, generating traceability matrices, checking that every acceptance criterion or scenario is reached by a verify link, at story closure, or before a release baseline tag.
 paths: ["**/*.sysml"]
 user-invocable: true
 context: fork
@@ -26,7 +26,8 @@ a story approaches ready.
   trace items, or `@release-orchestrator` reaches the §8.6.3 trace
   integrity check during baseline
 - The user asks to generate a traceability matrix
-- The user has modified requirements or verification cases
+- The user has modified requirements, verification cases, or a story's
+  feature file
 
 ## Trace Rules
 
@@ -42,7 +43,10 @@ mapping. A doc-comment mention of derivation counts for neither.
 
 ### Rule 2: Downward Traceability
 Every system requirement MUST trace to at least one verification case via a
-`verify` link.
+`verify` link. For a story the check runs per acceptance criterion: every
+criterion nested in the story's `requirement :>> acceptance` MUST be reached
+by at least one case (§11.3.3). A story at `inProgress` or `done` that
+misses one breaks the §11.4 ordering as well.
 
 ### Rule 2a: Element Traceability
 **Rule 2a (Element Traceability):** Every system element requirement MUST trace
@@ -51,7 +55,9 @@ element requirement MUST trace downward to at least one verification case via
 a `verify` link.
 
 ### Rule 3: Validation Coverage
-Every stakeholder need MUST have at least one validation case.
+Every stakeholder need MUST have at least one validation case. For a
+stakeholder story, every acceptance criterion MUST be reached by at least
+one validation case.
 
 ### Rule 4: No Orphans
 No verification case should exist without a `verify`
@@ -92,8 +98,22 @@ each requirement, record:
   where one is declared)
 - Whether it has an upward trace (a `#derivation connection` whose
   `#derive` end names it, or a `satisfy` link)
-- Whether any verification case has a `verify` link to it, written as
-  dot notation on the story usage (`verify <story>.acceptance`)
+- For a story, its acceptance criteria: the name of each
+  `requirement <name>` nested inside its `requirement :>> acceptance`
+- Whether any verification case reaches it through a `verify` link, and
+  for a story, which of its criteria each case reaches (Step 4)
+
+A criterion nested in a story's `requirement :>> acceptance` is a member
+of the story, not a requirement of its own. Record it under its story by
+name. Never report it as a separate requirement, as a story, or as an
+orphan without an upward trace, because its upward trace is the story's.
+Beside each story, note its feature file, `<ID>.feature` in the
+directory of the file that declares the story, and the `@AC_<name>` tag
+of each scenario in it. Each tag names the criterion that mirrors the
+scenario (§11.3.1). A story whose acceptance is still prose placed
+directly in `requirement :>> acceptance`, the form used before plugin
+version 5.0.0, has no named criteria, so read its coverage at story
+level and report it as a story to migrate.
 
 ### Step 3: Extract Stakeholder Needs
 
@@ -115,6 +135,20 @@ Search for `requirement def` entries with the `ELE-` prefix or within an
 Search for `verification def` declarations. For each, record:
 - The verification ID
 - Whether it has a `verify` link to a requirement
+- For a link to a story, the criteria it reaches
+
+A `verify` target is a dotted path (§11.3.3). `verify <story>` and
+`verify <story>.acceptance` reach every criterion of the story, and
+`verify <story>.acceptance.<name>` reaches the criterion `<name>` only.
+The path may run past the story into its members, and it may start with
+a package qualifier, as in
+`verify Stories::US_001.acceptance.latestReadingShown`.
+Resolve such a deep chain from the first `acceptance` segment: the story
+is the segment just before it, and the segment after it names the
+criterion. Never take the last segment as the story, because that reads
+the criterion `latestReadingShown` as a story of that name and the case
+as covering nothing. A target with no `acceptance` segment names a
+requirement or story itself, or one of its other members.
 
 ### Step 4a: Cross-check bidirectional consistency (Rule 5)
 
@@ -125,6 +159,9 @@ For each `satisfy` link found in a requirement, and for each
 
 For each `verify` link found in a verification case:
 - Verify the target requirement exists in the model
+- For a deep chain, verify that the story declares the named criterion.
+  An unknown criterion name is a broken link, and the SysML validators
+  report it as an unresolved reference
 
 Report any broken links (referencing entities that do not exist) as Rule 5
 violations.
@@ -140,6 +177,10 @@ Requirements checked: [n]
   With upward trace (derive or satisfy):  [n] / [total]
   With downward trace (verify):           [n] / [total]
 
+Acceptance criteria checked: [n]
+  Reached by a case:              [n] / [total]
+  Mirrored by an @AC_ scenario:   [n] / [total]
+
 Stakeholder needs checked: [n]
   With system requirement:        [n] / [total]
   With validation case:           [n] / [total]
@@ -153,9 +194,19 @@ GAPS FOUND: [n]
 
 | Gap Type | Rule |
 |----------|------|
+| Acceptance criterion that no case reaches | Rule 2 (system story) or Rule 3 (stakeholder story) |
+| Criterion without a matching `@AC_` scenario, or a scenario without a criterion | §11.3.1 |
+| `verify` path naming a criterion the story does not declare | Rule 5 |
 | Element requirement without satisfy link to system requirement | Rule 2a |
 | Element requirement without verification case | Rule 2a |
 | Verification case without verify link to element or system requirement | Rule 4 |
+
+Where the project has `tools/lint/` and the Bash tool is available, run
+the story lint from the engineering root,
+`python3 tools/lint/story-wellformed.py --only gherkin model`. It checks
+the criterion-to-scenario mirror (S4, S5) and, for stories at
+`inProgress` or `done`, the per-criterion coverage (S8) mechanically, so
+cite its findings by code rather than re-deriving them by reading.
 
 ### Step 6: Block or Allow
 
@@ -195,7 +246,9 @@ optional scope filter listing the identifier prefixes to include
 apply. Default to all five rules from the section above.
 
 **How to present the result.** The subagent returns a markdown matrix,
-a gap report keyed by rule, and a bidirectional consistency check.
+a criterion coverage table, a gap report keyed by rule, and a
+bidirectional consistency check. It treats nested criteria as story
+members and resolves deep `verify` chains as Steps 2 and 4 do.
 Include the matrix and gap report verbatim in the final message. The
 suggestions are draft fixes, not commands. The engineer decides which
 gaps to act on in the conversation after the fork returns, and agreed
@@ -213,6 +266,15 @@ When asked to generate a traceability matrix, produce a table:
 | STK-002 | REQ-003 | (missing) | (missing) | Gap |
 | STK-003 | (missing) | -- | -- | Gap |
 
+Add the criterion coverage table beneath it, one row per acceptance
+criterion, so the reader sees which case verifies which scenario
+(§11.3.3):
+
+| Story | Criterion (`@AC_` tag) | Cases reaching it | Status |
+|-------|------------------------|-------------------|--------|
+| US_001 | latestReadingShown | VAL_001 | Complete |
+| SYS_001 | p99LatencyWithinOneSecond | (missing) | Gap |
+
 ## Fix Suggestions
 
 For each gap, suggest the specific fix:
@@ -220,7 +282,9 @@ For each gap, suggest the specific fix:
 | Gap Type | Suggestion |
 |----------|-----------|
 | Requirement without satisfy | "Add `satisfy [story] by [element];`" |
-| Requirement without verify | "Create a verification case with `verify [story].acceptance;`" |
+| Requirement without verify | "Create a verification case with `verify [story].acceptance.[criterion];` for one criterion, or `verify [story].acceptance;` for every criterion" |
+| Criterion without a scenario, or scenario without a criterion | "Route to `@story-orchestrator`, which writes the scenario first and then the criterion that mirrors it (§11.4)" |
+| `verify` path naming an undeclared criterion | "Bind one of the criteria the story declares, or route to `@story-orchestrator` if the behaviour has no scenario yet" |
 | Need without requirement | "Derive a system requirement from this stakeholder need" |
 | Need without validation | "Create a validation case for this stakeholder need" |
 | Orphan verification case | "Add a `verify` link or remove this unused case" |
@@ -286,8 +350,9 @@ def check_traceability(model_dir: str = "model/") -> list[str]:
 
     # Check all story usages. A story is a package-level requirement
     # usage typed by UserStory, not a requirement definition. Its
-    # nested acceptance, sla and benefit usages are members of the
-    # story rather than stories of their own, so the walk keeps only
+    # nested acceptance, sla and benefit usages, and the named
+    # criteria inside acceptance, are members of the story rather
+    # than stories of their own, so the walk keeps only
     # usages whose owner is a package. `element.owner` is the parent
     # accessor the wiki page `syside-core-api` documents. Unverified
     # against a licensed Syside.
@@ -426,7 +491,8 @@ WARN the engineer if:
   memory of earlier runs, so compare against the committed
   `docs/generated/traceability-matrix.md` when the project has one,
   and state "first check, no baseline for comparison" otherwise
-- Requirements are being added without corresponding verification cases
+- Requirements or acceptance criteria are being added without
+  corresponding verification cases
 - Verification cases are being removed without removing the requirement
 - The Traceability Matrix has not been updated after model changes
 - Orphan risks, orphan mitigations, orphan variations, or orphan
