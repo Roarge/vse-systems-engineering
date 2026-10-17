@@ -67,9 +67,9 @@ Themes are working notes, not modelled SysML elements. Prioritisation is recorde
 
 ### Step 4: Generate stakeholder user stories
 
-For each prioritised theme, author one or more story usages (`requirement US_<n>_<Short> : UserStory`) per §1, behaviour first (§11.4): the story's feature file before the story, and each scenario before the criterion that mirrors it. Each stakeholder story shall:
+For each prioritised theme, author one or more story usages (`requirement <StoryIdentifier> : UserStory`) per §1, behaviour first (§11.4): the story's feature file before the story, and each scenario before the criterion that mirrors it. Here and below, `<StoryIdentifier>` stands for the full story identifier, `US_<n>_<Short>` for a stakeholder story (as in `US_001_SeeReadingsOnDashboard`) and `SYS_<n>_<Short>` for a system story. Each stakeholder story shall:
 
-- have its feature file, `<US_id>.feature`, beside the register file that declares the story, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/stakeholder/_template.feature`. The file carries the one tag `@<US_id>`, the narrative lines `As a <role>`, `I want <capability>` and `So that <benefit>` (`As an` and `I want to` where English needs them), and one scenario per acceptance criterion, tagged `@AC_<name>` with `<name>` in lowerCamelCase (words run together, the first in lower case, each later word capitalised, as in `ackAllWithinOneSecond`) and steps in the order Given, When, Then (per §11.2),
+- have its feature file, `<StoryIdentifier>.feature`, beside the register file that declares the story, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/stakeholder/_template.feature`. The file carries the one tag `@<StoryIdentifier>`, the narrative lines `As a <role>`, `I want <capability>` and `So that <benefit>` (`As an` and `I want to` where English needs them), and one scenario per acceptance criterion, tagged `@AC_<name>` with `<name>` in lowerCamelCase (words run together, the first in lower case, each later word capitalised, as in `ackAllWithinOneSecond`) and steps in the order Given, When, Then (per §11.2),
 - redefine its `subject` (`subject :>> system : <PartDef>`) with a part def from §2 (Base Architecture) or §3 (System Context), typically the project's system part def, declared before `role` (per §1.9 rule 2),
 - redefine `role` with a part def from `model/core/stakeholders/` (`stakeholder :>> role : <PartDef>`, per §1.4.1 / §1.9 rule 3),
 - declare narrative `capability` and `benefit` strings, which the feature file's narrative repeats word for word (per §11.2.2),
@@ -96,7 +96,7 @@ Hand off the use-case body authoring to `@sysml2-cases`.
 
 ### Step 6: Validation plan
 
-For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/validation-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <story>.acceptance.<name>`). One case may reach every criterion of the story with `verify <story>.acceptance` (§11.3.3). Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
+For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/validation-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <StoryIdentifier>.acceptance.<name>`). One case may reach every criterion of the story with `verify <StoryIdentifier>.acceptance` (§11.3.3). Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
 
 The case exists as a stub, holding its subject and objective, from the moment the story moves to `inProgress` and before any use case elaborates it (§4.3.6, §11.4). This step completes it. Every criterion of an `inProgress` or `done` story is reached by at least one case, and the `precommit_gherkin` gate blocks a commit where one is not, by default at every profile (§11.9).
 
@@ -150,7 +150,7 @@ The hazard-identification sub-workflow (FMEA, FTA, STPA, security threat models)
 
 ### Step 6: Verification plan
 
-For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/verification-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <story>.acceptance.<name>`, per §5.4.6). One case may reach every criterion of the story with `verify <story>.acceptance`, and may also verify a formalised benefit such as `verify <story>.sla` (§11.3.3). Verification cases at this level exercise system internals, distinct from §4 validation cases.
+For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/verification-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <StoryIdentifier>.acceptance.<name>`, per §5.4.6). One case may reach every criterion of the story with `verify <StoryIdentifier>.acceptance`, and may also verify a formalised benefit such as `verify <StoryIdentifier>.sla` (§11.3.3). Verification cases at this level exercise system internals, distinct from §4 validation cases.
 
 As at Workflow A Step 6, the case is first written as a stub when the story moves to `inProgress`, before the story analysis of Step 3, and this step completes it (§11.4).
 
@@ -198,10 +198,10 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 
 - `model/core/stakeholders/<role>.sysml`. One `part def` per stakeholder role.
 - `model/core/concerns/<concern>.sysml`. One `concern def` per concern, with `subject`, `stakeholder`, and `require constraint`.
-- `model/core/stories/stakeholder/<US_id>_<short>.feature`. One Gherkin feature file per stakeholder story, beside the file that declares it, one scenario per acceptance criterion (§11.2). Its stem is the full story identifier, as in `US_001_SeeReadingsOnDashboard.feature`.
-- `model/core/stories/stakeholder/<US_id>_<short>.sysml`. Stakeholder stories per §1, with `frame concern` to the concern register and one named criterion per scenario.
-- `model/core/stories/system/<US_id>_<short>.feature`. One Gherkin feature file per system story, beside the file that declares it, with the full story identifier as its stem (§11.2).
-- `model/core/stories/system/<US_id>_<short>.sysml`. System stories with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
+- `model/core/stories/stakeholder/<StoryIdentifier>.feature`. One Gherkin feature file per stakeholder story, beside the file that declares it, one scenario per acceptance criterion (§11.2). Its stem is the full story identifier, as in `US_001_SeeReadingsOnDashboard.feature`.
+- `model/core/stories/stakeholder/<register>.sysml`. The register of stakeholder stories per §1, under a working name such as `stakeholder-stories.sysml` (§8.3.1), with `frame concern` to the concern register and one named criterion per scenario.
+- `model/core/stories/system/<StoryIdentifier>.feature`. One Gherkin feature file per system story, beside the file that declares it, with the full story identifier as its stem (§11.2).
+- `model/core/stories/system/<register>.sysml`. The register of system stories, under a working name such as `system-stories.sysml`, with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
 - `model/core/use-cases/<name>.sysml`. Optional use-case elaborations whose `objective` names the story.
 - `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that reach acceptance criteria by name, exercising stakeholder intent.
 - `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that reach acceptance criteria by name, exercising system internals.
