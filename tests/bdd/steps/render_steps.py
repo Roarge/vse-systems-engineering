@@ -22,7 +22,7 @@ import subprocess
 import sys
 import textwrap
 
-from lint_steps import PIECES, STORIES, copy_piece, feature_file, project
+from lint_steps import PIECES, STORIES, feature_file, project, story_file
 from steps import step
 
 STORY_PIECE = "story-two-criteria.sysml"
@@ -71,10 +71,8 @@ def fixture_scenario(tag):
 
 @step(r"a story file (\w+) with the acceptance criteria (\w+) and (\w+)")
 def story_with_two_criteria(ctx, story, first, second):
-    copy_piece(ctx, STORY_PIECE, os.path.join(STORIES, "stories.sysml"),
-               ["requirement {} : UserStory".format(story),
-                "requirement {} {{".format(first),
-                "requirement {} {{".format(second)])
+    story_file(ctx, STORY_PIECE, story, "requirement {} {{".format(first),
+               "requirement {} {{".format(second))
 
 
 @step(r"a feature file for (\w+) with scenarios tagged @AC_(\w+) and @AC_(\w+)")

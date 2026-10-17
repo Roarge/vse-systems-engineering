@@ -266,32 +266,74 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual([scenario for _label, scenario in scenarios(model)],
                          [None, None, None])
 
-    def test_scenario_empty_without_lint(self):
-        # An older install has tools/render/ but no tools/lint/, so the
-        # reader has no Gherkin parser. It still reads the model.
+    def installed_scenarios(self, lint=None, before=""):
+        """The (label, scenario) pairs a fresh interpreter reads with a
+        copy of sysml_model.py under tools/render/. `lint` is the text of
+        tools/lint/gherkin.py beside it (None installs no tools/lint/),
+        and `before` is code that runs before sysml_model is imported,
+        with the tools directory in TOOLS."""
         write(self.root, STORY_DIR + "US_901_Example.feature", FEATURE)
         tools = tempfile.mkdtemp(prefix="vse-render-only-")
         self.addCleanup(shutil.rmtree, tools, ignore_errors=True)
-        render = os.path.join(tools, "tools", "render")
+        render = os.path.join(tools, "render")
         os.makedirs(render)
         shutil.copy(os.path.join(RENDER, "sysml_model.py"), render)
+        if lint is not None:
+            write(tools, "lint/gherkin.py", lint)
         code = (
             "import sys\n"
             "sys.dont_write_bytecode = True\n"
-            "sys.path.insert(0, sys.argv[1])\n"
+            "TOOLS = sys.argv[1]\n"
+            + before +
+            "sys.path.insert(0, TOOLS + '/render')\n"
             "import sysml_model\n"
             "model = sysml_model.load_model(sys.argv[2])\n"
             "print([(a.label, a.scenario) for s in model.stories"
             " for a in s.acceptances])\n")
         completed = subprocess.run(
-            [sys.executable, "-I", "-c", code, render, self.root],
+            [sys.executable, "-I", "-c", code, tools, self.root],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             universal_newlines=True, check=False)
         self.assertEqual(completed.returncode, 0, completed.stderr)
+        return completed.stdout
+
+    def test_scenario_empty_without_lint(self):
+        # An older install has tools/render/ but no tools/lint/, so the
+        # reader has no Gherkin parser. It still reads the model.
         self.assertEqual(
-            completed.stdout,
+            self.installed_scenarios(),
             "[('firstReading', None), ('latestReadingShown', None), "
             "('alarmRaised', None)]\n")
+
+    def test_scenario_empty_when_the_sibling_parser_has_no_parse(self):
+        # A tools/lint/gherkin.py that is not the shipped parser (an old
+        # or broken copy without parse) leaves the doc text in place.
+        self.assertEqual(
+            self.installed_scenarios(lint="VERSION = 1\n"),
+            "[('firstReading', None), ('latestReadingShown', None), "
+            "('alarmRaised', None)]\n")
+
+    def test_an_unrelated_gherkin_module_is_never_used(self):
+        # The Cucumber package installs a top-level module named gherkin,
+        # with no parse function. It sits first on the path and is
+        # already imported, and the lint directory is on the path behind
+        # it, as when the story lint imports the reader. The reader still
+        # parses with the sibling ../lint/gherkin.py.
+        with open(os.path.join(REPO, "templates", "tools", "lint",
+                               "gherkin.py"), encoding="utf-8") as handle:
+            parser = handle.read()
+        fake = tempfile.mkdtemp(prefix="vse-fake-gherkin-")
+        self.addCleanup(shutil.rmtree, fake, ignore_errors=True)
+        write(fake, "gherkin/__init__.py", "VERSION = '29.0.0'\n")
+        before = (
+            "sys.path.insert(0, {!r})\n"
+            "import gherkin\n"
+            "sys.path.append(TOOLS + '/lint')\n").format(fake)
+        self.assertEqual(
+            self.installed_scenarios(lint=parser, before=before),
+            repr([("firstReading", FIRST_READING),
+                  ("latestReadingShown", LATEST_READING),
+                  ("alarmRaised", None)]) + "\n")
 
 
 def criterion(label, doc, scenario=None):

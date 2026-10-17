@@ -37,52 +37,6 @@ def field_line(label, value):
     return f"- **{label}:** {value if value else EMPTY}"
 
 
-def acceptance_lines(story):
-    """Render the acceptance criteria as an ordered list.
-
-    A criterion whose scenario the story's feature file holds shows its
-    name and then the scenario as a fenced gherkin block, indented under
-    the item number. Any other criterion shows its doc text.
-
-    A criterion that runs to several paragraphs, or shows a block, forces
-    a blank line between every item, because a tight list and indented
-    continuation content do not read as one list in Markdown.
-    """
-    lines = []
-    if not story.acceptances:
-        lines.append(
-            "No acceptance criterion is declared. The story is not yet "
-            "well-formed under methodology section 1.9."
-        )
-        return lines
-    loose = any(
-        len(acceptance.doc.paragraphs) > 1 or acceptance.scenario
-        for acceptance in story.acceptances
-    )
-    for position, acceptance in enumerate(story.acceptances, start=1):
-        if loose and position > 1:
-            lines.append("")
-        if acceptance.scenario:
-            marker = f"{position}. "
-            lines.append(f"{marker}`{acceptance.label}`")
-            lines.append("")
-            lines.extend(
-                sysml_model.fenced_block(
-                    acceptance.scenario, "gherkin", " " * len(marker)
-                )
-            )
-            continue
-        paragraphs = acceptance.doc.paragraphs
-        if not paragraphs:
-            lines.append(f"{position}. (no criterion text recorded)")
-            continue
-        lines.append(f"{position}. {paragraphs[0]}")
-        for extra in paragraphs[1:]:
-            lines.append("")
-            lines.append(f"   {extra}")
-    return lines
-
-
 def story_section(story):
     lines = [f"## {story.identifier}", ""]
     lines.append(field_line("Stakeholder role", story.role))
@@ -92,7 +46,7 @@ def story_section(story):
     lines.append("")
     lines.append("**Acceptance criteria**")
     lines.append("")
-    lines.extend(acceptance_lines(story))
+    lines.extend(sysml_model.acceptance_lines(story))
     lines.append("")
     return lines
 

@@ -67,10 +67,12 @@ story. Gherkin is the plain-text Given/When/Then notation that
 Cucumber-family tools execute. Each acceptance criterion takes the source
 text of the scenario tagged `@AC_<name>`, so the renderers can print the
 scenario where the criterion stands. The file is read with gherkin.py
-from ../lint/, the parser the story lint uses. A file that cannot be
-read or does not parse is not used, and an install without ../lint/
-(one that predates it) reads no feature file at all. Either way the
-criteria keep their doc text alone.
+from ../lint/, the parser the story lint uses, loaded from that file
+and never from another module named gherkin. A file that cannot be
+read or does not parse is not used, and an install without
+../lint/gherkin.py (one that predates it), or with a copy that has no
+parse function, reads no feature file at all. Either way the criteria
+keep their doc text alone.
 
 Determinism
 -----------
@@ -82,6 +84,7 @@ are read after the model, one per story, in story order. No output
 carries a timestamp, a host name, or an absolute path.
 """
 
+import importlib.util
 import os
 import re
 import sys
@@ -90,20 +93,42 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-# The Gherkin parser ships with the story lint in ../lint/. An older
-# install has tools/render/ without tools/lint/, and then no criterion
-# carries a scenario, so the renderers print each criterion's doc text.
+# The Gherkin parser ships with the story lint as ../lint/gherkin.py.
+# It is loaded from that file under a private module name, never by an
+# import of "gherkin", so an unrelated module of that name (the Cucumber
+# package installs one) can never stand in for it. An older install has
+# tools/render/ without tools/lint/, and a copy that cannot be loaded or
+# has no parse function is not used. Then no criterion carries a
+# scenario, and the renderers print each criterion's doc text.
 _LINT_DIR = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "lint")
 )
-gherkin = None
-if os.path.isfile(os.path.join(_LINT_DIR, "gherkin.py")):
-    if _LINT_DIR not in sys.path:
-        sys.path.insert(0, _LINT_DIR)
+_GHERKIN_MODULE = "_vse_render_gherkin"
+
+
+def _load_gherkin():
+    """The sibling ../lint/gherkin.py as a module, or None."""
+    path = os.path.join(_LINT_DIR, "gherkin.py")
+    if not os.path.isfile(path):
+        return None
+    spec = importlib.util.spec_from_file_location(_GHERKIN_MODULE, path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    # The parser's dataclasses look their module up by name while the
+    # file runs, so it is registered first, and removed if it fails.
+    sys.modules[_GHERKIN_MODULE] = module
     try:
-        import gherkin
+        spec.loader.exec_module(module)
     except ImportError:
-        gherkin = None
+        del sys.modules[_GHERKIN_MODULE]
+        return None
+    if not callable(getattr(module, "parse", None)):
+        return None
+    return module
+
+
+gherkin = _load_gherkin()
 
 # Directories searched for the model, in order, relative to the project
 # root. This mirrors the .iso-config.yaml discovery convention used by the
@@ -996,6 +1021,50 @@ def fenced_block(text: str, language: str, indent: str = "") -> List[str]:
     lines = [indent + fence + language]
     lines.extend(indent + line if line else "" for line in text.split("\n"))
     lines.append(indent + fence)
+    return lines
+
+
+def acceptance_lines(story: "Story") -> List[str]:
+    """Render the acceptance criteria as an ordered list.
+
+    A criterion whose scenario the story's feature file holds shows its
+    name and then the scenario as a fenced gherkin block, indented under
+    the item number. Any other criterion shows its doc text.
+
+    A criterion that runs to several paragraphs, or shows a block, forces
+    a blank line between every item, because a tight list and indented
+    continuation content do not read as one list in Markdown.
+    """
+    lines: List[str] = []
+    if not story.acceptances:
+        lines.append(
+            "No acceptance criterion is declared. The story is not yet "
+            "well-formed under methodology section 1.9."
+        )
+        return lines
+    loose = any(
+        len(acceptance.doc.paragraphs) > 1 or acceptance.scenario
+        for acceptance in story.acceptances
+    )
+    for position, acceptance in enumerate(story.acceptances, start=1):
+        if loose and position > 1:
+            lines.append("")
+        if acceptance.scenario:
+            marker = f"{position}. "
+            lines.append(f"{marker}`{acceptance.label}`")
+            lines.append("")
+            lines.extend(
+                fenced_block(acceptance.scenario, "gherkin", " " * len(marker))
+            )
+            continue
+        paragraphs = acceptance.doc.paragraphs
+        if not paragraphs:
+            lines.append(f"{position}. (no criterion text recorded)")
+            continue
+        lines.append(f"{position}. {paragraphs[0]}")
+        for extra in paragraphs[1:]:
+            lines.append("")
+            lines.append(f"   {extra}")
     return lines
 
 
