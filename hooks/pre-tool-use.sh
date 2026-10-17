@@ -31,7 +31,10 @@
 #
 # Each gate's disposition comes from iso_gate_disposition: block
 # denies, warn adds the finding to the agent's context, info adds one
-# line, and off skips the gate.
+# line for the call, and off skips the gate. A denied edit has not
+# happened, so a block finding asks for the edit to be retried. At warn
+# and info the edit goes ahead, so the finding asks for the feature
+# file or the failing test next instead.
 #
 # Output contract. Claude never sees plain stdout at PreToolUse, so the
 # hook prints exactly one JSON object through hooks/lib/hook-json.sh,
@@ -286,6 +289,7 @@ PTU_STORY_REMINDER="[methodology reminder] Editing a story file. Per §1.9 and �
 
 ptu_gherkin_first() {
     local disposition touched id missing="" siblings="" legacy names count finding where
+    local info=""
     case "$PTU_BASE" in
         _*) return 0 ;;
     esac
@@ -316,11 +320,22 @@ ptu_gherkin_first() {
     if [ -n "$missing" ]; then
         count="$(_ptu_count "$missing")"
         names="$(_ptu_names "$missing")"
+        info="no feature file carries the tag of ${names} in ${PTU_DIR}"
         if [ "$count" -eq 1 ]; then
             id="${missing%$'\n'}"
-            finding="Gherkin first (pretooluse_gherkin_first): this edit adds or changes the story ${id}, which has no feature file carrying its tag. Write ${PTU_DIR}/${id}.feature first, with the tag @${id} on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). Then retry this edit (methodology §11.2, §11.9.3)."
+            finding="Gherkin first (pretooluse_gherkin_first): this edit adds or changes the story ${id}, which has no feature file carrying its tag."
+            if [ "$disposition" = "block" ]; then
+                finding="${finding} Write ${PTU_DIR}/${id}.feature first, with the tag @${id} on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). Then retry this edit (methodology §11.2, §11.9.3)."
+            else
+                finding="${finding} The edit went ahead, so write the feature file next: ${PTU_DIR}/${id}.feature, with the tag @${id} on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). See methodology §11.2 and §11.9.3."
+            fi
         else
-            finding="Gherkin first (pretooluse_gherkin_first): this edit adds or changes ${count} stories that have no feature file carrying their tag: ${names}. For each story <ID>, write ${PTU_DIR}/<ID>.feature first, with the tag @<ID> on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). Then retry this edit (methodology §11.2, §11.9.3)."
+            finding="Gherkin first (pretooluse_gherkin_first): this edit adds or changes ${count} stories that have no feature file carrying their tag: ${names}."
+            if [ "$disposition" = "block" ]; then
+                finding="${finding} For each story <ID>, write ${PTU_DIR}/<ID>.feature first, with the tag @<ID> on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). Then retry this edit (methodology §11.2, §11.9.3)."
+            else
+                finding="${finding} The edit went ahead, so write the feature files next: for each story <ID>, ${PTU_DIR}/<ID>.feature, with the tag @<ID> on a line before Feature: and a description that opens with the story narrative (As a, I want, So that). See methodology §11.2 and §11.9.3."
+            fi
         fi
         # A story that already held Given/When/Then text before this
         # edit is one from before 5.0.0.
@@ -335,8 +350,7 @@ ptu_gherkin_first() {
             fi
             finding="${finding} ${legacy} Given/When/Then acceptance text, so formalise the existing Given/When/Then first, as scenarios in the feature file, without adding behaviour (methodology §11.3)."
         fi
-        _ptu_report "$disposition" "$finding" \
-            "Gherkin first (info): no feature file carries the tag of ${names} in ${PTU_DIR}."
+        [ "$disposition" = "info" ] || _ptu_report "$disposition" "$finding" ""
     fi
 
     if [ -n "$siblings" ]; then
@@ -347,10 +361,19 @@ ptu_gherkin_first() {
             where="${PTU_DIR}/<ID>.feature"
         fi
         if [ "$disposition" = "info" ]; then
-            vse_hj_add_context "Gherkin first (info): untouched by this edit, these stories still have no tagged feature file: ${names}."
+            if [ -n "$info" ]; then
+                info="${info}, nor of the untouched ${names}"
+            else
+                info="untouched by this edit, these stories still have no tagged feature file: ${names}"
+            fi
         else
             vse_hj_add_context "Warning (pretooluse_gherkin_first): this story file also holds ${names}, untouched by this edit, with no feature file carrying the story tag. Write ${where} for each before its next change (methodology §11.2)."
         fi
+    fi
+
+    # At info the call draws one line, whatever it found.
+    if [ "$disposition" = "info" ] && [ -n "$info" ]; then
+        vse_hj_add_context "Gherkin first (info): ${info}."
     fi
     return 0
 }
@@ -369,6 +392,9 @@ ptu_story_file() {
 ptu_test_first() {
     local rel disposition evidence reason branch command finding
     [ -n "$PTU_TOP" ] || return 0
+    # A configuration file is never code, whatever code_paths says. The
+    # self-bypass guard above governs it.
+    [ "$PTU_BASE" != ".iso-config.yaml" ] || return 0
     case "$PTU_TARGET" in
         "${PTU_TOP%/}/"*) rel="${PTU_TARGET#"${PTU_TOP%/}/"}" ;;
         *) return 0 ;;
@@ -389,7 +415,13 @@ ptu_test_first() {
         return 0
     fi
     command="$(iso_section_scalar test_first test_command)"
-    finding="Test first (pretooluse_test_first): ${rel} is a code path (test_first.code_paths) and no test change was found: ${reason}. Write or change the failing test first under test_first.test_paths, run it${command:+ (${command})} and watch it fail, then retry this edit (methodology §11.7, §11.9.3). A change that only restructures code belongs on a refactor branch."
+    finding="Test first (pretooluse_test_first): ${rel} is a code path (test_first.code_paths) and no test change was found: ${reason}."
+    if [ "$disposition" = "block" ]; then
+        finding="${finding} Write or change the failing test first under test_first.test_paths, run it${command:+ (${command})} and watch it fail, then retry this edit (methodology §11.7, §11.9.3)."
+    else
+        finding="${finding} The edit went ahead, so add the failing test next under test_first.test_paths, run it${command:+ (${command})} and watch it fail before the code changes again (methodology §11.7, §11.9.3)."
+    fi
+    finding="${finding} A change that only restructures code belongs on a refactor branch."
     _ptu_report "$disposition" "$finding" \
         "Test first (info): ${rel} is a code path and no test file has changed."
 }

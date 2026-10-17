@@ -308,6 +308,7 @@ case_new_story_without_feature_denied() {
     ptu_assert_reason "${PTU_REAL}/${PTU_STORIES}/US_901_Example.feature" "new story: the denial names the expected path"
     ptu_assert_reason "@US_901_Example" "new story: the denial names the tag"
     ptu_assert_reason "§11" "new story: the denial cites methodology section 11"
+    ptu_assert_reason "Then retry this edit" "new story: a denial asks for the edit to be retried"
     ptu_assert_reason_lacks "formalise" "new story: a new story is not told to formalise existing text"
 
     ptu_register US_900_Existing | tc_write "${PTU_STORIES}/stories.sysml"
@@ -386,11 +387,28 @@ EOF
     ptu_assert_denied "skip: the library skip never reaches a code path"
 }
 
+# At warn the edit has already gone ahead, so the finding asks for the
+# feature file next and never for the edit to be retried.
 case_gherkin_override_warn() {
     ptu_project light pretooluse_gherkin_first=warn
     ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
     ptu_assert_proceeds "gherkin warn: the edit goes ahead"
     ptu_assert_context "US_901_Example.feature" "gherkin warn: the finding reaches the agent as context"
+    ptu_assert_context "write the feature file next" "gherkin warn: the finding asks for the feature file next"
+    ptu_assert_context_lacks "retry" "gherkin warn: the finding never asks for a retry"
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example US_902_Other)")"
+    ptu_assert_context "write the feature files next" "gherkin warn: two stories ask for their feature files next"
+    ptu_assert_context_lacks "retry" "gherkin warn: two stories never ask for a retry"
+}
+
+case_test_first_override_warn() {
+    ptu_test_first_project light pretooluse_test_first=warn
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_proceeds "test first warn: the edit goes ahead"
+    ptu_assert_context "src/reading.py" "test first warn: the finding names the code path"
+    ptu_assert_context "add the failing test next" "test first warn: the finding asks for the failing test next"
+    ptu_assert_context "pytest -q" "test first warn: the finding names the recorded test_command"
+    ptu_assert_context_lacks "retry" "test first warn: the finding never asks for a retry"
 }
 
 case_gherkin_override_off_silent() {
@@ -400,13 +418,27 @@ case_gherkin_override_off_silent() {
     ptu_assert_context_lacks "US_901_Example" "gherkin off: the gate says nothing about the story"
 }
 
-# At info each gate adds one line of context and the edit goes ahead.
+# At info each gate adds one line of context for the call, whatever it
+# found, and the edit goes ahead.
 case_info_disposition_one_line() {
+    local file
     ptu_test_first_project light pretooluse_gherkin_first=info pretooluse_test_first=info
-    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register US_901_Example)")"
     ptu_assert_proceeds "info: a story without a feature file goes ahead"
     ptu_assert_context "Gherkin first (info)" "info: the Gherkin-first line reaches the agent"
     ptu_assert_context "US_901_Example" "info: the line names the story"
+
+    # A touched story and an untouched sibling, both without a feature
+    # file, still give one Gherkin-first line, which names both.
+    ptu_register US_902_Sibling | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_run "$(ptu_edit_json "$file" "$(printf '\n}\n')" "$(printf '\n%s\n}\n' "$(ptu_story US_901_Example)")")"
+    ptu_assert_proceeds "info: a touched story and an untouched sibling go ahead"
+    tc_assert_json '[.hookSpecificOutput.additionalContext | split("\n")[] | select(startswith("Gherkin first"))] | length == 1' \
+        "info: one Gherkin-first line for the call"
+    tc_assert_json '.hookSpecificOutput.additionalContext | split("\n")[] | select(startswith("Gherkin first"))
+        | contains("US_901_Example") and contains("US_902_Sibling")' \
+        "info: the one line names the touched story and the untouched sibling"
     ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
     ptu_assert_proceeds "info: a code edit with no test change goes ahead"
     ptu_assert_context "Test first (info)" "info: the test-first line reaches the agent"
@@ -482,6 +514,7 @@ case_test_first_denied_without_evidence() {
     ptu_assert_reason "src/reading.py" "test first: the denial names the code path"
     ptu_assert_reason "failing test" "test first: the denial asks for a failing test first"
     ptu_assert_reason "main" "test first: the denial names the base the branch was measured against"
+    ptu_assert_reason "then retry this edit" "test first: a denial asks for the edit to be retried"
 
     git -C "$REPO" checkout -q --detach
     ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
@@ -647,6 +680,22 @@ gate_overrides:
     ptu_assert_reason "${PTU_REAL}/engineering/.iso-config.yaml" "nested config: the question names the engineering configuration"
 }
 
+# A configuration file is never code, whatever test_first.code_paths
+# says, so a .iso-config.yaml below a code path meets the self-bypass
+# guard and not the test-first gate.
+case_config_never_code() {
+    local nested="src/.iso-config.yaml"
+    ptu_test_first_project light
+    ptu_run "$(ptu_write_json "${REPO}/${nested}" "$(cat "${REPO}/.iso-config.yaml")")"
+    ptu_assert_proceeds "config never code: a faithful copy below a code path goes ahead"
+    ptu_assert_context_lacks "Test first" "config never code: the test-first gate says nothing"
+    ptu_run "$(ptu_write_json "${REPO}/${nested}" "project_profile: light
+")"
+    ptu_assert_asked "config never code: a copy that drops test_first is asked, not denied"
+    ptu_assert_reason "test_first" "config never code: the question names test_first"
+    ptu_assert_reason_lacks "Test first (pretooluse_test_first)" "config never code: no test-first finding rides with it"
+}
+
 # The baselined-path note of earlier releases reaches the agent as
 # context.
 case_baselined_path_context() {
@@ -735,6 +784,7 @@ case_edit_rename_requires_new_feature
 case_delete_story_allowed
 case_template_and_library_skipped
 case_gherkin_override_warn
+case_test_first_override_warn
 case_gherkin_override_off_silent
 case_info_disposition_one_line
 case_legacy_story_formalise_first
@@ -748,6 +798,7 @@ case_notebook_path_read
 case_config_gate_change_asks
 case_config_other_change_allowed
 case_config_nested_shadow_asks
+case_config_never_code
 case_baselined_path_context
 case_no_jq_python_fallback
 case_no_jq_no_python_notice
