@@ -1281,6 +1281,23 @@ case_test_first_unrecorded_code_like() {
         "test first unrecorded, code-like file: the finding asks for the record"
 }
 
+# With no test_first block, no glob classifies a file as code, so a
+# source file with no detected tooling draws only the one line
+# (methodology §11.5.2 and the §11.9 table). The gate carries no
+# guess of its own about which files are code.
+case_test_first_unrecorded_unlisted_code() {
+    tc_setup_repo
+    story_config light
+    write_code
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "test first unrecorded, no recorded paths: a source file is committed"
+    tc_assert_not_grep "precommit_test_first" "$ERR" \
+        "test first unrecorded, no recorded paths: the source file draws no finding"
+    tc_assert_line_count 1 "$(printf '%s\n' "$ERR" | grep '/vse-test-first' || true)" \
+        "test first unrecorded, no recorded paths: one line suggests /vse-test-first"
+}
+
 # ----------------------------------------------- 12. range mode
 
 # A fresh checkout has nothing staged, so the staged set passes
@@ -1531,6 +1548,7 @@ case_test_first_config_never_code
 case_test_first_unrecorded_no_code
 case_test_first_unrecorded_detected
 case_test_first_unrecorded_code_like
+case_test_first_unrecorded_unlisted_code
 case_range_mode_catches_story
 case_range_mode_skips_model_lint
 case_test_first_range_mode
