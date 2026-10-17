@@ -266,6 +266,18 @@ jobs:
             echo "templates/iso-config/.iso-config.yaml carries the commented test_first block and the four test-first and Gherkin gates in its commented gate_overrides."
           fi
 
+      - name: Check the story and case templates
+        run: |
+          # A template's name begins with _, which the story lint
+          # skips, so the check copies the model templates into a
+          # scratch project under the names of the identifiers they
+          # declare and runs the Gherkin rule set there, once as
+          # shipped and once with each story at inProgress.
+          if ! bash tests/hooks/check-templates.sh; then
+            echo "::error::tests/hooks/check-templates.sh found a story or case template the story lint does not pass"
+            exit 1
+          fi
+
       - name: Check the demo mirrors
         run: |
           # The demo is a standalone project, so it carries

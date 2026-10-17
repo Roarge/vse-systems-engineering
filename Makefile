@@ -10,11 +10,11 @@
 CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
-        check-refs check-skills check-config check-routing \
+        check-refs check-skills check-config check-templates check-routing \
         check-mirrors check-test-first check-toolchain test-python test-bdd \
         test-hooks check-demo-generated
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated
 	@echo "All checks passed."
 
 validate:
@@ -246,6 +246,15 @@ check-config:
 	 else \
 	   echo "  templates/iso-config/.iso-config.yaml carries the commented test_first block and the four test-first and Gherkin gates in its commented gate_overrides."; \
 	 fi
+
+# The story and case templates, checked the way a project meets them.
+# A template's name begins with _, which the story lint skips, so the
+# check copies the model templates into a scratch project under the
+# names of the identifiers they declare and runs the Gherkin rule set
+# there, once as shipped and once with each story at inProgress.
+check-templates:
+	@echo "Checking the story and case templates..."
+	@bash tests/hooks/check-templates.sh
 
 # The demo is a standalone project, so it carries byte-identical copies
 # of the methodology, the SysML library, the renderers and the story
