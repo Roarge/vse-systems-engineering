@@ -144,7 +144,7 @@ default 15):
 
 1. Identify entries beyond the window (from the end of the list, since newest
    entries are at the front)
-2. Read `docs/pm/session-archive.yml` (create if it does not exist)
+2. Read `docs/session-archive.yml` (create if it does not exist)
 3. Append the overflow entries to the archive's `sessions` list
 4. Remove the overflow entries from `.vse-journal.yml`
 5. Write both files
@@ -152,7 +152,7 @@ default 15):
 Archive file format:
 
 ```yaml
-# docs/pm/session-archive.yml
+# docs/session-archive.yml
 # Archived session journal entries.
 # These entries were rotated out of .vse-journal.yml.
 
@@ -205,7 +205,7 @@ reference:
 - `@project-setup`: creates the initial empty `.vse-journal.yml`
 - `methodology/` (project root) or `engineering/methodology/`: the marker that
   identifies a VSE project, matching `hooks/session-start.sh`
-- `docs/pm/session-archive.yml`: archive for rotated journal entries
+- `docs/session-archive.yml`: archive for rotated journal entries
 
 ## Knowledge base
 

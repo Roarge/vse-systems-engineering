@@ -101,9 +101,8 @@ iso_ref: "SR.1"
 ### 4.2 Repository Structure
 
 ```
-models/           SysML 2.0 source files
-docs/pm/          PM work products
-docs/sr/          SR work products
+model/            SysML 2.0 source files
+docs/             PM and SR work products, one file per document
 build/            Generated outputs (gitignored)
 ```
 

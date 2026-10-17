@@ -218,7 +218,8 @@ feedback._
 
 ### 9.3 Change Control
 
-> Describe the change request process (reference `docs/pm/change-request.md`).
+> Describe the change request process (a Change Request is a GitHub Issue
+> labelled `change-request`, per methodology §10.4.2).
 
 ### 9.4 Repository Structure
 

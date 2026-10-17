@@ -99,7 +99,7 @@ iso_ref: "PM.1"
 ## 7. Acceptance Process
 
 > How the acquirer will accept the delivered product. Reference the
-> Product Acceptance Record template in `docs/pm/product-acceptance.md`.
+> Product Acceptance Record, `docs/product-acceptance-record.md`.
 
 ## 8. Approval
 

@@ -81,7 +81,8 @@ iso_ref: "SR.2"
 ## 4. Traceability
 
 > Summary of element requirement to system requirement traceability.
-> The full matrix is maintained in `docs/sr/traceability-matrix.md`.
+> The full matrix is rendered from the model into
+> `docs/generated/traceability-matrix.md`.
 
 | Element Req | System Req | Element | Status |
 |-------------|-----------|---------|--------|
