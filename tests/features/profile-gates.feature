@@ -42,7 +42,7 @@ Feature: Gherkin-first and test-first gates at every profile
       Then the commit goes through
       And the engineer is warned of finding S1
 
-  Rule: At commit, the Gherkin gate reads every feature file in the model
+  Rule: At commit, the Gherkin gate reads every changed feature file in the model
 
     Scenario: A feature file in the model but outside a stories directory is refused
       Given a VSE project at the light profile

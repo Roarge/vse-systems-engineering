@@ -34,7 +34,25 @@ covers the four file tools an agent edits with. The harness runs every
 lifecycle hook with the session's working directory, normally the user
 project root. The tool-use and stop hooks also read a JSON payload on
 stdin and find the project from the edited file or the payload's
-`cwd`, so they work from any directory.
+`cwd`, so they work from any directory. Every lifecycle hook locates a
+project through its `.iso-config.yaml`, the canonical project marker,
+with `vse_tf_locate_project` in `lib/test-first.sh`: the first one
+found walking up to the git top level, where
+`engineering/.iso-config.yaml` (the brownfield layout) is tried too.
+
+**Limits.** The in-session gates guide an agent and guarantee nothing
+on their own (methodology §11.11). A file written through the Bash
+tool passes unseen, the `disableAllHooks` setting, a `--bare` session
+or a disabled plugin switches every lifecycle hook off, and without
+`jq` and `python3` the hooks cannot read their input and let the call
+through. The `pre-commit` and CI gates are the backstop. One limit
+belongs to locating the project. A brownfield project nested below
+the git top level, with its configuration at
+`proj/engineering/.iso-config.yaml`, is not found by the walk for files
+outside `proj/engineering/`, because the walk tries
+`engineering/.iso-config.yaml` only at the git top level. The hooks
+then stay silent for those files. Keeping the configuration at
+`proj/.iso-config.yaml` puts the whole project in reach.
 
 **Output contract.** What a hook prints reaches Claude only in the form
 its event expects (hooks guide §5).
@@ -115,14 +133,14 @@ hook cannot be the unbypassable gate those obligations need.
 ## 3. Shared libraries (`lib/`)
 
 Four libraries hold the logic the hooks share. Each is sourced, never
-run as a hook, and sourcing one defines functions and does no other
-work.
+run as a hook, and sourcing one defines functions and resolves
+configuration, and runs no gate.
 
 | Library | Sourced by | Installed into projects | Purpose |
 |---|---|---|---|
 | `lib/iso-profile.sh` | `pre-commit`, `pre-commit-traceability`, `commit-msg`, `post-merge`, and the lifecycle hooks `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh` and `session-start.sh` | yes, every profile | Resolves the `.iso-config.yaml` in force, the rigour profile and the per-gate dispositions per methodology §0.10.4, and reads nested records such as `test_first`. |
 | `lib/sysml-toolchain.sh` | `pre-commit` and `session-start.sh`. Also executed by CI, the Makefile check, the audit and the sysml-toolchain skill | yes, every profile | Resolves the `sysml_toolchain` preference, probes availability (including the Syside licence), validates with the preferred tool and falls back along syside, omg-pilot, opensysml. |
-| `lib/test-first.sh` | `pre-commit`, `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh` and `session-start.sh` | yes, every profile | Story scanning for Gherkin first, path classification, test evidence, refactor branches, test tooling detection (`vse_tf_detect`) and the recorded `test_first.applies` value (methodology §11.5 and §11.9). Requires `iso-profile.sh` to be sourced first. |
+| `lib/test-first.sh` | `pre-commit`, `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh` and `session-start.sh` | yes, every profile | The project locator every lifecycle hook shares (`vse_tf_locate_project`, which finds the `.iso-config.yaml` that governs a path), story scanning for Gherkin first, path classification, test evidence, refactor branches, test tooling detection (`vse_tf_detect`) and the recorded `test_first.applies` value (methodology §11.5 and §11.9). Requires `iso-profile.sh` to be sourced first. |
 | `lib/hook-json.sh` | `pre-tool-use.sh`, `post-tool-use.sh`, `source-added-reminder.sh` and `stop.sh` | no, it stays in the plugin | Prints the one JSON object of the output contract above, with `jq`, else `python3`, else a fixed literal that says neither is available, and reads fields from the stdin payload. |
 
 `sysml-toolchain.sh` is also executable, and it guards its command

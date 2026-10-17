@@ -12,7 +12,7 @@ The directory holds two distinct kinds of script:
 - **Lifecycle hooks**, registered in `hooks.json` (referenced from
   `plugin.json`) and executed by the harness at the eight registered
   events: `SessionStart`, `UserPromptSubmit`, `PreToolUse` and
-  `PostToolUse` (matcher `Edit|Write|NotebookEdit`), `Stop`,
+  `PostToolUse` (matcher `Edit|Write|MultiEdit|NotebookEdit`), `Stop`,
   `SubagentStop`, `PreCompact`, `Notification`. They are not Claude
   actions and Claude does not invoke them.
 - **Project-side scripts**, not registered in `hooks.json`, installed
