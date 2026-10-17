@@ -17,12 +17,16 @@
 #      to reach every acceptance criterion, so the case templates are
 #      checked as well.
 #
-# SysML validation of the templates is not part of this check.
+# SysML validation of the templates is not part of this check. The
+# validate-demo check (validate-demo.sh) validates them with OpenSysML,
+# with the placeholders filled by the same helper.
 #
 # Run: bash tests/hooks/check-templates.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# shellcheck source=/dev/null
+. "${ROOT}/tests/hooks/fill-placeholders.sh"
 MODELS="${ROOT}/templates/common/models"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/vse-check-templates.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
@@ -62,9 +66,7 @@ check_named "${CASES}/validation-cases" VAL_001_Example sysml
 find "${PROJECT}/model" -name '_template.*' | while IFS= read -r file; do
     mv "$file" "${file%/*}/example.${file##*.}"
 done
-find "${PROJECT}/model" -name '*.sysml' -exec sed -i.orig \
-    -e 's/{{PROJECT_NAME}}/Example/g' -e 's/{{PROJECT_SHORT_CODE}}/EX/g' {} +
-find "${PROJECT}/model" -name '*.orig' -exec rm -f {} +
+fill_placeholders "${PROJECT}/model"
 
 # check_lint <label>: the Gherkin rule set over the stories, with no
 # finding.

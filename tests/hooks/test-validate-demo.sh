@@ -4,14 +4,17 @@
 # model and the shipped model templates with OpenSysML.
 #
 # Each case builds a scratch tree that holds the working-tree Makefile,
-# the script, the toolchain library it calls and small stand-ins for
+# the script, the toolchain library and the placeholder helper
+# (fill-placeholders.sh) it calls, and small stand-ins for
 # the demo model, the model templates and the SysML library, then runs
 # the target or the script on a sandboxed PATH. A stub sysml records
 # the files of each run, reports a finding for any file that still
 # holds a {{ placeholder, and reports one more for the file that
 # SYSML_FAIL_ON names. Without a sysml on PATH the target skips with a
 # notice, while the script, which CI runs after installing OpenSysML,
-# fails, so a broken install cannot pass in CI.
+# fails, so a broken install cannot pass in CI. A stand-in library that
+# exits 3 in one tree shows that a status other than clean, findings or
+# unavailable is named and kept apart from findings.
 #
 # Run: bash tests/hooks/test-validate-demo.sh
 set -euo pipefail
@@ -37,6 +40,7 @@ fresh() {
     if [ -f "${TC_PLUGIN_ROOT}/tests/hooks/validate-demo.sh" ]; then
         cp "${TC_PLUGIN_ROOT}/tests/hooks/validate-demo.sh" "${REPO}/tests/hooks/"
     fi
+    cp "${TC_PLUGIN_ROOT}/tests/hooks/fill-placeholders.sh" "${REPO}/tests/hooks/"
     cp "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" \
        "${TC_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" "${REPO}/hooks/lib/"
     printf 'package Demo_Core;\n' | tc_write demo/smart-sensor/model/core/core.sysml
@@ -89,6 +93,25 @@ run_in() {
 
 run_target() {
     run_in "${STUBS}:/usr/bin:/bin" make --no-print-directory validate-demo
+}
+
+run_script() {
+    run_in "${STUBS}:/usr/bin:/bin" bash tests/hooks/validate-demo.sh
+}
+
+# library_exits_in <tree>: the toolchain library exits 3 when it runs
+# from a directory ending in <tree>, and is the real library elsewhere.
+library_exits_in() {
+    local lib="${REPO}/hooks/lib/sysml-toolchain.sh"
+    mv "$lib" "${REPO}/hooks/lib/sysml-toolchain-real.sh"
+    cat > "$lib" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+case "\$PWD" in
+    *"/$1") exit 3 ;;
+esac
+exec bash "${REPO}/hooks/lib/sysml-toolchain-real.sh" "\$@"
+EOF
 }
 
 log() {
@@ -145,6 +168,10 @@ tc_assert_line "model/core/core.sysml:1:1: error: unresolved reference" "$OUT" \
 tc_assert_line "ERROR: the demo model (demo/smart-sensor/model) draws OpenSysML findings, listed above" "$OUT" \
     "demo finding: the tree is named"
 tc_assert_line_count 2 "$(log)" "demo finding: the templates are still validated"
+run_script
+tc_assert_rc 1 "demo finding: the script exits 1 for a finding"
+tc_assert_line "  The model templates validate under OpenSysML (2 files, placeholders filled)." "$OUT" \
+    "demo finding: the template result still prints"
 
 # --- a finding in the model templates -----------------------------------
 
@@ -158,6 +185,42 @@ tc_assert_line "ERROR: the model templates (templates/common/models, validated w
     "template finding: the tree is named"
 tc_assert_line "  The demo model validates under OpenSysML (2 files)." "$OUT" \
     "template finding: the demo result still stands"
+run_script
+tc_assert_rc 1 "template finding: the script exits 1 for a finding"
+tc_assert_line "  The demo model validates under OpenSysML (2 files)." "$OUT" \
+    "template finding: the demo result still prints"
+tc_env
+
+# --- a status other than clean, findings or unavailable -----------------
+
+fresh
+library_exits_in smart-sensor
+tc_env
+run_script
+tc_assert_rc 3 "demo status 3: the script keeps the status apart from findings"
+tc_assert_line "ERROR: the demo model (demo/smart-sensor/model) could not be validated (validator exited 3)" "$OUT" \
+    "demo status 3: the status and the tree are named"
+tc_assert_not_grep "draws OpenSysML findings" "$OUT" "demo status 3: no finding is claimed"
+tc_assert_line "  The model templates validate under OpenSysML (2 files, placeholders filled)." "$OUT" \
+    "demo status 3: the templates are still validated"
+run_target
+tc_assert_rc 2 "demo status 3: the target fails"
+
+fresh
+library_exits_in templates
+tc_env
+run_script
+tc_assert_rc 3 "template status 3: the script keeps the status apart from findings"
+tc_assert_line "ERROR: the model templates (templates/common/models) could not be validated (validator exited 3)" "$OUT" \
+    "template status 3: the status and the tree are named"
+tc_assert_line "  The demo model validates under OpenSysML (2 files)." "$OUT" \
+    "template status 3: the demo result still prints"
+
+fresh
+library_exits_in templates
+tc_env SYSML_FAIL_ON=model/core/core.sysml
+run_script
+tc_assert_rc 3 "demo finding and template status 3: the status wins over the finding"
 tc_env
 
 tc_summary "test-validate-demo"

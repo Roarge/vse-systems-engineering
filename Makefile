@@ -252,7 +252,10 @@ check-config:
 # A template's name begins with _, which the story lint skips, so the
 # check copies the model templates into a scratch project under the
 # names of the identifiers they declare and runs the Gherkin rule set
-# there, once as shipped and once with each story at inProgress.
+# there, once as shipped and once with each story at inProgress. This
+# target covers the story lint of the templates only. Their OpenSysML
+# validation, with the placeholders filled the same way, is in
+# validate-demo.
 check-templates:
 	@echo "Checking the story and case templates..."
 	@bash tests/hooks/check-templates.sh
