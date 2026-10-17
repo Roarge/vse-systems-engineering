@@ -1,0 +1,32 @@
+# language: en
+#
+# Stakeholder story feature file (§11.2).
+#
+# Behaviour comes first. Write this file before the story's SysML, then
+# mirror each scenario in the story (§11.4). Copy it beside the .sysml
+# file that declares the story and name the copy after the story, for
+# example US_001_Example.feature. A file whose name begins with _ is a
+# template and is not checked.
+#
+# The Feature carries one tag, the story identifier. The three narrative
+# lines repeat the story's role, capability and benefit. The role names
+# the part definition that types the story's role, with spaces and
+# letter case ignored. The capability and the benefit repeat the story's
+# strings word for word.
+#
+# Each scenario states one acceptance criterion, as one concrete example
+# written in Given, When and Then steps. It carries one @AC_<name> tag,
+# with <name> in lowerCamelCase, and the story mirrors it with
+# requirement <name> nested inside requirement :>> acceptance (§11.3.1).
+
+@US_001_Example
+Feature: <short title of the story>
+  As an operator
+  I want to (what the role wants to do)
+  So that (the value the role gains)
+
+  @AC_exampleCriterion
+  Scenario: <one concrete example of the behaviour>
+    Given <preconditions>
+    When <action>
+    Then <expected outcome>

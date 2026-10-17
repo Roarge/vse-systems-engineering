@@ -77,7 +77,9 @@ package VSE_Library {
                    optionally formalised as a nested requirement with a
                    require constraint per §1.4.3 to feed §6 trade
                    studies, §0.3),
-                 - carries one or more `acceptance` criteria,
+                 - carries one or more `acceptance` criteria, each
+                   stated as a Gherkin scenario in the story's
+                   feature file (§11.3),
                  - may `frame` one or more `concern def` instances
                    (per §1.4.6).
                §1.9 well-formedness rules apply: typed role, typed
@@ -96,14 +98,21 @@ package VSE_Library {
         attribute capability : ScalarValues::String[0..1];
         attribute benefit    : ScalarValues::String[0..1];
 
-        // Acceptance criteria. A story redefines this member with its
-        // Given/When/Then text (`requirement :>> acceptance { doc ... }`).
-        // A story with several separately verifiable criteria nests
-        // them inside the redefinition, one named requirement each, so
-        // that `verify <story>.acceptance` covers all of them and
-        // `verify <story>.acceptance.<criterion>` covers one.
+        // Acceptance criteria. Each criterion is stated as one Gherkin
+        // scenario (a Given/When/Then example) in the story's feature
+        // file, <story>.feature, and the scenario carries the tag
+        // @AC_<criterion>. A story redefines this member and nests one
+        // named requirement per scenario inside the redefinition, named
+        // after the tag (§11.3.1):
+        //   requirement :>> acceptance {
+        //       requirement <criterion> { doc ... }
+        //   }
+        // `verify <story>.acceptance` covers every criterion and
+        // `verify <story>.acceptance.<criterion>` covers one (§11.3.3).
         requirement acceptance[0..*] {
-            doc /* One acceptance criterion in Given/When/Then form. */
+            doc /* The story's acceptance criteria: one nested named
+                   requirement per Gherkin Scenario, named after its
+                   @AC_ tag. */
         }
     }
 

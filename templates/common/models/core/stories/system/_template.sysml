@@ -6,6 +6,11 @@
 // carrying a `require constraint` per §5.4.2, which feeds the §6
 // trade studies as the §0.3 connective mechanism).
 //
+// Behaviour comes first (§11.4). Write the story's feature file from
+// _template.feature beside this file, then write the story here with
+// one named criterion for each scenario, named after the scenario's
+// @AC_ tag (§11.3.1).
+//
 // Identifier convention: SYS_<n>_<ShortName>.
 
 package {{PROJECT_NAME}}_SystemStories {
@@ -26,7 +31,7 @@ package {{PROJECT_NAME}}_SystemStories {
         stakeholder :>> role : Operator;
 
         attribute :>> capability = "(system-internal restatement of US_<NNN> capability)";
-        attribute :>> benefit    = "(value the role gains, sharpened toward measurable form)";
+        attribute :>> benefit    = "(value the role gains, sharpened towards measurable form)";
 
         // Inherits framed concerns from upstream stakeholder story.
         frame concern : FastIncidentResponse;
@@ -44,9 +49,11 @@ package {{PROJECT_NAME}}_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* Given <preconditions>,
-                   when <action>,
-                   then <observable outcome with measurable threshold>. */
+            requirement exampleCriterion {
+                doc /* Given <preconditions>,
+                       when <action>,
+                       then <observable outcome with measurable threshold>. */
+            }
         }
     }
 

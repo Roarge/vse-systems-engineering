@@ -5,6 +5,12 @@
 // system as modelled (model execution, simulation, automated check),
 // distinct from validation cases that exercise stakeholder intent.
 //
+// `verify <story>.acceptance.<criterion>` reaches the one criterion
+// that a scenario of the story's feature file states, and
+// `verify <story>.acceptance` reaches every criterion (§11.3.3). A
+// stub holding the subject and the objective is enough before the
+// story moves to inProgress (§11.4).
+//
 // Identifier convention: VC_<n>_<ShortName>.
 
 package {{PROJECT_NAME}}_VerificationCases {
@@ -17,7 +23,7 @@ package {{PROJECT_NAME}}_VerificationCases {
 
         objective {
             verify SYS_001_Example.sla;
-            verify SYS_001_Example.acceptance;
+            verify SYS_001_Example.acceptance.exampleCriterion;
         }
 
         action setup    { doc /* fixture preparation */ }
