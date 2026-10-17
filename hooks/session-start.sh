@@ -22,7 +22,10 @@
 # methodology section 11: a Behaviour-first line, a Test-first line that
 # names the recorded test_first.applies value, a nudge when test tooling
 # is found while that value is false or unrecorded, and a warning when
-# jq is missing. Mode 1 prints one pointer to the plugin's own rules for
+# jq is missing. Where test first applies, or is not recorded, the
+# Test-first line points at the superpowers TDD skill. Where the
+# recorded value is false, it says test first is not required here and
+# that Gherkin first still applies, with no pointer to the skill. Mode 1 prints one pointer to the plugin's own rules for
 # the same discipline.
 #
 # Plain text on stdout is added to the conversation as context, which is
@@ -283,6 +286,10 @@ fi
 TF_SKILL="If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11."
 if [ "$TF_SHOWN" = "not recorded" ]; then
     echo "Test-first: test_first.applies is not recorded, run /vse-test-first to record the judgement. ${TF_SKILL}"
+elif [ "$TF_SHOWN" = "false" ]; then
+    # The recorded judgement is that nothing here can be tested first,
+    # so the TDD skill is not pointed at. The scenarios still come first.
+    echo "Test-first: test_first.applies is false. The recorded judgement is that test first is not required here. Gherkin first still applies to every story."
 else
     echo "Test-first: test_first.applies is ${TF_SHOWN}. ${TF_SKILL}"
 fi

@@ -232,6 +232,10 @@ case_mode2_behaviour_first_line() {
 #
 # The Test-first line names the value the configuration records, and an
 # unrecognised value reads as unrecorded rather than being echoed back.
+# Where test first applies, or is not recorded, the line points at the
+# TDD skill. Where the recorded judgement is that it does not apply, the
+# line says test first is not required here and that Gherkin first
+# still applies, with no pointer to the skill.
 case_mode2_test_first_recorded() {
     local applies="$1" shown="$2" dir
     dir="$(tc_mktemp_d)"
@@ -241,8 +245,17 @@ case_mode2_test_first_recorded() {
     tc_assert_rc 0 "test first (${applies}): exit 0"
     tc_assert_match "^Test-first: test_first\\.applies is ${shown}[ .,]" "$OUT" \
         "test first (${applies}): the line names the recorded value, ${shown}"
-    tc_assert_match '^Test-first: .*If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11\.' "$OUT" \
-        "test first (${applies}): an installed TDD skill comes first, else section 11"
+    if [ "$shown" = "false" ]; then
+        tc_assert_match '^Test-first: test_first\.applies is false\. .*test first is not required here' "$OUT" \
+            "test first (${applies}): the recorded judgement is that test first is not required here"
+        tc_assert_match '^Test-first: .*Gherkin first still applies' "$OUT" \
+            "test first (${applies}): Gherkin first still applies"
+        tc_assert_not_grep "superpowers:test-driven-development" "$OUT" \
+            "test first (${applies}): no pointer to the TDD skill"
+    else
+        tc_assert_match '^Test-first: .*If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11\.' "$OUT" \
+            "test first (${applies}): an installed TDD skill comes first, else section 11"
+    fi
     if [ "$shown" = "not recorded" ]; then
         tc_assert_match '^Test-first: .*/vse-test-first' "$OUT" \
             "test first (${applies}): the line points at /vse-test-first to record it"
