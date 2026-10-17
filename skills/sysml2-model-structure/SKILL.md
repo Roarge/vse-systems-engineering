@@ -1,7 +1,7 @@
 ---
 name: sysml2-model-structure
 description: Organise a SysML 2.0 model into the AMBSE canonical layout from Douglass 2016 and Cookbook 2021, with optional base-architecture reuse, variant configurations, model-level configuration management, and a risk register.
-when_to_use: Use for package breakdown, the `{{sc}}_` short-code package set, splitting an oversized .sysml file, base-architecture reuse through `:>` and `:>>`, federation into shared or subsystem models, namespace imports, and where the risk or CM packages belong. Not for the content of those packages.
+when_to_use: Use for package breakdown, the `{{sc}}_` short-code package set, splitting an oversized .sysml file, base-architecture reuse through `:>` and `:>>`, federation into shared or subsystem models, namespace imports, where a story's Gherkin feature file and nested acceptance criteria go, and where the risk or CM packages belong. Not for the content of those packages.
 paths: ["**/*.sysml"]
 user-invocable: true
 ---
@@ -90,20 +90,55 @@ package HS_UseCases {
 ```sysml
 package HS_Requirements {
     private import VSE_Library::*;
+    private import HS_Actors::Operator;
+    private import HS_ArchDesign::SensorSystem;
     private import HS_StakeholderNeeds::SN_WaterLevelVisibility;
     requirement SR_SampleRate : UserStory {
+        @StoryMeta { status = StoryStatus::ready; }
         subject :>> system : SensorSystem;
         stakeholder :>> role : Operator;
         attribute :>> capability = "sample the water level every 5 s";
         attribute :>> benefit    = "the operator sees a current level";
         requirement :>> acceptance {
-            doc /* Given the sensor is powered, when 5 s elapse,
-                   then a new reading is published. */
+            requirement newReadingPublished {
+                doc /* Given the sensor is powered, when 5 s elapse,
+                       then a new reading is published. */
+            }
         }
         satisfy requirement SN_WaterLevelVisibility;
     }
 }
 ```
+
+Each story is described first by a Gherkin feature file, the plain-text
+Given/When/Then format that Cucumber-family test tools read and run
+(§11.2). The file is named after the story, `SR_SampleRate.feature`, and
+sits in the directory of the `.sysml` file that declares the story.
+Feature files lie under a `stories/` directory (§8.3), so the file that
+holds `HS_Requirements` belongs in one. The feature file carries the
+story tag, the narrative and one scenario per acceptance criterion:
+
+```gherkin
+# language: en
+@SR_SampleRate
+Feature: Sample the water level
+  As an operator
+  I want to sample the water level every 5 s
+  So that the operator sees a current level
+
+  @AC_newReadingPublished
+  Scenario: A new reading follows each 5 s interval
+    Given the sensor is powered
+    When 5 s elapse
+    Then a new reading is published
+```
+
+The scenario's tag `@AC_newReadingPublished` names the criterion
+`newReadingPublished`, nested inside `requirement :>> acceptance` and
+named in lowerCamelCase, that is, words run together with each word
+after the first capitalised (§11.3.1). The criterion is a member of the
+story, not a package-level requirement, so it needs no package of its
+own. The scenario is written first and the criterion mirrors it (§11.4).
 
 ```sysml
 package HS_FunctionalAnalysis {
@@ -132,15 +167,20 @@ package HS_Interfaces {
 
 ```sysml
 package HS_Verification {
+    private import ScalarValues::String;
     private import HS_Requirements::SR_SampleRate;
     verification def VC_SampleRateTest {
         attribute id : String = "VC-0001";
         objective {
-            verify SR_SampleRate.acceptance;
+            verify SR_SampleRate.acceptance.newReadingPublished;
         }
     }
 }
 ```
+
+The case reaches the one criterion by its path. `verify
+SR_SampleRate.acceptance` would reach every criterion of the story
+(§11.3.3).
 
 ```sysml
 package HS_Risks {
@@ -344,6 +384,7 @@ package HS_Requirements {
             owner = "systems";
         }
         attribute id : String = "SR-0001";
+        // subject, role, narrative and named criteria as in Part A
     }
 }
 ```
@@ -390,6 +431,11 @@ When reviewing a model's structure, check:
 16. Every `private import` resolves to a name that the body actually
     uses. Dead imports are commented out next to the placeholder they
     will support.
+17. Every story's feature file, `<ID>.feature`, sits beside the
+    `.sysml` file that declares the story, under a `stories/`
+    directory, and each scenario's `@AC_<name>` tag names a criterion
+    nested in the story's `requirement :>> acceptance` (§11.2.1,
+    §11.3.1).
 
 ## Red Flags
 
@@ -420,6 +466,10 @@ WARN the engineer if:
 - A `private import` brings a name into scope that nothing in the body
   references. Either bind the name in a body element or comment the
   import out until the body uses it.
+- Feature files kept apart from their stories, for example in a separate
+  `features/` tree, or acceptance criteria declared as package-level
+  requirements instead of nested in the story. The story lint then
+  cannot pair a scenario with its criterion (§11.2.1, §11.3.1).
 
 ## Hand-off Summary
 
@@ -429,6 +479,7 @@ WARN the engineer if:
 | `RiskInfo`, `ConfigItem`, `Baseline` metadata defs | `@sysml2-metadata` |
 | Trade study execution | `@vse-trade-study-runner` (subagent via `@architecture-design`) |
 | Requirement authoring and use cases | `@needs-and-requirements`, `@sysml2-cases` |
+| Gherkin feature files and scenarios for a story | `@story-orchestrator`, `@needs-and-requirements` |
 | Verification case authoring | `@verification-validation`, `@sysml2-cases` |
 | Allocations across architecture layers | `@sysml2-allocations` |
 | Project layout, tooling, CI validation | `@sysml2-modelling` |

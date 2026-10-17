@@ -1,7 +1,7 @@
 ---
 name: sysml2-cases
-description: Author SysML 2.0 use cases, analysis cases, verification cases, and validation cases.
-when_to_use: Use for `use case def`, `analysis case def`, `verification case def`, `validation case def`, `subject`, `objective`, `actor`, and verdict handling. Not for the behaviour bodies a case invokes (`@sysml2-behaviour`).
+description: Author SysML 2.0 use cases, analysis cases, verification cases, and validation cases, including cases that verify a story one acceptance criterion at a time.
+when_to_use: Use for `use case def`, `analysis case def`, `verification case def`, `validation case def`, `subject`, `objective`, `actor`, and verdict handling, for `verify <story>.acceptance.<name>` binding a case to the criterion that mirrors a Gherkin scenario, and for the case stub a story needs before `inProgress`. Not for the behaviour bodies a case invokes (`@sysml2-behaviour`).
 paths: ["**/*.sysml"]
 user-invocable: true
 ---
@@ -19,13 +19,16 @@ value). Verification cases declare one when the verdict is passed
 to a downstream case or view. Use cases usually leave the result
 implicit in the flow. For project layout and tooling, route back
 to `@sysml2-modelling`. For the step bodies inside a case, route
-to `@sysml2-behaviour`.
+to `@sysml2-behaviour`. For which criteria a story's cases must
+reach, and for running them, route to `@verification-validation`.
 
 ## When This Skill Triggers
 
 - The user asks to add a use case, analysis case, or verification case
 - The user wants a trade study or what-if analysis
 - The user wants to verify a requirement with a dedicated case
+- The user wants a case to verify one acceptance criterion of a story,
+  or asks how a case reaches a Gherkin scenario
 - The user asks how actors, subjects, or objectives fit together
 
 ## Core Vocabulary
@@ -38,7 +41,7 @@ to `@sysml2-behaviour`.
 | Subject | `subject` | The system or component under consideration |
 | Actor | `actor` | An external role interacting with the subject |
 | Objective | `objective` | A goal statement, declared as a requirement |
-| Verify link | `verify` | Binds a verification case to a requirement |
+| Verify link | `verify` | Binds a verification case to a requirement, or to one acceptance criterion of a story |
 
 ## Authoring Patterns
 
@@ -103,6 +106,47 @@ the `sysml2-case-kinds` atomic page for verdict semantics. Until the
 `VerdictKind` rules are published in a later book release, consult the
 OMG Systems Modeling Language v2.0 specification for the enumeration.
 
+### Verifying a Story per Criterion
+
+In a VSE project a story's acceptance criteria are requirements nested
+in its `requirement :>> acceptance`, each named in lowerCamelCase (words
+run together, each word after the first capitalised). Each one mirrors
+one scenario of the story's Gherkin feature file, tagged
+`@AC_<name>` (§11.3.1). Gherkin is the plain-text Given/When/Then format
+that Cucumber-family test tools read and run. A case reaches criteria
+by dot notation in its objective (§11.3.3):
+
+```sysml
+verification def VAL_001_OperatorSeeReadings {
+    subject system : SmartSensor_System;
+
+    objective {
+        verify US_001_SeeReadingsOnDashboard.acceptance.latestReadingShown;
+    }
+}
+```
+
+| Clause | Criteria it reaches |
+| --- | --- |
+| `verify <story>` | Every criterion of the story |
+| `verify <story>.acceptance` | Every criterion of the story |
+| `verify <story>.acceptance.<name>` | The criterion `<name>` only |
+
+Prefer the narrowest form when different cases verify different
+criteria, so that the traceability matrix shows which case verifies
+which scenario. The `::` namespace form addresses a definition member,
+and the reference implementations refuse it (§5.4.6). A criterion name
+the story does not declare fails validation as an unresolved reference.
+
+Every criterion of a story at `inProgress` or `done` is reached by at
+least one case. A stub, holding the subject and the objective with the
+body still to come, is enough (§11.4). This is test first at the model
+tier: the case exists before any design or analysis the story drives.
+Where test first applies to the project (§11.5), the scenario that
+states the criterion also runs on the project's scenario runner, and a
+passing run is execution evidence for the case (§11.8,
+`@verification-validation`).
+
 ### Case with an External Part Context
 
 ```sysml
@@ -138,6 +182,9 @@ definition and reference it from the case subject or actors.
    `return` feature is available when the case needs to publish a
    value. Analysis cases should almost always declare one. Use
    cases typically do not.
+6. **Story criteria are reached by dot notation.** A `verify` clause
+   on a story names the story, its `acceptance`, or one criterion the
+   story declares (`<story>.acceptance.<name>`), never the `::` form.
 
 ## Red Flags
 
@@ -149,6 +196,11 @@ WARN the engineer if:
   actor should be external)
 - An analysis case has no `return` feature
 - Verdict handling is missing in a verification body that expects one
+- A `verify` clause names a story criterion with `::`, or names a
+  criterion the story does not declare
+- A story at `inProgress` or `done` has a criterion that no case
+  reaches. The story lint reports it as S8, and the `precommit_gherkin`
+  gate blocks the commit at every profile (§11.4, §11.9)
 
 ## Knowledge base
 
