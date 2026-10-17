@@ -16,13 +16,15 @@
 #      payload cannot be read.
 #   2. sends every reminder meant for the human as a top-level
 #      systemMessage, which the user sees and which continues nothing.
-#   3. uses additionalContext only for the test-first finding, once for
-#      each session and state of the working tree.
+#   3. uses additionalContext only for the test-first finding.
+#   4. says each thing once for each session and state of the working
+#      tree: a second stop in a state already spoken in is silent.
 #
 # The reminders. At Stop, an architecture change in the working tree
 # suggests an ADR (§10.5.3), and a verification or validation report
 # suggests linking it to its procedure (SR.O7). At SubagentStop, one
-# line says where the project and its methodology live.
+# line says where the project and its methodology live: the project's
+# methodology/ folder when it exists, else the plugin's copy.
 #
 # The test-first finding (methodology §11.7). Where test_first.applies
 # is true, a code path changed in the working tree (deletions aside)
@@ -32,14 +34,16 @@
 # pretooluse_test_first set to off, draws nothing.
 #
 # The marker. The state is a checksum of HEAD and git status. The
-# states already sent are kept one per line in
-# ${TMPDIR:-/tmp}/vse-stop.<session_id>, shared by both events, so
-# concurrent sessions never share a marker. The session id is reduced
-# to letters, digits, "_" and "-", so the marker never lands outside
-# TMPDIR. The marker is replaced by a rename from the hook's own work
-# directory, never written through a symbolic link. When it cannot be
-# recorded, the finding goes to the user as a systemMessage instead, so
-# it can never continue the turn twice.
+# states already spoken in are kept one per line in a marker for each
+# event and session: ${TMPDIR:-/tmp}/vse-stop.<session_id> for Stop and
+# ${TMPDIR:-/tmp}/vse-subagent-stop.<session_id> for SubagentStop, so a
+# subagent never uses up what the main agent is told, and concurrent
+# sessions never share a marker. The session id is reduced to letters,
+# digits, "_" and "-", so the marker never lands outside TMPDIR. The
+# marker is replaced by a rename from the hook's own work directory,
+# never written through a symbolic link. When it cannot be recorded,
+# the finding goes to the user as a systemMessage instead, so it can
+# never continue the turn twice.
 #
 # Locating the project, through the shared vse_tf_locate_project. The
 # project is located through its .iso-config.yaml: the first one found
@@ -149,25 +153,21 @@ if [ -n "$STOP_TOP" ]; then
     esac
 fi
 
-if [ "$STOP_EVENT" = "SubagentStop" ]; then
-    vse_hj_add_system_message "[VSE] Subagent complete in the project at ${STOP_ENG}. Methodology specification: ${STOP_ENG}/methodology/."
-fi
-
-# Everything below reads the working tree.
-if [ -z "$STOP_TOP" ]; then
-    vse_hj_emit "$STOP_EVENT"
-    exit 0
-fi
-
 # -------------------------------------------------------- working tree
 
+# Without git there is no working tree to read, and the state is
+# empty, so only the SubagentStop note can be due.
 STOP_STATUS="${STOP_WORK}/status"
-if ! git -C "$STOP_TOP" status --porcelain=v1 -z -uall > "$STOP_STATUS" 2>/dev/null; then
+: > "$STOP_STATUS"
+if [ -n "$STOP_TOP" ] && ! git -C "$STOP_TOP" status --porcelain=v1 -z -uall > "$STOP_STATUS" 2>/dev/null; then
     echo "[stop] git status failed in ${STOP_TOP}, so the working tree was not read." >&2
     : > "$STOP_STATUS"
 fi
 
-STOP_APPLIES="$(vse_tf_applies)"
+STOP_APPLIES=""
+if [ -n "$STOP_TOP" ]; then
+    STOP_APPLIES="$(vse_tf_applies)"
+fi
 STOP_ARCH=""
 STOP_VV=""
 STOP_CODE=""
@@ -211,26 +211,82 @@ done < "$STOP_STATUS"
 
 # ----------------------------------------------------------- reminders
 
+# The reminders for the user, one per line of the systemMessage. Only
+# Stop carries the ADR and SR.O7 prompts, which belong to the end of
+# the agent's turn, not to each subagent.
+STOP_REMINDERS=""
+STOP_NL=$'\n'
+
+# _stop_remind <text>: add one reminder for the user.
+_stop_remind() {
+    STOP_REMINDERS="${STOP_REMINDERS:+${STOP_REMINDERS}${STOP_NL}}$1"
+}
+
+if [ "$STOP_EVENT" = "SubagentStop" ]; then
+    # The project's own methodology/ folder, else the plugin's copy.
+    if [ -d "${STOP_ENG%/}/methodology" ]; then
+        STOP_METHODOLOGY="${STOP_ENG%/}/methodology/"
+    else
+        STOP_METHODOLOGY="${STOP_LIB%/hooks/lib}/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
+    fi
+    _stop_remind "[VSE] Subagent complete in the project at ${STOP_ENG}. Methodology specification: ${STOP_METHODOLOGY}."
+fi
 if [ "$STOP_EVENT" = "Stop" ] && [ -n "$STOP_ARCH" ]; then
-    vse_hj_add_system_message "[methodology prompt at end of turn] Architectural changes detected. Per §10.5.3 (Justification Document) consider:
+    _stop_remind "[methodology prompt at end of turn] Architectural changes detected. Per §10.5.3 (Justification Document) consider:
   - Writing an ADR in docs/decisions/ if a non-trivial decision was made.
   - Updating the trade-study analysis def if a variant was selected."
 fi
 if [ "$STOP_EVENT" = "Stop" ] && [ -n "$STOP_VV" ]; then
-    vse_hj_add_system_message "[methodology prompt at end of turn] V&V activity detected. Per SR.O7:
+    _stop_remind "[methodology prompt at end of turn] V&V activity detected. Per SR.O7:
   - Ensure the report references its IVV procedure.
   - Update the relevant story's StoryMeta if verification passed or failed."
 fi
 
 # ---------------------------------------------------- test-first finding
 
-# The marker file for this session, named from the session id reduced
-# to letters, digits, "_" and "-" (at most 128 of them).
+STOP_FINDING=""
+
+stop_test_first() {
+    local evidence reason command names
+    [ -n "$STOP_CODE" ] || return 0
+    [ "$(iso_gate_disposition pretooluse_test_first)" != "off" ] || return 0
+    if vse_tf_refactor_branch "$STOP_TOP"; then
+        return 0
+    fi
+    if evidence="$(vse_tf_evidence "$STOP_TOP")"; then
+        return 0
+    fi
+    reason="${evidence#reason: }"
+    names="$STOP_CODE"
+    if [ "$STOP_CODE_COUNT" -gt 1 ]; then
+        names="${names} and $((STOP_CODE_COUNT - 1)) more"
+    fi
+    command="$(iso_section_scalar test_first test_command)"
+    STOP_FINDING="Test first (methodology §11.7): code changed in the working tree (${names}, under test_first.code_paths) and no test change was found: ${reason}. Before more code, write or change the failing test under test_first.test_paths, run it${command:+ (${command})} and watch it fail. A change that only restructures code belongs on a refactor branch. This finding is sent once for each state of the working tree."
+}
+
+stop_test_first
+
+# ------------------------------------------------------------ the marker
+
+# Nothing to say, so nothing is recorded either.
+if [ -z "${STOP_REMINDERS}${STOP_FINDING}" ]; then
+    exit 0
+fi
+
+# The marker file for this event and session, named from the session
+# id reduced to letters, digits, "_" and "-" (at most 128 of them).
+# Stop and SubagentStop keep separate markers, so a subagent never uses
+# up what the main agent is told.
 STOP_SESSION="$(vse_hj_read "$STOP_PAYLOAD" .session_id)"
 STOP_SESSION="$(printf '%s' "$STOP_SESSION" | LC_ALL=C tr -c 'A-Za-z0-9_-' '_')"
 STOP_SESSION="${STOP_SESSION:0:128}"
-STOP_MARKER="${STOP_TMPDIR}/vse-stop.${STOP_SESSION:-none}"
-STOP_STATE=""
+if [ "$STOP_EVENT" = "SubagentStop" ]; then
+    STOP_MARKER="${STOP_TMPDIR}/vse-subagent-stop.${STOP_SESSION:-none}"
+else
+    STOP_MARKER="${STOP_TMPDIR}/vse-stop.${STOP_SESSION:-none}"
+fi
+STOP_STATE="$({ if [ -n "$STOP_TOP" ]; then git -C "$STOP_TOP" rev-parse -q --verify HEAD 2>/dev/null || true; fi; cat "$STOP_STATUS"; } | cksum)"
 
 # _stop_seen: 0 when the marker, a plain file, already holds the state.
 _stop_seen() {
@@ -260,37 +316,22 @@ _stop_record() {
     mv -f "$next" "$STOP_MARKER" 2>/dev/null
 }
 
-stop_test_first() {
-    local evidence reason command names finding
-    [ -n "$STOP_CODE" ] || return 0
-    [ "$(iso_gate_disposition pretooluse_test_first)" != "off" ] || return 0
-    if vse_tf_refactor_branch "$STOP_TOP"; then
-        return 0
-    fi
-    if evidence="$(vse_tf_evidence "$STOP_TOP")"; then
-        return 0
-    fi
-    reason="${evidence#reason: }"
-    STOP_STATE="$({ git -C "$STOP_TOP" rev-parse -q --verify HEAD 2>/dev/null || true; cat "$STOP_STATUS"; } | cksum)"
-    if _stop_seen; then
-        return 0
-    fi
-    names="$STOP_CODE"
-    if [ "$STOP_CODE_COUNT" -gt 1 ]; then
-        names="${names} and $((STOP_CODE_COUNT - 1)) more"
-    fi
-    command="$(iso_section_scalar test_first test_command)"
-    finding="Test first (methodology §11.7): code changed in the working tree (${names}, under test_first.code_paths) and no test change was found: ${reason}. Before more code, write or change the failing test under test_first.test_paths, run it${command:+ (${command})} and watch it fail. A change that only restructures code belongs on a refactor branch. This finding is sent once for each state of the working tree."
-    if _stop_record; then
-        vse_hj_add_context "$finding"
-    else
-        echo "[stop] Could not record ${STOP_MARKER}, so the test-first finding goes to the user instead of the agent." >&2
-        vse_hj_add_system_message "$finding"
-    fi
-}
+if _stop_seen; then
+    exit 0
+fi
 
 # ---------------------------------------------------------------- run
 
-stop_test_first
+vse_hj_add_system_message "$STOP_REMINDERS"
+if [ -n "$STOP_FINDING" ]; then
+    if _stop_record; then
+        vse_hj_add_context "$STOP_FINDING"
+    else
+        echo "[stop] Could not record ${STOP_MARKER}, so the test-first finding goes to the user instead of the agent." >&2
+        vse_hj_add_system_message "$STOP_FINDING"
+    fi
+elif ! _stop_record; then
+    echo "[stop] Could not record ${STOP_MARKER}, so these reminders may be repeated in this state." >&2
+fi
 vse_hj_emit "$STOP_EVENT"
 exit 0

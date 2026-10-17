@@ -15,9 +15,14 @@
 #   2. The test-first finding (code changed in the working tree, no
 #      test change, test_first.applies true) goes out as
 #      additionalContext once for each session and state of the
-#      working tree, tracked by a marker file under $TMPDIR.
+#      working tree, tracked by a marker file under $TMPDIR. Stop and
+#      SubagentStop keep separate markers, so a subagent never uses up
+#      the main agent's finding.
 #   3. Every other reminder goes out as a top-level systemMessage,
-#      which the user sees and which does not continue the turn.
+#      which the user sees and which does not continue the turn, also
+#      once for each session and state. Only Stop carries the ADR and
+#      SR.O7 reminders, and the SubagentStop note names the project's
+#      methodology/ folder, else the plugin's copy.
 #   4. The marker never lands outside $TMPDIR, and a marker that cannot
 #      be recorded turns the finding into a systemMessage.
 #   5. Locating the project from the payload's cwd, and the output
@@ -188,8 +193,17 @@ case_stop_once_per_state() {
 
     subagent_run false session-3
     stop_assert_finding SubagentStop "once: a subagent stop draws the finding once"
+    if [ -f "${STOP_TMP}/vse-subagent-stop.session-3" ]; then
+        tc_pass "once: the SubagentStop marker is ${STOP_TMP}/vse-subagent-stop.<session_id>"
+    else
+        tc_fail "once: the SubagentStop marker is ${STOP_TMP}/vse-subagent-stop.<session_id>" "$(ls -la "$STOP_TMP")"
+    fi
+    subagent_run false session-3
+    stop_assert_no_context "once: a second subagent stop in the same state draws no finding"
     stop_run false session-3
-    stop_assert_no_context "once: the Stop and SubagentStop hooks share the session's marker"
+    stop_assert_finding Stop "once: a subagent's finding does not use up the main agent's"
+    stop_run false session-3
+    stop_assert_no_context "once: the main agent then has its own finding once"
 
     git -C "$REPO" add src/reading.py
     tc_commit "feat: read"
@@ -288,6 +302,67 @@ case_stop_reminders_are_system_message() {
     printf '# Notes\n' | tc_write docs/notes.md
     stop_run
     tc_assert_json_silent "system: a change no reminder covers is silent"
+}
+
+# An ordinary reminder reaches the user once for each session and state
+# too, so a Stop that repeats in an unchanged working tree is silent.
+case_stop_reminders_once_per_state() {
+    stop_project light
+    printf 'part def Sensor;\n' | tc_write model/core/logical-architecture/sensor.sysml
+    stop_run false session-1
+    tc_assert_json '.systemMessage | contains("ADR")' "reminders once: the first stop draws the ADR reminder"
+    stop_run false session-1
+    tc_assert_rc 0 "reminders once: exit 0"
+    tc_assert_json_silent "reminders once: a second stop in the same state is silent"
+    stop_run false session-2
+    tc_assert_json '.systemMessage | contains("ADR")' "reminders once: another session draws it again"
+
+    printf '# VR-001\n' | tc_write docs/verification-reports/VR-001.md
+    stop_run false session-1
+    tc_assert_json '(.systemMessage | contains("ADR")) and (.systemMessage | contains("SR.O7"))' \
+        "reminders once: a new state draws the reminders again"
+
+    subagent_run false session-1
+    tc_assert_json '.systemMessage | contains("Subagent complete")' \
+        "reminders once: the first subagent stop draws the completion note"
+    subagent_run false session-1
+    tc_assert_json_silent "reminders once: a second subagent stop in the same state is silent"
+    rm -f "${REPO}/docs/verification-reports/VR-001.md"
+    subagent_run false session-1
+    tc_assert_json '.systemMessage | contains("Subagent complete")' \
+        "reminders once: the completion note returns in a new state"
+}
+
+# The ADR and SR.O7 reminders are for the end of the agent's turn, not
+# for each subagent.
+case_subagent_stop_no_stop_reminders() {
+    stop_project light
+    printf 'part def Sensor;\n' | tc_write model/core/logical-architecture/sensor.sysml
+    printf '# VR-001\n' | tc_write docs/verification-reports/VR-001.md
+    subagent_run false session-1
+    tc_assert_json '(.systemMessage | contains("Subagent complete"))
+        and (.systemMessage | contains("Architectural") | not)
+        and (.systemMessage | contains("SR.O7") | not)' \
+        "subagent: no Stop-only reminder at SubagentStop"
+}
+
+# The completion note names the project's own methodology/ folder only
+# when it exists, else the plugin's copy.
+case_subagent_stop_methodology() {
+    local eng plugin
+    stop_project light
+    eng="$(cd "$REPO" && pwd -P)"
+    plugin="$(cd "$TC_PLUGIN_ROOT" && pwd -P)"
+    subagent_run false session-1
+    tc_assert_json ".systemMessage | contains(\"${plugin}/methodology/\")" \
+        "subagent methodology: without a project folder the plugin's copy is named"
+    tc_assert_json ".systemMessage | contains(\"${eng}/methodology/\") | not" \
+        "subagent methodology: a missing project folder is not named"
+    mkdir -p "${REPO}/methodology"
+    printf '# Overview\n' | tc_write methodology/00-methodology-overview.md
+    subagent_run false session-2
+    tc_assert_json ".systemMessage | contains(\"${eng}/methodology/\")" \
+        "subagent methodology: the project's own folder is named when it exists"
 }
 
 # ----------------------------------------------------- 4. the marker
@@ -403,6 +478,9 @@ case_subagent_stop_active_silent
 case_stop_once_per_state
 case_stop_finding_conditions
 case_stop_reminders_are_system_message
+case_stop_reminders_once_per_state
+case_subagent_stop_no_stop_reminders
+case_subagent_stop_methodology
 case_stop_marker_stays_in_tmpdir
 case_stop_outside_project_silent
 case_stop_output_contract

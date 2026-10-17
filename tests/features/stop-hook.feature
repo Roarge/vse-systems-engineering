@@ -6,7 +6,9 @@ Feature: Stop reminders that never loop
   The Stop hook runs when the agent ends its turn, and the SubagentStop
   hook runs when a subagent ends its own. Claude Code sets
   stop_hook_active to true while the agent is already carrying on
-  because a stop hook asked it to.
+  because a stop hook asked it to. Each hook keeps its own record of
+  the states it has spoken in, so a subagent never uses up what the
+  main agent is told.
 
   Background:
     Given a VSE project at the light profile
@@ -37,3 +39,14 @@ Feature: Stop reminders that never loop
     And the file src/sensor.py has changed in the working tree
     When the Stop hook runs
     Then the agent receives the test-first reminder
+
+  Scenario: A subagent's reminder does not use up the main agent's
+    Given the SubagentStop hook has sent the test-first reminder for the current state
+    When the Stop hook runs
+    Then the agent receives the test-first reminder
+
+  Scenario: A reminder for the engineer goes out once for each state
+    Given the file model/core/logical-architecture/sensor.sysml has changed in the working tree
+    And the Stop hook has reminded the engineer to write an ADR for the current state
+    When the Stop hook runs
+    Then the engineer receives no reminder

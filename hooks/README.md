@@ -23,8 +23,8 @@ time and wires them up.
 | `pre-tool-use.sh` | `PreToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | The in-session Gherkin-first and test-first gates of methodology §11.9.3, which deny the edit at `block`. Asks the human to confirm an edit that changes `gate_overrides` or `test_first` (methodology §11.10). Passes on the baselined-path and story reminders per §5.3. |
 | `post-tool-use.sh` | `PostToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Post-edit reminders for feature files, stories, concerns, architecture, the Project Plan, and code where test first applies, per §5.4. |
 | `source-added-reminder.sh` | `PostToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Wiki-only contributor hook. Reminds the agent to run `/vse-wiki-ingest` and appends a source-added stub to `wiki/LOG.md` when `sources/` files change. |
-| `stop.sh` | `Stop` | (none) | ADR and V&V (verification and validation) capture reminders for the user at the end of a turn, and the test-first finding for the agent once for each session and state, per §5.5. Silent while `stop_hook_active` is true. |
-| `subagent-stop.sh` | `SubagentStop` | (none) | Runs `stop.sh` for the `SubagentStop` event per §5.6. |
+| `stop.sh` | `Stop` | (none) | ADR and V&V (verification and validation) capture reminders for the user at the end of a turn, and the test-first finding for the agent, each once for each session and working-tree state, per §5.5. Silent while `stop_hook_active` is true. |
+| `subagent-stop.sh` | `SubagentStop` | (none) | Runs `stop.sh` for the `SubagentStop` event per §5.6: a completion note naming the project's `methodology/` (else the plugin's copy) and the test-first finding, once for each session and state, with a marker of its own so a subagent never uses up the main agent's finding. |
 | `pre-compact.sh` | `PreCompact` | (none) | Snapshot ISO state before context compaction per §5.7. |
 | `notification.sh` | `Notification` | (none) | Periodic reminders on stale Change Requests and risks per §5.8. |
 

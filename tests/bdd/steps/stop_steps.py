@@ -59,6 +59,10 @@ def _context(ctx):
         "additionalContext", "")
 
 
+def _system(ctx):
+    return ctx.hook_output.get("systemMessage", "")
+
+
 def _shown(ctx):
     return "stdout: {}\nstderr: {}".format(ctx.hook.stdout.strip(),
                                            ctx.hook.stderr.strip())
@@ -67,10 +71,17 @@ def _shown(ctx):
 # ----------------------------------------------------------------- Given
 
 
-@step(r"the Stop hook has sent the test-first reminder for the current state")
-def reminder_already_sent(ctx):
-    run_stop_hook(ctx, "Stop")
+@step(r"the {} hook has sent the test-first reminder for the current state".format(HOOKS))
+def reminder_already_sent(ctx, hook):
+    run_stop_hook(ctx, hook)
     agent_receives_reminder(ctx)
+
+
+@step(r"the Stop hook has reminded the engineer to write an ADR for the current state")
+def adr_reminder_already_sent(ctx):
+    run_stop_hook(ctx, "Stop")
+    if "ADR" not in _system(ctx):
+        raise AssertionError("no ADR reminder, " + _shown(ctx))
 
 
 # ------------------------------------------------------------------ When
@@ -105,3 +116,9 @@ def agent_receives_reminder(ctx):
 def agent_receives_no_reminder(ctx):
     if _context(ctx):
         raise AssertionError("the agent received context, " + _shown(ctx))
+
+
+@step(r"the engineer receives no reminder")
+def engineer_receives_no_reminder(ctx):
+    if _system(ctx):
+        raise AssertionError("the engineer was reminded, " + _shown(ctx))
