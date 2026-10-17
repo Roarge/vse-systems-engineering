@@ -235,7 +235,7 @@ The pattern for every item: name the rule and its section, state the concrete ri
 - **Several languages in one repository.** The record holds one `test_command`, so recommend one entry point that runs every suite, such as a `test` target in the Makefile.
 - **A test that needs a service or a secret**, such as a database. The bare runner has neither. Recommend a set-up step or a test double, and never record a command that passes only on the workstation.
 - **Scenarios of stories not yet built.** Strict mode fails a selected scenario without step definitions, so a `scenario_command` that selects every feature file fails CI once a `ready` story has scenarios. Recommend a runner tag beside the `@AC_` tag, such as `@wip` (§11.2.3 allows it), excluded by `scenario_command` and removed in the commit that adds the step definitions. An excluded scenario does not run, so the tagged scenarios are a list a reviewer reads.
-- **A baselined plan or SEMP.** When `docs/project-plan.md` or `docs/semp.md` is under `baselined_paths`, the record changes a baselined artefact. Hand off to `@change-request` before committing.
+- **A baselined plan or SEMP.** When `<ENG_ROOT>/docs/project-plan.md` or `<ENG_ROOT>/docs/semp.md` is under `baselined_paths`, the record changes a baselined artefact. Hand off to `@change-request` before committing.
 
 ## Hand-offs
 
@@ -248,7 +248,7 @@ The pattern for every item: name the rule and its section, state the concrete ri
 
 ## Outputs
 
-After a successful run: `.iso-config.yaml` carries a `test_first` block that the libraries read back, the `CLAUDE.md` managed block carries the Test-first line, `docs/semp.md` and `docs/project-plan.md` record the judgement where those files exist, sample paths classify as the engineer intended, `test_command` (and `scenario_command`, when recorded) has passed from the git top level, and any CI set-up step the harness needs is in the workflow.
+After a successful run: `<ENG_ROOT>/.iso-config.yaml` carries a `test_first` block that the libraries read back, the managed block of `<ENG_ROOT>/CLAUDE.md` carries the Test-first line, `<ENG_ROOT>/docs/semp.md` and `<ENG_ROOT>/docs/project-plan.md` record the judgement where those files exist, sample paths classify as the engineer intended, `test_command` (and `scenario_command`, when recorded) has passed from the git top level, and any CI set-up step the harness needs is in the workflow.
 
 ## Knowledge base
 

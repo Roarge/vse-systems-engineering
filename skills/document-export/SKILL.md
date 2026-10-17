@@ -123,12 +123,13 @@ missing or does not parse, is printed with its `doc` text alone. The
 story lint finds these as S1, S4 and F1
 (`python3 tools/lint/story-wellformed.py --only gherkin model`, from the
 engineering root). When the project has no `tools/lint/`, run the
-plugin's copy, `${CLAUDE_PLUGIN_ROOT}/templates/tools/lint/story-wellformed.py`,
-with the same arguments from the same directory, the fallback that
+plugin's copy,
+`${CLAUDE_PLUGIN_ROOT}/templates/tools/lint/story-wellformed.py`, with
+the same arguments from the same directory, the fallback that
 project-audit uses. That copy reads the model through its sibling
-`${CLAUDE_PLUGIN_ROOT}/templates/tools/render/`. Name any such criterion in the Step 5 report and
-route the gap to `@story-orchestrator` rather than delivering the
-document as complete.
+`${CLAUDE_PLUGIN_ROOT}/templates/tools/render/`. Name any such
+criterion in the Step 5 report and route the gap to
+`@story-orchestrator` rather than delivering the document as complete.
 
 ## Step 3: Ensure Build Directory
 
