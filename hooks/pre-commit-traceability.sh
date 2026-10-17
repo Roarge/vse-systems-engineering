@@ -274,14 +274,17 @@ WHOLE_FILE=1000000
 # added_text <file>: the model text of the lines this change adds to
 # <file>. In "all" mode every line of the file counts as added, and the
 # file is read from the index, which is what git ls-files listed, so a
-# tracked file missing from the working tree is still read.
+# tracked file missing from the working tree is still read. git ls-files
+# lists paths relative to the working directory, so the index path is
+# ":./<file>", which git reads from there too, and the gate works from
+# a subdirectory.
 added_text() {
     local file="$1"
     if [ -z "$RANGE" ]; then
         git diff --cached --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" -- "$file" \
             | added_model_text 0
     elif [ "$RANGE" = "all" ]; then
-        git show ":$file" | added_model_text 1
+        git show ":./$file" | added_model_text 1
     else
         git diff --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" "$RANGE" -- "$file" \
             | added_model_text 0

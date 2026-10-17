@@ -660,6 +660,24 @@ case_trace_all_reads_the_index() {
     tc_assert_not_grep "No such file" "$ERR" "trace all, file missing: no shell error"
 }
 
+# all mode reads each file from the index by a path relative to the
+# working directory (":./<path>"), the form git ls-files lists from a
+# subdirectory, so the delegate run from below the top level reads the
+# files it lists there.
+case_trace_all_from_subdirectory() {
+    local sub="model/core/stories/stakeholder"
+    tc_setup_repo
+    trace_config
+    write_story
+    tc_commit "add the story"
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_in "${REPO}/${sub}" "${REPO}/.githooks/pre-commit-traceability.sh"
+    tc_assert_rc 1 "trace all, subdirectory: the story listed there is read"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "trace all, subdirectory: the finding names the story"
+    tc_assert_not_grep "fatal:" "$ERR" "trace all, subdirectory: git finds each file in the index"
+}
+
 # The acceptance may be written without :>> (requirement acceptance
 # { ... }), and a criterion nested there is a member of its story too.
 case_trace_untyped_acceptance() {
@@ -1471,6 +1489,7 @@ case_trace_filenames_with_spaces
 case_trace_cannot_list_staged
 case_trace_textconv_ignored
 case_trace_all_reads_the_index
+case_trace_all_from_subdirectory
 case_trace_untyped_acceptance
 case_trace_acceptance_opener_removed
 case_gherkin_block_light
