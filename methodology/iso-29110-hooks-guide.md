@@ -152,7 +152,7 @@ bypass on the first day, which is the opposite of the intended effect.
 | `.githooks/commit-msg` | not installed | installed, warn dispositions | installed, blocking dispositions |
 | `.githooks/post-merge` | not installed | not installed | installed |
 | `tools/lint/` (story lint and Gherkin parser) | installed | installed | installed |
-| `.github/workflows/` compliance workflows | `traceability-check.yml`: gates per configuration, other steps advisory | `traceability-check.yml`: gates per configuration, other steps advisory | `traceability-check.yml` blocking, plus `document-export.yml` (renders documents on release, never blocks) |
+| `.github/workflows/` compliance workflows | `traceability-check.yml`: gates per configuration, test and scenario steps where test first applies, model validation and Contract 3 advisory | `traceability-check.yml`: gates per configuration, test and scenario steps where test first applies, model validation and Contract 3 advisory | `traceability-check.yml` blocking, plus `document-export.yml` (renders documents on release, never blocks) |
 | Branch protection on `main` | not configured | recommended | required |
 
 Four notes on the table.
@@ -448,7 +448,8 @@ every profile per §3.4. It implements contract 3 directly. It implements
 contract 2 through the story lint, because its pre-commit step runs the
 `pre-commit` hook in range mode, and the `precommit_gherkin` gate
 reports S8 there at its configured disposition. It also runs
-`test_command` and `scenario_command` when `test_first` records them
+`test_command` and `scenario_command` where test first applies, that
+is when `test_first.applies` is `true` and the command is recorded
 (methodology §11.8). Range mode needs the full history, so the workflow
 checks out with `fetch-depth: 0` and sets `VSE_PRECOMMIT_RANGE` per
 event: the pull request's base and head for a pull request, the

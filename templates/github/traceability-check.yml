@@ -23,9 +23,10 @@
 #     `standard` install makes both advisory by uncommenting the
 #     `continue-on-error: true` line in each of the two steps.
 #   - The test and scenario steps run `test_first.test_command` and
-#     `test_first.scenario_command` when the project records them
-#     (methodology §11.8). A failing test fails the workflow at every
-#     profile.
+#     `test_first.scenario_command` where test first applies, that is
+#     when `test_first.applies` is true and the project records the
+#     command (methodology §11.8). A failing test fails the workflow at
+#     every profile.
 #
 # Translating to GitLab CI, Forgejo Actions, or Gitea Actions: check
 # out the full history, set VSE_PRECOMMIT_RANGE to the change under
@@ -252,22 +253,34 @@ jobs:
       - name: Read the test-first record
         # test_command and scenario_command from the test_first block of
         # .iso-config.yaml (methodology §11.5.2), read through the
-        # profile library the hooks use, so that CI and the hooks agree
-        # on quoting and comments. A command that is not recorded
-        # leaves its step below skipped.
+        # libraries the hooks use, so that CI and the hooks agree on
+        # quoting, comments and the applies value. Scenarios and tests
+        # run only where test first applies (methodology §11.8), so
+        # unless test_first.applies is true no command is read. A
+        # command that is not read leaves its step below skipped.
         id: test-first
         run: |
           set -euo pipefail
           LIB=""
-          for candidate in .githooks/lib/iso-profile.sh hooks/lib/iso-profile.sh; do
-              if [ -r "$candidate" ]; then LIB="$candidate"; break; fi
+          for candidate in .githooks/lib hooks/lib; do
+              if [ -r "${candidate}/iso-profile.sh" ] && [ -r "${candidate}/test-first.sh" ]; then
+                  LIB="$candidate"
+                  break
+              fi
           done
           if [ -z "$LIB" ]; then
-              echo "::warning::.githooks/lib/iso-profile.sh is not installed (run @attention-regime), so test_command and scenario_command were not read and no test ran."
+              echo "::warning::.githooks/lib/iso-profile.sh or .githooks/lib/test-first.sh is not installed (run @attention-regime), so test_command and scenario_command were not read and no test ran."
               exit 0
           fi
           # shellcheck source=/dev/null
-          . "$LIB"
+          . "${LIB}/iso-profile.sh"
+          # shellcheck source=/dev/null
+          . "${LIB}/test-first.sh"
+          APPLIES="$(vse_tf_applies)"
+          if [ "$APPLIES" != "true" ]; then
+              echo "test_first.applies is ${APPLIES:-not recorded}, so no recorded test or scenario runs (methodology §11.8)."
+              exit 0
+          fi
           TEST_COMMAND="$(iso_section_scalar test_first test_command)"
           SCENARIO_COMMAND="$(iso_section_scalar test_first scenario_command)"
           echo "test_first.test_command: ${TEST_COMMAND:-not recorded}"
@@ -278,12 +291,12 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run the recorded tests (test_command)
-        # Runs when test_first records test_command (methodology §11.7
-        # and §11.8), from the top-level directory of the repository,
-        # the directory that code_paths and test_paths are relative to.
-        # A failing test fails the workflow at every profile. Add any
-        # set-up step the command needs, such as actions/setup-python,
-        # above this step.
+        # Runs where test first applies and test_first records
+        # test_command (methodology §11.7 and §11.8), from the top-level
+        # directory of the repository, the directory that code_paths and
+        # test_paths are relative to. A failing test fails the workflow
+        # at every profile. Add any set-up step the command needs, such
+        # as actions/setup-python, above this step.
         if: steps.test-first.outputs.test_command != ''
         env:
           TEST_COMMAND: ${{ steps.test-first.outputs.test_command }}
@@ -296,8 +309,9 @@ jobs:
           fi
 
       - name: Run the recorded scenarios (scenario_command)
-        # Runs when test_first records scenario_command (methodology
-        # §11.8), from the same directory as the tests. The runner reads
+        # Runs where test first applies and test_first records
+        # scenario_command (methodology §11.8), from the same directory
+        # as the tests. The runner reads
         # the feature files beside the stories, in its strict mode, so
         # an undefined or pending step fails. A failing scenario fails
         # the workflow at every profile.
