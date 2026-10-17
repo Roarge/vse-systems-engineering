@@ -40,7 +40,10 @@ Constructs recognised:
 * `verification def <ID> { doc /* ... */ objective { verify <ID>.<member>;
   } }`, classified as a verification case or a validation case by
   identifier prefix and, failing that, by the directory the file sits in.
-  The pre-4.0 `verify <ID>::<member>` is read as well.
+  A target that runs through `acceptance`, as in `verify
+  Stories::US_001.acceptance.seeLatest`, names the story just before the
+  first `acceptance` segment. The pre-4.0 `verify <ID>::<member>` is read
+  as well.
 * `satisfy <requirement> by <element>;`, recorded when present.
 
 Anything else is skipped rather than reported. The renderers document what
@@ -56,20 +59,51 @@ joiner cannot merge are read by the parser instead: `#derivation` on a
 line of its own before `connection <name> {`, and a `@StoryMeta {` block
 whose assignments sit on their own lines.
 
+Feature files
+-------------
+Methodology section 11 pairs each story with a Gherkin feature file,
+`<ID>.feature` in the directory of the .sysml file that declares the
+story. Gherkin is the plain-text Given/When/Then notation that
+Cucumber-family tools execute. Each acceptance criterion takes the source
+text of the scenario tagged `@AC_<name>`, so the renderers can print the
+scenario where the criterion stands. The file is read with gherkin.py
+from ../lint/, the parser the story lint uses. A file that cannot be
+read or does not parse is not used, and an install without ../lint/
+(one that predates it) reads no feature file at all. Either way the
+criteria keep their doc text alone.
+
 Determinism
 -----------
 Contract 3 (methodology/iso-29110-hooks-guide.md section 4.4) compares the
 regenerated artefact against the committed copy byte for byte, so every
 reading step is ordered. Files are visited in sorted relative path order,
-and elements keep their declaration order within a file. No output carries
-a timestamp, a host name, or an absolute path.
+and elements keep their declaration order within a file. Feature files
+are read after the model, one per story, in story order. No output
+carries a timestamp, a host name, or an absolute path.
 """
 
+import os
 import re
 import sys
+import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+# The Gherkin parser ships with the story lint in ../lint/. An older
+# install has tools/render/ without tools/lint/, and then no criterion
+# carries a scenario, so the renderers print each criterion's doc text.
+_LINT_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "lint")
+)
+gherkin = None
+if os.path.isfile(os.path.join(_LINT_DIR, "gherkin.py")):
+    if _LINT_DIR not in sys.path:
+        sys.path.insert(0, _LINT_DIR)
+    try:
+        import gherkin
+    except ImportError:
+        gherkin = None
 
 # Directories searched for the model, in order, relative to the project
 # root. This mirrors the .iso-config.yaml discovery convention used by the
@@ -145,10 +179,18 @@ class DocBlock:
 
 @dataclass
 class Acceptance:
-    """One `requirement acceptance[n]` sub-requirement of a story."""
+    """One acceptance criterion of a story.
+
+    The label is the criterion's name, as in `requirement firstReading`
+    nested in the acceptance body, or the index of a pre-4.0
+    `requirement acceptance[n]`. The scenario is the source text of the
+    scenario tagged `@AC_<label>` in the story's feature file, or None
+    when there is no such scenario.
+    """
 
     label: str
     doc: DocBlock = field(default_factory=DocBlock)
+    scenario: Optional[str] = None
 
 
 @dataclass
@@ -161,7 +203,8 @@ class Constraint:
 
 @dataclass
 class Story:
-    """A `requirement def <ID> :> UserStory` element."""
+    """A story, that is a `requirement <ID> : UserStory` usage or a legacy
+    `requirement def <ID> :> UserStory` definition."""
 
     identifier: str
     source: str
@@ -489,17 +532,26 @@ def _last_segment(qualified: str) -> str:
 def _split_target(qualified: str) -> Tuple[str, str]:
     """Split a verify target into the story identifier and the member.
 
+    A target that names an `acceptance` segment anchors on the first one.
+    The story is the segment before it, and the member path starts at it,
+    so `Stories::US_001.acceptance.SeeLatest` reads as story `US_001` and
+    member `acceptance.SeeLatest` whatever case the criterion name takes.
+
+    Without an `acceptance` segment the case of each segment decides.
     Story identifiers start with a capital under the methodology naming
     conventions (US_, SYS_, VC_, VAL_ per section 1.6), and members such as
-    `acceptance` or `dashboardSla` start lower case. The distinction is
-    what separates `SYS_001_X::acceptance` from a plain `SYS_001_X`.
+    `dashboardSla` start lower case. The distinction is what separates
+    `SYS_001_X::dashboardSla` from a plain `SYS_001_X`.
     """
     segments = [segment for segment in re.split(r"::|\.", qualified) if segment]
     if not segments:
         return "", ""
+    if "acceptance" in segments[1:]:
+        index = segments.index("acceptance", 1)
+        return segments[index - 1], ".".join(segments[index:])
     # The story is the last segment that starts with a capital letter, and
-    # everything after it is the member path, so `US_001.acceptance.latency`
-    # reads as story `US_001` and member `acceptance.latency`.
+    # everything after it is the member path, so `US_001.dashboardSla`
+    # reads as story `US_001` and member `dashboardSla`.
     for index in range(len(segments) - 1, -1, -1):
         if segments[index][:1].isupper():
             return segments[index], ".".join(segments[index + 1:])
@@ -840,7 +892,81 @@ def load_model(project_root: Optional[Path] = None) -> Model:
     )
     for path in paths:
         parse_file(root, path, model)
+    _attach_scenarios(root, model)
     return model
+
+
+def _scenario_texts(text: str, feature) -> Dict[str, str]:
+    """The source text of each scenario, keyed by the name in its `@AC_`
+    tags.
+
+    A scenario runs from its first tag line to the line before the next
+    scenario, Rule or Background starts. The blank lines and comments
+    that trail it are dropped, as are the spaces that end each line and
+    the indentation that all its lines share. Where two scenarios carry
+    one tag, the first in the file wins.
+    """
+    lines = [line.rstrip() for line in text.split("\n")]
+
+    def start(element) -> int:
+        return min([tag.line for tag in element.tags] + [element.line])
+
+    starts = [start(rule) for rule in feature.rules]
+    for level in [feature] + list(feature.rules):
+        if level.background is not None:
+            starts.append(level.background.line)
+        starts.extend(start(scenario) for scenario in level.scenarios)
+
+    texts: Dict[str, str] = {}
+    for scenario in feature.all_scenarios():
+        end = min(
+            [line for line in starts if line > scenario.line],
+            default=len(lines) + 1,
+        )
+        body = lines[start(scenario) - 1:end - 1]
+        while body and (not body[-1] or body[-1].lstrip().startswith("#")):
+            body.pop()
+        block = textwrap.dedent("\n".join(body))
+        for tag in scenario.tags:
+            if tag.name.startswith("@AC_"):
+                texts.setdefault(tag.name[len("@AC_"):], block)
+    return texts
+
+
+def _read_scenarios(path: Path) -> Dict[str, str]:
+    """The scenarios of one feature file by criterion name.
+
+    A file that is missing, cannot be read as UTF-8, or reports a parse
+    finding yields none. The story lint reports such a file, and the
+    renderers fall back to the doc text rather than print a scenario cut
+    from a broken tree.
+    """
+    if gherkin is None or not path.is_file():
+        return {}
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return {}
+    if text.startswith("\ufeff"):
+        text = text[1:]
+    result = gherkin.parse(text, path.name)
+    if result.feature is None or result.findings:
+        return {}
+    return _scenario_texts(text, result.feature)
+
+
+def _attach_scenarios(project_root: Path, model: Model) -> None:
+    """Pair each criterion with its scenario.
+
+    The feature file of a story is `<ID>.feature` in the directory of the
+    .sysml file that declares the story, per methodology section 11, and
+    a scenario states the criterion whose name its `@AC_` tag carries.
+    """
+    for story in model.stories:
+        directory = (project_root / story.source).parent
+        texts = _read_scenarios(directory / (story.identifier + ".feature"))
+        for acceptance in story.acceptances:
+            acceptance.scenario = texts.get(acceptance.label)
 
 
 # ---------------------------------------------------------------------------
@@ -854,6 +980,23 @@ def header(script_name: str) -> str:
         f"<!-- Generated by tools/render/{script_name}. "
         "Regenerate, never edit. -->"
     )
+
+
+def fenced_block(text: str, language: str, indent: str = "") -> List[str]:
+    """The lines of a Markdown fenced block that holds `text`.
+
+    The fence is one backtick longer than the longest run of backticks in
+    the text, and never shorter than three, so a doc string fenced with
+    backticks inside a scenario cannot close the block early. Every line
+    is indented by `indent`, which places the block inside a list item,
+    except a blank line, which stays empty.
+    """
+    longest = max((len(run) for run in re.findall(r"`+", text)), default=0)
+    fence = "`" * max(3, longest + 1)
+    lines = [indent + fence + language]
+    lines.extend(indent + line if line else "" for line in text.split("\n"))
+    lines.append(indent + fence)
+    return lines
 
 
 def write_document(project_root: Path, relative_path: str, text: str) -> None:

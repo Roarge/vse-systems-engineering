@@ -11,6 +11,11 @@ The source is the stakeholder story register, that is every
 `requirement <ID> : UserStory` story usage, and every legacy
 `requirement def <ID> :> UserStory`, under `stories/stakeholder/`, per the
 methodology section 9.5 artefact mapping.
+
+Each acceptance criterion prints as the scenario tagged `@AC_<name>` in
+the story's feature file, in a fenced gherkin block, when the file holds
+that scenario and tools/lint/ is installed beside tools/render/. Any
+other criterion prints its doc text.
 """
 
 import os
@@ -35,9 +40,13 @@ def field_line(label, value):
 def acceptance_lines(story):
     """Render the acceptance criteria as an ordered list.
 
-    A criterion that runs to several paragraphs forces a blank line
-    between every item, because a tight list and an indented continuation
-    paragraph do not read as one list in Markdown.
+    A criterion whose scenario the story's feature file holds shows its
+    name and then the scenario as a fenced gherkin block, indented under
+    the item number. Any other criterion shows its doc text.
+
+    A criterion that runs to several paragraphs, or shows a block, forces
+    a blank line between every item, because a tight list and indented
+    continuation content do not read as one list in Markdown.
     """
     lines = []
     if not story.acceptances:
@@ -47,11 +56,22 @@ def acceptance_lines(story):
         )
         return lines
     loose = any(
-        len(acceptance.doc.paragraphs) > 1 for acceptance in story.acceptances
+        len(acceptance.doc.paragraphs) > 1 or acceptance.scenario
+        for acceptance in story.acceptances
     )
     for position, acceptance in enumerate(story.acceptances, start=1):
         if loose and position > 1:
             lines.append("")
+        if acceptance.scenario:
+            marker = f"{position}. "
+            lines.append(f"{marker}`{acceptance.label}`")
+            lines.append("")
+            lines.extend(
+                sysml_model.fenced_block(
+                    acceptance.scenario, "gherkin", " " * len(marker)
+                )
+            )
+            continue
         paragraphs = acceptance.doc.paragraphs
         if not paragraphs:
             lines.append(f"{position}. (no criterion text recorded)")
