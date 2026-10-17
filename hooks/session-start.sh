@@ -4,9 +4,17 @@
 # Three detection modes. The numbers name the modes, and the code
 # evaluates them in this order:
 #   1. Contributor mode: wiki/CLAUDE.md present (plugin development repo).
-#   3. SysML-only repo: no methodology/ folder, .sysml content present.
-#   2. VSE project: <root>/methodology/ present, or
-#                   <root>/engineering/methodology/ present (brownfield).
+#   3. SysML-only repo: no VSE project found, .sysml content present.
+#   2. VSE project, located through its .iso-config.yaml, the canonical
+#      project marker, by vse_tf_locate_project, the helper the gates
+#      use: walking up from the working directory to the git top level
+#      (also engineering/.iso-config.yaml at the top), then from
+#      engineering/ below the working directory (a brownfield project
+#      below its top level). In the plugin repository only a
+#      configuration under demo/ counts. A methodology/ or
+#      engineering/methodology/ folder without a configuration still
+#      draws the report, as a fallback for projects that predate the
+#      configuration. The gates never use that fallback.
 #
 # When none match, exits 0 with no output.
 #
@@ -22,17 +30,6 @@
 # prints no JSON. The text stays printable ASCII. Exit 0 always. The
 # hook is advisory.
 set -euo pipefail
-
-# Detect VSE engineering root: prefer engineering/methodology if present
-# (brownfield default per project-setup), then methodology at the repo
-# root (greenfield default), then no methodology found.
-if [ -d "engineering/methodology" ]; then
-    ENG_ROOT="engineering"
-elif [ -d "methodology" ]; then
-    ENG_ROOT="."
-else
-    ENG_ROOT=""
-fi
 
 # Cheap SysML content detection for the SysML-only fallback. The
 # markers cover all three toolchains: Syside's project file, the
@@ -113,16 +110,69 @@ if [ -f "wiki/CLAUDE.md" ]; then
     exit 0
 fi
 
-# Mode 3: SysML-only repository (no methodology/ folder).
+# Print the path of the shared library <name>, or nothing when no copy
+# is readable. The copy beside this script is the primary source,
+# because this hook runs from the plugin tree, and the plugin root is
+# the fallback.
+plugin_lib() {
+    if [ -r "$(dirname "$0")/lib/$1" ]; then
+        printf '%s\n' "$(dirname "$0")/lib/$1"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1" ]; then
+        printf '%s\n' "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1"
+    fi
+}
+
+# The rigour profile and the test-first helpers. test-first.sh reads
+# the configuration through iso-profile.sh, so it loads only when that
+# did.
+ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
+TEST_FIRST_LIB=""
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$ISO_PROFILE_LIB"
+    TEST_FIRST_LIB="$(plugin_lib test-first.sh)"
+fi
+if [ -n "$TEST_FIRST_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$TEST_FIRST_LIB"
+fi
+
+# Locate the project (see the header). The configuration found is the
+# one every reader uses from here on, unless the environment already
+# names one, which is kept. Left to itself, iso-profile.sh searches the
+# git top level only, which misses a project below it (demo/smart-sensor
+# in the plugin repository, or a monorepo subproject).
+ENG_ROOT=""
+if [ -n "$TEST_FIRST_LIB" ]; then
+    if vse_tf_locate_project "$(pwd -P)" \
+        || { [ -d engineering ] && vse_tf_locate_project "$(pwd -P)/engineering"; }; then
+        ENG_ROOT="$VSE_TF_ENG_ROOT"
+        if [ -z "${VSE_ISO_CONFIG:-}" ]; then
+            VSE_ISO_CONFIG="$VSE_TF_CONFIG"
+            export VSE_ISO_CONFIG
+            # shellcheck source=/dev/null
+            . "$ISO_PROFILE_LIB"
+        fi
+    fi
+fi
+if [ -z "$ENG_ROOT" ]; then
+    if [ -d "engineering/methodology" ]; then
+        ENG_ROOT="$(pwd -P)/engineering"
+    elif [ -d "methodology" ]; then
+        ENG_ROOT="$(pwd -P)"
+    fi
+fi
+
+# Mode 3: SysML-only repository (no VSE project found).
 if [ -z "$ENG_ROOT" ]; then
     if has_sysml_content; then
         echo "SysML 2.0 modelling repository detected"
         echo "======================================="
         echo ""
-        echo "No methodology/ folder found, so this is not a full VSE project"
-        echo "under the story-driven AMBSE methodology. The repository does"
-        echo "carry SysML content, so the SysML 2.0 specialist skills are"
-        echo "available directly:"
+        echo "No .iso-config.yaml and no methodology/ folder found, so this is"
+        echo "not a full VSE project under the story-driven AMBSE methodology."
+        echo "The repository does carry SysML content, so the SysML 2.0"
+        echo "specialist skills are available directly:"
         echo ""
         echo "  @sysml2-modelling   Author and validate .sysml files"
         echo "                      (umbrella, routes to siblings below)"
@@ -145,41 +195,8 @@ fi
 # Mode 2: VSE project. Context lines, not instructions. The engineer
 # decides what follows, per methodology section 0.10.1.
 
-# Print the path of the shared library <name>, or nothing when no copy
-# is readable. The copy beside this script is the primary source,
-# because this hook runs from the plugin tree, and the plugin root is
-# the fallback.
-plugin_lib() {
-    if [ -r "$(dirname "$0")/lib/$1" ]; then
-        printf '%s\n' "$(dirname "$0")/lib/$1"
-    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1" ]; then
-        printf '%s\n' "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1"
-    fi
-}
-
-# The configuration in force is the project's own, in the working
-# directory (else under engineering/, the same order iso-profile.sh
-# searches). Left to itself, iso-profile.sh searches the git top level,
-# which misses a project below it (demo/smart-sensor in the plugin
-# repository, or a monorepo subproject), while the gates find the
-# project's file by walking up from the edited file. A path the
-# environment already names is kept.
-if [ -z "${VSE_ISO_CONFIG:-}" ]; then
-    if [ -f ".iso-config.yaml" ]; then
-        VSE_ISO_CONFIG="$(pwd -P)/.iso-config.yaml"
-        export VSE_ISO_CONFIG
-    elif [ -f "engineering/.iso-config.yaml" ]; then
-        VSE_ISO_CONFIG="$(pwd -P)/engineering/.iso-config.yaml"
-        export VSE_ISO_CONFIG
-    fi
-fi
-
 # Rigour profile via the shared library.
-ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
-
 if [ -n "$ISO_PROFILE_LIB" ]; then
-    # shellcheck source=/dev/null
-    . "$ISO_PROFILE_LIB"
     PROFILE="$(iso_profile)"
 else
     PROFILE="standard"
@@ -188,18 +205,6 @@ fi
 # Toolchain state via the shared library.
 SYSML_TOOLCHAIN_LIB="$(plugin_lib sysml-toolchain.sh)"
 
-# Test-first helpers. They read the test_first record through
-# iso-profile.sh, so they load only when it did.
-TEST_FIRST_LIB=""
-if [ -n "$ISO_PROFILE_LIB" ]; then
-    TEST_FIRST_LIB="$(plugin_lib test-first.sh)"
-fi
-
-if [ -n "$TEST_FIRST_LIB" ]; then
-    # shellcheck source=/dev/null
-    . "$TEST_FIRST_LIB"
-fi
-
 if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
     VSE_TC_PROBE_TIMEOUT="${VSE_TC_PROBE_TIMEOUT:-10}"
     export VSE_TC_PROBE_TIMEOUT
@@ -207,8 +212,21 @@ if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then
     . "$SYSML_TOOLCHAIN_LIB"
 fi
 
+# The project's own methodology/ folder, shown relative to the working
+# directory when it lies below it, else the plugin's copy.
+SS_CWD="$(pwd -P)"
+case "$ENG_ROOT" in
+    "$SS_CWD") METHODOLOGY="./methodology/" ;;
+    "$SS_CWD"/*) METHODOLOGY="${ENG_ROOT#"$SS_CWD"/}/methodology/" ;;
+    *) METHODOLOGY="${ENG_ROOT%/}/methodology/" ;;
+esac
+
 echo "VSE project (story-driven AMBSE, ISO/IEC 29110)."
-echo "Methodology: ${ENG_ROOT}/methodology/ (project-local, authoritative)"
+if [ -d "${ENG_ROOT}/methodology" ]; then
+    echo "Methodology: ${METHODOLOGY} (project-local, authoritative)"
+else
+    echo "Methodology: $(cd "$(dirname "$0")/.." && pwd -P)/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
+fi
 echo "Profile:     ${PROFILE} (per methodology section 0.10)"
 
 if [ -n "$SYSML_TOOLCHAIN_LIB" ]; then

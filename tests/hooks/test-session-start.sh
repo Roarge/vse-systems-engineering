@@ -2,10 +2,17 @@
 # Behavioural tests for hooks/session-start.sh.
 #
 # All three detection modes are exercised from scratch directories:
-# mode 3, the SysML-only repository, on each of the three markers that
-# can fire it, mode 2, the VSE project, on the toolchain status line in
-# its three states, and mode 1, the plugin repository, on its pointer
-# to the contributor rules. The hook is advisory, so every case also
+# mode 3, the SysML-only repository, on the markers that can fire it,
+# mode 2, the VSE project, on the toolchain status line in its three
+# states, and mode 1, the plugin repository, on its pointer to the
+# contributor rules.
+#
+# A VSE project is located through its .iso-config.yaml, as the gates
+# locate it (vse_tf_locate_project): from the working directory up to
+# the git top level, then from engineering/ below it. A methodology/
+# folder without a configuration still draws the report, as a fallback
+# for projects that predate the configuration. The Methodology line
+# names the project's own methodology/ folder, else the plugin's copy. The hook is advisory, so every case also
 # asserts exit 0 and plain-text output, which is what reaches the
 # conversation.
 #
@@ -75,11 +82,6 @@ case_mode3() {
 }
 
 # shellcheck disable=SC2317  # called indirectly through case_mode3
-marker_iso_config() {
-    printf 'sysml_toolchain: opensysml\n' > "${1}/.iso-config.yaml"
-}
-
-# shellcheck disable=SC2317  # called indirectly through case_mode3
 marker_lsp_json() {
     cat > "${1}/.lsp.json" <<'EOF'
 {
@@ -125,7 +127,6 @@ case_mode2() {
     assert_plain_text "$OUT" "mode 2 (${name}): output is plain text"
 }
 
-case_mode3 "iso-config key" marker_iso_config
 case_mode3 "lsp.json" marker_lsp_json
 case_mode3 "syside.toml" marker_syside_toml
 
@@ -375,6 +376,99 @@ case_mode2_preset_config_path() {
         "preset configuration path: the Test-first line reads the named file"
 }
 
+# ----------------------------------- locating the project (mode 2)
+
+# The configuration is the canonical project marker, so a directory
+# that holds only a .iso-config.yaml is a VSE project, not a SysML-only
+# repository, and with no methodology/ folder of its own the
+# Methodology line names the plugin's copy.
+case_mode2_config_only() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: full\nsysml_toolchain: opensysml\n' > "${dir}/.iso-config.yaml"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "config only: exit 0"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "config only: a configuration alone marks a VSE project"
+    tc_assert_not_grep "SysML 2.0 modelling repository detected" "$OUT" \
+        "config only: not reported as a SysML-only repository"
+    tc_assert_grep "Profile:     full (per methodology section 0.10)" "$OUT" \
+        "config only: the Profile line reads the configuration"
+    tc_assert_match "^Methodology: .*/methodology/ \\(the plugin's copy" "$OUT" \
+        "config only: the Methodology line names the plugin's copy"
+    assert_plain_text "$OUT" "config only: output is plain text"
+}
+
+# A session started below the project directory finds the project by
+# walking up, as the gates do from an edited file.
+case_mode2_from_subdirectory() {
+    local top real
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    real="$(cd "$top" && pwd -P)"
+    mkdir -p "${top}/methodology" "${top}/src/deep"
+    printf '# Methodology overview\n' > "${top}/methodology/00-methodology-overview.md"
+    printf 'project_profile: full\ntest_first:\n  applies: false\n' > "${top}/.iso-config.yaml"
+    tc_env
+    run_hook_in "${top}/src/deep"
+    tc_assert_rc 0 "subdirectory: exit 0"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "subdirectory: the project above the working directory is found"
+    tc_assert_grep "Profile:     full (per methodology section 0.10)" "$OUT" \
+        "subdirectory: the Profile line reads the project's configuration"
+    tc_assert_match '^Test-first: test_first\.applies is false\.' "$OUT" \
+        "subdirectory: the Test-first line reads the project's configuration"
+    tc_assert_line "Methodology: ${real}/methodology/ (project-local, authoritative)" "$OUT" \
+        "subdirectory: the Methodology line names the project's folder"
+}
+
+# At the project directory the Methodology line keeps its short form.
+case_mode2_methodology_line() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_vse_project "$dir" syside
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_line "Methodology: ./methodology/ (project-local, authoritative)" "$OUT" \
+        "methodology line: the project's own folder, relative to the working directory"
+}
+
+# A methodology/ folder with no configuration still draws the report,
+# read with the defaults, as before the configuration existed.
+case_mode2_methodology_fallback() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    mkdir -p "${dir}/methodology"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "methodology fallback: exit 0"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "methodology fallback: the report is given"
+    tc_assert_grep "Profile:     standard (per methodology section 0.10)" "$OUT" \
+        "methodology fallback: the defaults are reported"
+}
+
+# In the plugin repository only a configuration under demo/ marks a
+# project, as at the gates, so the shipped template is not one.
+case_mode2_contributor_template() {
+    local top
+    top="$(tc_mktemp_d)"
+    git init -q "$top"
+    mkdir -p "${top}/wiki" "${top}/templates/iso-config" "${top}/demo/smart-sensor"
+    printf '# Wiki schema\n' > "${top}/wiki/CLAUDE.md"
+    printf 'project_profile: full\n' > "${top}/templates/iso-config/.iso-config.yaml"
+    printf 'project_profile: full\n' > "${top}/demo/smart-sensor/.iso-config.yaml"
+    tc_env
+    run_hook_in "${top}/templates/iso-config"
+    tc_assert_rc 0 "contributor template: exit 0"
+    tc_assert_not_grep "VSE project" "$OUT" \
+        "contributor template: the shipped template configuration is not a project"
+    run_hook_in "${top}/demo/smart-sensor"
+    tc_assert_grep "Profile:     full (per methodology section 0.10)" "$OUT" \
+        "contributor template: the demo is a project"
+}
+
 # Contributor mode (the plugin repository) prints exactly one pointer to
 # the contributor rules for test first and Gherkin first.
 case_mode1_pointer() {
@@ -413,6 +507,12 @@ case_mode2_jq_missing_warning
 case_mode2_nested_project greenfield
 case_mode2_nested_project brownfield
 case_mode2_preset_config_path
+
+case_mode2_config_only
+case_mode2_from_subdirectory
+case_mode2_methodology_line
+case_mode2_methodology_fallback
+case_mode2_contributor_template
 
 case_mode1_pointer
 
