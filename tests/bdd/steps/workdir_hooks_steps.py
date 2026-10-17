@@ -4,7 +4,9 @@ Each scenario builds the repository the commit-time scenarios use
 (world.py), a project that holds its .iso-config.yaml and no
 methodology/ folder. It then runs the UserPromptSubmit, PreCompact or
 Notification hook in a directory of it, the way Claude Code runs them,
-and reads the plain text the hook prints.
+and reads the plain text the hook prints. The branch scenario installs
+the post-checkout git hook the way the attention-regime skill does and
+switches branch with git, which runs the hook.
 
 The GitHub command-line tool is replaced by a stub on PATH for every
 run, so no scenario reaches the network. The stub lists the open Change
@@ -117,6 +119,26 @@ def notification_in(ctx, directory):
                      {"message": "Claude is waiting for your input"})
 
 
+@step(r"the engineer switches to the new branch (\S+)")
+def switches_branch(ctx, branch):
+    root = world.repo(ctx)
+    hook = os.path.join(root, ".githooks", "post-checkout")
+    shutil.copyfile(os.path.join(world.HOOKS, "post-checkout.sh"), hook)
+    os.chmod(hook, os.stat(hook).st_mode | stat.S_IXUSR | stat.S_IXGRP
+             | stat.S_IXOTH)
+    world.start(ctx)
+    _write_gh_stub(ctx)
+    path = os.path.join(_scratch(ctx), "bin") + os.pathsep + os.environ.get(
+        "PATH", "")
+    completed = world.run(ctx, ["git", "checkout", "-q", "-b", branch],
+                          extra={"PATH": path})
+    if completed.returncode != 0:
+        raise AssertionError("git checkout exited {}: {}".format(
+            completed.returncode, completed.stderr.strip()))
+    # git hands the output of post-checkout to its own stderr.
+    ctx.hook_text = completed.stdout + completed.stderr
+
+
 # ------------------------------------------------------------------ Then
 
 
@@ -147,3 +169,10 @@ def told_stale_change_requests(ctx, count):
         count)
     if expected not in ctx.hook_text:
         raise AssertionError("no stale Change Request notice, " + _shown(ctx))
+
+
+@step(r"the engineer is told that (\S+) is a story branch")
+def told_story_branch(ctx, branch):
+    expected = "[post-checkout] Now on {}. Story branch.".format(branch)
+    if expected not in ctx.hook_text.splitlines():
+        raise AssertionError("no story branch report, " + _shown(ctx))
