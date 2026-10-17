@@ -23,7 +23,7 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 
 ## Skills
 
-The plugin ships 29 skills in five groups.
+The plugin ships 30 skills in five groups.
 
 ### Core orchestration skills
 
@@ -54,6 +54,7 @@ The plugin ships 29 skills in five groups.
 | session-journal | Manage cross-session continuity journal |
 | document-export | Export work products to docx, pptx, or pdf |
 | sysml-toolchain | Choose, install, switch, and run the SysML v2 toolchain (Syside, OMG pilot, OpenSysML), including the automatic fallback when a licence expires |
+| test-first | Record whether test first applies (§11.5) in the four places the methodology names, wire the stories' Gherkin features to a scenario runner, and resolve test-first denials, with `superpowers:test-driven-development` governing the cycle where it is installed |
 
 ### SysML 2.0 specialist skills
 
@@ -89,7 +90,7 @@ only (`disable-model-invocation`), so they never activate on their own.
 
 ## Slash commands
 
-The plugin ships thirteen `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
+The plugin ships fourteen `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
 
 | Command | Delegates to | Use case |
 |---|---|---|
@@ -102,6 +103,7 @@ The plugin ships thirteen `/vse-*` slash commands as quick entry points. Each co
 | `/vse-audit` | `project-audit` | Audit project structure, story well-formedness, version drift |
 | `/vse-journal` | `session-journal` | Open or append the cross-session continuity journal |
 | `/vse-toolchain` | `sysml-toolchain` | Install, switch, or run the SysML v2 toolchain |
+| `/vse-test-first` | `test-first` | Record or revisit the test-first judgement, or wire the scenario runner |
 | `/vse-wiki-ingest` | `vse-wiki-ingest` | Ingest one source into the wiki (contributor) |
 | `/vse-wiki-lint` | `vse-wiki-lint` | Health-check the wiki (contributor) |
 | `/vse-wiki-refactor` | `vse-wiki-refactor` | Editorial sweep of the wiki (contributor) |
