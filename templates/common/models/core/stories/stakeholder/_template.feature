@@ -16,8 +16,10 @@
 #
 # Each scenario states one acceptance criterion, as one concrete example
 # written in Given, When and Then steps. It carries one @AC_<name> tag,
-# with <name> in lowerCamelCase, and the story mirrors it with
-# requirement <name> nested inside requirement :>> acceptance (§11.3.1).
+# with <name> in lowerCamelCase (words run together, the first in lower
+# case and each later one capitalised, as in exampleCriterion), and the
+# story mirrors it with requirement <name> nested inside
+# requirement :>> acceptance (§11.3.1).
 
 @US_001_Example
 Feature: <short title of the story>

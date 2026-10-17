@@ -7,9 +7,9 @@
 //
 // `verify <story>.acceptance.<criterion>` reaches the one criterion
 // that a scenario of the story's feature file states, and
-// `verify <story>.acceptance` reaches every criterion (§11.3.3). A
-// stub holding the subject and the objective is enough before the
-// story moves to inProgress (§11.4).
+// `verify <story>.acceptance` reaches every criterion (§11.3.3). The
+// case must exist, as a stub at least, by the time the story reaches
+// inProgress (§11.4). A stub holds the subject and the objective.
 //
 // Identifier convention: VC_<n>_<ShortName>.
 

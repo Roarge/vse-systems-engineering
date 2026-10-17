@@ -9,7 +9,9 @@ package VSE_Library {
         subject system;
         stakeholder role;
         requirement acceptance[0..*] {
-            doc /* One acceptance criterion in Given/When/Then form. */
+            doc /* The story's acceptance criteria: one nested named
+                   requirement per Gherkin Scenario, named after its
+                   @AC_ tag. */
         }
     }
 
