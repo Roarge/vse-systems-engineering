@@ -148,8 +148,8 @@ case_contributor_mode() {
     local top hook
     top="$(tc_mktemp_d)"
     git init -q "$top"
-    mkdir -p "${top}/wiki" "${top}/templates/iso-config" "${top}/demo/smart-sensor"
-    printf '# Wiki schema\n' > "${top}/wiki/CLAUDE.md"
+    mkdir -p "${top}/templates/iso-config" "${top}/demo/smart-sensor"
+    tc_mark_plugin_repo "$top"
     printf 'project_profile: full\n' > "${top}/templates/iso-config/.iso-config.yaml"
     printf 'project_profile: full\n' > "${top}/demo/smart-sensor/.iso-config.yaml"
     for hook in $HOOKS; do

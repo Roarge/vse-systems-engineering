@@ -263,6 +263,17 @@ tc_write() {
     cat > "${REPO}/${path}"
 }
 
+# tc_mark_plugin_repo [<dir>]: make <dir> ($REPO by default) the
+# plugin repository as the hooks recognise it: the wiki schema file
+# wiki/CLAUDE.md and a plugin manifest that names the plugin.
+tc_mark_plugin_repo() {
+    local dir="${1:-$REPO}"
+    mkdir -p "${dir}/wiki" "${dir}/.claude-plugin"
+    printf '# Wiki schema\n' > "${dir}/wiki/CLAUDE.md"
+    printf '{\n  "name": "vse-systems-engineering",\n  "version": "5.0.0"\n}\n' \
+        > "${dir}/.claude-plugin/plugin.json"
+}
+
 # Write a file outside the repository, for transcripts and fixtures.
 tc_write_at() {
     local path="$1"

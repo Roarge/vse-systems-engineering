@@ -16,6 +16,7 @@
 #
 #   vse_tf_canonical <path>            absolute path, directories resolved
 #   vse_tf_find_config <abs-path>      nearest .iso-config.yaml
+#   vse_tf_is_contributor <dir>        0 in the plugin repository
 #   vse_tf_locate_project <path>       the project for a lifecycle hook:
 #                                      sets VSE_TF_CONFIG, VSE_TF_ENG_ROOT
 #                                      and VSE_TF_TOP, 1 when none
@@ -144,6 +145,21 @@ vse_tf_find_config() {
     done
 }
 
+# Return 0 when <dir> is the top level of the vse-systems-engineering
+# plugin repository: it holds the wiki schema file wiki/CLAUDE.md and a
+# plugin manifest, .claude-plugin/plugin.json, whose "name" field is
+# vse-systems-engineering. A user project that keeps its own wiki
+# schema at wiki/CLAUDE.md has no such manifest, so it is not taken for
+# the plugin repository. The name is read with a plain grep for the
+# "name" key and its value on one line, the form the manifest keeps.
+vse_tf_is_contributor() {
+    local dir="${1%/}"
+    [ -f "${dir}/wiki/CLAUDE.md" ] || return 1
+    [ -f "${dir}/.claude-plugin/plugin.json" ] || return 1
+    LC_ALL=C grep -Eq '"name"[[:space:]]*:[[:space:]]*"vse-systems-engineering"' \
+        "${dir}/.claude-plugin/plugin.json" 2>/dev/null
+}
+
 # Locate the VSE project that governs <path>, for the lifecycle hooks.
 # A project is located through its .iso-config.yaml, which is the
 # canonical project marker. <path> is a file, which need not exist yet,
@@ -157,11 +173,11 @@ vse_tf_find_config() {
 #
 # and returns 0. It returns 1 with the three variables empty when no
 # configuration governs the path, and in contributor mode (the plugin
-# repository, recognised by wiki/CLAUDE.md at the git top level) when
-# the configuration is not under demo/, so the shipped template under
-# templates/ is never taken for a project. File tests up the directory
-# tree come first, so a path with no configuration above it costs no
-# git call.
+# repository, recognised at the git top level by vse_tf_is_contributor)
+# when the configuration is not under demo/, so the shipped template
+# under templates/ is never taken for a project. File tests up the
+# directory tree come first, so a path with no configuration above it
+# costs no git call.
 # The three variables are read by the caller.
 # shellcheck disable=SC2034
 vse_tf_locate_project() {
@@ -190,7 +206,7 @@ vse_tf_locate_project() {
     config="$(vse_tf_find_config "$path")"
     [ -n "$config" ] || return 1
     top="$(git -C "${config%/*}" rev-parse --show-toplevel 2>/dev/null)" || top=""
-    if [ -n "$top" ] && [ -f "${top%/}/wiki/CLAUDE.md" ]; then
+    if [ -n "$top" ] && vse_tf_is_contributor "$top"; then
         case "$config" in
             "${top%/}/demo/"*) : ;;
             *) return 1 ;;

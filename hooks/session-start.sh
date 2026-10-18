@@ -3,7 +3,9 @@
 #
 # Three detection modes. The numbers name the modes, and the code
 # evaluates them in this order:
-#   1. Contributor mode: wiki/CLAUDE.md present (plugin development repo).
+#   1. Contributor mode: the plugin development repository, recognised
+#      by wiki/CLAUDE.md and a plugin manifest naming the plugin
+#      (vse_tf_is_contributor).
 #   3. SysML-only repo: no VSE project found, .sysml content present.
 #   2. VSE project, located through its .iso-config.yaml, the canonical
 #      project marker, by vse_tf_locate_workdir, the working-directory
@@ -64,9 +66,53 @@ has_sysml_content() {
     return 1
 }
 
+# Print the path of the shared library <name>, or nothing when no copy
+# is readable. The copy beside this script is the primary source,
+# because this hook runs from the plugin tree, and the plugin root is
+# the fallback.
+plugin_lib() {
+    if [ -r "$(dirname "$0")/lib/$1" ]; then
+        printf '%s\n' "$(dirname "$0")/lib/$1"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1" ]; then
+        printf '%s\n' "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1"
+    fi
+}
+
+# The rigour profile and the test-first helpers. test-first.sh reads
+# the configuration through iso-profile.sh, so it loads only when that
+# did.
+ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
+TEST_FIRST_LIB=""
+if [ -n "$ISO_PROFILE_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$ISO_PROFILE_LIB"
+    TEST_FIRST_LIB="$(plugin_lib test-first.sh)"
+fi
+if [ -n "$TEST_FIRST_LIB" ]; then
+    # shellcheck source=/dev/null
+    . "$TEST_FIRST_LIB"
+fi
+
+# Return 0 when the working directory is the plugin repository, as
+# vse_tf_is_contributor recognises it: the wiki schema file
+# wiki/CLAUDE.md and a plugin manifest whose name is
+# vse-systems-engineering. A user project that keeps its own wiki
+# schema there is not the plugin repository. Without the test-first
+# library the same two-file test runs here.
+is_contributor_repo() {
+    if [ -n "$TEST_FIRST_LIB" ]; then
+        vse_tf_is_contributor "$(pwd -P)"
+        return
+    fi
+    [ -f "wiki/CLAUDE.md" ] || return 1
+    [ -f ".claude-plugin/plugin.json" ] || return 1
+    LC_ALL=C grep -Eq '"name"[[:space:]]*:[[:space:]]*"vse-systems-engineering"' \
+        ".claude-plugin/plugin.json" 2>/dev/null
+}
+
 # Mode 1: Plugin contributor repo. Emits wiki freshness lines that the
 # plugin contributor reads as a nudge before deciding the next action.
-if [ -f "wiki/CLAUDE.md" ]; then
+if is_contributor_repo; then
     echo "Wiki (contributor repo):"
     if [ -f "wiki/LOG.md" ]; then
         LAST_LOG_LINE=$(grep -oE '^## \[[0-9]{4}-[0-9]{2}-[0-9]{2}\]' "wiki/LOG.md" | tail -1 || true)
@@ -115,33 +161,6 @@ if [ -f "wiki/CLAUDE.md" ]; then
     echo "Contributor rules: plugin work goes test first and Gherkin first, see .claude/rules/tdd-bdd.md."
     echo ""
     exit 0
-fi
-
-# Print the path of the shared library <name>, or nothing when no copy
-# is readable. The copy beside this script is the primary source,
-# because this hook runs from the plugin tree, and the plugin root is
-# the fallback.
-plugin_lib() {
-    if [ -r "$(dirname "$0")/lib/$1" ]; then
-        printf '%s\n' "$(dirname "$0")/lib/$1"
-    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -r "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1" ]; then
-        printf '%s\n' "${CLAUDE_PLUGIN_ROOT}/hooks/lib/$1"
-    fi
-}
-
-# The rigour profile and the test-first helpers. test-first.sh reads
-# the configuration through iso-profile.sh, so it loads only when that
-# did.
-ISO_PROFILE_LIB="$(plugin_lib iso-profile.sh)"
-TEST_FIRST_LIB=""
-if [ -n "$ISO_PROFILE_LIB" ]; then
-    # shellcheck source=/dev/null
-    . "$ISO_PROFILE_LIB"
-    TEST_FIRST_LIB="$(plugin_lib test-first.sh)"
-fi
-if [ -n "$TEST_FIRST_LIB" ]; then
-    # shellcheck source=/dev/null
-    . "$TEST_FIRST_LIB"
 fi
 
 # Locate the project (see the header). The configuration found is the

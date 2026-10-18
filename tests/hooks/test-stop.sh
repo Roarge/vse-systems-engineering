@@ -467,7 +467,7 @@ case_stop_outside_project_silent() {
     tc_setup_repo
     STOP_TMP="$(tc_mktemp_d)"
     tc_env TMPDIR="$STOP_TMP"
-    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     mkdir -p "${REPO}/methodology"
     printf 'part def Sensor;\n' | tc_write model/variations/sensor.sysml
     stop_run

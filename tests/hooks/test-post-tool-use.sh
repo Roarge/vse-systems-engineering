@@ -257,7 +257,7 @@ case_post_json_shape() {
     tc_assert_json_silent "shape: a story outside any project is silent"
 
     post_project light
-    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     rm -f "${REPO}/.iso-config.yaml"
     mkdir -p "${REPO}/methodology"
     printf 'project_profile: light\n' | tc_write templates/iso-config/.iso-config.yaml
@@ -277,7 +277,7 @@ case_post_json_shape() {
 source_repo() {
     tc_setup_repo
     tc_env
-    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     printf '# Log\n' | tc_write wiki/LOG.md
 }
 
@@ -327,6 +327,14 @@ case_source_added_context() {
     source_run "$(post_json Write "${REPO}/sources/paper.pdf")"
     tc_assert_json_silent "source: an end-user project without the wiki schema is silent"
     tc_assert_eq "" "$(ls "${REPO}/wiki" 2>/dev/null || true)" "source: no wiki is written in an end-user project"
+
+    # A user project that keeps its own wiki schema at wiki/CLAUDE.md,
+    # with no plugin manifest, is not the plugin repository.
+    printf '# Our wiki\n' | tc_write wiki/CLAUDE.md
+    printf '# Log\n' | tc_write wiki/LOG.md
+    source_run "$(post_json Write "${REPO}/sources/paper.pdf")"
+    tc_assert_json_silent "source: a user project with its own wiki schema is silent"
+    tc_assert_eq "# Log" "$(cat "${REPO}/wiki/LOG.md")" "source: no stub is appended to a user project's own LOG.md"
 }
 
 # ------------------------------------------------------------------ run

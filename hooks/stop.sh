@@ -56,8 +56,8 @@
 # directory) to the git top level, also engineering/.iso-config.yaml at
 # the top. Its directory is the engineering root. With none the hook is
 # silent. In contributor mode (the plugin repository, recognised by
-# wiki/CLAUDE.md at the git top level) only a configuration under demo/
-# counts.
+# wiki/CLAUDE.md and a plugin manifest naming the plugin at the git top
+# level, vse_tf_is_contributor) only a configuration under demo/ counts.
 #
 # Output contract. Claude never sees plain stdout at Stop or
 # SubagentStop, so the hook prints exactly one JSON object through

@@ -55,9 +55,10 @@
 # git top level (also engineering/.iso-config.yaml at the top). It is
 # exported as VSE_ISO_CONFIG so every reader agrees on it. With none
 # the hook is silent. In contributor mode (the plugin repository,
-# recognised by wiki/CLAUDE.md at the git top level) only a
-# configuration under demo/ counts, so the shipped template under
-# templates/ is ignored.
+# recognised by wiki/CLAUDE.md and a plugin manifest naming the plugin
+# at the git top level, vse_tf_is_contributor) only a configuration
+# under demo/ counts, so the shipped template under templates/ is
+# ignored.
 #
 # Cost. The hook runs on every edit, so the cheap checks come first:
 # one payload read, then file tests up the directory tree. git and the

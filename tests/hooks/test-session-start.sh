@@ -515,8 +515,8 @@ case_mode2_contributor_template() {
     local top
     top="$(tc_mktemp_d)"
     git init -q "$top"
-    mkdir -p "${top}/wiki" "${top}/templates/iso-config" "${top}/demo/smart-sensor"
-    printf '# Wiki schema\n' > "${top}/wiki/CLAUDE.md"
+    mkdir -p "${top}/templates/iso-config" "${top}/demo/smart-sensor"
+    tc_mark_plugin_repo "$top"
     printf 'project_profile: full\n' > "${top}/templates/iso-config/.iso-config.yaml"
     printf 'project_profile: full\n' > "${top}/demo/smart-sensor/.iso-config.yaml"
     tc_env
@@ -529,13 +529,59 @@ case_mode2_contributor_template() {
         "contributor template: the demo is a project"
 }
 
+# A user project that keeps its own wiki schema at wiki/CLAUDE.md, with
+# no plugin manifest, is a VSE project and gets the project report, not
+# the contributor wiki lines.
+case_mode2_user_wiki_schema() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    git init -q "$dir"
+    mkdir -p "${dir}/wiki"
+    printf '# Our wiki\n' > "${dir}/wiki/CLAUDE.md"
+    printf '# Log\n' > "${dir}/wiki/LOG.md"
+    printf 'project_profile: full\n' > "${dir}/.iso-config.yaml"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "user wiki: exit 0"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "user wiki: the project report is given"
+    tc_assert_grep "Profile:     full (per methodology section 0.10)" "$OUT" \
+        "user wiki: the project's own configuration is read"
+    tc_assert_not_grep "Wiki (contributor repo)" "$OUT" \
+        "user wiki: the contributor wiki lines are not printed"
+}
+
+# A copy of the hook that cannot load the test-first library makes the
+# same two-file test for the plugin repository on its own.
+case_mode1_library_missing() {
+    local plugin contributor user
+    plugin="$(tc_mktemp_d)"
+    mkdir -p "${plugin}/hooks/lib"
+    cp "$HOOK" "${plugin}/hooks/session-start.sh"
+    cp "${TC_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" \
+       "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" "${plugin}/hooks/lib/"
+    contributor="$(tc_mktemp_d)"
+    tc_mark_plugin_repo "$contributor"
+    user="$(tc_mktemp_d)"
+    mkdir -p "${user}/wiki" "${user}/methodology"
+    printf '# Our wiki\n' > "${user}/wiki/CLAUDE.md"
+    tc_env
+    tc_run_in "$contributor" bash "${plugin}/hooks/session-start.sh"
+    tc_assert_grep "Wiki (contributor repo):" "$OUT" \
+        "library missing: the plugin repository is still recognised"
+    tc_run_in "$user" bash "${plugin}/hooks/session-start.sh"
+    tc_assert_not_grep "Wiki (contributor repo)" "$OUT" \
+        "library missing: a user project with its own wiki schema is not the plugin repository"
+    tc_assert_grep "VSE project (story-driven AMBSE, ISO/IEC 29110)." "$OUT" \
+        "library missing: the user project gets the project report"
+}
+
 # Contributor mode (the plugin repository) prints exactly one pointer to
 # the contributor rules for test first and Gherkin first.
 case_mode1_pointer() {
     local dir
     dir="$(tc_mktemp_d)"
-    mkdir -p "${dir}/wiki"
-    printf '# Wiki schema\n' > "${dir}/wiki/CLAUDE.md"
+    tc_mark_plugin_repo "$dir"
     tc_env
     run_hook_in "$dir"
     tc_assert_rc 0 "mode 1: exit 0"
@@ -574,8 +620,10 @@ case_mode2_nudge_located
 case_mode2_methodology_line
 case_mode2_methodology_fallback
 case_mode2_contributor_template
+case_mode2_user_wiki_schema
 
 case_mode1_pointer
+case_mode1_library_missing
 
 tc_env
 

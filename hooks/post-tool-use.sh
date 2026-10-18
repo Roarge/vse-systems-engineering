@@ -32,9 +32,10 @@
 # .iso-config.yaml: the first one found walking up from the file to the
 # git top level (also engineering/.iso-config.yaml at the top). With
 # none the hook is silent. In contributor mode (the plugin repository,
-# recognised by wiki/CLAUDE.md at the git top level) only a
-# configuration under demo/ counts, so the shipped template under
-# templates/ is ignored.
+# recognised by wiki/CLAUDE.md and a plugin manifest naming the plugin
+# at the git top level, vse_tf_is_contributor) only a configuration
+# under demo/ counts, so the shipped template under templates/ is
+# ignored.
 #
 # stdin: the PostToolUse JSON payload (tool_name, tool_input, cwd).
 # stdout: one JSON object, or nothing.

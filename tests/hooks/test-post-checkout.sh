@@ -99,7 +99,7 @@ case_plugin_libraries() {
 # project, as at the gates, so the shipped template is not one.
 case_contributor_mode() {
     pc_repo
-    printf '# Wiki schema\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     printf 'project_profile: full\n' | tc_write .iso-config.yaml
     pc_run
     pc_assert_silent "contributor mode"

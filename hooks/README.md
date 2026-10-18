@@ -37,7 +37,11 @@ through its `.iso-config.yaml`, the canonical project marker, with
 `vse_tf_locate_project` in `lib/test-first.sh`: the first one found
 walking up to the git top level, where `engineering/.iso-config.yaml`
 (the brownfield layout) is tried too. In the plugin repository only a
-configuration under `demo/` counts.
+configuration under `demo/` counts. The plugin repository is a top
+level that holds both `wiki/CLAUDE.md` and a `.claude-plugin/plugin.json`
+whose name is `vse-systems-engineering` (`vse_tf_is_contributor`), so a
+user project that keeps its own wiki schema at `wiki/CLAUDE.md` is
+gated like any other.
 
 - The tool-use and stop hooks (`pre-tool-use.sh`, `post-tool-use.sh`,
   `stop.sh` and `subagent-stop.sh`) read a JSON payload on stdin and
@@ -51,7 +55,7 @@ configuration under `demo/` counts.
   project that predates the configuration, and it is all they can go
   on when `lib/` is missing. The gates never use that fallback.
 - `source-added-reminder.sh` serves no VSE project. It acts only in the
-  plugin repository, which it recognises by `wiki/CLAUDE.md`.
+  plugin repository, which it recognises with `vse_tf_is_contributor`.
 
 **Limits.** The in-session gates guide an agent and guarantee nothing
 on their own (methodology §11.11). A file written through the Bash
@@ -151,9 +155,9 @@ configuration, and runs no gate.
 
 | Library | Sourced by | Installed into projects | Purpose |
 |---|---|---|---|
-| `lib/iso-profile.sh` | `pre-commit`, `pre-commit-traceability`, `commit-msg`, `post-merge`, `post-checkout`, and the lifecycle hooks `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh`, `session-start.sh`, `user-prompt-submit.sh`, `pre-compact.sh` and `notification.sh` | yes, every profile | Resolves the `.iso-config.yaml` in force, the rigour profile and the per-gate dispositions per methodology §0.10.4, and reads nested records such as `test_first`. |
+| `lib/iso-profile.sh` | `pre-commit`, `pre-commit-traceability`, `commit-msg`, `post-merge`, `post-checkout`, and the lifecycle hooks `pre-tool-use.sh`, `post-tool-use.sh`, `source-added-reminder.sh`, `stop.sh`, `session-start.sh`, `user-prompt-submit.sh`, `pre-compact.sh` and `notification.sh` | yes, every profile | Resolves the `.iso-config.yaml` in force, the rigour profile and the per-gate dispositions per methodology §0.10.4, and reads nested records such as `test_first`. |
 | `lib/sysml-toolchain.sh` | `pre-commit` and `session-start.sh`. Also executed by CI, the Makefile check, the audit and the sysml-toolchain skill | yes, every profile | Resolves the `sysml_toolchain` preference, probes availability (including the Syside licence), validates with the preferred tool and falls back along syside, omg-pilot, opensysml. |
-| `lib/test-first.sh` | `pre-commit`, `post-checkout`, `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh`, `session-start.sh`, `user-prompt-submit.sh`, `pre-compact.sh` and `notification.sh` | yes, every profile | The project locators the lifecycle hooks share (`vse_tf_locate_project`, which finds the `.iso-config.yaml` that governs a path, and `vse_tf_locate_workdir`, its form for a hook that knows only its working directory, which `post-checkout` uses too), story scanning for Gherkin first, path classification, test evidence, refactor branches, test tooling detection (`vse_tf_detect`) and the recorded `test_first.applies` value (methodology §11.5 and §11.9). Requires `iso-profile.sh` to be sourced first. |
+| `lib/test-first.sh` | `pre-commit`, `post-checkout`, `pre-tool-use.sh`, `post-tool-use.sh`, `source-added-reminder.sh`, `stop.sh`, `session-start.sh`, `user-prompt-submit.sh`, `pre-compact.sh` and `notification.sh` | yes, every profile | The project locators the lifecycle hooks share (`vse_tf_locate_project`, which finds the `.iso-config.yaml` that governs a path, and `vse_tf_locate_workdir`, its form for a hook that knows only its working directory, which `post-checkout` uses too), the plugin repository test (`vse_tf_is_contributor`), story scanning for Gherkin first, path classification, test evidence, refactor branches, test tooling detection (`vse_tf_detect`) and the recorded `test_first.applies` value (methodology §11.5 and §11.9). Requires `iso-profile.sh` to be sourced first. |
 | `lib/hook-json.sh` | `pre-tool-use.sh`, `post-tool-use.sh`, `source-added-reminder.sh` and `stop.sh` | no, it stays in the plugin | Prints the one JSON object of the output contract above, with `jq`, else `python3`, else a fixed literal that says neither is available, and reads fields from the stdin payload. |
 
 `sysml-toolchain.sh` is also executable, and it guards its command

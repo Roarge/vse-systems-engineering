@@ -251,7 +251,7 @@ case_contributor_mode_skips() {
     tc_setup_repo
     tc_env
     PTU_REAL="$(cd "$REPO" && pwd -P)"
-    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     tc_config light -
     tc_write templates/iso-config/.iso-config.yaml <<'EOF'
 project_profile: light
@@ -275,6 +275,21 @@ EOF
     ptu_run "$(ptu_write_json "${REPO}/demo/smart-sensor/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
     ptu_assert_denied "contributor: a demo story without a feature file is denied"
     ptu_assert_reason "${PTU_REAL}/demo/smart-sensor/${PTU_STORIES}/US_901_Example.feature" "contributor: the denial names the demo feature path"
+}
+
+# A user project that keeps its own wiki schema at wiki/CLAUDE.md, with
+# no plugin manifest, is not the plugin repository, so its gates run.
+case_user_wiki_schema_gated() {
+    ptu_test_first_project light
+    printf '# Our wiki\n' | tc_write wiki/CLAUDE.md
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "user wiki: a new story without a feature file is denied"
+    ptu_run "$(ptu_write_json "${REPO}/src/reading.py" "x = 1")"
+    ptu_assert_denied "user wiki: a code edit with no test change is denied"
+    ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "project_profile: light" "project_profile: light
+gate_overrides:
+  pretooluse_test_first: off")"
+    ptu_assert_asked "user wiki: a gate change asks"
 }
 
 # The configuration is found from the edited file, never from the
@@ -776,6 +791,7 @@ case_never_emits_allow() {
 
 case_outside_project_silent
 case_contributor_mode_skips
+case_user_wiki_schema_gated
 case_any_working_directory
 case_new_story_without_feature_denied
 case_new_story_with_feature_allowed_with_context

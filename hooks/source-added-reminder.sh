@@ -3,9 +3,11 @@
 # sources/ is written or edited.
 #
 # Contributor-only. It acts only when the session's working directory
-# (the payload's cwd, else the hook's own) carries wiki/CLAUDE.md, the
-# wiki schema document of the vse-systems-engineering plugin
-# repository. End-user projects installing the plugin have no
+# (the payload's cwd, else the hook's own) is the vse-systems-engineering
+# plugin repository, recognised by vse_tf_is_contributor: wiki/CLAUDE.md,
+# the wiki schema document, and a plugin manifest that names the
+# plugin. End-user projects installing the plugin have no such
+# manifest, even when they keep a wiki schema of their own at
 # wiki/CLAUDE.md, so the hook is silent there and writes nothing.
 #
 # For a file under sources/ (other than the markitdown scratch files
@@ -47,14 +49,25 @@ cat > "$SAR_PAYLOAD"
 # shellcheck source=/dev/null
 . "${SAR_LIB}/hook-json.sh"
 
-# Guard: this hook is contributor-facing. Only act inside a repository
-# that carries the wiki schema document.
+# The libraries are loaded against an empty placeholder configuration,
+# so that sourcing them reads nothing from the hook's own working
+# directory. Only the plugin repository test is used.
+: > "${SAR_WORK}/unset.yaml"
+VSE_ISO_CONFIG="${SAR_WORK}/unset.yaml"
+export VSE_ISO_CONFIG
+# shellcheck source=/dev/null
+. "${SAR_LIB}/iso-profile.sh"
+# shellcheck source=/dev/null
+. "${SAR_LIB}/test-first.sh"
+
+# Guard: this hook is contributor-facing. Only act inside the plugin
+# repository.
 SAR_ROOT="$(vse_hj_read "$SAR_PAYLOAD" .cwd)"
 case "$SAR_ROOT" in
     /*) SAR_ROOT="${SAR_ROOT%/}" ;;
     *) SAR_ROOT="$(pwd -P)" ;;
 esac
-if [ ! -f "${SAR_ROOT}/wiki/CLAUDE.md" ]; then
+if ! vse_tf_is_contributor "$SAR_ROOT"; then
     exit 0
 fi
 

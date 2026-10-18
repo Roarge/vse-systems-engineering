@@ -1204,15 +1204,63 @@ case_locate_project_none() {
     tc_env
 }
 
-# In the plugin repository (wiki/CLAUDE.md at the top level) only a
-# configuration under demo/ marks a project, so the shipped template is
-# never taken for one.
+# The plugin repository is the top level that holds both the wiki
+# schema file and a plugin manifest naming vse-systems-engineering. A
+# user project keeping its own wiki schema at wiki/CLAUDE.md is not it.
+case_is_contributor() {
+    local dir
+    tc_setup_repo
+    tc_env
+    dir="$(tc_mktemp_d)"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 1 "contributor: an empty directory is not the plugin repository"
+    mkdir -p "${dir}/wiki"
+    printf '# Our wiki\n' > "${dir}/wiki/CLAUDE.md"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 1 "contributor: the wiki schema file alone is a user project"
+    tc_mark_plugin_repo "$dir"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 0 "contributor: the wiki schema file and the plugin manifest"
+    run_tf vse_tf_is_contributor "${dir}/"
+    tc_assert_rc 0 "contributor: a trailing slash is accepted"
+    printf '{"version": "1.0.0", "name" : "vse-systems-engineering"}\n' > "${dir}/.claude-plugin/plugin.json"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 0 "contributor: the name is read wherever it sits on its line"
+    printf '{\n  "name": "our-own-plugin"\n}\n' > "${dir}/.claude-plugin/plugin.json"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 1 "contributor: a manifest naming another plugin is a user project"
+    printf '{\n  "name": "vse-systems-engineering-fork"\n}\n' > "${dir}/.claude-plugin/plugin.json"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 1 "contributor: a name that only starts with the plugin name does not count"
+    tc_mark_plugin_repo "$dir"
+    rm -f "${dir}/wiki/CLAUDE.md"
+    run_tf vse_tf_is_contributor "$dir"
+    tc_assert_rc 1 "contributor: the manifest alone, with no wiki schema file"
+}
+
+# A user project with its own wiki schema at wiki/CLAUDE.md is located
+# like any other project.
+case_locate_project_user_wiki_schema() {
+    local top
+    tc_setup_repo
+    tc_env
+    top="$(cd "$REPO" && pwd -P)"
+    printf '# Our wiki\n' | tc_write wiki/CLAUDE.md
+    tc_config light -
+    run_locate "${REPO}/model/core/stories/new.sysml"
+    tf_assert_located "${top}/.iso-config.yaml" "$top" "$top" \
+        "locate, user wiki: a project with wiki/CLAUDE.md and no plugin manifest is a project"
+}
+
+# In the plugin repository (the wiki schema file and the plugin
+# manifest at the top level) only a configuration under demo/ marks a
+# project, so the shipped template is never taken for one.
 case_locate_project_contributor_mode() {
     local top
     tc_setup_repo
     tc_env
     top="$(cd "$REPO" && pwd -P)"
-    printf '# Wiki rules\n' | tc_write wiki/CLAUDE.md
+    tc_mark_plugin_repo
     printf 'project_profile: light\n' | tc_write templates/iso-config/.iso-config.yaml
     printf 'project_profile: light\n' | tc_write demo/smart-sensor/.iso-config.yaml
     run_locate "${REPO}/templates/iso-config/stories/x.sysml"
@@ -1333,6 +1381,8 @@ case_requires_profile_library
 case_find_config_nested_demo
 case_locate_project_layouts
 case_locate_project_none
+case_is_contributor
+case_locate_project_user_wiki_schema
 case_locate_project_contributor_mode
 case_locate_workdir
 case_canonical_missing_tail
