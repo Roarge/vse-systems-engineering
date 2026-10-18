@@ -84,7 +84,7 @@ that operationalises SMART, satisfy, and verify links.
 
 - Stakeholder Requirements Specification [validated]
 - System Requirements Specification [verified, validated]
-- System Elements Requirements Specification → the plugin template `templates/sr/system-element-requirements.md`, copied into `docs/` on request by the skill that owns it
+- System Elements Requirements Specification → the plugin ships the template at `templates/sr/system-element-requirements.md` and the project copies it into `docs/` when it needs the document
 - Traceability Matrix [updated]
 - IVV Plan [published]
 - IVV Procedures [published]
@@ -181,7 +181,7 @@ embeds these reports in the model.
 ### Work products created
 
 - Verification Report [published]
-- Integration Report [published] → the plugin template `templates/sr/integration-report.md`, copied into `docs/` on request by the skill that owns it
+- Integration Report [published] → the plugin ships the template at `templates/sr/integration-report.md` and the project copies it into `docs/` when it needs the document
 - System [integrated, verified, validated, corrected]
 - Validation Report [published]
 - Product Acceptance Record

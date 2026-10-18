@@ -72,7 +72,7 @@ obtain acquirer acceptance.
 
 ### Work products used
 
-- Statement of Work [reviewed] → the plugin template `templates/pm/statement-of-work.md`, copied into `docs/` on request by the skill that owns it
+- Statement of Work [reviewed] → the plugin ships the template at `templates/pm/statement-of-work.md` and the project copies it into `docs/` when it needs the document
 - System Design Document (for SBS, if available)
 
 ## PM.2 Project Plan Execution

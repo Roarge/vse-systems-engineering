@@ -1976,3 +1976,45 @@ INFO 271.
   ingest's pages, and 17 are source-freshness observations. No
   orphans, no empty tag lists, no date inversions and no contradiction
   candidates.
+
+## [2026-10-18] refactor | template paths and glosses after the section 11 ingest
+Layer: bdd-tdd, methodology, iso29110, project-structure. Pages
+updated:
+- tdd-red-green-refactor (headings The cycle and Work products renamed
+  Steps: the cycle and Postconditions and work products, the forms the
+  process template expects, with the Contents block in step, which
+  clears the two schema-drift warnings the ingest added)
+- iso29110-template-mapping, iso29110-pm-task-checklists,
+  iso29110-sr-task-checklists, vse-model-tiers-and-templates (the
+  Statement of Work, System Elements Requirements and Integration
+  Report lines said a skill that owns the template copies it, but no
+  skill body names that copy, so they now say the plugin ships the
+  template at `templates/pm/` or `templates/sr/` and the project copies
+  it into `docs/` when it needs the document, and the general sentence
+  on the other documents says the same of any template no skill names)
+- iso29110-template-mapping (summary and opening sentence widened from
+  the markdown template file a phase produces to its work products and
+  where each one lives, because the tables also list rendered
+  documents, a GitHub Issue and the SysML model, and the opening
+  paragraph rewrapped to the file's line width)
+- bdd-discovery-workshop-and-example-mapping (one sentence under the
+  postconditions heading records that the Who does what? narrative
+  order differs from the As a, I want, So that order of §11.2.2, which
+  wins, and §11.2.2 added to the methodology citation)
+- behaviour-and-test-first (runner and Scenario Outline glossed at
+  first use, in the wording of §11.8 and §11.2.3)
+- gherkin-tags-and-tag-expressions (red-green-refactor glossed at its
+  first use, the link to tdd-red-green-refactor)
+The lines that cite methodology §10.10 for `docs/templates/` are
+unchanged. They match the methodology, and the gap between §10.10 and
+the templates the plugin ships is a separate follow-up.
+`updated:` stays 2026-10-18 on every page listed. One summary changed,
+on iso29110-template-mapping, so its INDEX row and its rows in two
+routing blocks changed with it. No title changed. The `vse-wiki-lint`
+checks after the index run give ERROR 0, WARN 257 and INFO 276.
+
+## [2026-10-18] index | routing resync
+Pages indexed: 172. Routing blocks regenerated: 2 (project-setup,
+release-orchestrator), one row each, for the new summary of
+iso29110-template-mapping. Routing rows stay 261. Layers stay 13 and
+referencing skills stay 24. ToC drift: 0.

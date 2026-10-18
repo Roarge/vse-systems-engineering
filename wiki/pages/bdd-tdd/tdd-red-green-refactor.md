@@ -28,8 +28,8 @@ referenced_by: [test-first]
 
 - Goal and the Iron Law
 - Preconditions
-- The cycle
-- Work products
+- Steps: the cycle
+- Postconditions and work products
 - Tests that can fail
 - How §11.6 adjusts the skill
 - Failure modes
@@ -53,7 +53,7 @@ Confidence note: the skill is revised between superpowers releases. This page re
 - When `superpowers:test-driven-development` is listed, "the agent invokes it before writing code, and the skill governs the mechanics of the cycle" (§11.6).
 - When it is not listed, the fallback cycle of §11.7 applies.
 
-## The cycle
+## Steps: the cycle
 
 The actor is the agent or the engineer writing the code. The input is the next small piece of behaviour.
 
@@ -75,7 +75,7 @@ The actor is the agent or the engineer writing the code. The input is the next s
 - Legacy code: characterisation tests first, "tests that pin down what the code does today" (§11.7). The skill's own answer is "You're improving it. Add tests for existing code."
 - Outer loop: with `scenario_command` recorded, "The scenario for a criterion runs and fails first, then inner red-green-refactor cycles build the code until it passes" (§11.7).
 
-## Work products
+## Postconditions and work products
 
 - The failing test.
 - The red evidence: the failing command and its first failing lines, which the pull request's Test-first evidence section reproduces (§11.7, §8.6.1).

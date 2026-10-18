@@ -103,4 +103,4 @@ This section is a synthesis of the inheritance rule above and §11.2.3, not a st
 
 - [[gherkin-syntax-reference]] for the keywords, steps and the other limits of §11.2.
 - [[behaviour-and-test-first]] for methodology §11 in one page.
-- [[tdd-red-green-refactor]] for the red-green-refactor cycle of test first.
+- [[tdd-red-green-refactor]] for the red-green-refactor cycle of test first, that is, a failing test (red), the least code that makes it pass (green), then a tidy-up with the tests unchanged (refactor).

@@ -12,7 +12,7 @@ sources:
     raw: null
   - citation: "Cucumber Open Source Project (2026). Who does what? https://cucumber.io/docs/bdd/who-does-what/ (accessed October 2026)."
     raw: null
-  - citation: "vse-systems-engineering plugin (2026). Methodology Specification §11.2.3, §11.2.4, §11.3.1 and §11.4, with §8.7."
+  - citation: "vse-systems-engineering plugin (2026). Methodology Specification §11.2.2, §11.2.3, §11.2.4, §11.3.1 and §11.4, with §8.7."
     raw: methodology/11-behaviour-and-test-driven-development.md
 related:
   - bdd-three-practices
@@ -74,6 +74,7 @@ The actor for every step is the workshop group (the Three Amigos at minimum). Th
 This is a synthesis grounded in §11, and the methodology wins.
 
 - The yellow card becomes the story and its `<ID>.feature` with the tag and the narrative. Zero scenarios are allowed in `backlog` (§11.4).
+- The Cucumber page Who does what? describes the Feature narrative as "`In order to` ... `As a` ... `I want`", whereas methodology §11.2.2, which wins, requires "As a / I want / So that" in that order, and the plugin's story lint (its automated check of stories and feature files) reports F6 when the lines are missing or out of order.
 - A blue rule becomes, where wanted, a Gherkin `Rule:` that "Groups scenarios" and "states no criterion of its own" (§11.2.4). This fits the Gherkin Reference's Rule "to represent one business rule" (see [[gherkin-syntax-reference]]).
 - Each green example becomes one scenario with one `@AC_<name>` tag, mirrored by a named criterion (§11.2.3, §11.3.1). A scenario is written before the criterion that mirrors it (§11.4, consequence 3).
 - A sliced story enters the backlog. It need not yet exist as a file (§8.7). Once it is written as a file, it carries its feature file with the story tag and the narrative (§11.4, consequence 4).

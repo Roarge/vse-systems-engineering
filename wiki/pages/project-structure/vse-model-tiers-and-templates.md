@@ -114,14 +114,15 @@ configurations as a peer package), see
 
 ## Document templates
 
-`@project-setup` writes the documents of the project's profile, and
-the skill that owns any other document copies its template on
-request.
+`@project-setup` writes the documents of the project's profile, and a
+skill whose steps name another document's template starts that
+document from it. Where no skill names a template, the project copies
+it into `docs/` when it needs the document.
 
 ### PM work products (9)
 
 1. Project Plan: `docs/project-plan.md`
-2. Statement of Work: the plugin template `templates/pm/statement-of-work.md`, copied into `docs/` on request by the skill that owns it
+2. Statement of Work: the plugin ships the template at `templates/pm/statement-of-work.md` and the project copies it into `docs/` when it needs the document
 3. Progress Status Record: `docs/progress-status-record.md`
 4. Meeting Record: one file per meeting under `docs/meetings/`
 5. Change Request: a GitHub Issue labelled `change-request` (methodology §10.4.2), not a file
@@ -136,11 +137,11 @@ request.
 2. Data Model: the SysML model, with an optional explicit data model package (methodology §9.5)
 3. Stakeholder Requirements Specification (StRS): `docs/generated/stakeholder-requirements.md`, rendered from the model
 4. System Requirements Specification (SyRS): `docs/generated/system-requirements.md`, rendered from the model
-5. System Elements Requirements: the plugin template `templates/sr/system-element-requirements.md`, copied into `docs/` on request by the skill that owns it
+5. System Elements Requirements: the plugin ships the template at `templates/sr/system-element-requirements.md` and the project copies it into `docs/` when it needs the document
 6. Traceability Matrix: `docs/generated/traceability-matrix.md`, rendered from the model
 7. System Design Document: `docs/system-design.md`
 8. IVV Plan: `docs/ivv-plan.md`
-9. Integration Report: the plugin template `templates/sr/integration-report.md`, copied into `docs/` on request by the skill that owns it
+9. Integration Report: the plugin ships the template at `templates/sr/integration-report.md` and the project copies it into `docs/` when it needs the document
 10. Verification Report: `docs/verification-reports/<case>-<date>.md`, one per run
 11. Validation Report: `docs/validation-reports/<case>-<date>.md`, one per run
 12. System User Manual: its template is kept in `docs/templates/` (methodology §10.10)
