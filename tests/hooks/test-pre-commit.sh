@@ -821,6 +821,8 @@ gherkin_blocks_at() {
     tc_assert_match '^\[pre-commit\] precommit_gherkin: .*\. Fix them and commit again\.$' "$ERR" \
         "gherkin (${profile}): the headline says to fix the findings and commit again"
     tc_assert_line "$RATIONALE" "$ERR" "gherkin (${profile}): the rationale line follows"
+    tc_assert_not_grep "The paths below are relative to" "$ERR" \
+        "gherkin (${profile}): at the top level the paths need no note"
 }
 
 case_gherkin_block_light() {
@@ -1015,6 +1017,10 @@ case_brownfield_lint_found() {
     tc_assert_rc 1 "brownfield: the story without a feature file stops the commit"
     tc_assert_grep "${STORY_DIR}/stories.sysml:4: S1 US_901_Example" "$ERR" \
         "brownfield: the lint runs from engineering/ and reports paths relative to it"
+    tc_assert_line "[pre-commit] The paths below are relative to engineering/, the directory that holds .iso-config.yaml." "$ERR" \
+        "brownfield: the detail says which directory its paths are relative to"
+    tc_assert_eq 1 "$(printf '%s\n' "$ERR" | grep -c 'The paths below are relative to' || true)" \
+        "brownfield: the note is given once, by the gate that blocks"
 }
 
 # A missing lint is reported by each story gate at its own disposition:

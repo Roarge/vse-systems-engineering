@@ -41,7 +41,8 @@
 # iso_config_path names (VSE_ISO_CONFIG, then .iso-config.yaml at the
 # repository root, then engineering/.iso-config.yaml), or the
 # repository root when there is none. The story lint lives under it and
-# runs from it, with paths relative to it.
+# runs from it, with paths relative to it, and when it sits below the
+# repository root the lint detail opens with a line that says so.
 #
 # Baselined-artefact protection lives in the commit-msg hook, where the
 # pending message is reliably available. The pre-commit baseline check
@@ -348,6 +349,12 @@ story_gate() {
         return 0
     fi
     output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" "${STORY_PATHS[@]}" 2>&1)" || status=$?
+    # The lint runs from the engineering root, so in a brownfield
+    # layout its paths are relative to that directory, not to the top
+    # level the commit runs from.
+    if [ -n "$ENG_PREFIX" ] && [ -n "$output" ]; then
+        output="[pre-commit] The paths below are relative to ${ENG_PREFIX}, the directory that holds .iso-config.yaml."$'\n'"${output}"
+    fi
     case "$status" in
         0)
             : # Clean.
