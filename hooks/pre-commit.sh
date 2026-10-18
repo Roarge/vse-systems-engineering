@@ -408,14 +408,13 @@ fi
 # or not staged is in neither, so it is not evidence (§11.9.2). In range
 # mode the range alone counts. On a refactor branch the finding is a
 # reminder (in range mode the branch is GITHUB_HEAD_REF when CI sets
-# it). With
-# test_first unrecorded, detected test tooling or a changed file the
-# recorded paths classify as code or test is a finding that asks for
-# the record, and otherwise one line suggests it. With applies true and
-# code_paths or test_paths reading empty, the incomplete record is the
-# finding. With applies false
-# the gate is silent. Without test-first.sh, or without the profile
-# library it needs, the gate reports the partial install instead.
+# it). With applies true and code_paths or test_paths reading empty,
+# the incomplete record is the finding. With test_first unrecorded,
+# detected test tooling or a changed file the recorded paths classify
+# as code or test is a finding that asks for the record, and otherwise
+# one line suggests it. With applies false the gate is silent. Without
+# test-first.sh, or without the profile library it needs, the gate
+# reports the partial install instead.
 #
 # Every changed path is classified once with the library's in-shell
 # classifier, which loads the globs once and needs no subshell per
