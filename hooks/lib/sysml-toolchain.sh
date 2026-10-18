@@ -375,8 +375,8 @@ _vse_tc_validate_pilot() {
     return 0
 }
 
-# OpenSysML: diagnostics on stderr, GNU style; exit 0 leaves warnings
-# in place, so warning lines are promoted to findings here.
+# OpenSysML writes diagnostics on stderr in GNU style. Exit 0 leaves
+# warnings in place, so warning lines are promoted to findings here.
 _vse_tc_validate_opensysml() {
     local out rc=0 diag
     if ! command -v sysml >/dev/null 2>&1; then

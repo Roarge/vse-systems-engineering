@@ -50,10 +50,10 @@ esac
 
 # Persist a snapshot of the current ISO state to a workspace file
 # the engineer can inspect after compaction. Same shape as the
-# session-start banner. The file is informational; nothing reads it
+# session-start banner. The file is informational. Nothing reads it
 # back automatically.
 SNAPSHOT=$(mktemp -t vse-iso-state-XXXXXX.txt 2>/dev/null || mktemp 2>/dev/null) || {
-    # mktemp unavailable; fall back to a deterministic location.
+    # mktemp is unavailable, so fall back to a deterministic location.
     SNAPSHOT="/tmp/vse-iso-state-snapshot.txt"
 }
 

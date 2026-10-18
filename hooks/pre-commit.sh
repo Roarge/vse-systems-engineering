@@ -30,12 +30,14 @@
 # quietly.
 #
 # The file set. With VSE_PRECOMMIT_RANGE unset the hook reads the
-# staged set. CI sets it to a git range (such as origin/main...HEAD),
-# and the hook reads the files that range changes, or to "all", and the
-# hook reads every tracked file. A fresh CI checkout has nothing staged,
-# so a staged-set check there would pass without checking anything. In
-# range mode concern 1 is skipped with a note, because CI validates the
-# model in its own step.
+# staged set. CI sets the variable, because a fresh CI checkout has
+# nothing staged, and a staged-set check there would pass without
+# checking anything. A git range (such as origin/main...HEAD) makes the
+# hook read the files that range changes. The value "all" makes it read
+# every tracked file. In range mode concern 1 is skipped with a note,
+# because CI validates the model in its own step, and a blocked gate
+# gives no rationale advice, because a check in CI cannot be bypassed
+# from a workstation (methodology §0.10.6).
 #
 # The engineering root is the directory of the configuration file that
 # iso_config_path names (VSE_ISO_CONFIG, then .iso-config.yaml at the
