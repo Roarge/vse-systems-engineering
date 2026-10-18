@@ -308,6 +308,31 @@ tidy-*" "$OUT" "block list: items in the key's own column are read, as YAML allo
     tc_assert_eq "tests/*" "$OUT" "block list: a dash line shallower than its key is not an item"
 }
 
+# An item written with no space after its dash ("-src/*") is read as an
+# item, so a typo cannot end the sequence in silence and leave the rest
+# of the list unread.
+case_section_list_block_item_without_space() {
+    tc_setup_repo
+    tc_config light -
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_paths:
+    - src/*
+    -lib/*
+    - scripts/*
+  test_paths:
+    -tests/*
+EOF
+    tc_env
+    run_iso iso_section_list test_first code_paths
+    tc_assert_eq "src/*
+lib/*
+scripts/*" "$OUT" "block list: an item with no space after its dash is read, and the list goes on"
+    run_iso iso_section_list test_first test_paths
+    tc_assert_eq "tests/*" "$OUT" "block list: a list of one item with no space after its dash"
+}
+
 case_section_list_missing_key_empty() {
     tc_setup_repo
     tc_config light -
@@ -445,6 +470,7 @@ case_section_scalar_missing_prints_nothing
 case_quoted_escapes_verbatim
 case_section_list_inline_quoted
 case_section_list_block_sequence
+case_section_list_block_item_without_space
 case_section_list_missing_key_empty
 case_scalar_quoted_hash_kept
 case_scalar_one_quote_layer

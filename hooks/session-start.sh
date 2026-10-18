@@ -29,6 +29,9 @@
 # level when that differs) while that value is false or unrecorded, and
 # a warning when jq is missing. Where test first applies, or is not
 # recorded, the Test-first line points at the superpowers TDD skill.
+# Where it applies but code_paths or test_paths reads empty, the line
+# names that key and points at /vse-test-first instead of saying only
+# that test first applies.
 # Where the recorded value is false, it says test first is not required
 # here and that Gherkin first still applies, with no pointer to the
 # skill. Mode 1 prints one pointer to the plugin's own rules for the
@@ -299,14 +302,20 @@ fi
 echo "Behaviour-first: every story gets its Gherkin feature, Given/When/Then scenarios in <ID>.feature beside the story and tagged @<ID>, before design or code (methodology section 11)."
 
 TF_APPLIES=""
+TF_MISSING=""
 if [ -n "$TEST_FIRST_LIB" ]; then
     TF_APPLIES="$(vse_tf_applies)"
     TF_SHOWN="${TF_APPLIES:-not recorded}"
+    TF_MISSING="$(vse_tf_missing_paths || true)"
 else
     TF_SHOWN="unknown (test-first library missing)"
 fi
 TF_SKILL="If superpowers:test-driven-development is listed in your skills, use it, otherwise follow methodology section 11."
-if [ "$TF_SHOWN" = "not recorded" ]; then
+if [ -n "$TF_MISSING" ]; then
+    # The record says test first applies, but the gates cannot tell
+    # code from tests, so they enforce nothing.
+    echo "Test-first: test_first.applies is true, but nothing could be read from ${TF_MISSING} (a missing or misspelt key, or a list that cannot be read), so the test-first gates cannot tell code from tests. Run /vse-test-first to complete the record (methodology section 11.5.2). ${TF_SKILL}"
+elif [ "$TF_SHOWN" = "not recorded" ]; then
     echo "Test-first: test_first.applies is not recorded, run /vse-test-first to record the judgement. ${TF_SKILL}"
 elif [ "$TF_SHOWN" = "false" ]; then
     # The recorded judgement is that nothing here can be tested first,

@@ -201,15 +201,20 @@ SS_BIN_NO_JQ="$(tc_bin_without jq)"
 # make_policy_project <dir> <applies|-> [marker ...]
 #
 # A VSE project whose configuration records test_first.applies with the
-# given value, or carries no test_first block for "-". Each marker is a
-# file created empty at the project root, so that the test tooling
-# detection finds it (pytest.ini reads as pytest, go.mod as go).
+# given value, or carries no test_first block for "-". Where the value
+# is true the record also names its code_paths and test_paths, as a
+# complete record does. Each marker is a file created empty at the
+# project root, so that the test tooling detection finds it (pytest.ini
+# reads as pytest, go.mod as go).
 make_policy_project() {
     local dir="$1" applies="$2" marker
     shift 2
     make_vse_project "$dir" syside
     if [ "$applies" != "-" ]; then
         printf 'test_first:\n  applies: %s\n' "$applies" >> "${dir}/.iso-config.yaml"
+    fi
+    if [ "$applies" = "true" ]; then
+        printf '  code_paths: [src/*]\n  test_paths: [tests/*]\n' >> "${dir}/.iso-config.yaml"
     fi
     for marker in "$@"; do
         : > "${dir}/${marker}"
@@ -261,6 +266,32 @@ case_mode2_test_first_recorded() {
             "test first (${applies}): the line points at /vse-test-first to record it"
     fi
     assert_plain_text "$OUT" "test first (${applies}): output is plain text"
+}
+
+# applies: true with code_paths or test_paths that read empty leaves
+# the gates unable to tell code from tests, so the Test-first line
+# names the key in place of the plain "applies is true" line.
+case_mode2_test_first_paths_unreadable() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" -
+    printf 'test_first:\n  applies: true\n  code_path: [src/*]\n  test_paths: [tests/*]\n' >> "${dir}/.iso-config.yaml"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "test first, misspelt key: exit 0"
+    tc_assert_match '^Test-first: test_first\.applies is true, but .*test_first\.code_paths.*/vse-test-first' "$OUT" \
+        "test first, misspelt key: the line names the key that reads empty and points at /vse-test-first"
+    tc_assert_not_match '^Test-first: test_first\.applies is true\. ' "$OUT" \
+        "test first, misspelt key: the plain applies-is-true line is replaced"
+    tc_assert_match '^Test-first: .*If superpowers:test-driven-development is listed in your skills' "$OUT" \
+        "test first, misspelt key: the TDD skill pointer stays"
+    assert_plain_text "$OUT" "test first, misspelt key: output is plain text"
+
+    make_policy_project "$dir" -
+    printf 'test_first:\n  applies: true\n  code_paths:\n    -src/*\n  test_paths: [tests/*]\n' >> "${dir}/.iso-config.yaml"
+    run_hook_in "$dir"
+    tc_assert_match '^Test-first: test_first\.applies is true\. ' "$OUT" \
+        "test first, -src/* item: the item is read and the plain line is given"
 }
 
 # case_mode2_nudge_when_detected <name> <applies|-> <expected|-> [marker ...]
@@ -379,7 +410,7 @@ case_mode2_preset_config_path() {
     proj="$(tc_mktemp_d)"
     make_policy_project "$proj" false
     preset="$(tc_mktemp_d)/preset.yaml"
-    printf 'project_profile: light\ntest_first:\n  applies: true\n' > "$preset"
+    printf 'project_profile: light\ntest_first:\n  applies: true\n  code_paths: [src/*]\n  test_paths: [tests/*]\n' > "$preset"
     tc_env "VSE_ISO_CONFIG=${preset}"
     run_hook_in "$proj"
     tc_assert_rc 0 "preset configuration path: exit 0"
@@ -599,6 +630,7 @@ case_mode2_test_first_recorded false false
 case_mode2_test_first_recorded - "not recorded"
 case_mode2_test_first_recorded yes "not recorded"
 case_mode2_test_first_library_missing
+case_mode2_test_first_paths_unreadable
 
 case_mode2_nudge_when_detected "false, pytest found" false \
     "test tooling found (pytest) while test_first.applies is false." pytest.ini

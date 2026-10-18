@@ -1148,6 +1148,49 @@ case_applies_values() {
     tc_assert_grep "Unrecognised test_first.applies value 'maybe'" "$ERR" "applies: an unrecognised value is reported"
 }
 
+# applies: true with code_paths or test_paths that read empty (a
+# missing or misspelt key, or a list that cannot be read) leaves the
+# test-first gates unable to tell code from tests. The helper names the
+# keys that read empty, and is false wherever test first does not apply.
+case_missing_paths() {
+    tc_setup_repo
+    tc_env
+    tc_config light -
+    printf 'test_first:\n  applies: true\n  code_paths: [src/*]\n  test_paths: [tests/*]\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_rc 1 "missing paths: a complete record has none"
+    tc_assert_empty "$OUT" "missing paths: nothing printed for a complete record"
+
+    tc_config light -
+    printf 'test_first:\n  applies: true\n  code_path: [src/*]\n  test_paths: [tests/*]\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_rc 0 "missing paths: a misspelt code_paths key"
+    tc_assert_eq "test_first.code_paths" "$OUT" "missing paths: the misspelt key is named"
+
+    tc_config light -
+    printf 'test_first:\n  applies: true\n  code_paths: [src/*]\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_eq "test_first.test_paths" "$OUT" "missing paths: a missing test_paths key is named"
+
+    tc_config light -
+    printf 'test_first:\n  applies: true\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_eq "test_first.code_paths and test_first.test_paths" "$OUT" "missing paths: both keys are named"
+
+    tc_config light -
+    printf 'test_first:\n  applies: true\n  code_paths:\n    -src/*\n  test_paths: [tests/*]\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_rc 1 "missing paths: an item with no space after its dash is read"
+
+    tc_config light -
+    printf 'test_first:\n  applies: false\n' >> "${REPO}/.iso-config.yaml"
+    run_tf vse_tf_missing_paths
+    tc_assert_rc 1 "missing paths: none where applies is false"
+    tc_config light -
+    run_tf vse_tf_missing_paths
+    tc_assert_rc 1 "missing paths: none where test_first is unrecorded"
+}
+
 # ------------------------------------------------ paths and config
 
 # test-first.sh reads the configuration through iso-profile.sh, so
@@ -1483,6 +1526,7 @@ case_detect_none
 case_detect_npm_test_in_scripts
 case_detect_each_key
 case_applies_values
+case_missing_paths
 case_requires_profile_library
 case_find_config_nested_demo
 case_locate_project_layouts

@@ -393,7 +393,9 @@ fi
 # it). With
 # test_first unrecorded, detected test tooling or a changed file the
 # recorded paths classify as code or test is a finding that asks for
-# the record, and otherwise one line suggests it. With applies false
+# the record, and otherwise one line suggests it. With applies true and
+# code_paths or test_paths reading empty, the incomplete record is the
+# finding. With applies false
 # the gate is silent. Without test-first.sh, or without the profile
 # library it needs, the gate reports the partial install instead.
 #
@@ -401,7 +403,7 @@ fi
 # classifier, which loads the globs once and needs no subshell per
 # path, so a full-tree run stays fast.
 test_first_gate() {
-    local disposition="$1" applies changed code="" tests="" evidence tools touched
+    local disposition="$1" applies changed code="" tests="" evidence tools touched missing
     applies="$(vse_tf_applies)"
     [ "$applies" != "false" ] || return 0
     _vse_tf_load
@@ -427,6 +429,13 @@ EOF
         else
             echo "[pre-commit] test_first is not recorded. When the project has code to test, record test_first with /vse-test-first (methodology §11.5)." >&2
         fi
+        return 0
+    fi
+
+    # applies: true with code_paths or test_paths that read empty would
+    # leave the gate unable to tell code from tests, in silence.
+    if missing="$(vse_tf_missing_paths)"; then
+        gate_report "$disposition" "precommit_test_first: test_first.applies is true, but nothing could be read from ${missing} (a missing or misspelt key, or a list that cannot be read), so test before code was not checked. Complete the record with /vse-test-first (methodology §11.5.2)."
         return 0
     fi
 

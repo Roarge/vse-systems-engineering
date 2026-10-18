@@ -1218,6 +1218,55 @@ case_test_first_uncommitted_test_blocks() {
     tc_assert_rc 1 "test first: code with a modified, unstaged test stops the commit"
 }
 
+# applies: true with a code_paths key that reads empty would leave the
+# gate unable to call any path code, so the record itself is the
+# finding, at the gate's disposition (methodology §11.5.2).
+case_test_first_paths_unreadable() {
+    tc_setup_repo
+    story_config light
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_path: [src/*]
+  test_paths: [tests/*]
+EOF
+    commit_readme
+    write_code
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "test first, misspelt key: the commit is stopped"
+    tc_assert_match '^\[pre-commit\] precommit_test_first: .*test_first\.code_paths' "$ERR" \
+        "test first, misspelt key: the finding names the key that reads empty"
+    tc_assert_match '^\[pre-commit\] precommit_test_first: .*/vse-test-first' "$ERR" \
+        "test first, misspelt key: the finding points at /vse-test-first"
+    tc_assert_line "$RATIONALE" "$ERR" "test first, misspelt key: the rationale line follows"
+
+    story_config light precommit_test_first=warn
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_path: [src/*]
+  test_paths: [tests/*]
+EOF
+    tc_run_hook
+    tc_assert_rc 0 "test first, misspelt key at warn: the commit proceeds"
+    tc_assert_match '^\[pre-commit\] warning: precommit_test_first: .*test_first\.code_paths' "$ERR" \
+        "test first, misspelt key at warn: the finding is a warning"
+
+    # An item with no space after its dash is read, so the gate works.
+    story_config light
+    tc_config_append <<'EOF'
+test_first:
+  applies: true
+  code_paths:
+    -src/*
+  test_paths: [tests/*]
+EOF
+    tc_run_hook
+    tc_assert_rc 1 "test first, -src/* item: code with no test change stops the commit"
+    tc_assert_grep "code: src/reading.py" "$ERR" "test first, -src/* item: the code path is named"
+}
+
 # On a refactor branch the finding is a reminder (methodology section
 # 11.9.2), so the commit proceeds.
 case_test_first_refactor_branch_reminder() {
@@ -1588,6 +1637,7 @@ case_test_first_code_without_test
 case_test_first_code_with_test
 case_test_first_branch_evidence
 case_test_first_uncommitted_test_blocks
+case_test_first_paths_unreadable
 case_test_first_refactor_branch_reminder
 case_test_first_not_applicable
 case_test_first_config_never_code

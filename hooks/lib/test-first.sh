@@ -32,6 +32,8 @@
 #   vse_tf_refactor_branch [<toplevel> [<branch>]]  0 on a refactor branch
 #   vse_tf_detect <dir>                one key per detected test tool
 #   vse_tf_applies                     true, false or nothing
+#   vse_tf_missing_paths               keys that read empty while applies
+#                                      is true, 1 when none
 #
 # In-shell classifier, a supported interface for loops over many paths
 # (hooks/pre-commit.sh, and the plugin's own
@@ -1061,5 +1063,25 @@ vse_tf_applies() {
             echo "[test-first] Unrecognised test_first.applies value '${value}', treating test_first as unrecorded (methodology §11.5.2)." >&2
             ;;
     esac
+    return 0
+}
+
+# Print the keys among test_first.code_paths and test_first.test_paths
+# that read empty while test_first.applies is true, joined with "and",
+# and return 0. A key reads empty when it is missing, misspelt (such as
+# code_path) or holds a list that cannot be read. The test-first gates
+# then cannot tell code from tests, so the record is incomplete
+# (methodology §11.5.2). Return 1, printing nothing, when both keys
+# read or when test first is not recorded as applying.
+vse_tf_missing_paths() {
+    local key missing=""
+    [ "$(vse_tf_applies)" = "true" ] || return 1
+    for key in code_paths test_paths; do
+        if [ -z "$(iso_section_list test_first "$key")" ]; then
+            missing="${missing:+${missing} and }test_first.${key}"
+        fi
+    done
+    [ -n "$missing" ] || return 1
+    printf '%s\n' "$missing"
     return 0
 }

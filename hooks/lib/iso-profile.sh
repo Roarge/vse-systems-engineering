@@ -74,9 +74,13 @@ _iso_locate_config() {
 # whose own line is indented by ind characters. A "- item" line
 # indented by ind characters or more is an item (YAML lets the dash sit
 # in the key's own column), read with the scalar rules and printed
-# unless it is empty. Blank and comment lines are passed over. It
-# returns 1 to go on reading and 0 at the first other line, which ends
-# the sequence. A comma inside a block item is part of it.
+# unless it is empty. A dash with no space after it ("-src/*") is read
+# as an item too, because a missing space is a typo far more often than
+# a value that starts with a dash, and ending the sequence there would
+# leave the rest of the list unread in silence. Blank and comment lines
+# are passed over. It returns 1 to go on reading and 0 at the first
+# other line, which ends the sequence. A comma inside a block item is
+# part of it.
 #
 # "\047" is a single quote, which this shell string cannot hold.
 _ISO_AWK_LIB='
@@ -138,15 +142,12 @@ function iso_flow(value,    n, i, items, item) {
             print item
     }
 }
-function iso_block_item(s, ind,    rest, c, item) {
+function iso_block_item(s, ind,    rest, item) {
     rest = s
     sub(/^[ \t]+/, "", rest)
     if (rest == "" || substr(rest, 1, 1) == "#")
         return 1
     if (length(s) - length(rest) < ind || substr(rest, 1, 1) != "-")
-        return 0
-    c = substr(rest, 2, 1)
-    if (c != "" && c != " " && c != "\t")
         return 0
     item = iso_item(iso_value(substr(rest, 2), 0))
     if (item != "")
