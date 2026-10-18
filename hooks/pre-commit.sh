@@ -435,8 +435,7 @@ $CHANGED_LIVE
 EOF
 
     if [ "$applies" != "true" ]; then
-        tools="$(vse_tf_detect "$TOP_REAL" | tr '\n' ' ' || true)"
-        tools="${tools% }"
+        tools="$(vse_tf_detect "$TOP_REAL" | awk '{ printf "%s%s", (NR > 1 ? ", " : ""), $0 }' || true)"
         if [ -n "$tools" ]; then
             gate_report "$disposition" "precommit_test_first: test_first is not recorded and test tooling was detected (${tools}), so record test_first with /vse-test-first (methodology §11.5)."
         elif [ -n "${code}${tests}" ]; then

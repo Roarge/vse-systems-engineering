@@ -375,7 +375,7 @@ ptu_gherkin_first() {
         if [ "$(_ptu_count "$siblings")" -eq 1 ]; then
             where="${PTU_DIR}/${siblings%$'\n'}.feature"
         else
-            where="${PTU_DIR}/<ID>.feature"
+            where="${PTU_DIR}/<ID>.feature for each"
         fi
         if [ "$disposition" = "info" ]; then
             if [ -n "$info" ]; then
@@ -384,7 +384,7 @@ ptu_gherkin_first() {
                 info="untouched by this edit, these stories still have no tagged feature file: ${names}"
             fi
         else
-            vse_hj_add_context "Warning (pretooluse_gherkin_first): this story file also holds ${names}, untouched by this edit, with no feature file carrying the story tag. Write ${where} for each before its next change (methodology §11.2)."
+            vse_hj_add_context "Warning (pretooluse_gherkin_first): this story file also holds ${names}, untouched by this edit, with no feature file carrying the story tag. Write ${where} before its next change (methodology §11.2)."
         fi
     fi
 

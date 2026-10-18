@@ -358,6 +358,15 @@ case_register_untouched_sibling() {
     ptu_assert_proceeds "sibling: an edit to a story with a feature file goes ahead"
     ptu_assert_context "US_902_Sibling" "sibling: the untouched sibling without a feature file draws a warning"
     ptu_assert_context "${PTU_REAL}/${PTU_STORIES}/US_902_Sibling.feature" "sibling: the warning names the sibling's expected feature path"
+    ptu_assert_context "Write ${PTU_REAL}/${PTU_STORIES}/US_902_Sibling.feature before its next change" \
+        "sibling: one sibling is asked for in the singular"
+    ptu_assert_context_lacks ".feature for each" "sibling: one sibling is not asked for with for each"
+
+    ptu_register US_901_Example US_902_Sibling US_903_Sibling | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_run "$(ptu_edit_json "$file" 'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"')"
+    ptu_assert_context "US_902_Sibling and US_903_Sibling" "sibling: two siblings are both named"
+    ptu_assert_context "Write ${PTU_REAL}/${PTU_STORIES}/<ID>.feature for each before its next change" \
+        "sibling: several siblings are asked for with for each"
 }
 
 case_edit_rename_requires_new_feature() {

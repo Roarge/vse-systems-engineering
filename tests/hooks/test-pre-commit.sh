@@ -1347,6 +1347,14 @@ EOF
     tc_assert_match '^\[pre-commit\] .*precommit_test_first.*record test_first with /vse-test-first' "$ERR" \
         "test first unrecorded, tooling detected: the finding asks for the record"
     tc_assert_grep "pytest" "$ERR" "test first unrecorded, tooling detected: the tooling is named"
+
+    # Several tools are joined with ", ", as SessionStart joins them.
+    tc_write go.mod <<'EOF'
+module example.invalid/sensor
+EOF
+    tc_run_hook
+    tc_assert_grep "test tooling was detected (pytest, go)" "$ERR" \
+        "test first unrecorded, tooling detected: several tools are joined with a comma"
 }
 
 # A changed file the recorded paths classify as code is code-like, so
