@@ -350,7 +350,7 @@ story_gate() {
     disposition="$(iso_gate_disposition "$gate")"
     [ "$disposition" != "off" ] || return 0
     if [ ! -r "${ENG_ROOT}/${STORY_LINT_REL}" ]; then
-        gate_report "$disposition" "${gate}: the story lint ${ENG_PREFIX}${STORY_LINT_REL} is missing, so ${what} was not checked. Re-run @attention-regime to install tools/lint/ (methodology §11.9.1)."
+        gate_report "$disposition" "${gate}: the story lint is missing at ${ENG_ROOT}/${STORY_LINT_REL}, so ${what} was not checked. The lint needs tools/lint/ and tools/render/ beside .iso-config.yaml, in ${ENG_ROOT}. A custom scaffold sub-path keeps the configuration at the project root, so they belong there too. @attention-regime installs them there, so re-run it (methodology §11.9.1)."
         return 0
     fi
     if ! command -v python3 > /dev/null 2>&1; then

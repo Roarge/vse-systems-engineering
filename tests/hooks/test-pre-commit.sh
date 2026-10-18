@@ -1039,6 +1039,14 @@ case_lint_missing_blocks() {
     tc_assert_match '^\[pre-commit\] .*precommit_gherkin.*tools/lint/story-wellformed\.py' "$ERR" \
         "missing lint: precommit_gherkin reports it and names the lint"
     tc_assert_line "$RATIONALE" "$ERR" "missing lint: the block carries the rationale line"
+    tc_assert_grep "$(cd "$REPO" && pwd -P)/tools/lint/story-wellformed.py" "$ERR" \
+        "missing lint: the full path looked at is named"
+    tc_assert_match '^\[pre-commit\] precommit_gherkin: .*tools/lint/ and tools/render/ .*beside \.iso-config\.yaml' "$ERR" \
+        "missing lint: the message says tools/lint/ and tools/render/ are needed beside the configuration"
+    tc_assert_match '^\[pre-commit\] precommit_gherkin: .*custom scaffold sub-path.*project root' "$ERR" \
+        "missing lint: the message says a custom scaffold sub-path keeps the configuration at the project root"
+    tc_assert_match '^\[pre-commit\] precommit_gherkin: .*@attention-regime installs them there' "$ERR" \
+        "missing lint: the message says @attention-regime installs them there"
 }
 
 # The lint exits 2 when it cannot run, here because tools/render/, which
