@@ -866,8 +866,8 @@ _vse_tf_file_has() {
 }
 
 # Return 0 when the package.json <file> has a "test" key in its
-# top-level "scripts" object, other than the npm placeholder ("no test
-# specified"). The reader follows strings, with their escapes, and the
+# top-level "scripts" object, other than an empty script or the npm
+# placeholder ("no test specified"). The reader follows strings, with their escapes, and the
 # nesting of objects and arrays, so the same key elsewhere, such as
 # directories.test, does not count.
 _vse_tf_npm_test() {
@@ -892,7 +892,7 @@ _vse_tf_npm_test() {
                         }
                     }
                     if (value) {
-                        if (scripts && depth == 2 && key == "test" && !index(s, "no test specified"))
+                        if (scripts && depth == 2 && key == "test" && s != "" && !index(s, "no test specified"))
                             hit = 1
                         value = 0
                     } else {
@@ -934,7 +934,8 @@ _vse_tf_any_file() {
 #   pytest     pytest.ini, conftest.py, [tool.pytest in pyproject.toml,
 #              [tool:pytest] in setup.cfg, [pytest] in tox.ini
 #   npm-test   a "test" key in the "scripts" object of package.json,
-#              other than the npm placeholder ("no test specified")
+#              other than an empty script or the npm placeholder
+#              ("no test specified")
 #   jest       jest.config.*, or a "jest" key in package.json
 #   vitest     vitest.config.*
 #   cargo      Cargo.toml

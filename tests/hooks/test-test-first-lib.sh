@@ -1090,6 +1090,10 @@ case_detect_npm_test_in_scripts() {
     printf '{"scripts": {"x": {"test": "y"}}}\n' > "${dir}/package.json"
     run_tf vse_tf_detect "$dir"
     tc_assert_empty "$OUT" "detect: a test key nested deeper inside scripts does not count"
+    printf '{"scripts": {"build": "tsc", "test": ""}}\n' > "${dir}/package.json"
+    run_tf vse_tf_detect "$dir"
+    tc_assert_rc 1 "detect: an empty test script is not test tooling"
+    tc_assert_empty "$OUT" "detect: nothing printed for an empty test script"
 
     printf '{\n  "description": "a \\"test\\": {",\n  "scripts": {\n    "lint": "eslint .",\n    "test": "node --test"\n  }\n}\n' > "${dir}/package.json"
     run_tf vse_tf_detect "$dir"
