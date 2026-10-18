@@ -151,7 +151,7 @@ When resolving any methodology question, consult sources in this priority. Lower
 8. **SYSMOD (Weilkiens 2020)** (Base Architecture and System Context concepts adopted in §2 and §3).
 9. **SysML v2 specification** and toolchain notes (Syside, the OMG pilot, OpenSysML).
 10. **Domain guides** (Needs and Requirements, V&V, HSI).
-11. **Behaviour and test-first practice:** the Cucumber documentation at cucumber.io (Gherkin syntax, tags, BDD practice) and the `superpowers:test-driven-development` skill (the mechanics of red-green-refactor, that is, a failing test, then the least code that passes it, then a tidy-up, as §11.6 adjusts them).
+11. **Behaviour and test-first practice:** the Cucumber documentation at cucumber.io (Gherkin syntax, tags, BDD (behaviour-driven development) practice) and the `superpowers:test-driven-development` skill (the mechanics of red-green-refactor, that is, a failing test, then the least code that passes it, then a tidy-up, as §11.6 adjusts them).
 
 The methodology spec wins over its sources because the methodology explicitly adapts the source arc (see §0.4). Do not import a Harmony practice, a SYSMOD detail, or a rule of the test-driven development skill that the methodology has overridden or adjusted.
 
