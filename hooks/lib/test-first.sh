@@ -505,19 +505,35 @@ vse_tf_feature_has_tag() {
 # (the Edit tool creating a file). Otherwise every occurrence is
 # replaced. Without replace_all the Edit tool has already refused an
 # old_string that is not unique, so replacing every occurrence is exact.
+#
+# The file text, each old_string and each new_string are read with
+# CRLF line endings as LF, as the Edit tool reads them: it matches the
+# model's LF old_string against a CRLF file and writes the original
+# line endings back. A Write keeps its content as given. An old_string
+# that occurs nowhere in the text as the edits reach it leaves the text
+# as it is and is counted, and the image is followed by the exit status
+# 4 (halt_error with an empty message, so nothing is added).
 # shellcheck disable=SC2016
 _VSE_TF_JQ_IMAGE='
+def lf: split("\r\n") | join("\n");
 def apply($e):
-    ($e.old_string // "") as $old
-    | ($e.new_string // "") as $new
-    | if $old == "" then $new else (split($old) | join($new)) end;
+    (($e.old_string // "") | lf) as $old
+    | (($e.new_string // "") | lf) as $new
+    | if $old == "" then .text = $new
+      else (.text | split($old)) as $parts
+      | if ($parts | length) > 1 then .text = ($parts | join($new))
+        else .missed += 1
+        end
+      end;
 $payload[0] as $p
 | ($p.tool_input // {}) as $in
-| if $p.tool_name == "Write" then ($in.content // "")
+| {text: lf, missed: 0}
+| if $p.tool_name == "Write" then .text = ($in.content // "")
   elif $p.tool_name == "Edit" then apply($in)
   elif $p.tool_name == "MultiEdit" then reduce ($in.edits // [])[] as $e (.; apply($e))
   else error("unsupported tool \($p.tool_name)")
   end
+| .text, (if .missed > 0 then "" | halt_error(4) else empty end)
 '
 
 _VSE_TF_PY_IMAGE='
@@ -525,33 +541,40 @@ import json
 import sys
 
 
-def apply(text, edit):
-    old = edit.get("old_string") or ""
-    new = edit.get("new_string") or ""
+def lf(text):
+    return text.replace("\r\n", "\n")
+
+
+def apply(text, edit, missed):
+    old = lf(edit.get("old_string") or "")
+    new = lf(edit.get("new_string") or "")
     if old == "":
-        return new
-    return text.replace(old, new)
+        return new, missed
+    if old not in text:
+        return text, missed + 1
+    return text.replace(old, new), missed
 
 
 def main():
     with open(sys.argv[1], "rb") as handle:
         payload = json.loads(handle.read().decode("utf-8"))
     with open(sys.argv[2], "rb") as handle:
-        text = handle.read().decode("utf-8", "surrogateescape")
+        text = lf(handle.read().decode("utf-8", "surrogateescape"))
     tool = payload.get("tool_name")
     given = payload.get("tool_input") or {}
+    missed = 0
     if tool == "Write":
         text = given.get("content") or ""
     elif tool == "Edit":
-        text = apply(text, given)
+        text, missed = apply(text, given, missed)
     elif tool == "MultiEdit":
         for edit in given.get("edits") or []:
-            text = apply(text, edit)
+            text, missed = apply(text, edit, missed)
     else:
         sys.stderr.write("unsupported tool %s\n" % tool)
         return 2
     sys.stdout.buffer.write(text.encode("utf-8", "surrogateescape"))
-    return 0
+    return 4 if missed else 0
 
 
 try:
@@ -565,39 +588,44 @@ except (OSError, ValueError, AttributeError, TypeError) as error:
 # MultiEdit call in <payload-file> (the PreToolUse JSON). Write gives
 # tool_input.content. Edit replaces old_string with new_string in the
 # file on disk. MultiEdit applies tool_input.edits in order. A missing
-# file reads as empty. Uses jq, else python3 in isolated mode. Returns 2
-# for a malformed payload or another tool, and 3 when neither jq nor
-# python3 is present.
+# or unreadable file reads as empty. Uses jq, else python3 in isolated
+# mode. Returns 2 for a malformed payload or another tool, 3 when
+# neither jq nor python3 is present, and 4, with the image printed,
+# when a non-empty old_string occurs nowhere in the text it is applied
+# to, so the edit could not be reproduced.
 #
-# The text passes through the engine, which normalises it. Valid UTF-8
-# comes back byte for byte. A byte that is not valid UTF-8 is kept by
-# python3 but turned into U+FFFD by jq. So compare a post image only
-# with the pre-image vse_tf_disk_image prints: both take the same path
-# and are normalised identically.
+# The text passes through the engine, which normalises it. CRLF line
+# endings in the file and in each old_string and new_string are read as
+# LF. Other valid UTF-8 comes back byte for byte. A byte that is not
+# valid UTF-8 is kept by python3 but turned into U+FFFD by jq. So
+# compare a post image only with the pre-image vse_tf_disk_image
+# prints: both take the same path and are normalised identically.
 vse_tf_post_image() {
-    local payload="$1" target="$2" input=/dev/null
+    local payload="$1" target="$2" input=/dev/null rc=0
     if [ -f "$target" ] && [ -r "$target" ]; then
         input="$target"
     fi
     if command -v jq >/dev/null 2>&1; then
-        jq -j -R -s --slurpfile payload "$payload" "$_VSE_TF_JQ_IMAGE" < "$input" || return 2
-        return 0
+        jq -j -R -s --slurpfile payload "$payload" "$_VSE_TF_JQ_IMAGE" < "$input" || rc=$?
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 -I -c "$_VSE_TF_PY_IMAGE" "$payload" "$input" || rc=$?
+    else
+        return 3
     fi
-    if command -v python3 >/dev/null 2>&1; then
-        python3 -I -c "$_VSE_TF_PY_IMAGE" "$payload" "$input" || return 2
-        return 0
-    fi
-    return 3
+    case "$rc" in
+        0|4) return "$rc" ;;
+    esac
+    return 2
 }
 
 # An empty MultiEdit, which changes nothing.
 _VSE_TF_NO_EDIT='{"tool_name": "MultiEdit", "tool_input": {"edits": []}}'
 
 # Print the content of <file> before any edit, normalised exactly as
-# vse_tf_post_image normalises a post image: the file goes through the
-# same function and engine with an edit list that changes nothing. A
-# missing file reads as empty. Returns 3 when neither jq nor python3 is
-# present.
+# vse_tf_post_image normalises a post image (CRLF read as LF): the file
+# goes through the same function and engine with an edit list that
+# changes nothing. A missing or unreadable file reads as empty. Returns
+# 2 when the engine fails and 3 when neither jq nor python3 is present.
 vse_tf_disk_image() {
     vse_tf_post_image <(printf '%s' "$_VSE_TF_NO_EDIT") "$1"
 }

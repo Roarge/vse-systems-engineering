@@ -13,7 +13,10 @@
 #      are compared, so only the stories it touches are gated.
 #      Untouched siblings without a feature file draw a warning, and
 #      deleting a story is never denied. Templates (file names that
-#      begin with "_") and */model/library/* are skipped.
+#      begin with "_") and */model/library/* are skipped. CRLF line
+#      endings are read as LF, as the Edit tool reads them, and an edit
+#      whose old_string does not occur in the file draws a warning,
+#      because the gate then saw the file unchanged.
 #   2. Test first (pretooluse_test_first). Where test_first.applies is
 #      true, an edit to a code path waits until a test path has changed
 #      in the working tree or on the branch since its merge base. On a
@@ -168,16 +171,29 @@ _ptu_tool() {
 # _ptu_images: write the file before and after the edit to PTU_PRE and
 # PTU_POST, once. Both go through the same engine, so they are
 # normalised alike. An edit the engine cannot apply ends the hook,
-# which then fails open.
+# which then fails open. An old_string that does not occur in the file
+# as the engine reads it leaves the file unchanged in the post image,
+# so the agent is warned that the gates could not check the edit.
 _ptu_images() {
+    local rc=0
     [ -z "$PTU_PRE" ] || return 0
     PTU_PRE="${PTU_WORK}/pre"
     PTU_POST="${PTU_WORK}/post"
-    if ! vse_tf_disk_image "$PTU_TARGET" > "$PTU_PRE" \
-        || ! vse_tf_post_image "$PTU_PAYLOAD" "$PTU_TARGET" > "$PTU_POST"; then
-        echo "[pre-tool-use] Could not apply the ${PTU_TOOL} call to ${PTU_TARGET}." >&2
-        exit 70
+    if vse_tf_disk_image "$PTU_TARGET" > "$PTU_PRE"; then
+        vse_tf_post_image "$PTU_PAYLOAD" "$PTU_TARGET" > "$PTU_POST" || rc=$?
+    else
+        rc=2
     fi
+    case "$rc" in
+        0) : ;;
+        4)
+            vse_hj_add_context "Warning: the VSE gates could not reproduce this ${PTU_TOOL} call on ${PTU_TARGET}, because an old_string does not occur in the file as the hook reads it, so the Gherkin-first gate and the self-bypass guard saw the file unchanged. The commit gate remains the backstop (methodology §11.9)."
+            ;;
+        *)
+            echo "[pre-tool-use] Could not apply the ${PTU_TOOL} call to ${PTU_TARGET}." >&2
+            exit 70
+            ;;
+    esac
     return 0
 }
 

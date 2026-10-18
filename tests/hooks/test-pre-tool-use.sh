@@ -520,6 +520,51 @@ case_multiedit_applied() {
     ptu_assert_proceeds "multiedit: the edits apply in order, so a story added and removed again is not gated"
 }
 
+# A checkout with CRLF line endings (core.autocrlf on Windows). The
+# Edit tool matches the model's LF old_string against a CRLF file, so a
+# multi-line LF edit to a CRLF story or configuration file is gated as
+# it would be on an LF file.
+case_crlf_story_multiline_denied() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example | sed 's/$/\r/' | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_edit_json "$file" "$(printf '    }\n\n}')" "$(printf '    }\n\n%s\n\n}' "$(ptu_story US_902_Added)")")"
+    ptu_assert_denied "CRLF: a multi-line LF edit adding a story to a CRLF register is denied"
+    ptu_assert_reason "US_902_Added.feature" "CRLF: the added story is named"
+    ptu_assert_reason_lacks "US_901_Example" "CRLF: the untouched story with a feature file is not named"
+}
+
+case_crlf_config_multiline_asks() {
+    ptu_project light precommit_lint=warn
+    sed -i 's/$/\r/' "${REPO}/.iso-config.yaml"
+    ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "gate_overrides:
+  precommit_lint: warn" "gate_overrides:
+  precommit_lint: warn
+  pretooluse_gherkin_first: off")"
+    ptu_assert_asked "CRLF: a multi-line LF edit adding a gate override to a CRLF configuration asks"
+    ptu_assert_reason "gate_overrides" "CRLF: the question names gate_overrides"
+}
+
+# An edit whose old_string does not occur in the file as the hook reads
+# it cannot be reproduced, so the gates saw the file unchanged. The
+# agent is told so, rather than the edit passing in silence.
+case_edit_not_reproduced_context() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_edit_json "$file" "text that is not in the file" "requirement US_902_Added : UserStory;")"
+    ptu_assert_proceeds "not reproduced: the edit is not denied on a guess"
+    ptu_assert_context "Warning" "not reproduced: the context is a warning"
+    ptu_assert_context "could not reproduce" "not reproduced: the agent is told the edit could not be reproduced"
+    ptu_assert_context "commit gate remains the backstop" "not reproduced: the commit gate is named as the backstop"
+    ptu_run "$(ptu_edit_json "$file" 'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"')"
+    ptu_assert_context_lacks "could not reproduce" "not reproduced: an edit that matches draws no such warning"
+}
+
 # ------------------------------------------------------------ test first
 
 case_test_first_denied_without_evidence() {
@@ -806,6 +851,9 @@ case_info_disposition_one_line
 case_legacy_story_formalise_first
 case_reason_length_capped
 case_multiedit_applied
+case_crlf_story_multiline_denied
+case_crlf_config_multiline_asks
+case_edit_not_reproduced_context
 case_test_first_denied_without_evidence
 case_test_first_allowed_with_working_tree_test
 case_test_first_refactor_branch_context

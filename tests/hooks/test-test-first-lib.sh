@@ -14,9 +14,10 @@
 #      The hand-made corpus under tests/fixtures/stories/ carries one
 #      .ids file beside each .sysml file.
 #   2. The post-edit image applies a Write, Edit or MultiEdit payload
-#      to the file on disk, with jq or, failing that, python3. The disk
-#      image takes the same path with no edit, so a pre-image and a
-#      post-image are normalised the same way.
+#      to the file on disk, with jq or, failing that, python3, reading
+#      CRLF line endings as LF and saying when an old_string does not
+#      occur. The disk image takes the same path with no edit, so a
+#      pre-image and a post-image are normalised the same way.
 #   3. A feature file carries a story tag only on a tag line before
 #      its Feature: line.
 #   4. A path relative to the git top level is classified as never,
@@ -447,7 +448,7 @@ case_post_image_empty_old_string() {
             "post image (${engine}): an empty old_string replaces the whole file"
 
         tf_post_image "$engine" "$(tf_payload_edit "old" "new" false)" "${dir}/missing"
-        tc_assert_rc 0 "post image (${engine}): an edit to a missing file succeeds"
+        tc_assert_rc 4 "post image (${engine}): an edit to a missing file cannot be reproduced"
         tf_assert_same "${dir}/empty" "$TF_IMAGE" "post image (${engine}): a missing file reads as empty"
     done
     tc_env
@@ -536,16 +537,87 @@ case_disk_image_plain() {
     local engine dir
     tc_setup_repo
     dir="$(tc_mktemp_d)"
-    printf 'caf\303\251 "quoted" \\ back\r\n\nlast line, no newline' > "${dir}/utf8"
+    printf 'caf\303\251 "quoted" \\ back\r\n\nlast line, no newline\r' > "${dir}/utf8"
+    printf 'caf\303\251 "quoted" \\ back\n\nlast line, no newline\r' > "${dir}/lf"
     : > "${dir}/empty"
     for engine in $TF_ENGINES; do
         tf_engine "$engine"
         run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/utf8"
         tc_assert_rc 0 "disk image (${engine}): a UTF-8 file is read"
-        tf_assert_same "${dir}/utf8" "${dir}/image" "disk image (${engine}): valid UTF-8 comes back byte for byte"
+        tf_assert_same "${dir}/lf" "${dir}/image" \
+            "disk image (${engine}): valid UTF-8 comes back byte for byte, with CRLF read as LF and a lone CR kept"
         run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/missing"
         tc_assert_rc 0 "disk image (${engine}): a missing file is not an error"
         tf_assert_same "${dir}/empty" "${dir}/image" "disk image (${engine}): a missing file reads as empty"
+    done
+    tc_env
+}
+
+# A checkout with CRLF line endings (core.autocrlf on Windows) holds
+# CRLF files, and the Edit tool matches the model's LF old_string
+# against them, writing the original endings back. The image reads the
+# file with CRLF as LF and normalises each old_string and new_string
+# the same way, so a multi-line LF edit applies to a CRLF file, and
+# the pre-image and the post-image stay comparable.
+case_post_image_crlf() {
+    local engine dir target expected json
+    tc_setup_repo
+    dir="$(tc_mktemp_d)"
+    target="${dir}/stories.sysml"
+    printf 'package P {\r\n    requirement US_1 : UserStory {\r\n    }\r\n}\r\n' > "$target"
+    expected="${dir}/expected"
+    printf 'package P {\n    requirement US_1 : UserStory {\n    }\n    requirement US_2 : UserStory {\n    }\n}\n' > "$expected"
+    for engine in $TF_ENGINES; do
+        tf_post_image "$engine" "$(tf_payload_edit "    }
+}" "    }
+    requirement US_2 : UserStory {
+    }
+}" false)" "$target"
+        tc_assert_rc 0 "CRLF (${engine}): a multi-line LF edit applies to a CRLF file"
+        tf_assert_same "$expected" "$TF_IMAGE" "CRLF (${engine}): the image reads CRLF as LF"
+        tc_env
+        run_tf vse_tf_touched_stories "$target" "$TF_IMAGE"
+        tc_assert_eq "US_2" "$OUT" "CRLF (${engine}): only the added story is touched"
+
+        tf_post_image "$engine" "$(tf_payload_edit "$(printf '    }\r\n}')" "$(printf '    }\r\n    requirement US_2 : UserStory {\r\n    }\r\n}')" false)" "$target"
+        tf_assert_same "$expected" "$TF_IMAGE" "CRLF (${engine}): CRLF in old_string and new_string is read as LF"
+
+        json="$(jq -n '{tool_name: "MultiEdit", tool_input: {file_path: "x", edits: [
+            {old_string: "    }\n}", new_string: "    }\n    requirement US_2 : UserStory {\n    }\n}"}]}}')"
+        tf_post_image "$engine" "$json" "$target"
+        tf_assert_same "$expected" "$TF_IMAGE" "CRLF (${engine}): a MultiEdit applies to a CRLF file"
+    done
+    tc_env
+}
+
+# An old_string that occurs nowhere in the image as the edits reach it
+# means the edit could not be reproduced. The image is still printed,
+# unchanged by that edit, and the exit status 4 says so, so a caller
+# can say the gate saw the file unchanged.
+case_post_image_no_match() {
+    local engine dir target json
+    tc_setup_repo
+    dir="$(tc_mktemp_d)"
+    target="${dir}/target"
+    printf 'alpha\nbeta\n' > "$target"
+    for engine in $TF_ENGINES; do
+        tf_post_image "$engine" "$(tf_payload_edit "gamma" "delta" false)" "$target"
+        tc_assert_rc 4 "no match (${engine}): exit 4 when old_string does not occur"
+        tf_assert_same "$target" "$TF_IMAGE" "no match (${engine}): the image is printed unchanged"
+
+        json="$(jq -n '{tool_name: "MultiEdit", tool_input: {file_path: "x", edits: [
+            {old_string: "alpha", new_string: "one"},
+            {old_string: "alpha", new_string: "two"},
+            {old_string: "beta", new_string: "three"}]}}')"
+        tf_post_image "$engine" "$json" "$target"
+        tc_assert_rc 4 "no match (${engine}): exit 4 when a later MultiEdit edit no longer matches"
+        printf 'one\nthree\n' > "${dir}/expected"
+        tf_assert_same "${dir}/expected" "$TF_IMAGE" "no match (${engine}): the edits that match still apply"
+
+        tf_post_image "$engine" "$(tf_payload_edit "beta" "gamma" false)" "$target"
+        tc_assert_rc 0 "no match (${engine}): exit 0 when every old_string occurs"
+        tf_post_image "$engine" "$(tf_payload_edit "" "fresh" false)" "${dir}/missing"
+        tc_assert_rc 0 "no match (${engine}): an empty old_string always applies"
     done
     tc_env
 }
@@ -1353,6 +1425,8 @@ case_post_image_write
 case_post_image_no_json_tool
 case_disk_image_symmetric_latin1
 case_disk_image_plain
+case_post_image_crlf
+case_post_image_no_match
 case_post_image_unsupported_tool
 case_feature_tag_bom_crlf
 case_feature_tag_prefix_id_rejected
