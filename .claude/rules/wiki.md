@@ -36,8 +36,11 @@ wiki or skill content, resolve in this order, highest authority first:
 the plugin's `methodology/` (project-local copy first), ISO/IEC 29110,
 PHAS-EAI (kappe and Papers IV and V), Galinier et al., the INCOSE SE
 Handbook scaled for VSEs, Douglass 2016 and 2021, SYSMOD (Weilkiens),
-the OMG SysML 2.0 specification with toolchain notes, then the domain
-guides (Needs and Requirements, V&V, HSI).
+the OMG SysML 2.0 specification with toolchain notes, the domain guides
+(Needs and Requirements, V&V, HSI), then the behaviour-driven and
+test-driven development practice sources (the Cucumber documentation for
+Gherkin and BDD practice, and the superpowers test-driven-development
+skill as methodology §11.6 adjusts it).
 
 **Sources and citations.** `sources/` stays gitignored, so every
 `sources[].citation` must stand alone as a bibliographic reference. The

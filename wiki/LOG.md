@@ -1871,3 +1871,12 @@ criteria, with no diagnostic. Both refused an unknown criterion name
 and a missing semicolon with exit 1. The demo itself is unchanged.
 `updated:` was bumped to 2026-10-16 on that page. No title or summary
 changed, so INDEX and the routing blocks are untouched.
+
+## [2026-10-18] restructure | bdd-tdd layer added
+Schema extended for behaviour-driven and test-driven development
+practice sources. wiki/CLAUDE.md gains the bdd-tdd row in the VSE
+Source Layers table, `bdd-tdd/` in the directory layout and a closing
+clause in the layer paragraph. The five templates under wiki/schema/
+gain bdd-tdd in the layer enumeration. .claude/rules/wiki.md places
+the layer's sources lowest in the source-processing order, below the
+domain guides. Methodology §11 wins over every source in the layer.

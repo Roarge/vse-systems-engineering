@@ -51,6 +51,7 @@ wiki/
   schema/                   Page-type templates. One file per type.
   pages/                    Atomic concept pages, grouped by VSE source layer.
     ambse/
+    bdd-tdd/
     hsi/
     incose-vse/
     iso29110/
@@ -78,7 +79,9 @@ for resolving disagreements between sources is documented in
 `.claude/rules/wiki.md` and reflects the VSE-first editorial stance:
 ISO/IEC 29110 is the process backbone, PHAS-EAI supplies design rationale,
 INCOSE is scaled for VSE scope, AMBSE governs the agile process, SysML 2.0
-is the modelling language, and domain guides cover specific concerns.
+is the modelling language, domain guides cover specific concerns, and the
+BDD and TDD practice sources supply Gherkin syntax and the test-first cycle
+beneath the methodology's own rules.
 
 | Layer | Directory | Source material |
 |---|---|---|
@@ -93,6 +96,7 @@ is the modelling language, and domain guides cover specific concerns.
 | Needs and Requirements | `pages/needs-and-reqs/` | INCOSE Guide to Needs and Requirements. |
 | Verification and Validation | `pages/vv/` | INCOSE Guide to V&V. |
 | Human-Systems Integration | `pages/hsi/` | HSI Primer Vol. 1. |
+| BDD and TDD practice | `pages/bdd-tdd/` | Cucumber documentation (the Gherkin reference, the Tags, Conditional hooks and Step results sections of the Cucumber reference, and the BDD overview and the pages on discovery workshops, Example Mapping, roles and writing better Gherkin) and the superpowers test-driven-development skill (MIT licence), always read through methodology §11. |
 | Project structure | `pages/project-structure/` | Cross-cutting canonical layout guidance. |
 
 When a new source does not fit an existing layer, do not invent a new layer
