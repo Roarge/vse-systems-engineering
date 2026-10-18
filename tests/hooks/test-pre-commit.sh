@@ -1192,6 +1192,32 @@ case_test_first_branch_evidence() {
     tc_assert_not_grep "precommit_test_first" "$ERR" "test first: branch evidence reports nothing"
 }
 
+# Evidence at commit time is the commit itself or the branch since its
+# merge base (methodology section 11.9.2). A test left untracked, or
+# modified but not staged, is in neither, so code committed without it
+# is stopped.
+case_test_first_uncommitted_test_blocks() {
+    tc_setup_repo
+    test_first_config true light
+    printf 'def test_old():\n    assert True\n' | tc_write tests/test_old.py
+    tc_stage tests/test_old.py
+    commit_readme
+    git -C "$REPO" checkout -q -b feat/reading
+    write_code
+    printf 'def test_reading():\n    assert True\n' | tc_write tests/test_reading.py
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "test first: code with an untracked test stops the commit"
+    tc_assert_grep "reason: no test path changed in the commit or on the branch since the merge base with main" "$ERR" \
+        "test first: the reason names the commit and the branch"
+    tc_assert_not_grep "working tree" "$ERR" "test first: the reason does not mention the working tree"
+
+    rm -f "${REPO}/tests/test_reading.py"
+    printf 'def test_more():\n    assert True\n' >> "${REPO}/tests/test_old.py"
+    tc_run_hook
+    tc_assert_rc 1 "test first: code with a modified, unstaged test stops the commit"
+}
+
 # On a refactor branch the finding is a reminder (methodology section
 # 11.9.2), so the commit proceeds.
 case_test_first_refactor_branch_reminder() {
@@ -1360,7 +1386,26 @@ case_test_first_range_mode() {
     tc_env "VSE_PRECOMMIT_RANGE=HEAD~1..HEAD"
     tc_run_hook
     tc_assert_rc 1 "test first, range mode: code alone in the range stops the check"
-    tc_assert_grep "reason: detached HEAD" "$ERR" "test first, range mode: the missing branch evidence is explained"
+    tc_assert_grep "reason: no test path changed in the range HEAD~1..HEAD" "$ERR" \
+        "test first, range mode: the reason names the range"
+
+    # In range mode the range alone counts: a test committed on the
+    # branch before the range is not evidence for it.
+    git -C "$REPO" checkout -q -b feat/more-readings
+    tc_run_hook
+    tc_assert_rc 1 "test first, range mode: a test on the branch outside the range is not evidence"
+
+    # all reads every tracked file, so with no tracked test the reason
+    # says so rather than naming a range.
+    tc_setup_repo
+    test_first_config true light
+    write_code
+    tc_commit "add code alone"
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_hook
+    tc_assert_rc 1 "test first, range all: code with no tracked test stops the check"
+    tc_assert_grep "reason: no tracked file is a test path" "$ERR" \
+        "test first, range all: the reason says no tracked file is a test path"
 }
 
 # CI checks a pull request out as a detached merge commit and names the
@@ -1542,6 +1587,7 @@ case_stub_library_blocks_new_gates
 case_test_first_code_without_test
 case_test_first_code_with_test
 case_test_first_branch_evidence
+case_test_first_uncommitted_test_blocks
 case_test_first_refactor_branch_reminder
 case_test_first_not_applicable
 case_test_first_config_never_code

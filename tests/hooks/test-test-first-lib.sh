@@ -885,6 +885,37 @@ case_evidence_branch_since_main() {
     tc_assert_match "^reason: .*merge base with origin/develop" "$OUT" "evidence: origin/develop when develop is absent"
 }
 
+# The commit gate counts only the branch since its merge base, because
+# it checks the commit's own files itself. A test that is untracked,
+# or modified but not staged, is not in the commit and not on the
+# branch, so in branch mode it is not evidence.
+case_evidence_branch_mode() {
+    tf_evidence_repo
+    git -C "$REPO" checkout -q -b feat/new
+    printf 'def test_new(): pass\n' | tc_write tests/test_new.py
+    run_tf vse_tf_evidence "$REPO" branch
+    tc_assert_rc 1 "evidence, branch mode: an untracked test is not evidence"
+    tc_assert_eq "reason: no test path changed in the commit or on the branch since the merge base with main" "$OUT" \
+        "evidence, branch mode: the reason names the commit and the branch, not the working tree"
+    printf 'def test_more(): pass\n' >> "${REPO}/tests/test_app.py"
+    run_tf vse_tf_evidence "$REPO" branch
+    tc_assert_rc 1 "evidence, branch mode: a modified, unstaged test is not evidence"
+    run_tf vse_tf_evidence "$REPO"
+    tc_assert_rc 0 "evidence, default mode: the working tree still counts"
+
+    tc_stage tests/test_new.py
+    tc_commit "test first"
+    run_tf vse_tf_evidence "$REPO" branch
+    tc_assert_rc 0 "evidence, branch mode: a test committed on the branch"
+    tc_assert_eq "evidence: tests/test_new.py" "$OUT" "evidence, branch mode: names the committed test"
+
+    git -C "$REPO" checkout -q --detach
+    run_tf vse_tf_evidence "$REPO" branch
+    tc_assert_rc 1 "evidence, branch mode: a detached HEAD has none"
+    tc_assert_match "^reason: detached HEAD .*no test path changed in the commit$" "$OUT" \
+        "evidence, branch mode: the detached HEAD reason does not mention the working tree"
+}
+
 # protected_branches may be written as a flow list too.
 case_evidence_protected_flow_list() {
     tf_evidence_repo
@@ -1439,6 +1470,7 @@ case_evidence_rename_extra_field
 case_evidence_untracked_test
 case_evidence_deleted_test_ignored
 case_evidence_branch_since_main
+case_evidence_branch_mode
 case_evidence_protected_flow_list
 case_evidence_shallow
 case_evidence_detached

@@ -385,9 +385,12 @@ fi
 
 # 4. Test before code (methodology §11.9). With test_first.applies
 # true, a changed code path needs a changed test path in the file set,
-# or test evidence in the working tree or on the branch since its
-# merge base. On a refactor branch the finding is a reminder (in range
-# mode the branch is GITHUB_HEAD_REF when CI sets it). With
+# or, for a local commit, a test path changed on the branch since its
+# merge base (vse_tf_evidence in branch mode). A test that is untracked
+# or not staged is in neither, so it is not evidence (§11.9.2). In range
+# mode the range alone counts. On a refactor branch the finding is a
+# reminder (in range mode the branch is GITHUB_HEAD_REF when CI sets
+# it). With
 # test_first unrecorded, detected test tooling or a changed file the
 # recorded paths classify as code or test is a finding that asks for
 # the record, and otherwise one line suggests it. With applies false
@@ -429,7 +432,11 @@ EOF
 
     [ -n "$code" ] || return 0
     [ -z "$tests" ] || return 0
-    if evidence="$(vse_tf_evidence "$TOP_REAL")"; then
+    if [ "$RANGE" = all ]; then
+        evidence="reason: no tracked file is a test path"
+    elif [ -n "$RANGE" ]; then
+        evidence="reason: no test path changed in the range ${RANGE}"
+    elif evidence="$(vse_tf_evidence "$TOP_REAL" branch)"; then
         return 0
     fi
     # In range mode CI checks a pull request out as a detached merge

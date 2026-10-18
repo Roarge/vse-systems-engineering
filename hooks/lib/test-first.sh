@@ -28,7 +28,7 @@
 #   vse_tf_post_image <payload> <file>   file content after the edit
 #   vse_tf_disk_image <file>           file content before the edit
 #   vse_tf_classify <relpath>          never, test, code or other
-#   vse_tf_evidence <toplevel>         evidence: <path>, or reason: ...
+#   vse_tf_evidence <toplevel> [branch]  evidence: <path>, or reason: ...
 #   vse_tf_refactor_branch [<toplevel> [<branch>]]  0 on a refactor branch
 #   vse_tf_detect <dir>                one key per detected test tool
 #   vse_tf_applies                     true, false or nothing
@@ -750,48 +750,62 @@ EOF
 # the first base candidate that resolves. Otherwise return 1 and print
 # "reason: <text>", which names a shallow clone, a detached HEAD, an
 # unborn HEAD, or the base the branch was measured against.
+#
+# With the mode "branch" the working tree is not read and only the
+# branch since its merge base counts. That is the commit gate's mode:
+# it checks the commit's own files itself, and a test left untracked or
+# unstaged is in neither the commit nor the branch (methodology
+# §11.9.2). The reasons then speak of the commit, not the working tree.
+#
+# Usage: vse_tf_evidence <toplevel> [branch]
 vse_tf_evidence() {
-    local top="$1" record status path old base="" candidate merge_base
+    local top="$1" mode="${2:-}" record status path old base="" candidate merge_base
+    local here="in the working tree" since="or since the merge base with"
     if ! git -C "$top" rev-parse --git-dir >/dev/null 2>&1; then
         printf 'reason: %s is not inside a git repository\n' "$top"
         return 1
     fi
     _vse_tf_load
 
-    # Working tree. In the -z format a rename or copy record is
-    # followed by a field holding the old path, which is read and
-    # dropped so it is never taken for a record of its own.
-    while IFS= read -r -d '' record; do
-        status="${record:0:2}"
-        path="${record:3}"
-        case "$status" in
-            R*|C*|?R|?C)
-                # The old path is read only to be dropped.
-                # shellcheck disable=SC2034
-                IFS= read -r -d '' old || true
-                ;;
-        esac
-        case "$status" in
-            *D*) continue ;;
-        esac
-        _vse_tf_kind "$path"
-        if [ "$_VSE_TF_KIND" = test ]; then
-            printf 'evidence: %s\n' "$path"
-            return 0
-        fi
-    done < <(git -C "$top" status --porcelain=v1 -z -uall 2>/dev/null)
+    # Working tree, skipped in branch mode. In the -z format a rename or
+    # copy record is followed by a field holding the old path, which is
+    # read and dropped so it is never taken for a record of its own.
+    if [ "$mode" = branch ]; then
+        here="in the commit"
+        since="or on the branch since the merge base with"
+    else
+        while IFS= read -r -d '' record; do
+            status="${record:0:2}"
+            path="${record:3}"
+            case "$status" in
+                R*|C*|?R|?C)
+                    # The old path is read only to be dropped.
+                    # shellcheck disable=SC2034
+                    IFS= read -r -d '' old || true
+                    ;;
+            esac
+            case "$status" in
+                *D*) continue ;;
+            esac
+            _vse_tf_kind "$path"
+            if [ "$_VSE_TF_KIND" = test ]; then
+                printf 'evidence: %s\n' "$path"
+                return 0
+            fi
+        done < <(git -C "$top" status --porcelain=v1 -z -uall 2>/dev/null)
+    fi
 
     # Branch.
     if ! git -C "$top" rev-parse -q --verify HEAD >/dev/null 2>&1; then
-        printf 'reason: unborn HEAD (the branch has no commits yet), so there is no branch evidence and no test path changed in the working tree\n'
+        printf 'reason: unborn HEAD (the branch has no commits yet), so there is no branch evidence and no test path changed %s\n' "$here"
         return 1
     fi
     if ! git -C "$top" symbolic-ref -q HEAD >/dev/null 2>&1; then
-        printf 'reason: detached HEAD (no branch is checked out), so there is no branch evidence and no test path changed in the working tree\n'
+        printf 'reason: detached HEAD (no branch is checked out), so there is no branch evidence and no test path changed %s\n' "$here"
         return 1
     fi
     if [ "$(git -C "$top" rev-parse --is-shallow-repository 2>/dev/null)" = true ]; then
-        printf 'reason: shallow clone (the history is incomplete), so there is no branch evidence and no test path changed in the working tree\n'
+        printf 'reason: shallow clone (the history is incomplete), so there is no branch evidence and no test path changed %s\n' "$here"
         return 1
     fi
     while IFS= read -r candidate; do
@@ -803,11 +817,11 @@ vse_tf_evidence() {
 $(_vse_tf_base_candidates)
 EOF
     if [ -z "$base" ]; then
-        printf 'reason: no base branch found (protected_branches, main or master), and no test path changed in the working tree\n'
+        printf 'reason: no base branch found (protected_branches, main or master), and no test path changed %s\n' "$here"
         return 1
     fi
     if ! merge_base="$(git -C "$top" merge-base HEAD "$base" 2>/dev/null)"; then
-        printf 'reason: the branch shares no history with %s, and no test path changed in the working tree\n' "$base"
+        printf 'reason: the branch shares no history with %s, and no test path changed %s\n' "$base" "$here"
         return 1
     fi
     while IFS= read -r -d '' path; do
@@ -817,7 +831,7 @@ EOF
             return 0
         fi
     done < <(git -C "$top" diff --no-color --name-only -z --diff-filter=ACMR "$merge_base" HEAD 2>/dev/null)
-    printf 'reason: no test path changed in the working tree or since the merge base with %s\n' "$base"
+    printf 'reason: no test path changed %s %s %s\n' "$here" "$since" "$base"
     return 1
 }
 
