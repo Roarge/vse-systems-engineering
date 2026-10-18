@@ -130,9 +130,18 @@ fi
 
 WARNINGS=0
 RATIONALE="[pre-commit] To proceed anyway, record a one-line rationale per methodology §0.10.6."
+# What a blocked change does next. A check in CI (range mode, set by
+# VSE_PRECOMMIT_RANGE) cannot be bypassed from a workstation (§0.10.6),
+# so there it gives no rationale advice and asks for a new push.
+FIX_AGAIN="Fix them and commit again."
+if [ -n "${VSE_PRECOMMIT_RANGE:-}" ]; then
+    RATIONALE=""
+    FIX_AGAIN="Fix them on the branch and push again."
+fi
 
 # Report one finding at a gate's disposition. block prints the detail,
-# the headline and the §0.10.6 rationale line, and stops the commit.
+# the headline and the §0.10.6 rationale line (none in range mode), and
+# stops the commit.
 # warn prints the detail and the headline marked as a warning, and
 # counts it. info prints the headline alone, one line. off prints
 # nothing. Everything goes to stderr.
@@ -144,7 +153,7 @@ gate_report() {
         block)
             [ -z "$detail" ] || printf '%s\n' "$detail" >&2
             printf '[pre-commit] %s\n' "$headline" >&2
-            printf '%s\n' "$RATIONALE" >&2
+            [ -z "$RATIONALE" ] || printf '%s\n' "$RATIONALE" >&2
             exit 1
             ;;
         warn)
@@ -360,7 +369,7 @@ story_gate() {
             : # Clean.
             ;;
         1)
-            gate_report "$disposition" "${gate}: ${what} findings in the stories directories and feature files this change touches. Fix them and commit again." "$output"
+            gate_report "$disposition" "${gate}: ${what} findings in the stories directories and feature files this change touches. ${FIX_AGAIN}" "$output"
             ;;
         *)
             gate_report "$disposition" "${gate}: the story lint could not run (exit ${status}), so ${what} was not checked." "$output"

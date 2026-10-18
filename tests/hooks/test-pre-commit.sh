@@ -1397,6 +1397,13 @@ case_range_mode_catches_story() {
     tc_run_hook
     tc_assert_rc 1 "range mode: the story committed on the branch stops the check"
     tc_assert_grep "S1 US_901_Example has no feature file" "$ERR" "range mode: finding S1 is shown"
+    # A check in CI cannot be bypassed from a workstation (methodology
+    # §0.10.6), so range mode gives no rationale advice and asks for a
+    # fix on the branch and a new push.
+    tc_assert_match '^\[pre-commit\] precommit_gherkin: .*\. Fix them on the branch and push again\.$' "$ERR" \
+        "range mode: the headline asks for a fix on the branch and a new push"
+    tc_assert_not_grep "commit again" "$ERR" "range mode: the headline does not say commit again"
+    tc_assert_not_grep "$RATIONALE" "$ERR" "range mode: no rationale line is printed"
 }
 
 # The SysML lint is left to CI's own validation step in range mode, and
@@ -1443,6 +1450,7 @@ case_test_first_range_mode() {
     tc_assert_rc 1 "test first, range mode: code alone in the range stops the check"
     tc_assert_grep "reason: no test path changed in the range HEAD~1..HEAD" "$ERR" \
         "test first, range mode: the reason names the range"
+    tc_assert_not_grep "$RATIONALE" "$ERR" "test first, range mode: no rationale line is printed"
 
     # In range mode the range alone counts: a test committed on the
     # branch before the range is not evidence for it.
