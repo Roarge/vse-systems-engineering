@@ -199,6 +199,8 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | Page | Path | Read when |
 |---|---|---|
 | AMBSE Principles and Modelling Rules | pages/ambse/ambse-principles.md | Why agile methods apply differently to systems engineering, and the AMBSE modelling rules that follow |
+| Gherkin tags and tag expressions | pages/bdd-tdd/gherkin-tags-and-tag-expressions.md | Tag placement, inheritance and tag expressions, for selecting one story's or one criterion's scenarios on a runner |
+| Behaviour first and test first (§11) | pages/methodology/behaviour-and-test-first.md | Section 11 in one page: a feature file per story, mirrored criteria, story ordering, the test-first record, gates |
 | SYSMOD test modelling: Model Test Cases and the Test Architecture | pages/sysmod/sysmod-test-modelling.md | SYSMOD's verdict-returning test behaviours, the Model Test Case, and the Test Architecture as a system in its own right |
 | SysML v2 rules the reference implementations enforce | pages/tooling/tooling-reference-implementation-rules.md | SysML v2 forms the pilot and OpenSysML refuse or accept, from subject ordering to derivation and enum literals |
 | Verification and Validation Definitions | pages/vv/vv-definitions.md | What verification and validation each mean, how they differ, and the levels they apply at |

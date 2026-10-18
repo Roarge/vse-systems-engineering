@@ -1944,3 +1944,35 @@ diagnostic for either. LOG.md is append-only, so that entry stays as
 written.
 `updated:` bumped to 2026-10-18 on every page listed. No title or
 summary changed.
+
+## [2026-10-18] index | routing resync
+Pages indexed: 172. Layers: 13 (bdd-tdd added). Routing blocks
+regenerated: 4 (story-orchestrator, needs-and-requirements,
+verification-validation, test-first). Routing rows 245 to 261.
+Referencing skills 23 to 24. ToC drift: 0.
+
+## [2026-10-18] lint | post-ingest (section 11)
+
+Full rule set after the index run. Pages scanned: 172. Routing blocks
+scanned: 24, excluding the marker occurrences inside fenced blocks and
+inline code spans in `vse-wiki-index` and `vse-wiki-lint`. The same
+checks run on the branch before this ingest gave ERROR 0, WARN 258 and
+INFO 271.
+
+- **ERROR: 0.** Frontmatter integrity, routing bidirectionality in
+  both directions across 261 rows, path resolution, sorted order,
+  summary fidelity, wikilink resolution and every `raw:` path inside
+  the plugin tree all hold.
+- **WARN: 259.** 176 schema-drift findings (97 on process pages and
+  79 on pattern pages) and 83 wikilinks absent from `related:`. The
+  movement from the earlier run is two new schema-drift findings on
+  tdd-red-green-refactor, whose cycle and work-product headings do not
+  use the words step and postcondition, and one wikilink finding fewer,
+  because ambse-principles now lists methodology-overview in
+  `related:`. Every other WARN predates this ingest.
+- **INFO: 276.** 206 are `raw:` filenames under the gitignored
+  `sources/`, which is not present in this checkout and so could not be
+  resolved. 53 are `raw: null` web citations, 12 of them on this
+  ingest's pages, and 17 are source-freshness observations. No
+  orphans, no empty tag lists, no date inversions and no contradiction
+  candidates.

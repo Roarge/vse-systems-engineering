@@ -260,4 +260,8 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
+| Gherkin syntax reference | pages/bdd-tdd/gherkin-syntax-reference.md | Gherkin keywords, steps, Background, Outlines, doc strings, data tables and comments, with the limits §11 sets |
+| Gherkin tags and tag expressions | pages/bdd-tdd/gherkin-tags-and-tag-expressions.md | Tag placement, inheritance and tag expressions, for selecting one story's or one criterion's scenarios on a runner |
+| Test-driven development: the red-green-refactor cycle | pages/bdd-tdd/tdd-red-green-refactor.md | The red-green-refactor cycle, the Iron Law, tests that can fail, and how §11.6 adjusts the installed TDD skill |
+| Behaviour first and test first (§11) | pages/methodology/behaviour-and-test-first.md | Section 11 in one page: a feature file per story, mirrored criteria, story ordering, the test-first record, gates |
 <!-- wiki-routing:end -->

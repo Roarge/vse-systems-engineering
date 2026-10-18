@@ -190,9 +190,14 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 <!-- wiki-routing:begin -->
 | Page | Path | Read when |
 |---|---|---|
+| Behaviour-driven development: the three practices | pages/bdd-tdd/bdd-three-practices.md | What BDD is, its discovery, formulation and automation practices, and where each sits in the methodology |
+| Declarative Gherkin: describe behaviour, not implementation | pages/bdd-tdd/gherkin-declarative-style.md | Writing scenarios that describe behaviour rather than implementation, in a declarative style that survives redesign |
+| Gherkin syntax reference | pages/bdd-tdd/gherkin-syntax-reference.md | Gherkin keywords, steps, Background, Outlines, doc strings, data tables and comments, with the limits §11 sets |
+| Gherkin tags and tag expressions | pages/bdd-tdd/gherkin-tags-and-tag-expressions.md | Tag placement, inheritance and tag expressions, for selecting one story's or one criterion's scenarios on a runner |
 | Architectural Analysis and Trade Studies workflow (§6) | pages/methodology/architectural-analysis-workflow.md | Turning a System User Story set into a resolved architecture through trade studies, per §6 |
 | Architectural Design workflow (§7) | pages/methodology/architectural-design-workflow.md | Decomposing the resolved architecture into subsystems and allocating the specification down, per §7 |
 | Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| Behaviour first and test first (§11) | pages/methodology/behaviour-and-test-first.md | Section 11 in one page: a feature file per story, mirrored criteria, story ordering, the test-first record, gates |
 | frame concern: linking stories to stakeholder concerns | pages/methodology/frame-concern-pattern.md | The frame concern member that ties a User Story to persistent stakeholder concerns in the model |
 | Story-driven AMBSE Methodology Overview | pages/methodology/methodology-overview.md | The plugin's methodology specifies an agile model-based systems engineering process expressed natively in SysML v2 |
 | Coupling story role to use-case actor via objective | pages/methodology/role-actor-coupling.md | Coupling a story role to a use-case actor through the shared objective |
