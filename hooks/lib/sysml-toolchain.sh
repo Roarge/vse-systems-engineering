@@ -127,7 +127,7 @@ vse_tc_candidates() {
 # Resolve a Java 21 or later binary into VSE_TC_JAVA. Order: VSE_JAVA,
 # JAVA_HOME/bin/java, java on PATH. Returns 1 with VSE_TC_REASON set.
 vse_tc_java() {
-    local candidate line major
+    local candidate output line said major
     VSE_TC_JAVA=""
     VSE_TC_REASON=""
     for candidate in "${VSE_JAVA:-}" "${JAVA_HOME:+${JAVA_HOME}/bin/java}" "$(command -v java 2>/dev/null || true)"; do
@@ -135,12 +135,12 @@ vse_tc_java() {
         # an empty or non-executable candidate is skipped.
         # shellcheck disable=SC2015
         [ -n "$candidate" ] && [ -x "$candidate" ] || continue
-        # The JVM prints "Picked up JAVA_TOOL_OPTIONS: ..." ahead of the
-        # version whenever that variable is set, so the version comes
-        # from the first line that names one, not from line 1. awk
-        # reads to the end rather than exiting early, so the JVM never
-        # writes into a closed pipe.
-        line="$("$candidate" -version 2>&1 | awk '!seen && /version "/ { print; seen = 1 }')"
+        # The JVM runs once, and its output is kept for the reason. It
+        # prints "Picked up JAVA_TOOL_OPTIONS: ..." ahead of the version
+        # whenever that variable is set, so the version comes from the
+        # first line that names one, not from line 1.
+        output="$("$candidate" -version 2>&1 || true)"
+        line="$(printf '%s\n' "$output" | awk '!seen && /version "/ { print; seen = 1 }')"
         major="$(printf '%s\n' "$line" | sed -n 's/.*version "\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*.*/\1/p')"
         if [ "$major" = "1" ]; then
             major="$(printf '%s\n' "$line" | sed -n 's/.*version "1\.\([0-9][0-9]*\).*/\1/p')"
@@ -152,7 +152,10 @@ vse_tc_java() {
         if [ -n "$major" ]; then
             VSE_TC_REASON="java at ${candidate} is major ${major}, need 21 or later"
         else
-            VSE_TC_REASON="java at ${candidate} did not report a version: $("$candidate" -version 2>&1 | head -n 1 || true)"
+            # Quote the first thing the JVM said, passing over the
+            # JAVA_TOOL_OPTIONS banner, which is not a version line.
+            said="$(printf '%s\n' "$output" | awk '!seen && NF && !/^Picked up / { print; seen = 1 }')"
+            VSE_TC_REASON="java at ${candidate} printed no version line${said:+. It said: ${said}}"
         fi
     done
     [ -n "$VSE_TC_REASON" ] || VSE_TC_REASON="java not found (install Java 21 or later, or set JAVA_HOME or VSE_JAVA)"

@@ -180,8 +180,32 @@ chmod +x "${STUBS}/deadjava/java"
 tc_env "VSE_JAVA=${STUBS}/deadjava/java" "PATH=${STUBS}/deadjava:${STUBS}:/usr/bin:/bin"
 tc_run_lib java
 tc_assert_rc 2 "java: a JVM that never starts is rejected"
-tc_assert_grep "did not report a version: Error occurred during initialization of VM" \
-    "$ERR" "java: the reason quotes the first line the binary printed"
+tc_assert_grep "java at ${STUBS}/deadjava/java printed no version line. It said: Error occurred during initialization of VM" \
+    "$ERR" "java: the reason quotes the first line the binary printed, as what it said"
+
+# A JVM that prints the JAVA_TOOL_OPTIONS banner and no version line.
+# The banner is not quoted as if it were the version line, and the
+# JVM runs once, not a second time to read the line to quote.
+mkdir -p "${STUBS}/bannerjava"
+cat > "${STUBS}/bannerjava/java" <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf 'run\n' >> "${TC_INVOCATIONS:-/dev/null}"
+echo 'Picked up JAVA_TOOL_OPTIONS: -Dfoo=bar' >&2
+exit 1
+EOF
+chmod +x "${STUBS}/bannerjava/java"
+: > "${FAKEHOME}/java-runs"
+tc_env "VSE_JAVA=${STUBS}/bannerjava/java" "PATH=${STUBS}/bannerjava:${STUBS}:/usr/bin:/bin" \
+    "TC_INVOCATIONS=${FAKEHOME}/java-runs"
+tc_run_lib java
+tc_assert_rc 2 "java: a JVM that prints only the banner is rejected"
+tc_assert_grep "java at ${STUBS}/bannerjava/java printed no version line" "$ERR" \
+    "java: the reason says no version line was printed"
+tc_assert_not_grep "Picked up" "$ERR" "java: the banner is not quoted as the version line"
+# VSE_JAVA and PATH both name this binary, so it is a candidate twice.
+tc_assert_eq 2 "$(grep -c '^run$' "${FAKEHOME}/java-runs" || true)" \
+    "java: the JVM runs once for each candidate, not twice"
 
 tc_env
 
