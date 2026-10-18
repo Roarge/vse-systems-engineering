@@ -1880,3 +1880,30 @@ clause in the layer paragraph. The five templates under wiki/schema/
 gain bdd-tdd in the layer enumeration. .claude/rules/wiki.md places
 the layer's sources lowest in the source-processing order, below the
 domain guides. Methodology §11 wins over every source in the layer.
+
+## [2026-10-18] ingest | Cucumber documentation and the superpowers test-driven-development skill
+Layer: bdd-tdd, methodology. Sources are the Cucumber Gherkin reference,
+the Tags, Conditional hooks and Step results sections of the Cucumber
+reference, and five pages of the Cucumber BDD section (overview,
+Example Mapping, discovery workshop, who does what, writing better
+Gherkin), all read on 2026-10-17, plus the superpowers
+test-driven-development skill at version 6.4.2 (SKILL.md and
+writing-good-tests.md, MIT licence, identical to the GitHub main branch
+on 2026-10-17). Every web citation carries its URL and access month
+with `raw: null`. The methodology page cites
+methodology/11-behaviour-and-test-driven-development.md.
+Pages authored:
+- gherkin-syntax-reference (new, reference)
+- gherkin-tags-and-tag-expressions (new, reference)
+- bdd-three-practices (new, concept)
+- bdd-discovery-workshop-and-example-mapping (new, process)
+- gherkin-declarative-style (new, pattern)
+- tdd-red-green-refactor (new, process, `confidence: medium` because
+  the skill is revised between releases and the page records 6.4.2)
+- behaviour-and-test-first (new, concept, methodology layer)
+Pages updated (cross-links): user-story-canonical-artefact,
+story-branch-pr-workflow, storymeta-lifecycle, methodology-overview,
+tooling-reference-implementation-rules.
+Routing resynced: story-orchestrator, needs-and-requirements,
+verification-validation, test-first. test-first gains its first rows,
+which replaces its empty marker block. INDEX regenerated.
