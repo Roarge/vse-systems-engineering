@@ -15,7 +15,7 @@ related:
   - iso29110-phase-gates
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-10-18
 referenced_by: [project-setup, release-orchestrator]
 ---
 
@@ -72,7 +72,7 @@ obtain acquirer acceptance.
 
 ### Work products used
 
-- Statement of Work [reviewed] → `docs/pm/statement-of-work.md`
+- Statement of Work [reviewed] → the plugin template `templates/pm/statement-of-work.md`, copied into `docs/` on request by the skill that owns it
 - System Design Document (for SBS, if available)
 
 ## PM.2 Project Plan Execution
@@ -120,7 +120,7 @@ actions, and maintain the Justification Document.
 
 - Progress Status Record [evaluated]
 - Correction Register [published]
-- Justification Document [published] → `docs/pm/justification-document.md`
+- Justification Document [published] → `docs/justification-document.md`
 
 ### Work products used
 

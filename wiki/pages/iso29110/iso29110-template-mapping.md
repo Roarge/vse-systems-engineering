@@ -15,31 +15,36 @@ related:
   - vse-canonical-project-layout
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-10-18
 referenced_by: [project-setup, release-orchestrator]
 ---
 
 # ISO/IEC 29110 Phase to Template Mapping
 
 Quick reference linking each ISO/IEC 29110 phase to the markdown
-template file it produces. The plugin's `@project-setup` skill
-scaffolds these templates under `docs/pm/` and `docs/sr/` (or
-`engineering/docs/pm/` and `engineering/docs/sr/` in brownfield
-layouts). For the full canonical project layout, see
+template file it produces and to where that work product lives in a
+project. The plugin keeps its templates in `templates/pm/` and
+`templates/sr/`. A project's work products sit under `docs/` (or
+`engineering/docs/` in brownfield layouts), one file per document
+directly in it, apart from the rendered documents in
+`docs/generated/` and the meeting records and the verification and
+validation reports in their own folders. `@project-setup` writes the documents of the project's
+profile, and the skill that owns any other document copies its
+template on request. For the full canonical project layout, see
 [[vse-canonical-project-layout]].
 
 ## PM phase templates
 
-| Phase | Template file | Work product |
+| Phase | Location in the project | Work product |
 |---|---|---|
-| PM.1 | `docs/pm/statement-of-work.md` | Statement of Work |
-| PM.1 | `docs/pm/project-plan.md` | Project Plan |
-| PM.1-PM.4 | `docs/pm/meeting-record.md` | Meeting Record |
-| PM.2 | `docs/pm/progress-status.md` | Progress Status Record |
-| PM.2 | `docs/pm/change-request.md` | Change Request |
-| PM.3 | `docs/pm/correction-register.md` | Correction Register |
-| PM.3 / SR.3 | `docs/pm/justification-document.md` | Justification Document |
-| PM.4 | `docs/pm/product-acceptance.md` | Product Acceptance Record |
+| PM.1 | the plugin template `templates/pm/statement-of-work.md`, copied into `docs/` on request by the skill that owns it | Statement of Work |
+| PM.1 | `docs/project-plan.md` | Project Plan |
+| PM.1-PM.4 | one file per meeting under `docs/meetings/` | Meeting Record |
+| PM.2 | `docs/progress-status-record.md` | Progress Status Record |
+| PM.2 | a GitHub Issue labelled `change-request` (methodology §10.4.2), not a file | Change Request |
+| PM.3 | `docs/correction-register.md` | Correction Register |
+| PM.3 / SR.3 | `docs/justification-document.md` | Justification Document |
+| PM.4 | `docs/product-acceptance-record.md` | Product Acceptance Record |
 
 The Justification Document spans PM.3 (project assessment) and
 SR.3 (architecture trade-offs). The plugin uses a single document
@@ -48,29 +53,29 @@ disjoint files.
 
 ## SR phase templates
 
-| Phase | Template file | Work product |
+| Phase | Location in the project | Work product |
 |---|---|---|
-| SR.1 | `docs/sr/semp.md` | SEMP |
-| SR.1 | `docs/sr/data-model.md` | Data Model |
-| SR.2 | `docs/sr/stakeholder-requirements.md` | StRS |
-| SR.2 | `docs/sr/system-requirements.md` | SyRS |
-| SR.2 | `docs/sr/system-element-requirements.md` | System Elements Requirements |
-| SR.2+ | `docs/sr/traceability-matrix.md` | Traceability Matrix |
-| SR.2/SR.5 | `docs/sr/ivv-plan.md` | IVV Plan |
-| SR.3 | `docs/sr/system-design.md` | System Design Document |
-| SR.3 | `docs/pm/purchase-order.md` | Purchase Order |
-| SR.3 (optional) | `docs/sr/system-user-manual.md` | System User Manual |
-| SR.5 | `docs/sr/integration-report.md` | Integration Report |
-| SR.5 | `docs/sr/verification-report.md` | Verification Report |
-| SR.5 | `docs/sr/validation-report.md` | Validation Report |
-| SR.5 (optional) | `docs/sr/system-operation-guide.md` | System Operation Guide |
-| SR.6 | `docs/sr/maintenance-guide.md` | Maintenance Documentation |
-| SR.6 | `docs/sr/training-specifications.md` | System Training Specifications |
+| SR.1 | `docs/semp.md` | SEMP |
+| SR.1 | the SysML model, with an optional explicit data model package (methodology §9.5) | Data Model |
+| SR.2 | `docs/generated/stakeholder-requirements.md`, rendered from the model | StRS |
+| SR.2 | `docs/generated/system-requirements.md`, rendered from the model | SyRS |
+| SR.2 | the plugin template `templates/sr/system-element-requirements.md`, copied into `docs/` on request by the skill that owns it | System Elements Requirements |
+| SR.2+ | `docs/generated/traceability-matrix.md`, rendered from the model | Traceability Matrix |
+| SR.2/SR.5 | `docs/ivv-plan.md` | IVV Plan |
+| SR.3 | `docs/system-design.md` | System Design Document |
+| SR.3 | its template is kept in `docs/templates/` (methodology §10.10) | Purchase Order |
+| SR.3 (optional) | its template is kept in `docs/templates/` (methodology §10.10) | System User Manual |
+| SR.5 | the plugin template `templates/sr/integration-report.md`, copied into `docs/` on request by the skill that owns it | Integration Report |
+| SR.5 | `docs/verification-reports/<case>-<date>.md`, one per run | Verification Report |
+| SR.5 | `docs/validation-reports/<case>-<date>.md`, one per run | Validation Report |
+| SR.5 (optional) | its template is kept in `docs/templates/` (methodology §10.10) | System Operation Guide |
+| SR.6 | `docs/maintenance-guide.md` | Maintenance Documentation |
+| SR.6 | its template is kept in `docs/templates/` (methodology §10.10) | System Training Specifications |
 
 The IVV Plan is created during SR.2.9 and updated during SR.5.1.
 The Traceability Matrix is created during SR.2.8 and continuously
 updated through SR.3 and SR.5. The Purchase Order is the only PM
-template that originates in an SR phase (SR.3.3, when a system
+work product that originates in an SR phase (SR.3.3, when a system
 element will be procured).
 
 ## See also

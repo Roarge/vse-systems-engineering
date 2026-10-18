@@ -18,9 +18,11 @@ related:
   - system-stories-workflow
   - story-branch-pr-workflow
   - tooling-reference-implementation-rules
+  - behaviour-and-test-first
+  - gherkin-syntax-reference
 confidence: high
 created: 2026-05-05
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [story-orchestrator, needs-and-requirements]
 ---
 
@@ -69,7 +71,7 @@ A well-formed User Story carries four mandatory members and one optional framing
 1. **`role`**, mandatory, exactly one. A `stakeholder` feature corresponding to the canonical "As a ..." clause, redefined by the story as `stakeholder :>> role : Operator;` and declared after the subject redefinition. The role shall carry a concrete project part definition before the story leaves `backlog` status. The same part definition types any `actor` that represents this party in a bound use case. See [[role-actor-coupling]].
 2. **`capability`**, mandatory. A string describing the "I want ..." clause: what the role wants to do, see, or experience, written `attribute :>> capability = "...";`.
 3. **`benefit`**, mandatory. A string describing the "so that ..." clause: the value the role gains, written `attribute :>> benefit = "...";`. Where the benefit has been formalised as a measurable outcome, the story should additionally carry a nested requirement usage whose `require constraint` bounds the relevant value properties, so that a verification case can target it by name. See [[benefit-as-criterion]].
-4. **`acceptance`**, mandatory, at least one before `ready`. A nested requirement usage inherited from `UserStory` and redefined by the story as `requirement :>> acceptance { doc /* Given ... */ }`. Several separately verifiable criteria nest inside that redefinition as named requirement usages, each expressing one criterion in Given/When/Then form or an equivalent declarative form.
+4. **`acceptance`**, mandatory, at least one before `ready`. A nested requirement usage inherited from `UserStory` and redefined by the story as `requirement :>> acceptance { requirement <name> { doc /* ... */ } }`. Each acceptance criterion is a named requirement usage nested inside that redefinition, named in lowerCamelCase, and each is stated as a Gherkin scenario (a plain-text Given/When/Then example) tagged `@AC_<name>` in the story's feature file, `<ID>.feature`, which sits beside the file that declares the story. The scenario is the normative statement. The criterion's `doc` restates it so that the model reads on its own. Acceptance prose placed directly in the redefinition, outside a named criterion, is the form used before plugin version 5.0.0, and a story in that form is migrated when it is next changed. See [[behaviour-and-test-first]] and [[gherkin-syntax-reference]].
 5. **`frame concern`**, optional, multiplicity `[0..*]`. The story may declare that it addresses one or more `concern def` instances via the SysML 2.0 framing mechanism. See [[frame-concern-pattern]].
 
 ## Connective mechanism: formalised benefit
@@ -103,7 +105,7 @@ The identifier is the usage name. An optional short name (`requirement <'US-42'>
 
 ### Minimal form (text only)
 
-A story authored at backlog entry includes the agile-canonical members and at least one acceptance criterion. Typed bindings into the behavioural or analytical model are not yet required. This form is sufficient for backlog management and human-facing planning conversations.
+A story authored at backlog entry includes the agile-canonical members, and its feature file exists beside it with the story tag and the narrative. The first scenario, with the named criterion that mirrors it, follows before the story is marked `ready`. Typed bindings into the behavioural or analytical model are not yet required. This form is sufficient for backlog management and human-facing planning conversations.
 
 ```sysml
 requirement US_042_AckFromDashboard : UserStory {
@@ -118,16 +120,34 @@ requirement US_042_AckFromDashboard : UserStory {
     frame concern : FastIncidentResponse;
 
     requirement :>> acceptance {
-        doc /* Given N unacknowledged alarms shown,
-               when the operator selects "Ack all",
-               then all N transition to acknowledged within 1 s. */
+        requirement ackAllWithinOneSecond {
+            doc /* Given N unacknowledged alarms shown,
+                   when the operator selects "Ack all",
+                   then all N transition to acknowledged within 1 s. */
+        }
     }
 }
 ```
 
+The feature file `US_042_AckFromDashboard.feature` sits beside the register file and states the same criterion as a scenario:
+
+```gherkin
+@US_042_AckFromDashboard
+Feature: Acknowledge alarms from the dashboard
+  As an operator
+  I want to acknowledge alarms from the dashboard
+  So that the queue clears without opening each device
+
+  @AC_ackAllWithinOneSecond
+  Scenario: Ack all clears every shown alarm within 1 s
+    Given N unacknowledged alarms are shown
+    When the operator selects "Ack all"
+    Then all N alarms transition to acknowledged within 1 s
+```
+
 ### Elaborated form
 
-As the story progresses, model bindings are added: a `use case def` that takes the story as its `objective`, a `verification def` whose objective writes `verify <story>.acceptance`, framed concerns, and nested requirement usages that formalise the benefit. The narrative `role`, `capability`, and `benefit` are retained throughout. See [[stakeholder-stories-workflow]] and [[system-stories-workflow]] for the lifecycle workflows, and [[story-branch-pr-workflow]] for the branch-and-PR cadence used to land elaborations.
+As the story progresses, model bindings are added: a `use case def` that takes the story as its `objective`, a `verification def` whose objective writes `verify <story>.acceptance`, or `verify <story>.acceptance.<criterion>` for one criterion, framed concerns, and nested requirement usages that formalise the benefit. The narrative `role`, `capability`, and `benefit` are retained throughout. See [[stakeholder-stories-workflow]] and [[system-stories-workflow]] for the lifecycle workflows, and [[story-branch-pr-workflow]] for the branch-and-PR cadence used to land elaborations.
 
 ## Well-formedness rules
 
@@ -136,10 +156,10 @@ The following eleven rules apply to every User Story.
 1. A User Story is a requirement usage typed by `UserStory` (`requirement <ID> : UserStory`), never a `requirement def`.
 2. A User Story shall redefine exactly one `subject` (`subject :>> system : <PartDef>;`), declared before `role`.
 3. A User Story shall redefine exactly one `role` (`stakeholder :>> role : <PartDef>;`) with a concrete part definition before transitioning out of `backlog` status.
-4. A User Story shall declare at least one acceptance criterion, in `requirement :>> acceptance`, before transitioning to `ready` status.
+4. A User Story shall have its feature file and, before transitioning to `ready` status, at least one Gherkin scenario tagged `@AC_<name>`, mirrored by a requirement of the same name nested in `requirement :>> acceptance`. Acceptance prose outside a named criterion is not used.
 5. Where a `use case def` declares a User Story as its `objective`, the objective subsets the story and binds the story's subject to the case subject (`objective <n> :> <story> { subject :>> system = <caseSubject>; }`). The case subject type shall conform to the story's subject type, and the actor representing the role shall be typed by the same part definition as `role`.
 6. The narrative `capability` and `benefit` (`attribute :>> capability = ...`) shall be retained throughout the story's lifecycle.
-7. `verify` targets a member of the story usage by dot notation (`verify <story>.acceptance`), inside a `verification def` objective only.
+7. `verify` targets a member of the story usage by dot notation (`verify <story>.acceptance` or `verify <story>.acceptance.<criterion>`), inside a `verification def` objective only.
 8. A system story records its derivation with the `#derive` prefix on the usage and a `#derivation connection` whose ends are tagged `#original` and `#derive`.
 9. `StoryMeta` is applied with `@StoryMeta { ... }` and qualified enumeration values.
 10. `satisfy <story> by <element>` names an element typed by the story's subject type or a specialisation of it.

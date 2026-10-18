@@ -1907,3 +1907,40 @@ tooling-reference-implementation-rules.
 Routing resynced: story-orchestrator, needs-and-requirements,
 verification-validation, test-first. test-first gains its first rows,
 which replaces its empty marker block. INDEX regenerated.
+
+## [2026-10-18] refactor | section 11 corrections to existing pages
+Layer: methodology, ambse, tooling, iso29110, project-structure. Pages
+updated:
+- user-story-canonical-artefact (acceptance member, minimal form,
+  rules 4 and 7 to the feature-file and named-criterion form of §1.4.4,
+  §1.7.1 and §1.9)
+- story-branch-pr-workflow (opening-commit minimum of §8.5.1, seven PR
+  template sections with Test-first evidence, author item 4, reviewer
+  item 6, Contents block)
+- frame-concern-pattern, stakeholder-stories-workflow,
+  storymeta-lifecycle (acceptance and backlog wording to §11.4, and a
+  Contents block on storymeta-lifecycle, which the added citation
+  takes past 100 lines)
+- ambse-principles (see-also bullets that pointed at
+  methodology-overview for retired AMBSE cycle pages)
+- tooling-java-runtime (version check reads the first line naming a
+  version, past a JAVA_TOOL_OPTIONS banner)
+- tooling-reference-implementation-rules (which forms the templates and
+  the demo use, the 2026-10-17 demo validation, deep verify glossed at
+  first use)
+- iso29110-template-mapping, iso29110-pm-task-checklists,
+  iso29110-sr-task-checklists, iso29110-roles-and-work-products,
+  vse-model-tiers-and-templates, vse-canonical-project-layout
+  (work-product paths moved off the `docs/pm/` and `docs/sr/` folders,
+  which no skill writes any more, to the files `@project-setup` and
+  `@document-export` name under `docs/`, with the plugin template or
+  the methodology section named where no project path exists)
+The 2026-10-16 refactor entry says the demo itself is unchanged. That
+held on 2026-10-16. On 2026-10-17 every demo story gained a feature file
+and named criteria verified by full path, and both tools accepted the
+sixteen files. Its sentence on the demo copy means that both tools
+validated the extended pattern and the demo copy, and reported no
+diagnostic for either. LOG.md is append-only, so that entry stays as
+written.
+`updated:` bumped to 2026-10-18 on every page listed. No title or
+summary changed.

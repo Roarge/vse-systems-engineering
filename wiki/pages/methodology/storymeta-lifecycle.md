@@ -10,17 +10,31 @@ sources:
     raw: methodology/01-user-stories.md
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §8.7 (Story Lifecycle Alignment)."
     raw: methodology/08-project-structure.md
+  - citation: "vse-systems-engineering plugin (2026). Methodology Specification §11.4 (Story ordering)."
+    raw: methodology/11-behaviour-and-test-driven-development.md
 related:
   - methodology-overview
   - user-story-canonical-artefact
   - story-branch-pr-workflow
+  - behaviour-and-test-first
 confidence: high
 created: 2026-05-05
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [story-orchestrator, release-orchestrator]
 ---
 
 # StoryMeta status lifecycle and branch alignment
+
+## Contents
+
+- Purpose
+- StoryMeta metadata definition
+- The four valid statuses
+- Lifecycle alignment with repository state
+- Transition rules
+- CI enforcement
+- Returning from done to inProgress
+- Implications for tooling and the engineer
 
 ## Purpose
 
@@ -58,7 +72,7 @@ There are no other values. A status outside this set is a model defect that the 
 
 | StoryMeta.status | Repository state |
 |---|---|
-| backlog | story does not yet exist as a file |
+| backlog | story does not yet exist as a file, or exists with its feature file and narrative (§11.4) |
 | ready | story file exists on `main`, no open branch |
 | inProgress (draft) | story branch exists, draft PR open |
 | inProgress (review) | story branch exists, PR marked ready |
@@ -72,8 +86,8 @@ The branch and pull-request mechanics that produce these states are specified in
 
 The status transitions are constrained as follows:
 
-- **backlog to ready** when §1.9 well-formedness rules 3 and 4 are satisfied. Rule 3 requires that `role` has been redefined with a concrete part definition. Rule 4 requires at least one acceptance criterion. Until both hold, the story remains in backlog.
-- **ready to inProgress** at the moment a story branch is created and a draft PR is opened against it. There shall be exactly one open draft PR per story branch.
+- **backlog to ready** when §1.9 well-formedness rules 3 and 4 are satisfied. Rule 3 requires that `role` has been redefined with a concrete part definition. Rule 4 requires the story's feature file and at least one tagged scenario, mirrored by a named criterion (§11.4). Until both hold, the story remains in backlog.
+- **ready to inProgress** at the moment a story branch is created and a draft PR is opened against it. There shall be exactly one open draft PR per story branch. Before the story holds `inProgress`, every criterion is reached by at least one verification or validation case, a stub being enough (§11.4).
 - **inProgress (draft) to inProgress (review)** when the §8.6.2 story-readiness checklist passes for the story and the author marks the draft PR ready for review. The `status` value does not change at this transition. The PR state changes.
 - **inProgress (review) to done** at PR merge. The branch is then deleted. The story file lands on `main` with `status = done`.
 

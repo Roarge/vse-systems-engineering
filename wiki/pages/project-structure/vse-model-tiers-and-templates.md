@@ -15,7 +15,7 @@ related:
   - iso29110-template-mapping
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-10-18
 referenced_by: [project-setup, project-audit]
 ---
 
@@ -28,12 +28,14 @@ referenced_by: [project-setup, project-audit]
 - See also
 
 This page defines the three SysML model tiers (Flat, Minimal
-AMBSE, Canonical AMBSE) used by `@project-setup` and the document
-templates scaffolded under `docs/pm/` and `docs/sr/`. For root
-files and `.vse-iteration.yml` schema see
-[[vse-canonical-project-layout]]. For the AMBSE canonical package
-layout the model tiers ground out in, see
-[[sysml2-canonical-model-layout]].
+AMBSE, Canonical AMBSE) used by `@project-setup` and where each
+ISO/IEC 29110 work product lives. The plugin keeps its document
+templates in `templates/pm/` and `templates/sr/`. A project's work
+products sit under `docs/`, one file per document directly in it,
+apart from the folders named below. For root files and
+`.vse-iteration.yml` schema see [[vse-canonical-project-layout]].
+For the AMBSE canonical package layout the model tiers ground out
+in, see [[sysml2-canonical-model-layout]].
 
 ## Model tiers
 
@@ -112,35 +114,39 @@ configurations as a peer package), see
 
 ## Document templates
 
-### PM work products (`docs/pm/`, 9 files)
+`@project-setup` writes the documents of the project's profile, and
+the skill that owns any other document copies its template on
+request.
 
-1. `project-plan.md`
-2. `statement-of-work.md`
-3. `progress-status.md`
-4. `meeting-record.md`
-5. `change-request.md`
-6. `correction-register.md`
-7. `justification-document.md`
-8. `purchase-order.md`
-9. `product-acceptance.md`
+### PM work products (9)
 
-### SR work products (`docs/sr/`, 15 files)
+1. Project Plan: `docs/project-plan.md`
+2. Statement of Work: the plugin template `templates/pm/statement-of-work.md`, copied into `docs/` on request by the skill that owns it
+3. Progress Status Record: `docs/progress-status-record.md`
+4. Meeting Record: one file per meeting under `docs/meetings/`
+5. Change Request: a GitHub Issue labelled `change-request` (methodology §10.4.2), not a file
+6. Correction Register: `docs/correction-register.md`
+7. Justification Document: `docs/justification-document.md`
+8. Purchase Order: its template is kept in `docs/templates/` (methodology §10.10)
+9. Product Acceptance Record: `docs/product-acceptance-record.md`
 
-1. `semp.md`
-2. `data-model.md`
-3. `stakeholder-requirements.md`
-4. `system-requirements.md`
-5. `system-element-requirements.md`
-6. `traceability-matrix.md`
-7. `system-design.md`
-8. `ivv-plan.md`
-9. `integration-report.md`
-10. `verification-report.md`
-11. `validation-report.md`
-12. `system-user-manual.md`
-13. `system-operation-guide.md`
-14. `maintenance-guide.md`
-15. `training-specifications.md`
+### SR work products (15)
+
+1. Systems Engineering Management Plan (SEMP): `docs/semp.md`
+2. Data Model: the SysML model, with an optional explicit data model package (methodology §9.5)
+3. Stakeholder Requirements Specification (StRS): `docs/generated/stakeholder-requirements.md`, rendered from the model
+4. System Requirements Specification (SyRS): `docs/generated/system-requirements.md`, rendered from the model
+5. System Elements Requirements: the plugin template `templates/sr/system-element-requirements.md`, copied into `docs/` on request by the skill that owns it
+6. Traceability Matrix: `docs/generated/traceability-matrix.md`, rendered from the model
+7. System Design Document: `docs/system-design.md`
+8. IVV Plan: `docs/ivv-plan.md`
+9. Integration Report: the plugin template `templates/sr/integration-report.md`, copied into `docs/` on request by the skill that owns it
+10. Verification Report: `docs/verification-reports/<case>-<date>.md`, one per run
+11. Validation Report: `docs/validation-reports/<case>-<date>.md`, one per run
+12. System User Manual: its template is kept in `docs/templates/` (methodology §10.10)
+13. System Operation Guide: its template is kept in `docs/templates/` (methodology §10.10)
+14. Maintenance Documentation: `docs/maintenance-guide.md`
+15. System Training Specifications: its template is kept in `docs/templates/` (methodology §10.10)
 
 For the phase-to-template mapping see
 [[iso29110-template-mapping]].

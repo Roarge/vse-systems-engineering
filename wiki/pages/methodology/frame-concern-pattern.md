@@ -14,7 +14,7 @@ related:
   - stakeholder-stories-workflow
 confidence: high
 created: 2026-05-05
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [story-orchestrator, needs-and-requirements]
 ---
 
@@ -61,7 +61,7 @@ requirement US_042_AckFromDashboard : UserStory {
 
     frame concern : OpsConcerns::FastIncidentResponse;
 
-    requirement :>> acceptance { doc /* ... */ }
+    requirement :>> acceptance { requirement ackAllWithinOneSecond { doc /* ... */ } }
 }
 ```
 

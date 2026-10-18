@@ -18,7 +18,7 @@ related:
   - sysmod-stakeholder-identification
 confidence: high
 created: 2026-05-05
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
@@ -91,7 +91,7 @@ A stakeholder story:
 - declares `capability` and `benefit` as narrative strings,
 - applies `@StoryMeta` with qualified enumeration values,
 - frames one or more concerns from `core/concerns/` per [[frame-concern-pattern]],
-- declares at least one criterion inside `requirement :>> acceptance` before transitioning beyond `backlog`.
+- has its feature file written first, beside the register file, and before transitioning to `ready` declares at least one scenario mirrored by a named `acceptance` criterion (§1.9 rule 4, §11.4).
 
 The `frame concern` link is the bridge that ties the new story back to the persistent concern register, which is what allows concerns and stories to remain in an n:m relationship across iterations.
 

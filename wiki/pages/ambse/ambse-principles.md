@@ -14,9 +14,10 @@ related:
   - ambse-risk-and-metrics
   - ambse-iso29110-mapping
   - sysmod-neg-why-mbe
+  - methodology-overview
 confidence: high
 created: 2026-05-04
-updated: 2026-08-13
+updated: 2026-10-18
 referenced_by: [release-orchestrator, verification-validation]
 ---
 
@@ -136,11 +137,11 @@ for VSEs:
 
 ## See also
 
-- [[methodology-overview]] for the Vee pattern applied at
-  nanocycle, microcycle, and macrocycle scales.
-- [[methodology-overview]] for planning hierarchy, Iteration
-  0, Architecture 0, and effort estimation.
+- [[methodology-overview]] for how the plugin's methodology
+  departs from these cycles: it does not adopt the nanocycle,
+  microcycle and macrocycle scheduling units, and leaves calendar
+  cadence to the project.
 - [[ambse-risk-and-metrics]] for risk management and SE
   metrics.
 - [[ambse-iso29110-mapping]] for the AMBSE-to-ISO/IEC 29110
-  activity mapping.
+  activity mapping, including Iteration 0 and Architecture 0.

@@ -12,6 +12,8 @@ sources:
     raw: null
   - citation: "vse-systems-engineering plugin (2026). Nested acceptance criteria runs on a probe package and a copy of the Smart Sensor demo model under the pilot 2026-07 and OpenSysML v0.6.0, recorded 2026-10-16."
     raw: null
+  - citation: "vse-systems-engineering plugin (2026). Smart Sensor demo validation record, pilot 2026-07 on Java 21 and OpenSysML v0.6.0 over the sixteen model files, recorded 2026-10-17."
+    raw: demo/smart-sensor/README.md
 related:
   - tooling-omg-pilot-batch-validation
   - tooling-opensysml-cli
@@ -24,9 +26,10 @@ related:
   - sysml2-quantities-and-units
   - user-story-canonical-artefact
   - system-stories-workflow
+  - behaviour-and-test-first
 confidence: high
 created: 2026-09-10
-updated: 2026-10-16
+updated: 2026-10-18
 referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-cases, sysml2-metadata, needs-and-requirements, verification-validation, story-orchestrator, traceability-guard]
 ---
 
@@ -39,7 +42,7 @@ referenced_by: [sysml-toolchain, sysml2-modelling, sysml2-cases, sysml2-metadata
 - What each tool does not enforce
 - See also
 
-Syside 0.8 and OpenSysML v0.2.1 accepted several forms that the OMG pilot 2026-07 refuses, and the plugin's own templates and demo carried them. From release 4.0.0 the methodology examples, the templates, the demo, the renderer and the skills emit only the accepted forms. The central change is that a story is a requirement usage typed by the library definition, `requirement US_042_AckFromDashboard : UserStory { ... }`, because `verify`, `satisfy` and the derivation library all target usages. Every rule below was established by running both tools on probe models on 2026-09-09, except the named-criterion rule, which was established on 2026-10-16.
+Syside 0.8 and OpenSysML v0.2.1 accepted several forms that the OMG pilot 2026-07 refuses, and the plugin's own templates and demo carried them. From release 4.0.0 the methodology examples, the templates, the demo, the renderer and the skills emit only the accepted forms. The central change is that a story is a requirement usage typed by the library definition, `requirement US_042_AckFromDashboard : UserStory { ... }`, because `verify`, `satisfy` and the derivation library all target usages. Every rule below was established by running both tools on probe models on 2026-09-09, except the named-criterion rule for a deep verify (a `verify` that reaches one named acceptance criterion by its full path, `verify <story>.acceptance.<name>`), which was established on 2026-10-16.
 
 ## The rules
 
@@ -62,7 +65,7 @@ The derivation rules follow the library itself: `RequirementDerivation.sysml` de
 
 ## Validated pattern
 
-The following package passes the pilot 2026-07 and OpenSysML v0.6.0 with no diagnostic. It is the shape the templates and the demo now use. The two named criteria inside `US_001_SeeReadings` and the case `VAL_001` that verifies each of them were added on 2026-10-16, and the whole package was validated again under both tools that day.
+The following package passes the pilot 2026-07 and OpenSysML v0.6.0 with no diagnostic. The templates and the demo use its forms, with one difference. Every story there, system stories included, nests one named criterion for each scenario of its Gherkin feature file, and every case verifies that criterion by its full path, where `VC_001` below keeps the shallow `verify SYS_001_DashboardLatency.acceptance`. The two named criteria inside `US_001_SeeReadings` and the case `VAL_001` that verifies each of them were added on 2026-10-16, and the whole package was validated again under both tools that day. The demo in that form was validated under both tools on 2026-10-17, with no diagnostic over its sixteen model files.
 
 ```sysml
 package P {
@@ -125,7 +128,7 @@ package P {
 
 The `@StoryMeta` line of a real story (`@StoryMeta { points = 5; priority = Priority::high; status = StoryStatus::ready; }`) is omitted here because the metadata definition and its enumerations come from the shipped `VSE_Library`, which the package would have to import, see [[sysml2-vse-library-metadata]]. The satisfying element and the case subject must conform to the story's subject type, otherwise both tools report `Bound features should have conforming types`.
 
-**Named acceptance criteria.** A story may split its acceptance into named criteria. Each criterion is a requirement usage nested inside the story's `requirement :>> acceptance`, named in lowerCamelCase (a lower-case first letter and a capital at the start of each later word, as in `latestReadingShown`). A deep verify, `verify <story>.acceptance.<name>`, then verifies one criterion, as `VAL_001` does above. The shallow `verify <story>.acceptance` still validates, and it covers every criterion at once. The 2026-10-16 runs used the pilot release 2026-07 (`jupyter-sysml-kernel-0.61.0.zip` on Java 21) and OpenSysML v0.6.0, each called through the plugin's toolchain library with `validate --tool <tool>`.
+**Named acceptance criteria.** A story may split its acceptance into named criteria. Each criterion is a requirement usage nested inside the story's `requirement :>> acceptance`, named in lowerCamelCase (a lower-case first letter and a capital at the start of each later word, as in `latestReadingShown`). A deep verify, `verify <story>.acceptance.<name>`, then verifies one criterion, as `VAL_001` does above. Each criterion mirrors one Gherkin scenario, see [[behaviour-and-test-first]]. The shallow `verify <story>.acceptance` still validates, and it covers every criterion at once. The 2026-10-16 runs used the pilot release 2026-07 (`jupyter-sysml-kernel-0.61.0.zip` on Java 21) and OpenSysML v0.6.0, each called through the plugin's toolchain library with `validate --tool <tool>`.
 
 Besides the package above, the runs validated a copy of the Smart Sensor demo model, all 16 `.sysml` files, with the acceptance of `US_001_SeeReadingsOnDashboard` split into `latestReadingShown` and `staleReadingFlagged`, and with `VAL_001_OperatorSeeReadings` verifying each criterion by name. Both tools reported no diagnostic, and both still did when the case went back to the shallow `verify US_001_SeeReadingsOnDashboard.acceptance`. Two negative probes on the same copy failed under both tools with exit 1.
 

@@ -8,18 +8,33 @@ tags: [git-workflow, pull-request, branch-model, review-checklist, iso-29110]
 sources:
   - citation: "vse-systems-engineering plugin (2026). Methodology Specification §8.4-§8.6 (Branch Model, PR Workflow, Review Checklists)."
     raw: methodology/08-project-structure.md
+  - citation: "vse-systems-engineering plugin (2026). Methodology Specification §11.4 and §11.7."
+    raw: methodology/11-behaviour-and-test-driven-development.md
 related:
   - methodology-overview
   - user-story-canonical-artefact
   - storymeta-lifecycle
   - iso-29110-compliance-mapping
+  - behaviour-and-test-first
+  - tdd-red-green-refactor
 confidence: high
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-10-18
 referenced_by: [story-orchestrator, release-orchestrator, change-request, project-audit]
 ---
 
 # Story branch, draft PR, and final review workflow
+
+## Contents
+
+- Branch model (§8.4)
+- Draft PR opening (§8.5.1)
+- Iterative review on the draft (§8.5.2)
+- Marking ready for review (§8.5.3)
+- Final review and merge (§8.5.4)
+- PR template (§8.6.1)
+- Author readiness checklist (§8.6.2)
+- Reviewer checklist (§8.6.3)
 
 The methodology operationalises every model change through a single git pattern. A story branch is opened from `main`, a draft pull request is opened on the first commit, iterative review proceeds on the draft, and a squash-and-merge follows final review against a fixed checklist. This page summarises the binding rules from §8.4 to §8.6 of the methodology specification. See [[methodology-overview]] for the broader context, [[user-story-canonical-artefact]] for the story file these branches advance, and [[storymeta-lifecycle]] for how branch state maps to `StoryMeta.status`.
 
@@ -39,8 +54,12 @@ Four kinds of feature branch are recognised, each with a fixed naming pattern:
 A draft pull request is opened as soon as the branch contains a usable stub, typically within the first commit. The intent is visibility, not completeness. The opening commit minimum is:
 
 - the story file exists in the package appropriate to its level, meaning `model/core/stories/stakeholder/` for §4 stories, `model/core/stories/system/` for §5 stories, or `model/core/logical-architecture/components/<component>/stories/` (recursively) for §7 component stories,
-- the story declares `role`, `capability`, `benefit`, and at least one `acceptance` criterion, even if textual,
+- the story's feature file, `<ID>.feature`, sits beside the story file with the story tag, the narrative and at least one scenario tagged `@AC_<name>` (§11.2),
+- the story declares `role`, `capability`, `benefit`, and a named `acceptance` criterion for each scenario (§11.3),
+- a verification or validation case stub reaches every criterion (§11.4),
 - `StoryMeta.status` is set to `inProgress`.
+
+The feature file is written before the story's SysML, and the case stub before any elaboration or design (§11.4), so the opening commit carries all three together.
 
 Opening the draft PR triggers reviewer assignment from the relevant CODEOWNERS, populates the §8.6.1 PR template, and runs CI lint and well-formedness checks. CI failures surface as PR comments rather than blocking work.
 
@@ -66,7 +85,7 @@ If final review surfaces issues, the PR is converted back to draft. The status o
 
 ## PR template (§8.6.1)
 
-The repository's `.github/pull_request_template.md` shall include six sections: a story or change summary in narrative form for stories or rationale form for methodology and architectural branches, a list of stories advanced with status transitions, a list of `concern def` references for which framing is added or strengthened, an automated section showing files changed by Core package, the §8.6.2 author checklist, and the §8.6.3 reviewer checklist.
+The repository's `.github/pull_request_template.md` shall include seven sections: a story or change summary in narrative form for stories or rationale form for methodology and architectural branches, a list of stories advanced with status transitions, a list of `concern def` references for which framing is added or strengthened, an automated section showing files changed by Core package, a Test-first evidence section where test first applies, the §8.6.2 author checklist, and the §8.6.3 reviewer checklist. For each code change, the Test-first evidence section gives the failing test command and its first failing lines, recorded before the code that made the test pass (§11.7). See [[tdd-red-green-refactor]].
 
 ## Author readiness checklist (§8.6.2)
 
@@ -75,7 +94,7 @@ Before marking ready, the author confirms each item below for every story advanc
 1. The story declares `role`, typed by a `part def` from the appropriate stakeholders package (`core/stakeholders/` at system scope, the enclosing component's `stakeholders/` at component scope).
 2. The story declares `capability` and `benefit` strings in the narrative form retained per §1.7.2.
 3. The story declares `subject` referencing a part def from the enclosing scope (`core/base-architecture/` or `core/context/` for system stories, the component's part def for subsystem stories).
-4. The story declares at least one `acceptance` criterion in Given/When/Then form or as a `verification def` reference.
+4. The story has its feature file, `<ID>.feature`, with at least one scenario tagged `@AC_<name>`, and each scenario is mirrored by a named criterion nested in `requirement :>> acceptance` (§11.3).
 5. If the story frames concerns, the corresponding `concern def`s exist in the appropriate concerns package.
 6. If a use case declares this story as its `objective`, the use case exists with conformant `subject` and `actor` types per §1.4.5.
 7. `StoryMeta.points`, `priority`, and `status` are set.
@@ -91,7 +110,7 @@ In addition to confirming the §8.6.2 items, the reviewer checks:
 3. **Trace integrity.** `derive` relationships are present where required: system stories derive from stakeholder stories per §5, and subsystem stories derive from system stories per §7. See [[iso-29110-compliance-mapping]] for how this satisfies the 29110 traceability tasks.
 4. **No methodology drift.** Changes that imply methodology amendment shall be split into a separate methodology PR rather than smuggled through a story PR.
 5. **Variation hygiene** (§6 stages only). Variations declare all feasible variants, `assert constraint` expresses cross-decision rules, and the resolved architecture redefines every variation.
-6. **Verification-case stubs exist** for each acceptance criterion, even if the verification case body is deferred.
+6. **Behaviour first and test first** (§11). Every acceptance criterion is reached by a verification or validation case, even if only by a stub whose body is deferred (§11.4). Where test first applies, the Test-first evidence section shows a failing test before each code change (§11.7). See [[behaviour-and-test-first]].
 7. **The change is self-contained.** Story branches do not introduce half-finished work in unrelated packages. Unrelated improvements shall be raised as separate PRs.
 
 For architectural branches, the reviewer additionally confirms that the trade-study `analysis def` is reproducible and that the selected variant's score advantage is documented in the PR description.
