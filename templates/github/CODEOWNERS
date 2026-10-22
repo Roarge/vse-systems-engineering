@@ -41,15 +41,17 @@ methodology/                    @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 # covers engineering/.iso-config.yaml in a brownfield layout.
 .iso-config.yaml                @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 
-# Gate logic: the git hooks, the CI workflows and the story lint carry
-# the gates the configuration above sets, including the Gherkin-first
-# and test-first gates (methodology §11.9). A change that weakens one
-# lowers a gate as surely as a gate_overrides entry does, so a human
-# owner reviews it (§11.10). The leading **/ lets the lint pattern also
-# cover engineering/tools/lint/ in a brownfield layout.
+# Gate logic: the git hooks, the CI workflows, and the story lint with
+# the model reader it imports carry the gates the configuration above
+# sets, including the Gherkin-first and test-first gates (methodology
+# §11.9). A change that weakens one lowers a gate as surely as a
+# gate_overrides entry does, so a human owner reviews it (§11.10). The
+# leading **/ lets the lint patterns also cover engineering/tools/ in a
+# brownfield layout.
 .githooks/                      @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 .github/workflows/              @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 **/tools/lint/                  @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
+**/tools/render/sysml_model.py  @{{PJM_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
 
 # Base Architecture (elevated review per §2.6 rule 4)
 model/core/base-architecture/   @{{DES_GIT_HANDLE}} @{{SYS_GIT_HANDLE}}
