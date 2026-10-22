@@ -97,12 +97,29 @@ case_cr_stub_library_vse_iso_config() {
         "partial install, VSE_ISO_CONFIG: the named file is read"
 }
 
+# The reference sits in the subject and the body runs on for more than
+# a pipe buffer holds (64 KiB). The whole message is read, so the
+# reference is found every time.
+case_cr_reference_in_long_message() {
+    setup_commit
+    baseline_config | tc_write .iso-config.yaml
+    {
+        printf 'docs: update the plan (CR #12)\n\n'
+        awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "Line %05d of a long body.\n", i }'
+    } > "$MSG_FILE"
+    tc_env
+    tc_run_githook commit-msg "$MSG_FILE"
+    tc_assert_rc 0 "long message: the CR reference in the subject is found"
+    tc_assert_not_grep "does not" "$ERR" "long message: no missing-reference finding"
+}
+
 MSG_FILE=""
 case_cr_root_config
 case_cr_brownfield_config
 case_cr_vse_iso_config
 case_cr_stub_library_root_config
 case_cr_stub_library_vse_iso_config
+case_cr_reference_in_long_message
 
 if tc_summary "test-commit-msg"; then
     exit 0

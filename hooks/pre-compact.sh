@@ -63,8 +63,11 @@ SNAPSHOT=$(mktemp -t vse-iso-state-XXXXXX.txt 2>/dev/null || mktemp 2>/dev/null)
     echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "Engineering root: ${PC_ENG_SHOWN}"
     echo "Branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
-    echo "Last plan baseline: $(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | head -1)"
-    echo "Last release: $(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | head -1)"
+    # awk reads the whole listing, so git is never cut off by SIGPIPE
+    # (the signal a process gets when it writes to a pipe that nobody
+    # reads any more) when there are more tags than the pipe holds.
+    echo "Last plan baseline: $(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | awk 'NR == 1')"
+    echo "Last release: $(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | awk 'NR == 1')"
     if command -v gh >/dev/null 2>&1; then
         OPEN=$(gh issue list -l change-request -s open --json number 2>/dev/null | grep -c '"number"' || echo "0")
         echo "Open Change Requests: ${OPEN}"

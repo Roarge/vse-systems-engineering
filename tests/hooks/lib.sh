@@ -311,6 +311,20 @@ tc_commit() {
     git -C "$REPO" commit -q --no-verify -m "$1"
 }
 
+# tc_tag_many <dir> <prefix> <count>: tag HEAD of the repository at
+# <dir> as <prefix>1 to <prefix><count>, in one git call. Twelve
+# thousand tags of about sixteen characters list as some 200 KB, more
+# than a pipe buffer holds (64 KiB), so a reader that stops after the
+# first line leaves the writer blocked on a full pipe.
+tc_tag_many() {
+    local dir="$1" prefix="$2" count="$3" head
+    head="$(git -C "$dir" rev-parse HEAD)"
+    awk -v prefix="$prefix" -v count="$count" -v head="$head" 'BEGIN {
+        for (i = 1; i <= count; i++)
+            printf "create refs/tags/%s%d %s\n", prefix, i, head
+    }' | git -C "$dir" update-ref --stdin
+}
+
 # -------------------------------------------------------------- runner
 
 # tc_env NAME=VALUE ...: environment for the next runner call. With no

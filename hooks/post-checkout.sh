@@ -64,7 +64,12 @@ if [[ "$CURRENT_BRANCH" =~ ^story/ ]]; then
         fi
     fi
 elif [[ "$CURRENT_BRANCH" == "main" ]]; then
-    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | head -1)
+    # awk reads the whole listing. head would stop after one line, and
+    # with more tags than the pipe holds git would be killed by SIGPIPE
+    # (the signal a process gets when it writes to a pipe that nobody
+    # reads any more), which pipefail and set -e turn into the end of
+    # the hook.
+    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | awk 'NR == 1')
     if [ -n "$LAST_RELEASE" ]; then
         echo "[post-checkout] On main. Last release: ${LAST_RELEASE}."
     else

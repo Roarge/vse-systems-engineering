@@ -42,8 +42,14 @@ if [ -z "$UPS_PROJECT" ] && [ ! -d "methodology" ] && [ ! -d "engineering/method
     exit 0
 fi
 
+# Each heuristic reads the prompt from a here-string, not a pipe.
+# grep -q stops at the first match, so a writer still writing a long
+# prompt would be killed by SIGPIPE (the signal a process gets when it
+# writes to a pipe that nobody reads any more), and pipefail would turn
+# the match into a miss.
+
 # Heuristic 1: edits + plausibly baselined artefact references.
-if echo "$PROMPT" | grep -qiE '(change|edit|modify|update|delete|revise|amend).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture|risk register|cm strategy)'; then
+if grep -qiE '(change|edit|modify|update|delete|revise|amend).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture|risk register|cm strategy)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, PM.O3]
@@ -56,7 +62,7 @@ EOF
 fi
 
 # Heuristic 2: meeting/review mentions.
-if echo "$PROMPT" | grep -qiE '(meeting|reviewed with|sync|standup|workshop|kickoff) (today|yesterday|this morning|earlier|just now)'; then
+if grep -qiE '(meeting|reviewed with|sync|standup|workshop|kickoff) (today|yesterday|this morning|earlier|just now)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, PM.O4]
@@ -67,7 +73,7 @@ EOF
 fi
 
 # Heuristic 3: reverse-engineering of pre-existing context (§2.6 rule 7).
-if echo "$PROMPT" | grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)'; then
+if grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, agent discipline (§2.6 rule 7)]

@@ -326,6 +326,30 @@ case_trace_gap() {
         "trace gap (block): a local commit is told how to proceed anyway"
 }
 
+# The delegate's warning heads an output longer than a pipe buffer
+# holds (64 KiB). The whole output is read, so the warning is counted
+# and the summary does not say that every check passed.
+case_trace_long_warning_counted() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    write_story
+    cat > "${REPO}/.githooks/pre-commit-traceability.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "pre-commit-traceability: warning: 10000 trace gap(s) on touched requirements (engineering root: .)."
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  s.sysml: requirement US_%05d has no verification case\n", i }'
+EOF
+    chmod +x "${REPO}/.githooks/pre-commit-traceability.sh"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "trace warning, long output: the commit proceeds"
+    tc_assert_line "[pre-commit] Checks complete with 1 warning(s)." "$OUT" \
+        "trace warning, long output: the warning is counted"
+    tc_assert_not_grep "All checks passed" "$OUT" \
+        "trace warning, long output: the summary does not say every check passed"
+}
+
 # A story written inside a doc comment is documentation, not a
 # declaration. The gate strips comment bodies before matching, so a
 # worked example inside a project file cannot be reported as an
@@ -2101,6 +2125,7 @@ done
 case_context_filtering
 case_trace_covered
 case_trace_gap
+case_trace_long_warning_counted
 case_trace_comment_only
 case_trace_library_skipped
 case_trace_note_and_string

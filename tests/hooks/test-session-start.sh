@@ -620,6 +620,27 @@ case_mode1_library_missing() {
         "library missing: the user project gets the project report"
 }
 
+# More plan-baseline and release tags than a pipe buffer holds in a
+# listing. The hook reads each whole listing, names the latest of each,
+# and goes on to the rest of the report.
+case_mode2_many_tags() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_vse_project "$dir" syside
+    git init -q "$dir"
+    git -C "$dir" -c user.email=t@example.invalid -c user.name=t commit -q --allow-empty -m start
+    tc_tag_many "$dir" plan-baseline- 12000
+    tc_tag_many "$dir" release- 12000
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "many tags: exit 0"
+    tc_assert_line "Plan baseline: plan-baseline-12000" "$OUT" \
+        "many tags: the latest plan baseline is named"
+    tc_assert_line "Last release:  release-12000" "$OUT" \
+        "many tags: the latest release is named"
+    tc_assert_grep "Behaviour-first: " "$OUT" "many tags: the report goes on past the tags"
+}
+
 # Contributor mode (the plugin repository) prints exactly one pointer to
 # the contributor rules for test first and Gherkin first.
 case_mode1_pointer() {
@@ -667,6 +688,7 @@ case_mode2_methodology_line
 case_mode2_methodology_fallback
 case_mode2_contributor_template
 case_mode2_user_wiki_schema
+case_mode2_many_tags
 
 case_mode1_pointer
 case_mode1_library_missing

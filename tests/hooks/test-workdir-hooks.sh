@@ -207,6 +207,50 @@ case_library_missing() {
     done
 }
 
+# ------------------------------------------------------- long inputs
+
+# A prompt that names all three triggers in its first lines and runs on
+# for more than a pipe buffer holds (64 KiB). The whole prompt is read,
+# so each reminder is given every time.
+case_long_prompt() {
+    local dir saved="$PROMPT_JSON"
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    PROMPT_JSON="$({
+        printf 'update the risk register\n'
+        printf 'we had a meeting today\n'
+        printf 'generate stories from the existing platform\n'
+        awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "Line %05d of a long prompt.\n", i }'
+    } | jq -Rsc '{prompt: ., hook_event_name: "UserPromptSubmit"}')"
+    run_workdir user-prompt-submit "$dir"
+    PROMPT_JSON="$saved"
+    tc_assert_rc 0 "user-prompt-submit, long prompt: exit 0"
+    tc_assert_grep "[methodology reminder, PM.O3]" "$OUT" \
+        "user-prompt-submit, long prompt: the change request reminder"
+    tc_assert_grep "[methodology reminder, PM.O4]" "$OUT" \
+        "user-prompt-submit, long prompt: the meeting record reminder"
+    tc_assert_grep "[methodology reminder, agent discipline (§2.6 rule 7)]" "$OUT" \
+        "user-prompt-submit, long prompt: the reverse-engineering reminder"
+}
+
+# A project with more tags than a pipe buffer holds in a listing. The
+# snapshot names the latest plan baseline and release.
+case_many_tags() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    git init -q "$dir"
+    git -C "$dir" -c user.email=t@example.invalid -c user.name=t commit -q --allow-empty -m start
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    tc_tag_many "$dir" plan-baseline- 12000
+    tc_tag_many "$dir" release- 12000
+    run_workdir pre-compact "$dir"
+    tc_assert_rc 0 "pre-compact, many tags: exit 0"
+    tc_assert_eq "Last plan baseline: plan-baseline-12000" "$(snapshot_line "Last plan baseline:")" \
+        "pre-compact, many tags: the latest plan baseline is named"
+    tc_assert_eq "Last release: release-12000" "$(snapshot_line "Last release:")" \
+        "pre-compact, many tags: the latest release is named"
+}
+
 case_config_only
 case_from_subdirectory
 case_nested_brownfield
@@ -214,6 +258,8 @@ case_contributor_mode
 case_methodology_fallback
 case_outside
 case_library_missing
+case_long_prompt
+case_many_tags
 
 if tc_summary "test-workdir-hooks"; then
     exit 0

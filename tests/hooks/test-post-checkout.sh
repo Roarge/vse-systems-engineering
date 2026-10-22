@@ -140,6 +140,18 @@ case_file_checkout() {
     pc_assert_silent "file checkout"
 }
 
+# More release tags than a pipe buffer holds in a listing. The hook
+# reads the whole listing and names the latest release.
+case_many_release_tags() {
+    pc_repo
+    printf 'project_profile: light\n' | tc_write .iso-config.yaml
+    tc_tag_many "$REPO" release- 12000
+    pc_run
+    tc_assert_rc 0 "many release tags: exit 0"
+    tc_assert_line "[post-checkout] On main. Last release: release-12000." "$OUT" \
+        "many release tags: the latest release is named"
+}
+
 case_config_only
 case_brownfield_config
 case_plugin_libraries
@@ -147,6 +159,7 @@ case_contributor_mode
 case_methodology_fallback
 case_outside
 case_file_checkout
+case_many_release_tags
 
 if tc_summary "test-post-checkout"; then
     exit 0

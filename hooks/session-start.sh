@@ -274,8 +274,12 @@ if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/n
         echo "In-flight story branches: ${STORY_BRANCHES}"
     fi
 
-    # Most recent plan-baseline tag.
-    PLAN_BASELINE=$(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | head -n 1)
+    # Most recent plan-baseline tag. awk reads the whole listing. head
+    # would stop after one line, and with more tags than the pipe holds
+    # git would be killed by SIGPIPE (the signal a process gets when it
+    # writes to a pipe that nobody reads any more), which pipefail and
+    # set -e turn into the end of the hook.
+    PLAN_BASELINE=$(git tag --list 'plan-baseline-*' --sort=-v:refname 2>/dev/null | awk 'NR == 1')
     if [ -n "$PLAN_BASELINE" ]; then
         echo "Plan baseline: ${PLAN_BASELINE}"
     else
@@ -283,7 +287,7 @@ if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/n
     fi
 
     # Most recent release tag.
-    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | head -n 1)
+    LAST_RELEASE=$(git tag --list 'release-*' --sort=-v:refname 2>/dev/null | awk 'NR == 1')
     if [ -n "$LAST_RELEASE" ]; then
         echo "Last release:  ${LAST_RELEASE}"
     fi

@@ -629,10 +629,15 @@ fi
 if [ -n "$TRACE_OUT" ]; then
     printf '%s\n' "$TRACE_OUT"
     # The delegate reports its own findings. Count its warnings so the
-    # summary line below cannot contradict what was just printed.
-    if printf '%s' "$TRACE_OUT" | grep -q 'warning:'; then
-        WARNINGS=$((WARNINGS + 1))
-    fi
+    # summary line below cannot contradict what was just printed. The
+    # output is matched with case rather than piped into grep -q. grep
+    # -q stops at the first match, so the writer of a long output could
+    # be killed by SIGPIPE (the signal a process gets when it writes to
+    # a pipe that nobody reads any more), which pipefail turns into a
+    # miss.
+    case "$TRACE_OUT" in
+        *'warning:'*) WARNINGS=$((WARNINGS + 1)) ;;
+    esac
 fi
 
 # 4. Test before code (methodology §11.9). With test_first.applies

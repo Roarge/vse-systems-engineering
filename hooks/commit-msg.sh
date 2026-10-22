@@ -160,7 +160,12 @@ if [ -n "$ISO_CONFIG" ]; then
     done < <(git diff --cached --name-only --diff-filter=ACM)
 
     if [ -n "$BASELINED_HIT" ]; then
-        if ! echo "$FULL_MSG" | grep -qE '\(CR #[0-9]+\)|CR #[0-9]+|Refs?: CR #[0-9]+'; then
+        # The message is read from a here-string, not piped in. grep -q
+        # stops at the first match, so a writer still writing a long
+        # message would be killed by SIGPIPE (the signal a process gets
+        # when it writes to a pipe that nobody reads any more), and
+        # pipefail would turn the match into a miss.
+        if ! grep -qE '\(CR #[0-9]+\)|CR #[0-9]+|Refs?: CR #[0-9]+' <<< "$FULL_MSG"; then
             case "$CR_DISPOSITION" in
                 block)
                     report_cr_finding "[commit-msg]"
