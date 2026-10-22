@@ -79,8 +79,9 @@ _iso_locate_config() {
 # a value that starts with a dash, and ending the sequence there would
 # leave the rest of the list unread in silence. Blank and comment lines
 # are passed over. It returns 1 to go on reading and 0 at the first
-# other line, which ends the sequence. A comma inside a block item is
-# part of it.
+# other line, which ends the sequence. A YAML document marker ("---" in
+# column one, alone or before a space) ends it too, rather than reading
+# as the item "--". A comma inside a block item is part of it.
 #
 # "\047" is a single quote, which this shell string cannot hold.
 _ISO_AWK_LIB='
@@ -143,6 +144,8 @@ function iso_flow(value,    n, i, items, item) {
     }
 }
 function iso_block_item(s, ind,    rest, item) {
+    if (substr(s, 1, 3) == "---" && (length(s) == 3 || substr(s, 4, 1) ~ /[ \t]/))
+        return 0
     rest = s
     sub(/^[ \t]+/, "", rest)
     if (rest == "" || substr(rest, 1, 1) == "#")

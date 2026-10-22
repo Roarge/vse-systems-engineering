@@ -443,6 +443,25 @@ release/*" "$OUT" "top-level list: items in column one are read, as YAML allows"
     tc_assert_rc 0 "top-level list: no configuration file exits 0"
 }
 
+# A YAML document marker ("---" in column one) ends a block sequence,
+# as the end of the document does, rather than reading as the item
+# "--". An item written "- --" is still the item "--".
+case_top_level_list_ends_at_document_marker() {
+    tc_setup_repo
+    tc_config_append <<'EOF'
+project_profile: light
+protected_branches:
+- main
+- --
+---
+- develop
+EOF
+    tc_env
+    run_iso iso_list protected_branches
+    tc_assert_eq "main
+--" "$OUT" "top-level list: a document marker ends the sequence"
+}
+
 case_crlf_config_read() {
     tc_setup_repo
     printf 'project_profile: full\r\ntest_first:\r\n  test_paths: [tests/*, "spec/*"]\r\n\r\n  applies: true\r\n  code_paths:\r\n    - src/*\r\n\r\n    - "lib/*"\r\n' \
@@ -475,6 +494,7 @@ case_section_list_missing_key_empty
 case_scalar_quoted_hash_kept
 case_scalar_one_quote_layer
 case_top_level_list_forms
+case_top_level_list_ends_at_document_marker
 case_crlf_config_read
 
 if tc_summary "test-iso-profile"; then
