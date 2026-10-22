@@ -6,6 +6,560 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-10-22
+
+The behaviour-first and test-first release. Every acceptance criterion
+becomes a Gherkin scenario (the plain-text Given/When/Then notation
+that Cucumber-family tools run) in a feature file beside its story,
+mirrored in the model by a named criterion, and code is written test
+first wherever a test harness can run it. Four new gates hold both
+rules at every rigour profile, and only a `gate_overrides` entry
+recorded with its reason lowers one. The number is major because two
+of those gates live in the `PreToolUse` lifecycle hook, which may now
+deny an edit made in a Claude Code session, and lifecycle hooks run
+from the plugin tree. An existing project therefore meets the new
+denials in its first session after the plugin update, before anyone
+reinstalls anything. The same train ships the story lint that the
+commit gate named but never received, makes the CI re-run of the
+commit gates read the change rather than an empty staged set, and
+makes the lifecycle hook reminders reach the agent at all. The
+plugin's own development now follows the same discipline.
+
+### Changed (behaviour first and test first, breaking)
+
+- **The `PreToolUse` hook may deny an edit.** It carries the two
+  in-session gates of methodology §11.9.3 for the `Edit`, `Write`,
+  `MultiEdit` and `NotebookEdit` tools, and both matchers in
+  `hooks.json` gain `MultiEdit`. Gherkin first
+  (`pretooluse_gherkin_first`) applies the proposed edit to a
+  `stories/` `.sysml` file, compares the stories before and after,
+  and denies the edit when a story it adds or changes has no
+  `<StoryIdentifier>.feature` beside it carrying the tag
+  `@<StoryIdentifier>`. Untouched stories in the same file draw a
+  warning only, deleting a story is never denied, and templates (file
+  names that begin with `_`) and `model/library/` are skipped. A file
+  with CRLF line endings is read as the Edit tool reads it, and an
+  edit the hook cannot reproduce draws a warning rather than passing
+  in silence. The warning names the check that remains: for a story
+  file the commit gate, and for `.iso-config.yaml` review by its code
+  owners. Test first (`pretooluse_test_first`), where
+  `test_first.applies` is `true`, denies an edit to a path under
+  `test_first.code_paths` while no path under `test_paths` has changed
+  in the working tree or on the branch since its merge base, and only
+  reminds on a branch that matches `refactor_branches`. An edit that
+  changes `gate_overrides` or `test_first` in `.iso-config.yaml`, or a
+  new `.iso-config.yaml` that would take over from the one in force
+  with different `gate_overrides` or `test_first` settings, asks the
+  human to confirm it (§11.10). The hook never answers `allow`, so the
+  engineer's own permission settings still govern every call it lets
+  through. An internal error lets the edit through with one line on
+  stderr, and each deny reason stays under 1,500 characters and says
+  what to write first.
+- **Four gates block at every profile.** `precommit_gherkin`,
+  `precommit_test_first`, `pretooluse_gherkin_first` and
+  `pretooluse_test_first` default to `block` at `light`, `standard`
+  and `full` alike (methodology §0.10.1, §0.10.4). Only a
+  `gate_overrides` entry lowers one, its reason goes on the tailoring
+  line, and an agent never writes such an entry without an explicit
+  request from a human (§11.10). `light` therefore no longer means that
+  nothing blocks. The other five gates keep their profile columns. An
+  existing `.iso-config.yaml` needs no edit to receive the new
+  defaults, because an absent `gate_overrides` entry means the
+  default.
+- **Acceptance criteria are Gherkin scenarios mirrored by named
+  criteria (methodology §11).** A story's `<StoryIdentifier>.feature`
+  sits in the directory of the `.sysml` file that declares the story.
+  It holds one Feature tagged `@<StoryIdentifier>`, whose description
+  opens with the story's narrative (`As a` or `As an`, `I want` or
+  `I want to`, then `So that`, repeating the story's role, capability
+  and benefit), and it tags each scenario `@AC_<name>`. The story
+  nests one requirement per scenario, of the same name, inside
+  `requirement :>> acceptance`. The name is lowerCamelCase, that is,
+  it starts in lower case and capitalises each later word, as in
+  `latestReadingShown`. A case reaches every criterion with
+  `verify <story>` or `verify <story>.acceptance`, and one criterion
+  with `verify <story>.acceptance.<name>` (§11.3.3). Acceptance prose
+  placed directly in `requirement :>> acceptance`, the form used
+  before 5.0.0, is finding S3 of the story lint, and the pre-4.0
+  `requirement def <ID> :> UserStory` declaration is finding S9.
+- **A story's status follows the artefacts that exist (§11.4).** A
+  story at `ready` needs at least one `@AC_` scenario, and a story at
+  `inProgress` or `done` needs every criterion reached by a
+  verification or validation case. A `satisfy` naming a story with no
+  scenarios is a finding too, and a custom or unreadable status is
+  held to the strictest row. Each is finding S8 of `precommit_gherkin`,
+  which blocks at every profile. §1.9 rule 4, the acceptance rule,
+  moves from `precommit_story_wellformed` to `precommit_gherkin`, so an
+  override `precommit_story_wellformed: off` no longer silences
+  acceptance findings.
+- **`pre-commit` installs at every profile.** Its traceability
+  delegate, `lib/test-first.sh`, the story lint under `tools/lint/` and
+  the CI workflow install at `light` as well, because they carry the
+  two commit-time gates of §11 (hooks guide §3.4). A `light` project
+  therefore meets the SysML lint (`precommit_lint`, warn) and the
+  traceability check (`precommit_traceability`, info) at commit time
+  for the first time. `commit-msg` stays at `standard` and `full`, and
+  `post-merge` and the document export workflow at `full`. At `light`
+  and `standard` the CI workflow's model validation and Contract 3
+  steps are made advisory through their `continue-on-error` toggles.
+  The step that runs the commit-time gates carries no toggle and reads
+  each gate's disposition from `.iso-config.yaml`.
+- **The rendered traceability matrix judges coverage per named
+  criterion.** A stakeholder story is Complete only when verification
+  or validation cases reach every one of its own criteria, and each
+  criterion no case reaches is listed under Gaps. A verified system
+  story derived from it no longer stands in for a stakeholder
+  criterion, so a stakeholder row that relied on one now renders as a
+  Gap, which is how the story lint judges the same story. A system
+  story is verified when verification cases reach every one of its
+  criteria, and its summary row now reads "System stories with every
+  criterion verified". The Gaps introduction states the new rule, so
+  regenerating `docs/generated/` with the 5.0.0 renderers changes the
+  committed matrix of every project.
+- **The lifecycle hooks locate a project through its
+  `.iso-config.yaml`.** Each walks up from the edited file, or from
+  the working directory, to the git top level, where it also tries
+  `engineering/.iso-config.yaml`. `PreToolUse`, `PostToolUse`, `Stop`
+  and `SubagentStop` act only where they find a configuration, so a
+  folder that holds a `methodology/` copy and no configuration no
+  longer draws their reminders. `SessionStart`, `UserPromptSubmit`,
+  `PreCompact`, `Notification` and the `post-checkout` git hook keep a
+  `methodology/` folder as a fallback for their reports. A brownfield
+  configuration nested below the git top level, such as
+  `proj/engineering/.iso-config.yaml`, is not found for files outside
+  its directory. Keeping it at `proj/.iso-config.yaml` puts the whole
+  project in reach.
+- **The session journal archive moves to `docs/session-archive.yml`.**
+  `session-journal` and the journal template no longer name
+  `docs/pm/session-archive.yml`, because no skill writes under
+  `docs/pm/` any more.
+
+  **Migration to 5.0.0 for 4.x projects.**
+
+  1. **The in-session gates act at the plugin update.** In a project
+     with an `.iso-config.yaml`, from the first session after the
+     update and before any reinstall, an edit that adds or changes a
+     story with no tagged `<StoryIdentifier>.feature` beside it is
+     denied. Untouched stories in the same file draw only a warning,
+     and deleting a story is never denied. `pretooluse_test_first`
+     stays silent until `test_first.applies` is recorded as `true`. An
+     edit that changes `gate_overrides` or `test_first` asks the human
+     to confirm it, and that includes the edits `/vse-test-first`
+     makes.
+  2. **Re-copy the methodology** into the project's `methodology/`
+     folder (`engineering/methodology/` in a brownfield layout). The
+     project's local copy wins over the plugin's, and a 4.x copy
+     lacks §11, which every deny reason and lint finding cites, while
+     its earlier sections still teach the acceptance form used before
+     5.0.0. A project that changed its copy on purpose merges the
+     5.0.0 changes into it instead. `/vse-audit` warns on a copy
+     without §11.
+  3. **Migrate each story when it is next touched.** Write
+     `<StoryIdentifier>.feature` beside the story first, tagged
+     `@<StoryIdentifier>`, with the narrative lines and the existing
+     Given/When/Then prose formalised as scenarios, adding no
+     behaviour. Then nest one named criterion per scenario inside
+     `requirement :>> acceptance`, each named after the `@AC_<name>`
+     tag of its scenario. A case that verifies `<story>` or
+     `<story>.acceptance` still reaches every criterion.
+     `@story-orchestrator` does this for the story it opens or
+     advances. Untouched stories keep working: the commit gate and the
+     pull-request check read only the stories a change touches,
+     `pre-commit` names the untouched stories that still need
+     migrating in the stories directories the change touches, up to
+     five in one note with a count of any more, and `/vse-audit` lists
+     every one. The CI run at a release or baseline tag checks every
+     story, so migrate them all before the first release under 5.0.0.
+     A story still in the pre-4.0 `requirement def` form needs the
+     4.0.0 migration first.
+  4. **Record `test_first` with `/vse-test-first`**, before the first
+     commit under the reinstalled hooks of step 5. While it is
+     unrecorded, the 5.0.0 `pre-commit` blocks every commit,
+     documentation-only commits included, in a project where it
+     detects test tooling at the git top level (a `tests/` or `test/`
+     directory, a `package.json` test script or a Makefile `test:`
+     target, for example, as §11.5.1 lists), and it reports any change
+     to a path that a `code_paths` or `test_paths` glob already
+     recorded names. `@release-orchestrator` will not baseline a
+     release at any profile without the record, and `/vse-audit`
+     reports its absence as an error. Where the record says test first
+     applies, CI runs `test_command`, and `scenario_command` when
+     recorded, and fails when `test_command` is missing.
+  5. **Reinstall the project-side hooks through `@attention-regime`.**
+     Until then the 4.x hooks keep running without the new gates, and
+     the 4.x CI workflow re-runs `pre-commit` on an empty staged set,
+     so it passes without checking anything. The reinstall copies, at
+     every profile, `pre-commit` and its traceability delegate,
+     `lib/test-first.sh` beside fresh copies of `lib/iso-profile.sh`
+     and `lib/sysml-toolchain.sh`, `tools/lint/` at the engineering
+     root, and the 5.0.0 `traceability-check.yml`, which checks out the
+     full history and runs the gates over the range each event brings.
+     A `light` project receives `pre-commit` and the CI workflow for
+     the first time. Re-apply the profile's `continue-on-error` toggles
+     and any step the project added to the workflow. Refresh
+     `tools/render/` from the same plugin version when the reinstall
+     offers it, because the lint imports its model reader, then
+     regenerate `docs/generated/`. The commit gate needs `python3`, and
+     `tools/lint/` with `tools/render/` beside it, and refuses a commit
+     that touches a story without them. The same holds for a
+     `tools/render/` left at 4.x, which the lint names as older than
+     `tools/lint/`. Install `jq` for the lifecycle hooks. Without it
+     they read their JSON payload with `python3`, which also builds
+     the post-edit image (the file as it would read after the edit)
+     when `jq` is older than 1.6.
+  6. **Merge by hand the files `@project-setup` writes once**, because
+     no reinstall refreshes them. From `${CLAUDE_PLUGIN_ROOT}/templates/`,
+     carry over the Test-first evidence section and the feature file
+     items of `.github/pull_request_template.md` (from
+     `github/pull-request-template.md`), the `.iso-config.yaml` and
+     gate logic owners of `.github/CODEOWNERS` (from
+     `github/CODEOWNERS`), the §11 pointers of the managed block in
+     `CLAUDE.md` (from `common/CLAUDE.md`, while `@test-first` writes
+     its `Test-first:` line), and the §11 paragraph, the
+     `refactor/<slug>` branch kind and the `test(` commit form of
+     `CONTRIBUTING.md`.
+  7. **Move the journal archive.** If `docs/pm/session-archive.yml`
+     exists, move it to `docs/session-archive.yml`, where
+     `session-journal` now reads and writes it.
+  8. **Know what the in-session gates cannot see.** A file written
+     through the Bash tool is not gated in session, and neither is any
+     edit in a session with `disableAllHooks` set, a `--bare` session
+     or one with the plugin disabled. The commit-time and CI gates are
+     the backstop, so keep both installed (methodology §11.11).
+
+  Run `/vse-audit` after upgrading. It reports the feature files, the
+  test-first record, the installed hooks and the methodology copy.
+
+### Added (behaviour first and test first)
+
+- **Methodology §11, behaviour-driven and test-driven development**
+  (`methodology/11-behaviour-and-test-driven-development.md`). It fixes
+  the feature file conventions, the one-to-one mapping of `@AC_` tags
+  and named criteria, the story ordering, the test-first record and
+  its edge cases, the precedence of an installed test-driven
+  development skill such as `superpowers:test-driven-development`, the
+  fallback red, green, refactor cycle (a failing test, the minimal
+  code that passes it, then a tidy-up with the tests unchanged), the
+  four gates with the lint finding codes, the self-bypass rule and the
+  limits of enforcement. Sections 0, 1, 4, 5, 7, 8, 9 and 10 and the
+  hooks guide point at it, and §9 records SR.4 as partly covered by the
+  test-first discipline.
+- **The story lint ships.** `tools/lint/story-wellformed.py`, with
+  its standard-library Gherkin parser `gherkin.py`, installs at the
+  engineering root (the directory that holds `.iso-config.yaml`)
+  beside `tools/render/`, whose model reader it imports. It implements
+  findings S1 to S9 and F1 to F10 of §11.9.1 and the §1.9 rules the
+  well-formedness gate keeps (W2, W3, W6, W9 and W10), runs one rule
+  set with `--only wellformed`, `--only gherkin` or `--only syntax`,
+  prints text or JSON, and exits 0 when clean, 1 with findings and 2
+  when it could not run. Beside a `tools/render/` from an earlier
+  release it exits 2 with a line that names that model reader as
+  older than `tools/lint/` and says to refresh it. `--stories ID,ID`
+  limits the story findings to the stories named. The findings about
+  a file alone (F1 to F10, and S9 for a `.sysml` file) cover only the
+  files named or found by a directory search, so naming one file does
+  not report its neighbours. Story findings apply only in a directory
+  named `stories` or below one. It needs Python 3.8 or later and
+  nothing else.
+- **Two commit-time gates in `pre-commit`.** `precommit_gherkin` runs
+  the lint's Gherkin rule set from the engineering root, and
+  `precommit_test_first` checks test before code.
+  - In staged and range mode the story gates (`precommit_gherkin` and
+    `precommit_story_wellformed`) check the stories a change touches:
+    a story whose declaration block it adds or alters, read with the
+    scanner `PreToolUse` uses, or whose feature file it adds, changes,
+    renames or deletes. Deleting a story touches nothing. The feature
+    file beside a touched story is checked with it, even when the
+    change leaves that file alone, so changing only a story's status
+    still reports its feature file when that file does not parse. A
+    story file renamed within its directory, or moved with the whole
+    directory, is compared with the file it came from, so renaming a
+    register touches none of its stories, and moving a whole stories
+    directory touches only the stories whose feature files move with
+    it. A story file moved on its own to another directory, while
+    story or feature files other than templates remain in the old one,
+    has its stories checked as touched, so S1 reports a story whose
+    feature file stayed behind. A template renamed to a working name
+    brings its stories in as new, because the lint never checked them.
+    Untouched stories that still need migrating (S1, S3 or S9) in the
+    stories directories the change touches are named in one note that
+    never blocks, up to five with a count of any more, and
+    `/vse-audit` lists every one. With `VSE_PRECOMMIT_RANGE=all`, which
+    CI sets for a tag, every story is checked.
+  - Where `test_first.applies` is `true`, a change to a code path needs
+    a changed test path in the commit, or on the branch since its
+    merge base. An untracked or unstaged test does not count. In CI a
+    pull request or a push counts its range. The branch history since
+    the merge base also counts when CI has a branch checked out, which
+    the shipped workflow does only for a push to `main`. There that
+    history is empty, because the merge base is the pushed commit
+    itself, so it adds evidence only where a project also runs the
+    workflow on pushes to its working branches. A refactor branch
+    draws a reminder instead. A record with `applies: true` whose
+    `code_paths` or `test_paths` reads empty is reported rather than
+    enforcing nothing in silence.
+  - While `test_first.applies` is unrecorded, the gate reports a
+    finding when it detects test tooling at the git top level or when
+    a changed path matches a `code_paths` or `test_paths` glob already
+    recorded, and otherwise prints one line suggesting
+    `/vse-test-first`.
+  - A missing story lint or `python3` is reported at the gate's
+    disposition, block by default, and so is a partial install that
+    lacks `lib/test-first.sh`. In a brownfield layout the lint output
+    first names the directory its paths are relative to. In CI the
+    gates give no bypass advice, because a check in CI cannot be
+    bypassed from a workstation (§0.10.6).
+- **Range mode.** `VSE_PRECOMMIT_RANGE` makes `pre-commit` and its
+  traceability delegate read a git range instead of the staged set,
+  or every tracked file with `all`. The SysML lint is skipped in range
+  mode with a note, because CI validates the model in its own step.
+  The traceability delegate also reads a criterion nested in a story's
+  acceptance as a member of the story, and a verify path through any
+  chain of `::` and `.` segments.
+- **The CI workflow template** (`templates/github/traceability-check.yml`)
+  checks out the full history and sets `VSE_PRECOMMIT_RANGE` for each
+  event: `base...head` for a pull request, `before..after` for a push,
+  and `all` for a tag push or a push whose previous tip is zero or
+  missing from the checkout. The step that runs the gates fails when
+  `.githooks/pre-commit` is missing. Where `test_first.applies` is
+  `true`, new steps run the recorded `test_command` and
+  `scenario_command` from the git top level, and the workflow fails
+  when such a record lacks its `test_command` (§11.5.2).
+- **The test-first record and the `test-first` skill.** `test_first`
+  in `.iso-config.yaml` records whether test first applies, with
+  `rationale`, `test_command`, an optional `scenario_command`,
+  `code_paths`, `test_paths` and `refactor_branches` (§11.5.2). The new
+  `test-first` skill and its `/vse-test-first` command make that
+  judgement with the engineer, detect test tooling, and write the four
+  records of §11.5.3: the `test_first` block, a `Test-first:` line in
+  the managed `CLAUDE.md` block, a SEMP tools row and a Project Plan
+  tailoring line. They wire the stories' feature files to a
+  Cucumber-family scenario runner where test first applies, and answer
+  a test-first denial by writing the failing test. Where
+  `superpowers:test-driven-development` is installed it governs the
+  cycle, with the precedence adjustments of §11.6. The plugin now
+  ships 30 skills and 14 commands.
+- **The lifecycle hooks speak through JSON.** `PreToolUse`,
+  `PostToolUse`, `Stop` and `SubagentStop` print exactly one JSON
+  object through the new `hooks/lib/hook-json.sh`, encoded with `jq`,
+  else `python3`, else a fixed notice, or they print nothing.
+  `PostToolUse` reminders reach the agent as `additionalContext`, with
+  three new ones: after a feature file, mirror each `@AC_` tag as a
+  nested criterion. After a story file, bind
+  `verify <story>.acceptance.<name>` for a new criterion. After a code
+  edit where test first applies, run `test_command`. `Stop` and
+  `SubagentStop` send their reminders to the human as `systemMessage`
+  and the test-first finding to the agent as `additionalContext`, each
+  once for each session and working-tree state, with a marker of its
+  own per event, and they stay silent while `stop_hook_active` is set.
+- **`SessionStart` states the policy.** In a VSE project its report
+  carries a Behaviour-first line and a Test-first line that names
+  the recorded `test_first.applies` value and points at
+  `superpowers:test-driven-development` unless that value is `false`.
+  It names a `code_paths` or `test_paths` that reads empty, nudges
+  when test tooling is found while the value is `false` or
+  unrecorded, and warns when `jq` is missing.
+- **Templates for new projects.** The stakeholder and system story
+  templates nest one criterion, `exampleCriterion`, and each has a
+  `_template.feature` beside it. The verification and validation case
+  templates verify `<story>.acceptance.exampleCriterion`. The
+  configuration template ships a commented `test_first` block and
+  lists the four new gate keys in its commented `gate_overrides`. The
+  pull request template gains a Test-first evidence section and the
+  feature file items of §8.6.2 and §8.6.3. CODEOWNERS gives
+  `.iso-config.yaml`, `.githooks/`, `.github/workflows/`, `tools/lint/`
+  and `tools/render/sysml_model.py` human owners, because a change to
+  any of them can lower a gate. CONTRIBUTING names the
+  `refactor/<slug>` branch kind and the `test(` commit that precedes
+  `feat(`. The managed `CLAUDE.md` block, the SEMP and the Project Plan
+  carry the §11 pointers, the Test-first line, the tools row and the
+  tailoring line, and the SR document templates point their
+  acceptance fields at the feature file scenarios.
+- **The requirements documents print scenarios.** Each criterion is
+  printed as the scenario tagged `@AC_<name>` in the story's feature
+  file, in a fenced `gherkin` block, when `tools/lint/gherkin.py` sits
+  beside `tools/render/` and the feature parses, and as its doc text
+  otherwise. For a model with no feature files both requirements
+  documents render byte for byte as under 4.0.1, so they change only
+  as feature files arrive. The parser is loaded by its path, so a
+  Cucumber package installed in the project cannot replace it.
+
+### Changed (skills, agents and demo)
+
+- **The skills and agents follow §11.** `story-orchestrator` and
+  `needs-and-requirements` write the feature file first, then the
+  story with one named criterion per scenario, then the case stub, and
+  migrate a story in the earlier form when it is next changed.
+  `verification-validation` and `traceability-guard` bind and check
+  coverage per criterion, and `sysml2-cases` and
+  `sysml2-model-structure` show named criteria and per-criterion verify
+  paths. `release-orchestrator` reads coverage per criterion, needs a
+  green `test_command` run, and a green `scenario_command` run where
+  one is recorded, before a baseline where test first applies, and
+  stops on an unrecorded `test_first` at every profile.
+  `project-audit` gains check 17 (the story lint's Gherkin rule set)
+  and check 18 (the test-first record), compares the installed hooks
+  with the §3.4 matrix and with the plugin's copies, and warns on a
+  workflow that predates range mode. `project-setup` asks the
+  test-first question after the toolchain question and installs
+  `tools/lint/`, and `attention-regime` installs the 5.0.0 surface.
+  `change-request` names the scenarios, cases and tests a change
+  touches, `document-export` treats feature files as a source of the
+  requirements exports, and `vse-companion-overview` routes Gherkin
+  and test-first work. The stakeholder elicitor drafts scenarios, and
+  the traceability matrix builder reads nested criteria and deep
+  verify paths. The `/vse-story` hint names the feature file first.
+- **The demo is migrated.** The eight smart-sensor stories have
+  feature files and one named criterion each, the eight cases verify
+  each criterion by its full path, and the demo records `test_first`
+  with `applies: false` in the four places of §11.5.3. Its validation
+  record carries a re-run under the OMG pilot and OpenSysML, and its
+  `plugin_version` reads 5.0.0.
+- **The wiki gains the `bdd-tdd` layer.** Six pages cover the Gherkin
+  reference, tags and tag expressions, the three BDD (behaviour-driven
+  development) practices, discovery workshops and Example Mapping,
+  declarative Gherkin and the red, green, refactor cycle, and a
+  methodology page summarises §11. Existing pages follow §11. The
+  wiki holds 172 pages across 13 layers, routed to by 24 skills.
+
+### Added (plugin development)
+
+- **The plugin's own behaviour is described first, as Gherkin
+  scenarios.** Eleven feature files under `tests/features/` run on
+  `tests/bdd/run.py`, a standard-library runner that shares the story
+  lint's parser, fails an undefined step, and with `--fail-on-wip`
+  fails every scenario still tagged `@wip`. The Python units have
+  `unittest` tests under `tests/python/`.
+- **`make all` and plugin CI gain, in parity,** `test-python`,
+  `test-bdd` (with `--fail-on-wip`), `check-mirrors` (the demo copies
+  of the methodology, the library, the lint and the renderers, byte
+  for byte), `check-test-first` (a branch that changes plugin code
+  without changing a test fails, per `tests/test-first.yaml`),
+  `check-templates` (the story and case templates pass the lint under
+  real names), `check-demo-lint` and `validate-demo` (OpenSysML v0.6.0
+  validates the demo and the model templates, installed in CI with its
+  checksum). `test-hooks` runs every `tests/hooks/test-*.sh`, and the
+  lifecycle hook tests feed the JSON payload on stdin.
+- **Contributor rules for test first and Gherkin first**, and a pull
+  request template for the plugin with a Test-first evidence section.
+
+### Fixed
+
+- **The CI re-run of the commit gates checked nothing.** The 4.x
+  `traceability-check.yml` re-ran `.githooks/pre-commit` on a
+  depth-1 checkout, where nothing is staged, so every gate passed
+  without reading the change, and the traceability delegate read only
+  the staged set as well. Both now read the range the event brings.
+- **The story lint never shipped.** `pre-commit` and the methodology
+  named `tools/lint/story-wellformed.py`, but no copy existed, so the
+  well-formedness gate was dormant, and in a brownfield project the
+  hook looked for the lint under the git top level rather than the
+  engineering root. It ships now, and the hook runs it from the
+  engineering root.
+- **Lifecycle hook output never reached the agent.** `PreToolUse`,
+  `PostToolUse`, `Stop`, `SubagentStop` and `source-added-reminder.sh`
+  printed plain text, which the harness does not pass on at those
+  events. Each now prints one JSON object.
+- **`UserPromptSubmit` fell silent without `jq`.** It read the prompt
+  with `jq` alone, so on a machine without `jq` its methodology
+  reminders (Change Requests, meeting records and the guard against
+  reverse-engineering context) were dropped with no notice. It now
+  reads the prompt as the other lifecycle hooks read their payload,
+  with `jq`, else `python3`.
+- **A project with its own `wiki/CLAUDE.md` was taken for the plugin
+  repository.** `SessionStart` printed the contributor banner instead
+  of the project report, and the source-added reminder appended stubs
+  to the project's own `wiki/LOG.md` when a file under `sources/`
+  changed. The plugin repository is now recognised by that file
+  together with a `.claude-plugin/plugin.json` naming
+  `vse-systems-engineering`, which also keeps the in-session gates on
+  in such a project.
+- **The Java probe misread a `JAVA_TOOL_OPTIONS` banner.** With
+  `JAVA_TOOL_OPTIONS` set, the JVM prints `Picked up
+  JAVA_TOOL_OPTIONS: ...` before its version line, and
+  `hooks/lib/sysml-toolchain.sh` read only the first line, so a Java
+  21 was refused and the OMG pilot looked unavailable. The library and
+  the `sysml-toolchain` skill now read the first line that names a
+  version, and the probe runs each Java binary once, even when
+  `VSE_JAVA`, `JAVA_HOME` and the `PATH` lead to the same one.
+- **A deep verify path named the wrong story.** The model reader took
+  the last capitalised segment of a verify target as the story, so
+  `verify US_001.acceptance.SeeLatest` read as a story named
+  `SeeLatest` and the case covered nothing. A target is now split at
+  its first `acceptance` segment, and otherwise against the story
+  identifiers the model declares, so a qualified identifier that
+  starts in lower case is read as the story too. Matrix rows of a
+  project that used such paths change on regeneration.
+- **The model reader** read a KerML note (`//*` to `*/`) as a line
+  comment, so a story declared inside a note counted, and it dropped
+  the verify clauses of a case written on one line, the layout of the
+  case table in methodology §4. Both are read correctly now.
+- **`pre-commit` used the GNU-only `xargs -d`** to list the stories
+  directories, which the BSD `xargs` of macOS lacks. A `while read`
+  loop replaces it.
+- **The `hooks.json` command paths were unquoted**, so an install path
+  containing a space split the command. Recent Claude Code releases
+  warn about each unquoted placeholder, and strict manifest validation
+  treats those warnings as errors. Each path is now quoted.
+- **The document export workflow failed at `full`.**
+  `document-export.yml` looped over `docs/pm/*.md` and `docs/sr/*.md`,
+  folders no skill writes, so the unmatched pattern reached pandoc as
+  a file name and the release export failed. It now reads the sources
+  of the `document-export` skill under `docs/` or `engineering/docs/`
+  and skips one the project lacks. Five templates, the
+  `document-export` and `session-journal` skills and several wiki
+  pages named the same stale folders and now name the paths the
+  skills write.
+- **A configuration below the git top level was missed.**
+  `hooks/lib/iso-profile.sh` looked for `.iso-config.yaml` at the git
+  top level only, so a project in a subdirectory, such as the demo or
+  a monorepo subproject, was reported with the default profile at
+  session start. The hooks now locate the project's own configuration
+  and name it in `VSE_ISO_CONFIG`, which the library honours when it
+  names a readable file.
+- **Configuration values lost their quotes.** The scalar reader
+  stripped quotes leniently, so a value that merely ends in a quote,
+  such as `pytest -k "not slow"`, lost that quote, and it read a `#`
+  inside a quoted value as the start of a comment. One matching pair
+  of quotes now comes off, and a quoted `#` is kept.
+- **The traceability delegate** wrote its error messages to stdout
+  beside its findings, and a textconv diff driver (a filter that
+  rewrites a file for display) could hide stories from it. Its
+  messages go to stderr, and its diffs pass `--no-textconv`.
+- **The post-merge drift check** read any non-zero `git diff` status
+  as drift, so a git error reported regenerated artefacts. It compares
+  the status with 1 and says on stderr when git could not compare.
+- **A long text could cut a check short.** Several hooks piped a text
+  into `grep -q` or `head`, which stop reading at the first match or
+  the first line. When the text was longer than a pipe holds (commonly
+  64 KiB), the writer was killed by SIGPIPE (the signal a process gets
+  when it writes to a pipe that nobody reads any more), and the
+  shell's `pipefail` option turned the result into a miss or ended the
+  hook. `UserPromptSubmit` dropped its methodology reminders for a
+  prompt that long. `commit-msg` reported a message that long, on a
+  commit touching a baselined path, as lacking the Change Request
+  reference it carried. `pre-commit` could print the traceability
+  delegate's warnings and then report that all checks passed. A syside
+  licence or display server failure in a long report was taken for
+  findings against the model rather than for syside being unavailable.
+  With thousands of release or plan baseline tags, `SessionStart` and
+  `post-checkout` stopped before the end of their reports. The hooks
+  now match such a text with `case`, or hand it to `grep` without a
+  pipe, and take the newest tag with `awk`, which reads the whole
+  listing.
+- **Skill examples that did not validate.** The
+  `sysml2-model-structure` layout example declared an interface with
+  no ends, and two of its examples lacked imports, which OpenSysML
+  rejects. Every SysML block of that layout example now validates
+  under OpenSysML v0.6.0 and the OMG pilot.
+- **Skills promised documents that nothing renders.**
+  `verification-validation` and `release-orchestrator` said a renderer
+  writes the IVV Plan, the IVV Procedures and the Justification
+  Document into `docs/generated/`, and `project-audit` asked for a
+  project settings file that the plugin never installs. The IVV
+  documents are now prepared from their templates, and the audit no
+  longer asks for the file.
+
 ## [4.0.1] - 2026-09-10
 
 ### Fixed
