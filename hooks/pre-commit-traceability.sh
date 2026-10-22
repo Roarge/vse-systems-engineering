@@ -366,7 +366,11 @@ printf '%s' "$FINDINGS"
 echo "  Run /vse-trace for the full-repo traceability report."
 
 if [ "$DISPOSITION" = "block" ]; then
-    echo "  To proceed anyway, record a one-line rationale per methodology §0.10.6."
+    # A check in CI (range mode) cannot be bypassed from a workstation
+    # (§0.10.6), so there it gives no rationale advice.
+    if [ -z "$RANGE" ]; then
+        echo "  To proceed anyway, record a one-line rationale per methodology §0.10.6."
+    fi
     exit 1
 fi
 

@@ -322,6 +322,8 @@ case_trace_gap() {
         "trace gap (block): exactly one gap is counted"
     tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
         "trace gap (block): the finding names the story"
+    tc_assert_grep "To proceed anyway, record a one-line rationale per methodology §0.10.6." "$OUT" \
+        "trace gap (block): a local commit is told how to proceed anyway"
 }
 
 # A story written inside a doc comment is documentation, not a
@@ -588,6 +590,9 @@ case_trace_range_mode() {
         "trace range: the finding names the story the range adds"
     tc_assert_not_grep "US_9_Y" "$OUT" \
         "trace range: the story that predates the range is not reported"
+    # A check in CI cannot be bypassed from a workstation (§0.10.6), so
+    # range mode gives no rationale advice.
+    tc_assert_not_grep "rationale" "$OUT" "trace range: no rationale line is printed"
 
     tc_env "VSE_PRECOMMIT_RANGE=all"
     tc_run_hook
