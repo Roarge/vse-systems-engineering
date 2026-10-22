@@ -111,14 +111,19 @@ check-skills:
 # file path is an error when it does not resolve. A reference written
 # as a directory path (trailing slash) stays at warning level, which
 # preserves the tolerance the previous templates/ check provided for
-# conditional directory copies.
+# conditional directory copies. The references are read with an
+# extended regular expression (ERE) whose bracket expressions match the
+# literal $, { and } on GNU and BSD grep alike, because macOS grep has
+# no -P and \{ is not portable in an ERE. Every shipped skill names at
+# least one plugin-root path, so a scan that counts none has read
+# nothing and fails rather than passing in silence.
 check-refs:
 	@echo "Checking cross-references..."
 	@EXIT_CODE=0; \
 	 CHECKED=0; \
 	 for src_file in skills/*/SKILL.md commands/*.md agents/*.md hooks.json; do \
 	   [ -f "$$src_file" ] || continue; \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
+	   for ref_path in $$(grep -oE '[$$][{]CLAUDE_PLUGIN_ROOT[}]/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
 	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
 	     CHECKED=$$((CHECKED + 1)); \
 	     [ -e "$$rel_path" ] && continue; \
@@ -129,6 +134,10 @@ check-refs:
 	   done; \
 	 done; \
 	 echo "  Checked $$CHECKED plugin-root references."; \
+	 if [ "$$CHECKED" -eq 0 ]; then \
+	   echo "ERROR: found no plugin-root reference to check, so the check proved nothing"; \
+	   EXIT_CODE=1; \
+	 fi; \
 	 exit $$EXIT_CODE
 
 # Runtime knowledge reaches a skill through a generated wiki-routing
