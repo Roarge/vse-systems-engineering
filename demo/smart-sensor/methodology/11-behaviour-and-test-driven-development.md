@@ -249,7 +249,10 @@ objective holds one of these clauses:
 The narrowest form is preferred when different cases verify different
 criteria, because the model then records which case verifies which
 scenario. The traceability matrix judges each criterion by this rule
-and lists every criterion that no case reaches as a gap. The path uses
+and lists every criterion that no case reaches as a gap. It judges a
+stakeholder story on its own criteria, as the story lint does for
+§11.4, so a verified system story derived from it does not stand in
+for a criterion that no case reaches. The path uses
 dot notation. The `::` namespace
 form addresses a definition member, and the reference implementations
 refuse it (§5.4.6).
