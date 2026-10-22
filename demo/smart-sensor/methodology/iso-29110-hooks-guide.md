@@ -223,12 +223,16 @@ the install.
    change to a code path that arrives with no change to a test path,
    either in the commit set or on the branch since its merge base
    (methodology §11.9). A test left untracked or unstaged is in
-   neither. In range mode the range alone counts. On a branch that
-   matches `refactor_branches` the finding is a reminder. Where
-   `test_first.applies` is unrecorded, report when test tooling is
-   detected or a changed path matches a `code_paths` or `test_paths`
-   glob already recorded, and otherwise print one line suggesting
-   `/vse-test-first`.
+   neither. In range mode the range is the commit set. The branch
+   since its merge base also counts when a branch is checked out, as
+   CI does for a push, so a push that brings the code counts the test
+   an earlier push brought. CI checks a pull request out detached, so
+   there the range alone counts, and it already runs from the merge
+   base. On a branch that matches `refactor_branches` the finding is a
+   reminder. Where `test_first.applies` is unrecorded, report when
+   test tooling is detected or a changed path matches a `code_paths`
+   or `test_paths` glob already recorded, and otherwise print one line
+   suggesting `/vse-test-first`.
 
 **File set.** By default the hook checks the staged set.
 `VSE_PRECOMMIT_RANGE` switches it to range mode: a git range such as

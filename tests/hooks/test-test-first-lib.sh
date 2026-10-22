@@ -897,6 +897,12 @@ case_evidence_branch_mode() {
     tc_assert_rc 1 "evidence, branch mode: an untracked test is not evidence"
     tc_assert_eq "reason: no test path changed in the commit or on the branch since the merge base with main" "$OUT" \
         "evidence, branch mode: the reason names the commit and the branch, not the working tree"
+    # The commit gate in range mode has checked a range, not a commit,
+    # and names it as the third argument, so the reason speaks of it.
+    run_tf vse_tf_evidence "$REPO" branch "in the range HEAD~1..HEAD"
+    tc_assert_rc 1 "evidence, branch mode: a named change set does not change what counts"
+    tc_assert_eq "reason: no test path changed in the range HEAD~1..HEAD or on the branch since the merge base with main" "$OUT" \
+        "evidence, branch mode: the reason names the change set the caller gives"
     printf 'def test_more(): pass\n' >> "${REPO}/tests/test_app.py"
     run_tf vse_tf_evidence "$REPO" branch
     tc_assert_rc 1 "evidence, branch mode: a modified, unstaged test is not evidence"
@@ -914,6 +920,9 @@ case_evidence_branch_mode() {
     tc_assert_rc 1 "evidence, branch mode: a detached HEAD has none"
     tc_assert_match "^reason: detached HEAD .*no test path changed in the commit$" "$OUT" \
         "evidence, branch mode: the detached HEAD reason does not mention the working tree"
+    run_tf vse_tf_evidence "$REPO" branch "in the range main..HEAD"
+    tc_assert_match "^reason: detached HEAD .*no test path changed in the range main\.\.HEAD$" "$OUT" \
+        "evidence, branch mode: the detached HEAD reason names the change set the caller gives"
 }
 
 # protected_branches may be written as a flow list too.

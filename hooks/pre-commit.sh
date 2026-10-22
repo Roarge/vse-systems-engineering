@@ -403,18 +403,22 @@ fi
 
 # 4. Test before code (methodology §11.9). With test_first.applies
 # true, a changed code path needs a changed test path in the file set,
-# or, for a local commit, a test path changed on the branch since its
-# merge base (vse_tf_evidence in branch mode). A test that is untracked
-# or not staged is in neither, so it is not evidence (§11.9.2). In range
-# mode the range alone counts. On a refactor branch the finding is a
-# reminder (in range mode the branch is GITHUB_HEAD_REF when CI sets
-# it). With applies true and code_paths or test_paths reading empty,
-# the incomplete record is the finding. With test_first unrecorded,
-# detected test tooling or a changed file the recorded paths classify
-# as code or test is a finding that asks for the record, and otherwise
-# one line suggests it. With applies false the gate is silent. Without
-# test-first.sh, or without the profile library it needs, the gate
-# reports the partial install instead.
+# or a test path changed on the branch since its merge base
+# (vse_tf_evidence in branch mode). A test that is untracked or not
+# staged is in neither, so it is not evidence (§11.9.2). In range mode
+# the branch counts only when one is checked out, as CI does for a
+# push. CI checks a pull request out detached, so there the range alone
+# counts, and it already runs from the merge base. With the range all,
+# every tracked file is already in the file set. On a refactor branch
+# the finding is a reminder (in range mode the branch is
+# GITHUB_HEAD_REF when CI sets it). With applies true and code_paths
+# or test_paths reading empty, the incomplete record is the finding.
+# With test_first unrecorded, detected test tooling or a changed file
+# the recorded paths classify as code or test is a finding that asks
+# for the record, and otherwise one line suggests it. With applies
+# false the gate is silent. Without test-first.sh, or without the
+# profile library it needs, the gate reports the partial install
+# instead.
 #
 # Every changed path is classified once with the library's in-shell
 # classifier, which loads the globs once and needs no subshell per
@@ -459,10 +463,16 @@ EOF
     [ -z "$tests" ] || return 0
     if [ "$RANGE" = all ]; then
         evidence="reason: no tracked file is a test path"
-    elif [ -n "$RANGE" ]; then
+    elif [ -z "$RANGE" ]; then
+        if evidence="$(vse_tf_evidence "$TOP_REAL" branch)"; then
+            return 0
+        fi
+    elif git -C "$TOP_REAL" symbolic-ref -q HEAD >/dev/null 2>&1; then
+        if evidence="$(vse_tf_evidence "$TOP_REAL" branch "in the range ${RANGE}")"; then
+            return 0
+        fi
+    else
         evidence="reason: no test path changed in the range ${RANGE}"
-    elif evidence="$(vse_tf_evidence "$TOP_REAL" branch)"; then
-        return 0
     fi
     # In range mode CI checks a pull request out as a detached merge
     # commit and names its branch in GITHUB_HEAD_REF, so that name is

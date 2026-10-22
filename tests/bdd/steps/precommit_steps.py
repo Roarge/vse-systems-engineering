@@ -1,6 +1,6 @@
 r"""Step definitions for the commit-time scenarios.
 
-They cover the commit-time Rule of profile-gates.feature, both
+They cover the commit-time Rule of profile-gates.feature, the
 scenarios of ci-range.feature, and the commit-time scenario of
 test-first.feature. Each scenario builds a git repository with the
 project-side hooks installed (world.py), commits the way an engineer
@@ -108,6 +108,25 @@ def branch_adds_story(ctx, story):
     ctx.branch = "feature/" + story
 
 
+@step(r"a branch (\S+) whose commits add the test file (\S+)")
+def branch_adds_test(ctx, branch, path):
+    world.start(ctx)
+    world.git(ctx, "checkout", "-q", "-b", branch)
+    world.write(ctx, path, "def test_reading():\n    assert True\n")
+    world.commit_unchecked(ctx, "test: add {}".format(path), path)
+    ctx.branch = branch
+
+
+@step(r"a later push to the branch that adds only the code file (\S+)")
+def later_push_adds_code(ctx, path):
+    # The push runs from the branch tip the earlier push left to the
+    # commit that adds the code, as GitHub's before and after name it.
+    ctx.push_before = world.head(ctx)
+    world.write(ctx, path, "def reading():\n    return 0\n")
+    world.commit_unchecked(ctx, "feat: add {}".format(path), path)
+    ctx.push_after = world.head(ctx)
+
+
 @step(r"a fresh checkout of the branch with nothing staged")
 def fresh_checkout(ctx):
     ctx.checkout = world.checkout(ctx, ctx.branch)
@@ -146,6 +165,14 @@ def commit_change(ctx, path):
 @step(r"CI checks the range from main to the branch head")
 def ci_checks_range(ctx):
     world.ci_check(ctx, ctx.checkout, "origin/main...HEAD")
+
+
+@step(r"CI checks the later push")
+def ci_checks_push(ctx):
+    # A push to a branch: the checkout holds the branch, and the range
+    # runs from the previous tip to the new one (before..after).
+    world.ci_check(ctx, ctx.checkout,
+                   "{}..{}".format(ctx.push_before, ctx.push_after))
 
 
 @step(r"CI checks the push of the tag (\S+)")
@@ -201,3 +228,9 @@ def check_fails(ctx, code):
         raise AssertionError("the check passed, " + _context(ctx))
     if not _shows_code(ctx.output, code):
         raise AssertionError("no finding {}, {}".format(code, _context(ctx)))
+
+
+@step(r"the check passes")
+def check_passes(ctx):
+    if ctx.result.returncode != 0:
+        raise AssertionError("the check failed, " + _context(ctx))

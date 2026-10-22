@@ -28,7 +28,8 @@
 #   vse_tf_post_image <payload> <file>   file content after the edit
 #   vse_tf_disk_image <file>           file content before the edit
 #   vse_tf_classify <relpath>          never, test, code or other
-#   vse_tf_evidence <toplevel> [branch]  evidence: <path>, or reason: ...
+#   vse_tf_evidence <toplevel> [branch [<where>]]  evidence: <path>, or
+#                                      reason: ...
 #   vse_tf_refactor_branch [<toplevel> [<branch>]]  0 on a refactor branch
 #   vse_tf_detect <dir>                one key per detected test tool
 #   vse_tf_applies                     true, false or nothing
@@ -757,9 +758,12 @@ EOF
 # branch since its merge base counts. That is the commit gate's mode:
 # it checks the commit's own files itself, and a test left untracked or
 # unstaged is in neither the commit nor the branch (methodology
-# §11.9.2). The reasons then speak of the commit, not the working tree.
+# §11.9.2). The reasons then speak of the commit, not the working tree,
+# or of <where>, a phrase such as "in the range <range>" that names the
+# change set the caller has already checked (the commit gate in range
+# mode).
 #
-# Usage: vse_tf_evidence <toplevel> [branch]
+# Usage: vse_tf_evidence <toplevel> [branch [<where>]]
 vse_tf_evidence() {
     local top="$1" mode="${2:-}" record status path old base="" candidate merge_base
     local here="in the working tree" since="or since the merge base with"
@@ -773,7 +777,7 @@ vse_tf_evidence() {
     # copy record is followed by a field holding the old path, which is
     # read and dropped so it is never taken for a record of its own.
     if [ "$mode" = branch ]; then
-        here="in the commit"
+        here="${3:-in the commit}"
         since="or on the branch since the merge base with"
     else
         while IFS= read -r -d '' record; do

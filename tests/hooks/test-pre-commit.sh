@@ -1441,9 +1441,11 @@ case_range_mode_skips_model_lint() {
     tc_assert_empty "$(cat "$invocations")" "range mode: no validator was invoked"
 }
 
-# In CI the working tree is clean and HEAD is detached, so there is no
-# working-tree or branch evidence. A test changed within the range is
-# the evidence, and a range with code alone is a finding.
+# In CI the working tree is clean. For a pull request HEAD is
+# detached, so there is no working-tree or branch evidence: a test
+# changed within the range is the evidence, and a range with code alone
+# is a finding. For a push a branch is checked out, so a test changed
+# on the branch since its merge base counts as well.
 case_test_first_range_mode() {
     local head
     tc_setup_repo
@@ -1468,11 +1470,23 @@ case_test_first_range_mode() {
         "test first, range mode: the reason names the range"
     tc_assert_not_grep "$RATIONALE" "$ERR" "test first, range mode: no rationale line is printed"
 
-    # In range mode the range alone counts: a test committed on the
-    # branch before the range is not evidence for it.
+    # CI checks a push out on its branch, so a test changed on the
+    # branch since its merge base counts as well as the range, as it
+    # does for a local commit (methodology §11.9.2). A pull request is
+    # checked out detached, as above, where the range alone counts.
     git -C "$REPO" checkout -q -b feat/more-readings
     tc_run_hook
-    tc_assert_rc 1 "test first, range mode: a test on the branch outside the range is not evidence"
+    tc_assert_rc 0 "test first, range mode: on a branch, a test on the branch outside the range is evidence"
+
+    # On a branch with no test since its merge base the reason names
+    # the range and the branch, never the working tree or the commit.
+    git -C "$REPO" checkout -q -b feat/code-only main
+    write_code src/third.py
+    tc_commit "add code alone"
+    tc_run_hook
+    tc_assert_rc 1 "test first, range mode: on a branch, code with no test on the branch stops the check"
+    tc_assert_grep "reason: no test path changed in the range HEAD~1..HEAD or on the branch since the merge base with main" "$ERR" \
+        "test first, range mode: on a branch, the reason names the range and the branch"
 
     # all reads every tracked file, so with no tracked test the reason
     # says so rather than naming a range.
