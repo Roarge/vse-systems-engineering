@@ -306,7 +306,11 @@ TF_MISSING=""
 if [ -n "$TEST_FIRST_LIB" ]; then
     TF_APPLIES="$(vse_tf_applies)"
     TF_SHOWN="${TF_APPLIES:-not recorded}"
-    TF_MISSING="$(vse_tf_missing_paths || true)"
+    # vse_tf_missing_paths reads applies again, so it runs only where
+    # applies is true and an unrecognised value is warned about once.
+    if [ "$TF_APPLIES" = "true" ]; then
+        TF_MISSING="$(vse_tf_missing_paths || true)"
+    fi
 else
     TF_SHOWN="unknown (test-first library missing)"
 fi

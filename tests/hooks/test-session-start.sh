@@ -268,6 +268,19 @@ case_mode2_test_first_recorded() {
     assert_plain_text "$OUT" "test first (${applies}): output is plain text"
 }
 
+# An unrecognised applies value is reported on stderr once, not once
+# for each helper that reads it.
+case_mode2_test_first_unrecognised_warned_once() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    make_policy_project "$dir" yes
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "test first (unrecognised): exit 0"
+    tc_assert_line_count 1 "$(printf '%s\n' "$ERR" | grep -F "Unrecognised test_first.applies value 'yes'" || true)" \
+        "test first (unrecognised): the warning is printed once"
+}
+
 # applies: true with code_paths or test_paths that read empty leaves
 # the gates unable to tell code from tests, so the Test-first line
 # names the key in place of the plain "applies is true" line.
@@ -629,6 +642,7 @@ case_mode2_test_first_recorded true true
 case_mode2_test_first_recorded false false
 case_mode2_test_first_recorded - "not recorded"
 case_mode2_test_first_recorded yes "not recorded"
+case_mode2_test_first_unrecognised_warned_once
 case_mode2_test_first_library_missing
 case_mode2_test_first_paths_unreadable
 
