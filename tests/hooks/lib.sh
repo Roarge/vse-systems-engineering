@@ -268,6 +268,260 @@ exit 0
 EOF
 }
 
+# BSD-behaviour stubs.
+#
+# macOS ships BSD grep, BSD date and the one true awk (BWK awk, after
+# Brian W. Kernighan, who maintains it), and each accepts less than its
+# GNU counterpart.
+# Each stub below refuses what the macOS tool refuses, the way that tool
+# refuses it, and passes every other call to the real tool found when
+# the stub is written. A hook under test meets the stub through the
+# sandboxed PATH, so a hook that relies on a GNU-only form fails on
+# Linux too. The test script itself keeps the real tool.
+
+# _tc_stub_wrap <name>: write the stub <name> into $STUBS from stdin,
+# after a header that names the real <name> found now as $real. The
+# body is read verbatim, so it is written without escapes.
+_tc_stub_wrap() {
+    local name="$1" real
+    real="$(command -v "$name")"
+    {
+        printf '#!/usr/bin/env bash\nset -uo pipefail\nreal=%q\n' "$real"
+        cat
+    } | tc_stub "$name"
+}
+
+# tc_stub_bsd_grep: BSD grep has no -P (Perl regular expressions). It
+# refuses -P with "grep: invalid option -- P" and --perl-regexp with
+# "grep: unrecognized option `--perl-regexp'", then prints its usage
+# text and exits 2. The stub reads the options the way grep's
+# getopt_long does: anywhere before "--", with single letters grouped
+# (so -oP is refused as -P is), and with the argument of -e, -f and the
+# other options that take one never read as an option (so the pattern
+# "-P" after -e is a pattern). POSIX leaves \| in a basic regular
+# expression undefined, so a BSD grep need not read it as alternation.
+# The stub refuses an unescaped \| in a basic regular expression (no
+# -E, no -F) with a message and exit 2, so a use fails loudly here. The
+# patterns checked are those given with -e or --regexp, or else the
+# first operand. A pattern file named by -f is not read.
+tc_stub_bsd_grep() {
+    _tc_stub_wrap grep <<'EOF'
+usage() {
+    echo 'usage: grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]' >&2
+    printf '\t%s\n' '[-e pattern] [-f file] [--binary-files=value] [--color=when]' \
+        '[--context[=num]] [--directories=action] [--label] [--line-buffered]' \
+        '[--null] [pattern] [file ...]' >&2
+    exit 2
+}
+mode=basic
+patterns=()
+from_option=0
+operand=""
+have_operand=0
+expect=""
+ended=0
+for arg in "$@"; do
+    if [ -n "$expect" ]; then
+        if [ "$expect" = pattern ]; then
+            patterns+=("$arg")
+        fi
+        expect=""
+        continue
+    fi
+    if [ "$ended" -eq 0 ]; then
+        case "$arg" in
+            --)
+                ended=1
+                continue
+                ;;
+            --perl*)
+                printf "grep: unrecognized option \`%s'\n" "$arg" >&2
+                usage
+                ;;
+            --extended-regexp) mode=extended; continue ;;
+            --fixed-strings) mode=fixed; continue ;;
+            --basic-regexp) mode=basic; continue ;;
+            --regexp=*) patterns+=("${arg#--regexp=}"); from_option=1; continue ;;
+            --regexp) expect=pattern; from_option=1; continue ;;
+            --file=*) from_option=1; continue ;;
+            --file) expect=file; from_option=1; continue ;;
+            --after-context|--before-context|--binary-files|--devices|--directories|\
+            --exclude|--exclude-dir|--include|--include-dir|--label|--max-count)
+                expect=argument
+                continue
+                ;;
+            --*) continue ;;
+            -?*)
+                group="${arg#-}"
+                while [ -n "$group" ]; do
+                    letter="${group%"${group#?}"}"
+                    group="${group#?}"
+                    case "$letter" in
+                        P)
+                            echo 'grep: invalid option -- P' >&2
+                            usage
+                            ;;
+                        E) mode=extended ;;
+                        F) mode=fixed ;;
+                        G) mode=basic ;;
+                        e)
+                            from_option=1
+                            if [ -n "$group" ]; then
+                                patterns+=("$group")
+                            else
+                                expect=pattern
+                            fi
+                            group=""
+                            ;;
+                        f|A|B|C|D|d|m)
+                            if [ "$letter" = f ]; then
+                                from_option=1
+                            fi
+                            if [ -z "$group" ]; then
+                                expect=argument
+                            fi
+                            group=""
+                            ;;
+                    esac
+                done
+                continue
+                ;;
+        esac
+    fi
+    if [ "$have_operand" -eq 0 ]; then
+        operand="$arg"
+        have_operand=1
+    fi
+done
+if [ "$from_option" -eq 0 ] && [ "$have_operand" -eq 1 ]; then
+    patterns+=("$operand")
+fi
+if [ "$mode" = basic ]; then
+    for pattern in ${patterns[@]+"${patterns[@]}"}; do
+        i=0
+        while [ "$i" -lt "${#pattern}" ]; do
+            if [ "${pattern:$i:1}" = '\' ]; then
+                if [ "${pattern:$((i + 1)):1}" = '|' ]; then
+                    echo 'grep: \| in a basic regular expression is not portable to BSD grep (use -E and |)' >&2
+                    exit 2
+                fi
+                i=$((i + 1))
+            fi
+            i=$((i + 1))
+        done
+    done
+fi
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_bsd_date: BSD date has no -d (GNU's date string) and no long
+# options. It reads its options with getopt and the option string of
+# macOS date (f:I::jnRr:uv:), so it refuses any other letter with
+# "date: illegal option -- <letter>", its usage text and exit 1. That
+# covers -d alone, -d in a group such as -ud, and --date, whose first
+# letter getopt reads as "-". Options end at "--" or at the first
+# operand, as they do for getopt. GNU date reads options after an
+# operand too, so "date +%Y -d x" passes there. BSD date takes the
+# operand after the +format as the time to set, and refuses one that
+# starts with "-" as an illegal time format, so the stub does too.
+tc_stub_bsd_date() {
+    _tc_stub_wrap date <<'EOF'
+usage() {
+    echo 'usage: date [-jnRu] [-I[date|hours|minutes|seconds]] [-f input_fmt]' >&2
+    echo '            [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]' >&2
+    echo '            [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]' >&2
+    exit 1
+}
+check() {
+    local group letter
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --) shift; break ;;
+            -?*) ;;
+            *) break ;;
+        esac
+        group="${1#-}"
+        shift
+        while [ -n "$group" ]; do
+            letter="${group%"${group#?}"}"
+            group="${group#?}"
+            case "$letter" in
+                j|n|R|u) ;;
+                I) group="" ;;
+                f|r|v)
+                    if [ -z "$group" ]; then
+                        if [ "$#" -eq 0 ]; then
+                            echo "date: option requires an argument -- ${letter}" >&2
+                            usage
+                        fi
+                        shift
+                    fi
+                    group=""
+                    ;;
+                *)
+                    echo "date: illegal option -- ${letter}" >&2
+                    usage
+                    ;;
+            esac
+        done
+    done
+    case "${1:-}" in
+        +*) shift ;;
+    esac
+    case "${1:-}" in
+        -*)
+            echo 'date: illegal time format' >&2
+            usage
+            ;;
+    esac
+}
+check "$@"
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_bwk_awk: BWK awk, the awk of macOS, refuses a newline inside
+# a -v value. It reports "newline in string" with the first twenty
+# characters of the value, then skips the program and exits 2, so the
+# program prints nothing. The stub does the same for -v name=value and
+# -vname=value. It reads the options the way BWK awk does: one option
+# per word, -f and -F taking an argument, up to "--" or the first
+# operand (the program). An escaped \n in a value is not a newline, and
+# BWK awk accepts it, so the stub passes it.
+tc_stub_bwk_awk() {
+    _tc_stub_wrap awk <<'EOF'
+newline='
+'
+expect=""
+for arg in "$@"; do
+    assignment=""
+    if [ -n "$expect" ]; then
+        if [ "$expect" = v ]; then
+            assignment="$arg"
+        fi
+        expect=""
+    else
+        case "$arg" in
+            --) break ;;
+            -v) expect=v ;;
+            -f|-F) expect=argument ;;
+            -v*) assignment="${arg#-v}" ;;
+            -?*) ;;
+            *) break ;;
+        esac
+    fi
+    case "$assignment" in
+        *=*"$newline"*)
+            printf 'awk: newline in string %.20s... at source line 1\n' "${assignment#*=}" >&2
+            exit 2
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
 tc_pilot_home() {
     printf '%s\n' "${FAKEHOME}/.local/share/sysml-pilot"
 }

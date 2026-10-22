@@ -72,12 +72,29 @@ portable_prerequisites() {
 
 # make -k test-portable, with every real check marked as already made.
 # The stand-in check and test-hooks-each, the target that runs the hook
-# test files, are left to run.
+# test files, are left to run. A list without test-hooks-each means the
+# database could not be read (a make that prints it differently, say),
+# and the real checks would then run in the scratch tree, where a case
+# that expects a failure could pass for the wrong reason. The case is
+# failed with that cause named instead, and the target is not run.
 run_target() {
-    local prerequisite
+    local prerequisite prerequisites
     local made
+    prerequisites="$(portable_prerequisites)"
+    # shellcheck disable=SC2034  # RC and ERR are read by the assertions in lib.sh
+    case " $(printf '%s' "$prerequisites" | tr '\n' ' ') " in
+        *" test-hooks-each "*) ;;
+        *)
+            tc_fail "could not read the prerequisites of test-portable from make -qp" \
+                "prerequisites read: ${prerequisites:-none}"
+            RC=99
+            OUT=""
+            ERR=""
+            return 0
+            ;;
+    esac
     made=()
-    for prerequisite in $(portable_prerequisites); do
+    for prerequisite in $prerequisites; do
         case "$prerequisite" in
             "$STAND_IN_CHECK"|test-hooks-each) ;;
             *) made+=(-o "$prerequisite") ;;

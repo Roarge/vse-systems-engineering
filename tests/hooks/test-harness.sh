@@ -225,6 +225,102 @@ fi
         "physical scratch root: the root equals its own pwd -P"
 }
 
+# ------------------------------------------------ BSD-behaviour stubs
+
+# Each stub refuses a GNU-only form with the message and exit status of
+# the macOS tool, and lets the portable form through to the real tool.
+# The commands run through tc_run_in, whose PATH puts the stub
+# directory first, as a hook under test meets it.
+
+case_bsd_grep_stub() {
+    local file
+    tc_stub_bsd_grep
+    tc_env
+    tc_run_in "$REPO" sh -c 'printf "a1\n" | grep -oP "a[0-9]"'
+    tc_assert_rc 2 "BSD grep stub: -P in the group -oP exits 2"
+    tc_assert_line "grep: invalid option -- P" "$ERR" "BSD grep stub: -P is refused with BSD's message"
+    tc_assert_match '^usage: grep ' "$ERR" "BSD grep stub: the refusal prints the usage text"
+    tc_assert_empty "$OUT" "BSD grep stub: a refused call prints nothing on stdout"
+    tc_run_in "$REPO" grep -qP x /dev/null
+    tc_assert_rc 2 "BSD grep stub: -P in the group -qP exits 2"
+    tc_run_in "$REPO" grep --perl-regexp x /dev/null
+    tc_assert_rc 2 "BSD grep stub: --perl-regexp exits 2"
+    tc_assert_line "grep: unrecognized option \`--perl-regexp'" "$ERR" \
+        "BSD grep stub: --perl-regexp is refused with BSD's message"
+    tc_run_in "$REPO" sh -c 'printf "b\n" | grep "a\|b"'
+    tc_assert_rc 2 "BSD grep stub: \\| in a basic regular expression exits 2"
+    tc_assert_grep '\| in a basic regular expression' "$ERR" \
+        "BSD grep stub: the refusal of \\| says why"
+    tc_run_in "$REPO" sh -c 'printf "b\n" | grep -e x -e "a\|b"'
+    tc_assert_rc 2 "BSD grep stub: \\| in a pattern given with -e exits 2"
+
+    tc_run_in "$REPO" sh -c 'printf "a1\nb\n" | grep -oE "a[0-9]"'
+    tc_assert_rc 0 "BSD grep stub: -oE runs the real grep"
+    tc_assert_eq "a1" "$OUT" "BSD grep stub: -oE prints the match"
+    tc_run_in "$REPO" sh -c 'printf "b\n" | grep -E "a|b"'
+    tc_assert_eq "b" "$OUT" "BSD grep stub: alternation with -E runs the real grep"
+    file="$(tc_mktemp_d)/text"
+    printf '%s\n' 'a\|b' > "$file"
+    tc_run_in "$REPO" grep -F 'a\|b' "$file"
+    tc_assert_rc 0 "BSD grep stub: \\| with -F is a fixed string"
+    tc_run_in "$REPO" grep 'a\\|b' "$file"
+    tc_assert_rc 0 "BSD grep stub: an escaped backslash before | is not \\|"
+    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -e -P'
+    tc_assert_eq "-P" "$OUT" "BSD grep stub: -P after -e is a pattern"
+    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -- -P'
+    tc_assert_eq "-P" "$OUT" "BSD grep stub: -P after -- is a pattern"
+    tc_reset_stubs
+}
+
+case_bsd_date_stub() {
+    tc_stub_bsd_date
+    tc_env
+    tc_run_in "$REPO" date -u -d '30 days ago' +%Y
+    tc_assert_rc 1 "BSD date stub: -d exits 1"
+    tc_assert_line "date: illegal option -- d" "$ERR" "BSD date stub: -d is refused with BSD's message"
+    tc_assert_match '^usage: date ' "$ERR" "BSD date stub: the refusal prints the usage text"
+    tc_assert_empty "$OUT" "BSD date stub: a refused call prints nothing on stdout"
+    tc_run_in "$REPO" date -ud yesterday +%Y
+    tc_assert_line "date: illegal option -- d" "$ERR" "BSD date stub: -d in the group -ud is refused"
+    tc_run_in "$REPO" date --date=yesterday +%Y
+    tc_assert_rc 1 "BSD date stub: --date exits 1"
+    tc_assert_line "date: illegal option -- -" "$ERR" \
+        "BSD date stub: --date is refused as getopt refuses a long option"
+    tc_run_in "$REPO" date +%Y -d yesterday
+    tc_assert_rc 1 "BSD date stub: -d after the format exits 1"
+    tc_assert_line "date: illegal time format" "$ERR" \
+        "BSD date stub: -d after the format is read as the time to set"
+
+    tc_run_in "$REPO" date -u +%Y-%m-%dT%H:%M:%SZ
+    tc_assert_rc 0 "BSD date stub: -u with a format runs the real date"
+    tc_assert_match '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' "$OUT" \
+        "BSD date stub: the real date prints the time"
+    tc_reset_stubs
+}
+
+case_bwk_awk_stub() {
+    local two_lines
+    two_lines="first
+second"
+    tc_stub_bwk_awk
+    tc_env
+    tc_run_in "$REPO" awk -v "list=${two_lines}" 'BEGIN { print "ran" }'
+    tc_assert_rc 2 "BWK awk stub: a newline in a -v value exits 2"
+    tc_assert_empty "$OUT" "BWK awk stub: the program is skipped"
+    tc_assert_grep "awk: newline in string first" "$ERR" "BWK awk stub: the refusal is BWK awk's message"
+    tc_run_in "$REPO" awk "-vlist=${two_lines}" 'BEGIN { print "ran" }'
+    tc_assert_rc 2 "BWK awk stub: a newline in an attached -v value exits 2"
+
+    tc_env "LIST=${two_lines}"
+    tc_run_in "$REPO" awk 'BEGIN { print ENVIRON["LIST"] }'
+    tc_assert_rc 0 "BWK awk stub: a value read through ENVIRON runs the real awk"
+    tc_assert_eq "$two_lines" "$OUT" "BWK awk stub: the value keeps its newline through ENVIRON"
+    tc_env
+    tc_run_in "$REPO" awk -v 'list=first\nsecond' 'BEGIN { print list }'
+    tc_assert_eq "$two_lines" "$OUT" "BWK awk stub: an escaped \\n in a -v value passes"
+    tc_reset_stubs
+}
+
 # -------------------------------------------------- project configuration
 
 case_config_two_gates() {
@@ -376,6 +472,9 @@ case_runners_drop_outer_vse_iso_config
 case_runners_drop_outer_github_head_ref
 case_runners_without_env_dash_c
 case_scratch_root_is_physical
+case_bsd_grep_stub
+case_bsd_date_stub
+case_bwk_awk_stub
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs
