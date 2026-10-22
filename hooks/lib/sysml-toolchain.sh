@@ -124,10 +124,32 @@ vse_tc_candidates() {
     done
 }
 
+# _vse_tc_resolve <path>: print <path> with its symbolic links followed
+# (up to 40, so a loop of links ends) and its directory made physical
+# with pwd -P. readlink is used without -f, which macOS lacks.
+_vse_tc_resolve() {
+    local path="$1" link dir hops=0
+    while [ -L "$path" ] && [ "$hops" -lt 40 ]; do
+        link="$(readlink "$path")" || break
+        case "$link" in
+            /*) path="$link" ;;
+            *) path="$(dirname "$path")/${link}" ;;
+        esac
+        hops=$((hops + 1))
+    done
+    if dir="$(CDPATH='' cd -- "$(dirname "$path")" 2>/dev/null && pwd -P)"; then
+        path="${dir%/}/${path##*/}"
+    fi
+    printf '%s\n' "$path"
+}
+
 # Resolve a Java 21 or later binary into VSE_TC_JAVA. Order: VSE_JAVA,
-# JAVA_HOME/bin/java, java on PATH. Returns 1 with VSE_TC_REASON set.
+# JAVA_HOME/bin/java, java on PATH. One binary often fills several of
+# these (JAVA_HOME/bin/java is commonly the java on PATH through a
+# link), so a candidate whose resolved path was already tried is
+# skipped and each binary runs once. Returns 1 with VSE_TC_REASON set.
 vse_tc_java() {
-    local candidate output line said major
+    local candidate output line said major resolved tried=$'\n'
     VSE_TC_JAVA=""
     VSE_TC_REASON=""
     for candidate in "${VSE_JAVA:-}" "${JAVA_HOME:+${JAVA_HOME}/bin/java}" "$(command -v java 2>/dev/null || true)"; do
@@ -135,6 +157,11 @@ vse_tc_java() {
         # an empty or non-executable candidate is skipped.
         # shellcheck disable=SC2015
         [ -n "$candidate" ] && [ -x "$candidate" ] || continue
+        resolved="$(_vse_tc_resolve "$candidate")"
+        case "$tried" in
+            *$'\n'"${resolved}"$'\n'*) continue ;;
+        esac
+        tried="${tried}${resolved}"$'\n'
         # The JVM runs once, and its output is kept for the reason. It
         # prints "Picked up JAVA_TOOL_OPTIONS: ..." ahead of the version
         # whenever that variable is set, so the version comes from the

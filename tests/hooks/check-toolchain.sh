@@ -203,9 +203,34 @@ tc_assert_rc 2 "java: a JVM that prints only the banner is rejected"
 tc_assert_grep "java at ${STUBS}/bannerjava/java printed no version line" "$ERR" \
     "java: the reason says no version line was printed"
 tc_assert_not_grep "Picked up" "$ERR" "java: the banner is not quoted as the version line"
-# VSE_JAVA and PATH both name this binary, so it is a candidate twice.
-tc_assert_eq 2 "$(grep -c '^run$' "${FAKEHOME}/java-runs" || true)" \
-    "java: the JVM runs once for each candidate, not twice"
+# VSE_JAVA and PATH both name this binary, so it fills two candidate
+# slots, and a binary already tried is not run again.
+tc_assert_eq 1 "$(grep -c '^run$' "${FAKEHOME}/java-runs" || true)" \
+    "java: a binary named by two candidate slots runs once"
+
+# JAVA_HOME/bin/java is often the java on PATH through a symbolic link.
+# A candidate is resolved through its links before it runs, so a Java
+# 17 that VSE_JAVA and PATH reach through a relative link and JAVA_HOME
+# names directly runs once, and the reason still names it.
+mkdir -p "${STUBS}/home17/bin" "${STUBS}/linkbin"
+cat > "${STUBS}/home17/bin/java" <<'JAVA17'
+#!/usr/bin/env bash
+set -uo pipefail
+printf 'run\n' >> "${TC_INVOCATIONS:-/dev/null}"
+echo 'openjdk version "17.0.2" 2022-01-18' >&2
+exit 0
+JAVA17
+chmod +x "${STUBS}/home17/bin/java"
+ln -s ../home17/bin/java "${STUBS}/linkbin/java"
+: > "${FAKEHOME}/java17-runs"
+tc_env "VSE_JAVA=${STUBS}/linkbin/java" "JAVA_HOME=${STUBS}/home17" \
+    "PATH=${STUBS}/linkbin:${STUBS}:/usr/bin:/bin" "TC_INVOCATIONS=${FAKEHOME}/java17-runs"
+tc_run_lib java
+tc_assert_rc 2 "java: a Java 17 in every candidate slot is rejected"
+tc_assert_grep "java at ${STUBS}/linkbin/java is major 17, need 21 or later" "$ERR" \
+    "java: the reason names the first slot that reached the Java 17"
+tc_assert_eq 1 "$(grep -c '^run$' "${FAKEHOME}/java17-runs" || true)" \
+    "java: a binary reached through a link from other slots runs once"
 
 tc_env
 
