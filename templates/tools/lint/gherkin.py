@@ -32,14 +32,18 @@ Constructs recognised:
   lines of three double quotes or two lines of three backticks. The
   opening line may name a content type after the delimiter, such as
   `json`. Each content line loses up to as much leading whitespace as the
-  opening delimiter is indented by.
+  opening delimiter is indented by. Inside the doc string, the delimiter
+  that opened it may be written escaped, a backslash before each of its
+  characters (`\"\"\"`, or the same for backticks), and it reads as
+  the bare delimiter, as Cucumber reads it.
 * Data tables, one row per line, cells between `|` characters. Inside a
   cell, `\|` reads as `|`, `\\` as `\` and `\n` as a line break. Text
   after the last `|` of a row is ignored, as Cucumber does.
 * Tags (`@name`, several per line, on one or more lines) above Feature,
   Rule, a scenario or Examples. Comments are whole lines whose first
-  non-blank character is `#`. A `# language:` comment before the Feature
-  names the keyword language.
+  non-blank character is `#`, and a word that starts with `#` on a tag
+  line begins a comment that runs to the end of that line. A
+  `# language:` comment before the Feature names the keyword language.
 * Description lines, that is, free text after a Feature, Rule,
   Background, scenario or Examples header and before its first step,
   table row or child. Feature and scenario descriptions are kept, without
@@ -58,9 +62,9 @@ Codes follow the lint table of methodology section 11.
   can stand, a step, doc string, table row or Examples where none can
   stand (a step takes one doc string or one table), an unclosed doc
   string, a table row whose cell count differs from the first row, a word
-  on a tag line that does not start with `@`, an `@` with no name after
-  it, a tag line not followed by a taggable keyword, or a tag above
-  Background or a step.
+  before any comment on a tag line that does not start with `@`, an `@`
+  with no name after it, a tag line not followed by a taggable keyword,
+  or a tag above Background or a step.
 * F2, language: a `# language:` comment naming a language the table does
   not carry. Parsing stops there, because the keywords are unknown.
 * F7, Background: a second Background at one level, a Background after
@@ -414,6 +418,9 @@ class _Parser:
 
     def tag_line(self, number: int, stripped: str) -> None:
         for token in stripped.split():
+            if token.startswith("#"):
+                # A comment ends the tags of its line.
+                break
             if token.startswith("@") and len(token) > 1:
                 self.pending_tags.append(Tag(token, number))
             elif token == "@":
@@ -540,7 +547,11 @@ class _Parser:
                 )
             self.doc = None
             return
-        doc.lines.append(_dedent(line, doc.indent))
+        # The delimiter that opened the doc string may appear inside it
+        # escaped, each character after a backslash, and reads bare.
+        escaped = "".join("\\" + char for char in doc.delimiter)
+        doc.lines.append(
+            _dedent(line, doc.indent).replace(escaped, doc.delimiter))
 
     def table_row(self, number: int, stripped: str) -> None:
         cells = _split_cells(stripped)

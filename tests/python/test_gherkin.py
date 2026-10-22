@@ -125,6 +125,15 @@ class TreeTests(unittest.TestCase):
         self.assertEqual(examples.header, ["v"])
         self.assertEqual(examples.rows, [["1"]])
 
+    def test_comment_ends_a_tag_line(self):
+        # A token that starts with # ends the tags of its line, as the
+        # in-session hook reads them (hooks/lib/test-first.sh).
+        result = load("tag_comment.feature")
+        self.assertEqual(result.findings, [])
+        self.assertEqual(result.feature.tags, [Tag("@US_Story", 1)])
+        self.assertEqual(result.feature.scenarios[0].tags,
+                         [Tag("@AC_first", 4), Tag("@smoke", 4)])
+
     def test_keyword_synonyms(self):
         result = load("synonyms.feature")
         self.assertEqual(result.findings, [])
@@ -212,6 +221,19 @@ class TreeTests(unittest.TestCase):
         )
         self.assertIsNone(steps[2].doc_string)
         self.assertEqual(steps[2].line, 18)
+
+    def test_escaped_doc_string_delimiter_is_unescaped(self):
+        # As in Cucumber, only the escaped form of the delimiter that
+        # opened the doc string loses its backslashes.
+        result = load("doc_string_escapes.feature")
+        self.assertEqual(result.findings, [])
+        steps = result.feature.scenarios[0].steps
+        self.assertEqual(steps[0].doc_string.content,
+                         'a """ inside\n'
+                         'a \\`\\`\\` kept as written')
+        self.assertEqual(steps[1].doc_string.content,
+                         'a ``` inside\n'
+                         'a \\"\\"\\" kept as written')
 
     def test_table_escapes(self):
         result = load("tables.feature")
