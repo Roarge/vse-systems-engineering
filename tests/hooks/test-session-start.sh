@@ -657,6 +657,76 @@ case_mode1_pointer() {
     assert_plain_text "$OUT" "mode 1: output is plain text"
 }
 
+# ------------------------------------------- mode 1: the wiki LOG age
+
+# write_log <dir> <date>: a wiki LOG in <dir> whose last dated entry is
+# <date>, after an older one.
+write_log() {
+    printf '# Log\n\n## [2019-06-01] ingest | an older entry\n\n## [%s] lint | the last entry\n' \
+        "$2" > "${1}/wiki/LOG.md"
+}
+
+# The contributor report says how many whole days ago the last wiki LOG
+# entry was written. The count needs no GNU date -d, which BSD date
+# (macOS) lacks, so it is given with the BSD date stub on PATH too.
+case_contributor_log_age() {
+    local label="$1" dir today
+    dir="$(tc_mktemp_d)"
+    tc_mark_plugin_repo "$dir"
+    today="$(date -u +%Y-%m-%d)"
+    write_log "$dir" "$today"
+    tc_env
+    run_hook_in "$dir"
+    tc_assert_rc 0 "log age, ${label}: exit 0"
+    tc_assert_line "  Last LOG.md entry: ${today} (0 days ago)." "$OUT" \
+        "log age, ${label}: an entry dated today is 0 days old"
+    write_log "$dir" 2020-01-01
+    run_hook_in "$dir"
+    tc_assert_match '^  Last LOG\.md entry: 2020-01-01 \([0-9]+ days ago\)\.$' "$OUT" \
+        "log age, ${label}: an entry from 2020 is counted in days"
+}
+
+# fixed_clock <epoch>: a date stub whose clock reads <epoch> seconds
+# since 1970. It answers date +%s and date -u +%s and refuses every
+# other call, so the hook can ask it for the time and nothing else.
+fixed_clock() {
+    tc_stub date <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+case "\$*" in
+    "+%s"|"-u +%s")
+        echo ${1}
+        exit 0
+        ;;
+esac
+echo "date: the fixed-clock stub answers only +%s and -u +%s, not: \$*" >&2
+exit 1
+EOF
+}
+
+# Known dates, against a clock fixed at 2024-03-01T12:00:00Z
+# (1709294400): the same day, the leap day of 2024, the turn of the
+# year, a whole year that holds a leap day, the leap day of 2000 (a
+# century divisible by 400), 1 March 1900 (a century that is not a leap
+# year) and the first day of 1970.
+case_contributor_log_age_known_dates() {
+    local dir entry day want
+    dir="$(tc_mktemp_d)"
+    tc_mark_plugin_repo "$dir"
+    fixed_clock 1709294400
+    tc_env
+    for entry in 2024-03-01:0 2024-02-29:1 2024-02-28:2 2024-01-01:60 \
+                 2023-03-01:366 2000-02-29:8767 1900-03-01:45291 1970-01-01:19783; do
+        day="${entry%%:*}"
+        want="${entry#*:}"
+        write_log "$dir" "$day"
+        run_hook_in "$dir"
+        tc_assert_line "  Last LOG.md entry: ${day} (${want} days ago)." "$OUT" \
+            "log age, fixed clock: ${day} is ${want} days before 2024-03-01"
+    done
+    rm -f "${STUBS}/date"
+}
+
 case_mode2_behaviour_first_line
 
 case_mode2_test_first_recorded true true
@@ -692,6 +762,12 @@ case_mode2_many_tags
 
 case_mode1_pointer
 case_mode1_library_missing
+
+case_contributor_log_age "GNU date"
+tc_stub_bsd_date
+case_contributor_log_age "BSD date"
+rm -f "${STUBS}/date"
+case_contributor_log_age_known_dates
 
 tc_env
 
