@@ -1131,6 +1131,284 @@ EOF
     tc_assert_line "$RATIONALE" "$ERR" "stub library: the block carries the rationale line"
 }
 
+# ------------------------------ 10b. the stories a change touches (2)
+#
+# The story gates check the stories a change touches (methodology
+# §11.9): a story whose declaration block the change adds or alters,
+# compared with the PreToolUse scanner of lib/test-first.sh, or whose
+# feature file it adds, changes, renames or deletes. Deleting a story
+# touches nothing. A story the change leaves alone that still needs
+# migrating is listed in one note and never blocks a staged or range
+# commit. A run over every tracked file checks every story.
+
+REGISTER_PIECE="${SCENARIOS}/register-migrated-and-legacy.sysml"
+
+# commit_register [<dir>]: US_901_Example, migrated with its feature
+# file, and US_902_Legacy, whose acceptance is the prose of 4.x and
+# which has no feature file, in one register file, committed with the
+# hooks bypassed, as an upgraded project holds them.
+commit_register() {
+    local dir="${1:-$STORY_DIR}"
+    tc_write "${dir}/stories.sysml" < "$REGISTER_PIECE"
+    tc_write "${dir}/US_901_Example.feature" < "${SCENARIOS}/feature-tagged.feature"
+    tc_stage "${dir}/stories.sysml" "${dir}/US_901_Example.feature"
+    tc_commit "add the register"
+}
+
+# change_story <file> <story>: alter the block of one story (its points
+# value) and stage the file.
+change_story() {
+    local file="$1" story="$2"
+    awk -v story="$story" '
+        index($0, "requirement " story " : UserStory") { inside = 1 }
+        inside && sub(/points = [0-9]+/, "points = 8") { inside = 0 }
+        { print }
+    ' "${REPO}/${file}" > "${REPO}/${file}.new"
+    mv "${REPO}/${file}.new" "${REPO}/${file}"
+    tc_stage "$file"
+}
+
+# legacy_feature: a feature file for US_902_Legacy whose narrative
+# matches the story, staged.
+legacy_feature() {
+    tc_write "${STORY_DIR}/US_902_Legacy.feature" <<'FEATURE'
+@US_902_Legacy
+Feature: See the battery level
+  As an operator
+  I want to see the battery level
+  So that the battery is replaced in time
+
+  @AC_lowBatteryWarned
+  Scenario: A low battery is warned of
+    Given a low battery
+    When the operator looks at the display
+    Then a warning is shown
+FEATURE
+    tc_stage "${STORY_DIR}/US_902_Legacy.feature"
+}
+
+# assert_legacy_noted <label>: one note line names US_902_Legacy, says
+# where the rest are listed and that a release needs them, and no
+# finding names it.
+assert_legacy_noted() {
+    local label="$1"
+    tc_assert_not_grep "S1 US_902_Legacy" "$ERR" "${label}: the untouched legacy story draws no S1"
+    tc_assert_not_grep "S3 US_902_Legacy" "$ERR" "${label}: the untouched legacy story draws no S3"
+    tc_assert_line_count 1 "$(printf '%s\n' "$ERR" | grep 'US_902_Legacy' || true)" \
+        "${label}: one line names the untouched legacy story"
+    tc_assert_match '^\[pre-commit\] Note: .*US_902_Legacy.*/vse-audit.*release' "$ERR" \
+        "${label}: the note names the story, /vse-audit and the release"
+}
+
+case_touched_sibling_not_blocking() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "touched, staged: a change to the migrated story alone proceeds"
+    assert_legacy_noted "touched, staged"
+    tc_assert_grep "All checks passed" "$OUT" "touched, staged: the note is not counted as a warning"
+
+    # The note never blocks, whatever the profile.
+    story_config full precommit_story_wellformed=off
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "touched, staged (full): a change to the migrated story alone proceeds"
+    assert_legacy_noted "touched, staged (full)"
+}
+
+case_touched_story_blocks() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    change_story "${STORY_DIR}/stories.sysml" US_902_Legacy
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "touched story: a change to the legacy story stops the commit"
+    tc_assert_grep "${STORY_DIR}/stories.sysml:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "touched story: finding S1 is shown"
+    tc_assert_grep "S3 US_902_Legacy keeps acceptance prose" "$ERR" "touched story: finding S3 is shown"
+    tc_assert_not_grep "Note:" "$ERR" "touched story: no note for a touched story"
+}
+
+# A change to a story's feature file alone touches the story, so the
+# story is checked although its block is unchanged.
+case_touched_feature_only() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    legacy_feature
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "feature only: a new feature file for the legacy story stops the commit"
+    tc_assert_grep "S3 US_902_Legacy keeps acceptance prose" "$ERR" "feature only: the story is checked (S3)"
+    tc_assert_not_grep "S1 US_902_Legacy" "$ERR" "feature only: the story has its feature file now"
+
+    tc_setup_repo
+    story_config light
+    commit_register
+    printf '# A note on the reading.\n' >> "${REPO}/${STORY_DIR}/US_901_Example.feature"
+    tc_stage "${STORY_DIR}/US_901_Example.feature"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "feature only: a change to the migrated story's feature file proceeds"
+    assert_legacy_noted "feature only"
+}
+
+# Deleting a story touches nothing, so deleting US_901 and its feature
+# file leaves only the untouched legacy story, which is noted.
+case_touched_deleted_story() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    awk 'NR < 4 || NR > 19' "${REPO}/${STORY_DIR}/stories.sysml" > "${REPO}/${STORY_DIR}/stories.new"
+    mv "${REPO}/${STORY_DIR}/stories.new" "${REPO}/${STORY_DIR}/stories.sysml"
+    tc_assert_not_grep "US_901_Example" "$(cat "${REPO}/${STORY_DIR}/stories.sysml")" \
+        "deleted story: the fixture edit removes US_901_Example"
+    tc_stage "${STORY_DIR}/stories.sysml"
+    git -C "$REPO" rm -q "${STORY_DIR}/US_901_Example.feature"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "deleted story: the commit proceeds"
+    tc_assert_not_grep "precommit_gherkin" "$ERR" "deleted story: the Gherkin gate reports nothing"
+    assert_legacy_noted "deleted story"
+}
+
+# S9 names no story, so it is reported for a story file the change
+# alters, and an unreadable declaration in a file it leaves alone is
+# noted with the rest.
+case_touched_unreadable_declaration() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    tc_write "${STORY_DIR}/old-forms.sysml" <<'SYSML'
+package OldForms {
+    private import VSE_Library::*;
+    requirement def US_903_Definition :> UserStory;
+}
+SYSML
+    tc_stage "${STORY_DIR}/old-forms.sysml"
+    tc_commit "add an old form"
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "unreadable, untouched file: the commit proceeds"
+    tc_assert_not_grep ": S9 " "$ERR" "unreadable, untouched file: no S9 finding"
+    tc_assert_match '^\[pre-commit\] Note: .*US_902_Legacy' "$ERR" \
+        "unreadable, untouched file: the note names the legacy story"
+    tc_assert_match '^\[pre-commit\] Note: .*model/core/stories/stakeholder/old-forms\.sysml:3 \(a declaration the lint cannot read\)' "$ERR" \
+        "unreadable, untouched file: the note gives the declaration's place"
+
+    printf 'requirement def US_904_Definition :> UserStory;\n' >> "${REPO}/${STORY_DIR}/stories.sysml"
+    tc_stage "${STORY_DIR}/stories.sysml"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "unreadable, changed file: the commit is stopped"
+    tc_assert_grep "${STORY_DIR}/stories.sysml:34: S9" "$ERR" "unreadable, changed file: S9 is shown"
+    tc_assert_not_grep "old-forms.sysml:3: S9" "$ERR" "unreadable, changed file: the untouched file draws no S9"
+}
+
+# run_in_clone <dir> <range>: run the committed hook in a clone in range
+# mode, as CI does.
+run_in_clone() {
+    local saved="$REPO"
+    REPO="$1"
+    tc_env "VSE_PRECOMMIT_RANGE=$2"
+    tc_run_hook
+    REPO="$saved"
+}
+
+# A pull request in a full clone, checked out detached as CI checks it
+# out. The range runs from main, and with three dots from the merge
+# base, so a later change to US_902 on main does not count as the pull
+# request's.
+case_touched_range_mode() {
+    local clone
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_register
+    git -C "$REPO" checkout -q -b feat/first
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_commit "change US_901"
+    git -C "$REPO" checkout -q main
+    change_story "${STORY_DIR}/stories.sysml" US_902_Legacy
+    tc_commit "change US_902 on main"
+    git -C "$REPO" checkout -q feat/first
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 0 "touched, range: a pull request that changes the migrated story alone passes"
+    assert_legacy_noted "touched, range"
+    tc_assert_not_grep "commit again" "$ERR" "touched, range: no staged-mode advice"
+
+    run_in_clone "$clone" "HEAD~1..HEAD"
+    tc_assert_rc 0 "touched, two-dot range: the push of the change to the migrated story passes"
+    assert_legacy_noted "touched, two-dot range"
+
+    run_in_clone "$clone" "HEAD...origin/main"
+    tc_assert_rc 1 "touched, range: a range that changes the legacy story fails"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" "touched, range: finding S1 is shown"
+}
+
+# A run over every tracked file checks every story, the untouched ones
+# included, as CI does at a release tag.
+case_touched_full_tree() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_commit "change US_901"
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_hook
+    tc_assert_rc 1 "full tree: every story is checked"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" "full tree: the untouched legacy story draws S1"
+    tc_assert_grep "S3 US_902_Legacy keeps acceptance prose" "$ERR" "full tree: and S3"
+    tc_assert_not_grep "Note:" "$ERR" "full tree: no note, the stories are findings"
+}
+
+case_touched_brownfield() {
+    tc_setup_repo
+    story_config light
+    mkdir -p "${REPO}/engineering"
+    mv "${REPO}/.iso-config.yaml" "${REPO}/engineering/.iso-config.yaml"
+    mv "${REPO}/tools" "${REPO}/engineering/tools"
+    commit_register "engineering/${STORY_DIR}"
+    change_story "engineering/${STORY_DIR}/stories.sysml" US_901_Example
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "touched, brownfield: a change to the migrated story alone proceeds"
+    assert_legacy_noted "touched, brownfield"
+
+    change_story "engineering/${STORY_DIR}/stories.sysml" US_902_Legacy
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "touched, brownfield: a change to the legacy story stops the commit"
+    tc_assert_grep "${STORY_DIR}/stories.sysml:20: S1 US_902_Legacy" "$ERR" \
+        "touched, brownfield: the path is relative to engineering/"
+}
+
+# Without lib/test-first.sh the hook cannot tell which stories a change
+# touches, so the story gates keep checking every story in the stories
+# directories the change touches, which cannot pass what a full install
+# would stop.
+case_touched_partial_install() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    rm -f "${REPO}/.githooks/lib/test-first.sh"
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "touched, partial install: the commit is stopped"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" \
+        "touched, partial install: the whole stories directory is checked"
+}
+
 # ----------------------------------------- 11. test before code (4)
 
 # test_first_config <applies|-> <profile> [spec ...]: the profile, with a
@@ -1682,6 +1960,15 @@ case_lint_missing_blocks
 case_lint_environment_error_blocks
 case_python_missing_blocks
 case_stub_library_blocks_new_gates
+case_touched_sibling_not_blocking
+case_touched_story_blocks
+case_touched_feature_only
+case_touched_deleted_story
+case_touched_unreadable_declaration
+case_touched_range_mode
+case_touched_full_tree
+case_touched_brownfield
+case_touched_partial_install
 case_test_first_code_without_test
 case_test_first_code_with_test
 case_test_first_branch_evidence

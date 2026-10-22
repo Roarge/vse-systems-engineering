@@ -7,14 +7,17 @@
 #      lib/sysml-toolchain.sh (preferred toolchain, automatic fallback,
 #      never silent).
 #   2. The story lint, tools/lint/story-wellformed.py under the
-#      engineering root, over every stories directory that a changed
-#      .sysml or .feature file under stories/ touches, and over every
-#      changed .feature file under model/ that sits outside stories/,
-#      so that F10 reports it. A .feature file outside model/ is the
-#      project's own, such as a Cucumber feature for its code, and is
-#      left alone. precommit_story_wellformed runs the lint with --only
-#      wellformed (§1.9), precommit_gherkin with --only gherkin
-#      (§11.9.1).
+#      engineering root, over the stories the change touches (a story
+#      whose declaration block it adds or alters, or whose feature file
+#      it adds, changes, renames or deletes) and the story and feature
+#      files it changes, and over every changed .feature file under
+#      model/ that sits outside stories/, so that F10 reports it.
+#      Stories the change leaves alone are listed in one note and never
+#      block. With the range all every story is checked. A .feature
+#      file outside model/ is the project's own, such as a Cucumber
+#      feature for its code, and is left alone.
+#      precommit_story_wellformed runs the lint with --only wellformed
+#      (§1.9), precommit_gherkin with --only gherkin (§11.9.1).
 #   3. precommit_traceability: traceability integrity, delegated to
 #      pre-commit-traceability.sh.
 #   4. precommit_test_first: test before code (§11.9), through
@@ -190,19 +193,20 @@ esac
 
 # The file set, as paths relative to the repository root, one per line.
 # git writes NUL-delimited names, so a space or an unusual character in
-# a name arrives intact. CHANGED_ALL keeps deletions, because deleting
-# a feature file leaves its story uncovered. CHANGED_LIVE drops them,
-# because a deleted file is neither code nor test evidence.
+# a name arrives intact. Renames are read as a deletion and an addition,
+# so that both names are seen. CHANGED_ALL keeps deletions, because
+# deleting a feature file leaves its story uncovered. CHANGED_LIVE drops
+# them, because a deleted file is neither code nor test evidence.
 RANGE="${VSE_PRECOMMIT_RANGE:-}"
 
 # Usage: file_set <git diff filter>
 file_set() {
     if [ -z "$RANGE" ]; then
-        git diff --cached --name-only --diff-filter="$1" -z | tr '\0' '\n'
+        git diff --cached --no-renames --name-only --diff-filter="$1" -z | tr '\0' '\n'
     elif [ "$RANGE" = "all" ]; then
         git ls-files -z | tr '\0' '\n'
     else
-        git diff --name-only --diff-filter="$1" -z "$RANGE" | tr '\0' '\n'
+        git diff --no-renames --name-only --diff-filter="$1" -z "$RANGE" | tr '\0' '\n'
     fi
 }
 
@@ -292,40 +296,161 @@ elif [ "$LINT_DISPOSITION" != "off" ]; then
     fi
 fi
 
-# 2. The story lint over every stories directory the change touches: a
-# directory holding a changed .sysml or .feature file that sits under a
-# stories/ directory. A changed .feature file under model/ outside
-# stories/ is passed as itself, so the lint reads its directory and F10
-# reports it. Paths are given relative to the engineering root. A file
-# outside the engineering root, a directory the change removed, or a
-# feature file it deleted, is not passed. Each path is one argument, so
-# a space in a name is kept.
+# 2. The story lint. It runs from the engineering root, with paths
+# relative to it. A file outside the engineering root is not passed. A
+# changed .feature file under model/ outside stories/ is passed as
+# itself, so that F10 reports it. Each path is one argument, so a space
+# in a name is kept.
+#
+# In staged and range mode the gates check the stories the change
+# touches (methodology §11.9). A story is touched when the change adds
+# its declaration block or alters the block's text, compared with the
+# PreToolUse scanner of lib/test-first.sh between the before and after
+# images of a .sysml file under stories/, or when it adds, changes,
+# renames or deletes the story's <StoryIdentifier>.feature file.
+# Deleting a story touches nothing. The before image is HEAD in staged
+# mode and the range start in range mode (the merge base for a
+# three-dot range), and the after image is the index or the range end.
+# The changed story and feature files that still exist are passed,
+# with the touched identifiers in --stories, so the lint reports the
+# story-side findings for those stories and the findings about a file
+# alone for those files. A deleted feature file is replaced by the
+# story files of its directory that declare its story. Stories the
+# change leaves alone in those directories are listed in one note.
+#
+# With the range all, and in a partial install without
+# lib/test-first.sh, the gates check every story in each stories
+# directory that holds a changed .sysml or .feature file, which for the
+# range all is every stories directory.
+SCOPE_TOUCHED=0
+if [ -n "$TEST_FIRST_LIB" ] && [ "$RANGE" != all ]; then
+    SCOPE_TOUCHED=1
+fi
+
+# The before and after images. A revision reads the file from git, ":"
+# from the index, "-" from the working tree, and "none" reads empty.
+BEFORE_REV=HEAD
+AFTER_REV=":"
+range_end() {
+    if [ -n "$1" ]; then printf '%s\n' "$1"; else printf 'HEAD\n'; fi
+}
+if [ "$SCOPE_TOUCHED" -eq 1 ] && [ -n "$RANGE" ]; then
+    case "$RANGE" in
+        *...*)
+            AFTER_REV="$(range_end "${RANGE#*...}")"
+            BEFORE_REV="$(git merge-base "$(range_end "${RANGE%%...*}")" "$AFTER_REV" 2>/dev/null)" || BEFORE_REV=none
+            ;;
+        *..*)
+            BEFORE_REV="$(range_end "${RANGE%%..*}")"
+            AFTER_REV="$(range_end "${RANGE#*..}")"
+            ;;
+        *)
+            BEFORE_REV="$RANGE"
+            AFTER_REV="-"
+            ;;
+    esac
+fi
+
+# A scratch directory for the images, made on first use and removed on
+# exit. The function is reached through the trap.
+STORY_TMP=""
+# shellcheck disable=SC2317
+cleanup_story_tmp() {
+    if [ -n "$STORY_TMP" ]; then
+        rm -rf "$STORY_TMP" || :
+    fi
+}
+trap cleanup_story_tmp EXIT
+
+# Usage: story_image <revision> <path from the top level> <file>
+story_image() {
+    case "$1" in
+        none) : > "$3" ;;
+        -) cat -- "$2" > "$3" 2>/dev/null || : > "$3" ;;
+        :) git cat-file blob ":$2" > "$3" 2>/dev/null || : > "$3" ;;
+        *) git cat-file blob "$1:$2" > "$3" 2>/dev/null || : > "$3" ;;
+    esac
+}
+
+# Usage: story_identifier <name>: 0 when <name> can be a story
+# identifier, ^[A-Za-z_][A-Za-z0-9_]*$.
+story_identifier() {
+    case "$1" in
+        ''|[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_]*) return 1 ;;
+        *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_]*) return 1 ;;
+    esac
+    return 0
+}
+
 STORY_PATH_LIST=""
+STORY_DIR_LIST=""
+TOUCHED_LIST=""
 if [ "$ENG_INSIDE" -eq 1 ]; then
     while IFS= read -r changed; do
         case "$changed" in
-            stories/*.sysml|*/stories/*.sysml|stories/*.feature|*/stories/*.feature) kind=directory ;;
+            stories/*.sysml|*/stories/*.sysml) kind=story ;;
+            stories/*.feature|*/stories/*.feature) kind=story_feature ;;
             *.feature) kind=feature ;;
             *) continue ;;
         esac
         case "$changed" in
-            "${ENG_PREFIX}"*) changed="${changed#"${ENG_PREFIX}"}" ;;
+            "${ENG_PREFIX}"*) rel="${changed#"${ENG_PREFIX}"}" ;;
+            *) continue ;;
+        esac
+        case "$rel" in
+            */*) dir="${rel%/*}" ;;
             *) continue ;;
         esac
         if [ "$kind" = feature ]; then
-            case "$changed" in
+            case "$rel" in
                 model/*) : ;;
                 *) continue ;;
             esac
-            [ -f "${ENG_ROOT}/${changed}" ] || continue
-        else
-            case "$changed" in
-                */*) changed="${changed%/*}" ;;
-                *) continue ;;
-            esac
-            [ -d "${ENG_ROOT}/${changed}" ] || continue
+            [ -f "${ENG_ROOT}/${rel}" ] || continue
+            STORY_PATH_LIST="${STORY_PATH_LIST}${rel}"$'\n'
+            continue
         fi
-        STORY_PATH_LIST="${STORY_PATH_LIST}${changed}"$'\n'
+        if [ "$SCOPE_TOUCHED" -eq 0 ]; then
+            [ -d "${ENG_ROOT}/${dir}" ] || continue
+            STORY_PATH_LIST="${STORY_PATH_LIST}${dir}"$'\n'
+            continue
+        fi
+        if [ "$kind" = story ]; then
+            [ -f "${ENG_ROOT}/${rel}" ] || continue
+            [ -n "$STORY_TMP" ] || STORY_TMP="$(mktemp -d "${TMPDIR:-/tmp}/vse-stories.XXXXXX")"
+            story_image "$BEFORE_REV" "$changed" "${STORY_TMP}/before"
+            story_image "$AFTER_REV" "$changed" "${STORY_TMP}/after"
+            TOUCHED_LIST="${TOUCHED_LIST}$(vse_tf_touched_stories "${STORY_TMP}/before" "${STORY_TMP}/after")"$'\n'
+            STORY_PATH_LIST="${STORY_PATH_LIST}${rel}"$'\n'
+            STORY_DIR_LIST="${STORY_DIR_LIST}${dir}"$'\n'
+            continue
+        fi
+        stem="${rel##*/}"
+        stem="${stem%.feature}"
+        story_identifier "$stem" && TOUCHED_LIST="${TOUCHED_LIST}${stem}"$'\n'
+        if [ -f "${ENG_ROOT}/${rel}" ]; then
+            STORY_PATH_LIST="${STORY_PATH_LIST}${rel}"$'\n'
+            STORY_DIR_LIST="${STORY_DIR_LIST}${dir}"$'\n'
+            continue
+        fi
+        # A deleted feature file leaves its story uncovered. The story
+        # files of the directory that declare the story are passed, so
+        # that the lint finds the story.
+        [ -d "${ENG_ROOT}/${dir}" ] || continue
+        story_identifier "$stem" || continue
+        for candidate in "${ENG_ROOT}/${dir}"/*.sysml; do
+            [ -f "$candidate" ] || continue
+            case "${candidate##*/}" in
+                _*) continue ;;
+            esac
+            declared="$(vse_tf_story_blocks < "$candidate" | cut -f1)"
+            case $'\n'"${declared}"$'\n' in
+                *$'\n'"${stem}"$'\n'*)
+                    STORY_PATH_LIST="${STORY_PATH_LIST}${dir}/${candidate##*/}"$'\n'
+                    STORY_DIR_LIST="${STORY_DIR_LIST}${dir}"$'\n'
+                    ;;
+            esac
+        done
     done <<EOF
 $CHANGED_ALL
 EOF
@@ -339,6 +464,19 @@ while IFS= read -r story_path; do
 done <<EOF
 $(printf '%s' "$STORY_PATH_LIST" | LC_ALL=C sort -u)
 EOF
+STORY_DIRS=()
+while IFS= read -r story_dir; do
+    [ -n "$story_dir" ] || continue
+    STORY_DIRS+=("$story_dir")
+done <<EOF
+$(printf '%s' "$STORY_DIR_LIST" | LC_ALL=C sort -u)
+EOF
+# The touched identifiers, comma-separated, for --stories.
+TOUCHED_IDS="$(printf '%s' "$TOUCHED_LIST" | LC_ALL=C sort -u | awk 'NF { printf "%s%s", (n++ ? "," : ""), $0 }')"
+STORY_SCOPE=()
+if [ "$SCOPE_TOUCHED" -eq 1 ]; then
+    STORY_SCOPE=("--stories=${TOUCHED_IDS}")
+fi
 
 STORY_LINT_REL="tools/lint/story-wellformed.py"
 
@@ -359,7 +497,7 @@ story_gate() {
         gate_report "$disposition" "${gate}: python3 is not available, so ${what} was not checked. Install python3 to run ${ENG_PREFIX}${STORY_LINT_REL} (methodology §11.9.1)."
         return 0
     fi
-    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" "${STORY_PATHS[@]}" 2>&1)" || status=$?
+    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only "$only" ${STORY_SCOPE[@]+"${STORY_SCOPE[@]}"} "${STORY_PATHS[@]}" 2>&1)" || status=$?
     # The lint runs from the engineering root, so in a brownfield
     # layout its paths are relative to that directory, not to the top
     # level the commit runs from.
@@ -371,7 +509,7 @@ story_gate() {
             : # Clean.
             ;;
         1)
-            gate_report "$disposition" "${gate}: ${what} findings in the stories directories and feature files this change touches. ${FIX_AGAIN}" "$output"
+            gate_report "$disposition" "${gate}: ${what} findings in the stories and feature files this change touches. ${FIX_AGAIN}" "$output"
             ;;
         *)
             gate_report "$disposition" "${gate}: the story lint could not run (exit ${status}), so ${what} was not checked." "$output"
@@ -379,9 +517,71 @@ story_gate() {
     esac
 }
 
+# One note for the stories in the touched stories directories that the
+# change leaves alone and that still need migrating: S1 (no feature
+# file), S3 (acceptance prose of 4.x) or S9 (a declaration the lint
+# cannot read, given by its place). It never blocks. Up to five are
+# named. Silent when the Gherkin gate is off or the lint cannot run,
+# which the gate has already reported.
+untouched_note() {
+    local status=0 output entries entry count=0 shown="" what them blocks
+    [ "$SCOPE_TOUCHED" -eq 1 ] && [ "${#STORY_DIRS[@]}" -gt 0 ] || return 0
+    [ "$(iso_gate_disposition precommit_gherkin)" != "off" ] || return 0
+    [ -r "${ENG_ROOT}/${STORY_LINT_REL}" ] || return 0
+    command -v python3 > /dev/null 2>&1 || return 0
+    output="$(cd "$ENG_ROOT" && python3 "$STORY_LINT_REL" --only gherkin "${STORY_DIRS[@]}" 2>/dev/null)" || status=$?
+    [ "$status" -eq 1 ] || return 0
+    [ -n "$STORY_TMP" ] || STORY_TMP="$(mktemp -d "${TMPDIR:-/tmp}/vse-stories.XXXXXX")"
+    printf '%s\n' "${STORY_PATHS[@]}" > "${STORY_TMP}/named"
+    printf '%s\n' "$output" > "${STORY_TMP}/untouched"
+    entries="$(VSE_NOTE_PREFIX="$ENG_PREFIX" LC_ALL=C awk -v touched=",${TOUCHED_IDS}," '
+        FILENAME == ARGV[1] { named[$0] = 1; next }
+        match($0, /:[0-9]+: S[139] /) {
+            path = substr($0, 1, RSTART - 1)
+            head = substr($0, RSTART + 1, RLENGTH - 2)
+            line = head
+            sub(/:.*/, "", line)
+            code = substr(head, length(head) - 1)
+            if (code == "S9") {
+                if (!(path in named))
+                    print ENVIRON["VSE_NOTE_PREFIX"] path ":" line \
+                        " (a declaration the lint cannot read)"
+                next
+            }
+            id = substr($0, RSTART + RLENGTH)
+            sub(/ .*/, "", id)
+            sub(/\.feature$/, "", id)
+            if (index(touched, "," id ",") == 0 && !(id in seen)) {
+                seen[id] = 1
+                print id
+            }
+        }
+    ' "${STORY_TMP}/named" "${STORY_TMP}/untouched")"
+    while IFS= read -r entry; do
+        [ -n "$entry" ] || continue
+        count=$((count + 1))
+        [ "$count" -gt 5 ] || shown="${shown:+${shown}, }${entry}"
+    done <<EOF
+$entries
+EOF
+    [ "$count" -gt 0 ] || return 0
+    [ "$count" -le 5 ] || shown="${shown} and $((count - 5)) more"
+    if [ "$count" -eq 1 ]; then
+        what="1 story that still needs migrating"
+        them="it"
+        blocks="it does not block"
+    else
+        what="${count} stories that still need migrating"
+        them="them"
+        blocks="they do not block"
+    fi
+    echo "[pre-commit] Note: this change leaves alone ${what} in the stories directories it touches: ${shown}. The commit gates check only the stories a change touches, so ${blocks} this commit. /vse-audit lists ${them}, and the check at a release tag covers every story, so a release needs ${them} migrated (methodology §11.3.1)." >&2
+}
+
 if [ "$STORY_PATH_COUNT" -gt 0 ]; then
     story_gate precommit_story_wellformed wellformed "story well-formedness (§1.9)"
     story_gate precommit_gherkin gherkin "Gherkin conformance (§11.9.1)"
+    untouched_note
 fi
 
 # 3. Traceability integrity (delegated). The delegate reads its own

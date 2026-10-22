@@ -1,8 +1,8 @@
 r"""Step definitions for the commit-time scenarios.
 
 They cover the commit-time Rule of profile-gates.feature, the
-scenarios of ci-range.feature, and the commit-time scenario of
-test-first.feature. Each scenario builds a git repository with the
+scenarios of ci-range.feature and commit-scope.feature, and the
+commit-time scenario of test-first.feature. Each scenario builds a git repository with the
 project-side hooks installed (world.py), commits the way an engineer
 does, with the hooks running, and reads what git and the hooks said.
 
@@ -11,10 +11,12 @@ lint_steps.py. world.py builds its repository in the same project
 directory, so the story those steps write is the story committed here.
 """
 
+import os
 import re
 
 import world
-from lint_steps import story_without_feature
+from lint_steps import (STORIES, copy_piece, feature_file, project,
+                        story_without_feature)
 from steps import step
 
 PROFILES = r"(light|standard|full)"
@@ -28,6 +30,26 @@ def _shows_code(output, code):
 
 def _context(ctx):
     return "exit {}:\n{}".format(ctx.result.returncode, ctx.output)
+
+
+REGISTER = os.path.join(STORIES, "stories.sysml")
+
+
+def _change_story(ctx, story):
+    """Alter the block of `story` in the register, and no other block:
+    its points value changes."""
+    path = os.path.join(project(ctx), REGISTER)
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+    start = text.find("requirement {} : UserStory".format(story))
+    points = text.find("points = ", start)
+    if start < 0 or points < 0:
+        raise AssertionError("{} holds no story {} with points".format(
+            REGISTER, story))
+    end = text.find(";", points)
+    text = text[:points] + "points = 8" + text[end:]
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(text)
 
 
 # ----------------------------------------------------------------- Given
@@ -99,6 +121,28 @@ def no_code_or_tooling(ctx):
         raise AssertionError("the project holds files: {}".format(extra))
 
 
+@step(r"a committed story file holding (\w+) with its feature file and (\w+) "
+      r"whose acceptance is legacy prose")
+def committed_register(ctx, migrated, legacy):
+    # The register is committed with the hooks bypassed, as a project
+    # upgraded from 4.x holds it before its first commit under 5.0.0.
+    world.start(ctx)
+    copy_piece(ctx, "register-migrated-and-legacy.sysml", REGISTER,
+               ["requirement {} : UserStory".format(migrated),
+                "requirement {} : UserStory".format(legacy),
+                "requirement :>> acceptance {\n            doc /*"])
+    feature_file(ctx, "feature-tagged.feature", migrated)
+    world.commit_unchecked(ctx, "feat: add the register", "model")
+
+
+@step(r"a branch whose commits change only the story (\w+)")
+def branch_changes_story(ctx, story):
+    world.git(ctx, "checkout", "-q", "-b", "feature/" + story)
+    _change_story(ctx, story)
+    world.commit_unchecked(ctx, "feat: change {}".format(story), "model")
+    ctx.branch = "feature/" + story
+
+
 @step(r"a branch whose commits add a story file (\w+) without a feature file")
 def branch_adds_story(ctx, story):
     world.start(ctx)
@@ -162,6 +206,32 @@ def commit_change(ctx, path):
     world.commit(ctx, "feat: change {}".format(path), path)
 
 
+@step(r"the engineer commits a change to the story (\w+) only")
+def commit_story_change(ctx, story):
+    _change_story(ctx, story)
+    world.commit(ctx, "feat: change {}".format(story), "model")
+
+
+@step(r"the engineer commits a new feature file for (\w+) only")
+def commit_new_feature(ctx, story):
+    # The narrative lines repeat the role, capability and benefit of
+    # US_902_Legacy in register-migrated-and-legacy.sysml.
+    path = os.path.join(STORIES, story + ".feature")
+    world.write(ctx, path, (
+        "@{}\n"
+        "Feature: See the battery level\n"
+        "  As an operator\n"
+        "  I want to see the battery level\n"
+        "  So that the battery is replaced in time\n"
+        "\n"
+        "  @AC_lowBatteryWarned\n"
+        "  Scenario: A low battery is warned of\n"
+        "    Given a low battery\n"
+        "    When the operator looks at the display\n"
+        "    Then a warning is shown\n").format(story))
+    world.commit(ctx, "feat: describe {}".format(story), path)
+
+
 @step(r"CI checks the range from main to the branch head")
 def ci_checks_range(ctx):
     world.ci_check(ctx, ctx.checkout, "origin/main...HEAD")
@@ -220,6 +290,16 @@ def told_to_record(ctx, command):
     if command not in ctx.output:
         raise AssertionError("{} is not suggested, {}".format(
             command, _context(ctx)))
+
+
+@step(r"the engineer is told that (\w+) still needs migrating")
+def told_still_needs_migrating(ctx, story):
+    lines = [line for line in ctx.output.splitlines()
+             if re.search(r"\b{}\b".format(re.escape(story)), line)
+             and "migrat" in line]
+    if not lines:
+        raise AssertionError("no line names {} as still to migrate, {}"
+                             .format(story, _context(ctx)))
 
 
 @step(r"the check fails with finding (\w+)")
