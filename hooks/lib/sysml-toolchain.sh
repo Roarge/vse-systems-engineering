@@ -87,12 +87,35 @@ _vse_tc_scalar() {
     printf '%s\n' "$value"
 }
 
-# timeout is coreutils. A platform without it runs the command bare.
+# Run a command under a limit of <secs> seconds. A command that runs
+# out of time exits 124, as under coreutils timeout. macOS has no
+# timeout, so gtimeout (Homebrew coreutils) comes next, then perl, and
+# a machine with none of the three runs the command with no limit. The
+# perl fallback starts the command in a process group (the set of
+# processes one signal can reach together) of its own and, when the
+# alarm fires, stops the whole group, as coreutils timeout does. A
+# launcher script that waits in a child process would otherwise leave
+# that child holding the output open, and the caller would still hang.
+# The exec form with the program in braces never hands the command to a
+# shell.
 _vse_tc_timeout() {
     local secs="$1"
     shift
     if command -v timeout >/dev/null 2>&1; then
         timeout "$secs" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$secs" "$@"
+    elif command -v perl >/dev/null 2>&1; then
+        perl -e '
+            my $secs = shift;
+            my $pid = fork;
+            defined $pid or exit 125;
+            if ($pid == 0) { setpgrp(0, 0); exec { $ARGV[0] } @ARGV or exit 127 }
+            $SIG{ALRM} = sub { kill "TERM", -$pid; exit 124 };
+            alarm $secs;
+            waitpid($pid, 0);
+            exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
+        ' "$secs" "$@"
     else
         "$@"
     fi

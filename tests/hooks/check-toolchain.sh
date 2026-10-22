@@ -328,6 +328,73 @@ tc_run_lib detect syside
 tc_assert_rc 2 "detect syside: absent binary is unavailable"
 tc_assert_grep "syside not on PATH" "$ERR" "detect syside: absent binary reason"
 
+# A hung probe on a machine without coreutils timeout, which is what
+# macOS gives. The library tries timeout, then gtimeout (the name
+# Homebrew coreutils installs it under), then perl, and only then runs
+# the probe with no limit. Each case takes timeout and gtimeout out of
+# PATH, keeps the stub directory in front, and sets the probe budget to
+# one second. The syside stub is a launcher script that waits in a
+# child process, so a limit that stops the script alone leaves the
+# child holding the output open, and the probe still hangs.
+TC_BIN_NO_TIMEOUT="$(tc_bin_without timeout gtimeout)"
+TC_BIN_NO_TIMEOUT_PERL="$(tc_bin_without timeout gtimeout perl)"
+TC_GTIMEOUT_RECORD="${FAKEHOME}/gtimeout-runs"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+exit 0
+EOF
+tc_stub gtimeout <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s\n' "${1:-}" >> "${TC_GTIMEOUT_RECORD:-/dev/null}"
+shift
+exec "$@"
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1 \
+    "TC_GTIMEOUT_RECORD=${TC_GTIMEOUT_RECORD}"
+tc_run_lib detect syside
+tc_assert_rc 0 "detect syside, no timeout: the probe runs under gtimeout"
+tc_assert_eq 1 "$(head -n 1 "$TC_GTIMEOUT_RECORD" 2>/dev/null || true)" \
+    "detect syside, no timeout: gtimeout is handed the probe budget"
+rm -f "${STUBS}/gtimeout"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+sleep 5
+exit 0
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1
+TC_START=$SECONDS
+tc_run_lib detect syside
+TC_ELAPSED=$((SECONDS - TC_START))
+tc_assert_rc 2 "detect syside, no timeout or gtimeout: a hung probe is unavailable"
+tc_assert_grep "syside unavailable (syside timed out)" "$ERR" \
+    "detect syside, no timeout or gtimeout: the reason is a timeout"
+if [ "$TC_ELAPSED" -le 3 ]; then
+    tc_pass "detect syside, no timeout or gtimeout: perl gives up within 3 seconds"
+else
+    tc_fail "detect syside, no timeout or gtimeout: perl gives up within 3 seconds" \
+        "took ${TC_ELAPSED} seconds"
+fi
+
+# With no perl either, the probe runs with no limit, so a slow probe
+# that passes is still read as available.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+sleep 2
+exit 0
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT_PERL}" VSE_TC_PROBE_TIMEOUT=1
+tc_run_lib detect syside
+tc_assert_rc 0 "detect syside, no timeout, gtimeout or perl: the probe runs with no limit"
+
+tc_env
+rm -f "${STUBS}/syside"
+
 # ---------------------------------------------- 6. detect opensysml
 
 tc_stub_sysml "sysml v0.6.0"
