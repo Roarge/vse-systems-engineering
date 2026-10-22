@@ -2029,3 +2029,17 @@ Layer: bdd-tdd, iso29110. Pages updated:
   rather than listing the template as a place a work product lives)
 `updated:` stays 2026-10-18 on both pages. No summary or title changed,
 so INDEX and the routing blocks are unchanged.
+
+## [2026-10-22] refactor | release-tag rule and quoted page titles
+Layer: methodology, bdd-tdd. Pages updated:
+- behaviour-and-test-first (after "migrated when it is next changed",
+  the page now says the commit and pull-request gates check only the
+  stories a change touches and the full-tree run at a release tag
+  checks every story, so a release needs every story migrated, per
+  §11.3.1 and §11.9.2)
+- bdd-three-practices (the Cucumber page title "Who does what?" now
+  sits in quotation marks)
+- gherkin-declarative-style (the same title in quotation marks at its
+  two mentions)
+`updated:` is 2026-10-22 on the three pages. No summary or title
+changed, so INDEX and the routing blocks are unchanged.

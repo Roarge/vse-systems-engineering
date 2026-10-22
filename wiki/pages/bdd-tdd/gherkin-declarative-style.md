@@ -20,7 +20,7 @@ related:
   - requirements-elicitation-and-writing
 confidence: high
 created: 2026-10-18
-updated: 2026-10-18
+updated: 2026-10-22
 referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
@@ -55,8 +55,8 @@ In this methodology every acceptance criterion is a scenario (§11.1). Where no 
   - Avoid user interaction in Given steps (Reference).
   - "An outcome should be on an observable output" (Reference).
   - Aim for 3 to 5 steps (Reference). The methodology sets no step count.
-  - "In general, any `Given` step line should describe only one thing." (Who does what?)
-  - Say the same thing the same way every time (paraphrase of Who does what?).
+  - "In general, any `Given` step line should describe only one thing." ("Who does what?")
+  - Say the same thing the same way every time (paraphrase of "Who does what?").
 - VSE example: the demo scenario of §11.3.2.
 
   ```gherkin

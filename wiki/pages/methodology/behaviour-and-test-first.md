@@ -20,7 +20,7 @@ related:
   - bdd-three-practices
 confidence: high
 created: 2026-10-18
-updated: 2026-10-18
+updated: 2026-10-22
 referenced_by: [story-orchestrator, needs-and-requirements, verification-validation, test-first]
 ---
 
@@ -61,7 +61,7 @@ Section 11 of the methodology specification sets two disciplines that run throug
 ## One criterion, two artefacts (§11.3)
 
 - Each `@AC_<name>` tag maps to exactly one `requirement <name>` nested in the story's `requirement :>> acceptance`, and each nested criterion maps back to exactly one tag. "The scenario is the normative statement of the criterion", and the criterion's `doc` restates it in prose so that the model reads on its own (§11.3.1).
-- Three forms are not used: the sibling form `requirement <name> :> acceptance`, a typed criterion, and acceptance prose placed directly in `requirement :>> acceptance` outside any named criterion. The last is the form used before plugin version 5.0.0, and a story still in it is migrated when it is next changed (§11.3.1).
+- Three forms are not used: the sibling form `requirement <name> :> acceptance`, a typed criterion, and acceptance prose placed directly in `requirement :>> acceptance` outside any named criterion. The last is the form used before plugin version 5.0.0, and a story still in it is migrated when it is next changed (§11.3.1). The commit and pull-request gates check only the stories a change touches, so an untouched legacy story does not block them, and the full-tree run at a release tag checks every story, so a release needs every story migrated (§11.9.2).
 - A verification or validation case reaches a criterion through its objective (§11.3.3):
 
   | Clause | Criteria it reaches |

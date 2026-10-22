@@ -20,7 +20,7 @@ related:
   - stakeholder-stories-workflow
 confidence: high
 created: 2026-10-18
-updated: 2026-10-18
+updated: 2026-10-22
 referenced_by: [needs-and-requirements, story-orchestrator]
 ---
 
@@ -70,7 +70,7 @@ Behaviour-driven development (BDD) describes the behaviour a stakeholder expects
 - "we can now formulate each example as structured documentation."
 - "a medium that can be read by both humans and computers."
 - "We can get feedback from the whole team about our shared vision of what we're building."
-- Who writes it (Who does what?). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run (§11.1).
+- Who writes it ("Who does what?"). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run (§11.1).
   - "it is recommended that the entire team collaborate on writing the Gherkin."
   - Later a pair (developer and tester) can do it "as long as their output is actively reviewed by the product owner (or business representative)."
 
