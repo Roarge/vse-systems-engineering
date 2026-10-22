@@ -108,6 +108,123 @@ case_runners_drop_outer_github_head_ref() {
     unset GITHUB_HEAD_REF
 }
 
+# ----------------------------------------- runners on a BSD userland
+
+# bsd_env_dir: print a new directory holding an env wrapper that parses
+# its options the way BSD env does (getopt with the option string
+# 0iP:S:u:v, as on macOS). It refuses -C, which BSD env lacks, with
+# BSD's message, usage text and exit 1, and passes every other call to
+# the real env found when the wrapper is written. Placed first on the
+# PATH of a test script, it stands in for macOS env, so a runner that
+# still changes directory with env -C fails on Linux too.
+bsd_env_dir() {
+    local dir real
+    dir="$(tc_mktemp_d)"
+    real="$(command -v env)"
+    cat > "${dir}/env" <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+usage() {
+    echo 'usage: env [-0iv] [-P utilpath] [-S string] [-u name]' >&2
+    echo '           [name=value ...] [utility [argument ...]]' >&2
+    exit 1
+}
+while getopts ':0iP:S:u:v' opt; do
+    case "\$opt" in
+        '?')
+            echo "env: illegal option -- \${OPTARG}" >&2
+            usage
+            ;;
+        ':')
+            echo "env: option requires an argument -- \${OPTARG}" >&2
+            usage
+            ;;
+    esac
+done
+exec "${real}" "\$@"
+EOF
+    chmod +x "${dir}/env"
+    printf '%s\n' "$dir"
+}
+
+# The runners change into the scratch directory without env -C. A
+# nested bash sources lib.sh with the BSD env wrapper first on its PATH
+# and runs one runner per way the harness starts a command: tc_run_in,
+# the sandboxed runner behind tc_run_hook (and the lifecycle and
+# library runners), and tc_run_real. Each runs pwd -P in the scratch
+# repository, and the nested shell prints "<runner>: ok" when the exit
+# status is 0 and the directory is the repository's physical path.
+case_runners_without_env_dash_c() {
+    local wrap nested
+    wrap="$(bsd_env_dir)"
+    tc_env
+    _tc_capture "${wrap}/env" -C "$REPO" true
+    tc_assert_rc 1 "BSD env wrapper: -C is refused with exit 1"
+    tc_assert_line "env: illegal option -- C" "$ERR" "BSD env wrapper: -C is refused with BSD's message"
+    # shellcheck disable=SC2016  # expanded by the shell under test
+    _tc_capture "${wrap}/env" -u TC_UNSET TC_SET=1 sh -c 'echo "${TC_SET}"'
+    tc_assert_eq "1" "$OUT" "BSD env wrapper: options BSD env knows reach the real env"
+
+    # shellcheck disable=SC2016  # expanded by the nested shell
+    nested='
+. "$1"
+trap tc_teardown EXIT
+tc_setup_repo
+printf "#!/usr/bin/env bash\npwd -P\n" > "${REPO}/.githooks/pre-commit"
+want="$(cd "$REPO" && pwd -P)"
+report() {
+    if [ "$RC" -eq 0 ] && [ "$OUT" = "$want" ]; then
+        printf "%s: ok\n" "$1"
+    else
+        printf "%s: exit %s, pwd %s, stderr %s\n" "$1" "$RC" "$OUT" "$ERR"
+    fi
+}
+tc_env
+tc_run_in "$REPO" pwd -P
+report tc_run_in
+tc_run_hook
+report tc_run_hook
+tc_run_real pwd -P
+report tc_run_real
+'
+    _tc_capture env PATH="${wrap}:${PATH}" TMPDIR="$(tc_mktemp_d)" \
+        bash -c "$nested" nested "${TC_LIB_DIR}/lib.sh"
+    tc_assert_rc 0 "without env -C: the nested test script exits 0"
+    tc_assert_line "tc_run_in: ok" "$OUT" "without env -C: tc_run_in runs in the directory it names"
+    tc_assert_line "tc_run_hook: ok" "$OUT" "without env -C: the sandboxed runner runs in the scratch repository"
+    tc_assert_line "tc_run_real: ok" "$OUT" "without env -C: tc_run_real runs in the scratch repository"
+}
+
+# On macOS the temporary directory is reached through a symbolic link
+# (/var links to /private/var), while a hook resolves its directory
+# with pwd -P. The scratch root is therefore its own physical path, so
+# a path a test builds from it equals the path a hook prints. Here
+# TMPDIR names a symbolic link to a scratch directory.
+case_scratch_root_is_physical() {
+    local real link physical
+    real="$(tc_mktemp_d)"
+    physical="$(cd "$real" && pwd -P)"
+    link="$(tc_mktemp_d)/tmp-link"
+    ln -s "$real" "$link"
+    tc_env
+    # shellcheck disable=SC2016  # expanded by the nested shell
+    _tc_capture env TMPDIR="$link" bash -c '
+. "$1"
+trap tc_teardown EXIT
+printf "root=%s\n" "$TC_ROOT"
+if [ "$TC_ROOT" = "$(cd "$TC_ROOT" && pwd -P)" ]; then
+    echo "scratch root: physical"
+else
+    echo "scratch root: reached through a symbolic link"
+fi
+' nested "${TC_LIB_DIR}/lib.sh"
+    tc_assert_rc 0 "physical scratch root: the nested test script exits 0"
+    tc_assert_grep "root=${physical}/vse-hooktest." "$OUT" \
+        "physical scratch root: the root is made in TMPDIR, named by its physical path"
+    tc_assert_line "scratch root: physical" "$OUT" \
+        "physical scratch root: the root equals its own pwd -P"
+}
+
 # -------------------------------------------------- project configuration
 
 case_config_two_gates() {
@@ -257,6 +374,8 @@ case_stdin_reaches_hook
 case_other_runners_read_empty_stdin
 case_runners_drop_outer_vse_iso_config
 case_runners_drop_outer_github_head_ref
+case_runners_without_env_dash_c
+case_scratch_root_is_physical
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs

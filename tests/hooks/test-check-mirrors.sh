@@ -63,7 +63,7 @@ fresh() {
 }
 
 run_target() {
-    _tc_capture env -C "$REPO" -u MAKEFLAGS -u MAKELEVEL -u MFLAGS \
+    _tc_capture _tc_in_dir "$REPO" env -u MAKEFLAGS -u MAKELEVEL -u MFLAGS \
         -u XDG_CONFIG_HOME -u GIT_CONFIG_GLOBAL \
         HOME="$FAKEHOME" GIT_CONFIG_NOSYSTEM=1 GIT_CEILING_DIRECTORIES="$(dirname "$REPO")" \
         make --no-print-directory check-mirrors

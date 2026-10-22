@@ -84,7 +84,7 @@ EOF
 run_in() {
     local path="$1"
     shift
-    _tc_capture env -C "$REPO" -u MAKEFLAGS -u MAKELEVEL -u MFLAGS \
+    _tc_capture _tc_in_dir "$REPO" env -u MAKEFLAGS -u MAKELEVEL -u MFLAGS \
         -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG -u CLAUDE_PLUGIN_ROOT \
         PATH="$path" HOME="$FAKEHOME" SYSML_LOG="$SYSML_LOG" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \

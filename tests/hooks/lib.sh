@@ -29,7 +29,10 @@
 # failure through an explicit return, so errexit is not load-bearing
 # inside them.
 #
-# Requires GNU coreutils (env -C) and git.
+# Requires git and a POSIX userland. The helpers run on GNU/Linux and
+# on macOS with its stock bash 3.2 and BSD tools, so they use no GNU-only
+# option (env -C, for one). _tc_in_dir changes directory for the
+# runners instead.
 set -euo pipefail
 
 TC_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -43,8 +46,12 @@ TC_SKIP_COUNT=0
 # a child of it, so a single removal in tc_teardown cannot miss one.
 # The root is created here rather than on first use, because a helper
 # called inside a command substitution runs in a subshell and its
-# assignment would never reach this scope.
-TC_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")"
+# assignment would never reach this scope. The root is named by its
+# physical path, because on macOS the temporary directory is reached
+# through a symbolic link (/var links to /private/var) and a hook that
+# resolves its directory with pwd -P would otherwise print a path the
+# test never built.
+TC_ROOT="$(cd "$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")" && pwd -P)"
 
 # Extra environment for the next runner call, as NAME=VALUE words.
 TC_ENV=()
@@ -334,6 +341,17 @@ tc_env() {
     TC_ENV=("$@")
 }
 
+# _tc_in_dir <dir> <command> [arg ...]: run the command in <dir>. The
+# body is a subshell, so the caller's directory is left alone, and the
+# command replaces it. It stands in for GNU env -C, which macOS env
+# lacks. Exit 125 means the directory could not be entered, the status
+# env -C gives for the same failure.
+_tc_in_dir() (
+    cd -- "$1" || exit 125
+    shift
+    exec "$@"
+)
+
 # Stdin is the file named by TC_STDIN, or empty when it is unset, so
 # code under test never reads the terminal of whoever runs the tests.
 _tc_capture() {
@@ -341,8 +359,9 @@ _tc_capture() {
     outf="$(mktemp "${TC_ROOT}/out.XXXXXX")"
     errf="$(mktemp "${TC_ROOT}/err.XXXXXX")"
     RC=0
-    # env is an external process, so the errexit context of this caller
-    # cannot leak into the code under test.
+    # The command the runners pass is env, or _tc_in_dir, which replaces
+    # itself with env. Either way the code under test is an external
+    # process, so the errexit context of this caller cannot leak into it.
     "$@" > "$outf" 2> "$errf" < "${TC_STDIN:-/dev/null}" || RC=$?
     # shellcheck disable=SC2034
     OUT="$(cat "$outf")"
@@ -358,7 +377,7 @@ _tc_capture() {
 # (GITHUB_HEAD_REF), so a case that pins one sets it deliberately
 # through tc_env.
 _tc_sandboxed() {
-    _tc_capture env -C "$REPO" \
+    _tc_capture _tc_in_dir "$REPO" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
         -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
@@ -432,7 +451,7 @@ tc_run_lib_fn() {
 # GITHUB_HEAD_REF are dropped here too, so an outer value cannot steer
 # a real-tool case.
 tc_run_real() {
-    _tc_capture env -C "$REPO" \
+    _tc_capture _tc_in_dir "$REPO" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${TC_REAL_PATH}" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
@@ -494,7 +513,7 @@ tc_bin_without() {
 tc_run_in() {
     local dir="$1"
     shift
-    _tc_capture env -C "$dir" \
+    _tc_capture _tc_in_dir "$dir" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
         -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \

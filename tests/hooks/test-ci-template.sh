@@ -198,7 +198,7 @@ ci_run() {
     : > "${work}/output"
     : > "${work}/env"
     CI_RAN=1
-    _tc_capture env -C "$REPO" -i \
+    _tc_capture _tc_in_dir "$REPO" env -i \
         PATH="${STUBS}:/usr/bin:/bin" HOME="$FAKEHOME" GIT_CONFIG_NOSYSTEM=1 \
         CI=true GITHUB_ACTIONS=true GITHUB_WORKSPACE="$REPO" \
         GITHUB_EVENT_NAME="$CI_EVENT" GITHUB_REF="$CI_REF" \

@@ -55,7 +55,7 @@ commit_paths() {
 # the caller's own environment never reaches it, so only tc_env sets
 # one.
 run_check() {
-    _tc_capture env -C "${RUN_DIR:-$REPO}" -u VSE_PRECOMMIT_RANGE -u VSE_ISO_CONFIG \
+    _tc_capture _tc_in_dir "${RUN_DIR:-$REPO}" env -u VSE_PRECOMMIT_RANGE -u VSE_ISO_CONFIG \
         -u GITHUB_HEAD_REF \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
         bash "$CHECK" "$@"
