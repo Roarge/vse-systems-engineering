@@ -1410,6 +1410,83 @@ case_touched_partial_install() {
         "touched, partial install: the whole stories directory is checked"
 }
 
+# A renamed feature file is a deletion and an addition, so it touches
+# the story of the old name and the story of the new one. Here the
+# feature file of US_901_Example takes the name of US_902_Legacy, so
+# US_901_Example loses its feature file (S1) and US_902_Legacy is
+# checked (S3).
+case_touched_renamed_feature() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    git -C "$REPO" mv "${STORY_DIR}/US_901_Example.feature" "${STORY_DIR}/US_902_Legacy.feature"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "renamed feature: the commit is stopped"
+    tc_assert_grep "S1 US_901_Example has no feature file" "$ERR" \
+        "renamed feature: the story of the old name is touched"
+    tc_assert_grep "S3 US_902_Legacy keeps acceptance prose" "$ERR" \
+        "renamed feature: the story of the new name is touched"
+    tc_assert_not_grep "Note:" "$ERR" "renamed feature: both stories are touched, so no note"
+}
+
+# A single revision compares that revision with the working tree, as
+# git diff <rev> does, so an edit not yet staged counts.
+case_touched_single_revision() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_commit "change US_901"
+    tc_env "VSE_PRECOMMIT_RANGE=HEAD~1"
+    tc_run_hook
+    tc_assert_rc 0 "single revision: the change to the migrated story alone passes"
+    assert_legacy_noted "single revision"
+
+    change_story "${STORY_DIR}/stories.sysml" US_902_Legacy
+    git -C "$REPO" reset -q
+    tc_run_hook
+    tc_assert_rc 1 "single revision: an unstaged change to the legacy story fails"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" \
+        "single revision: the working tree is the end of the range"
+}
+
+# When git merge-base cannot find the merge base of a three-dot range,
+# the before image is empty, so every story in a changed story file
+# counts as new. That only widens the check. The stub git fails
+# merge-base and runs every other command with the real git.
+case_touched_merge_base_fallback() {
+    local clone real_git
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_register
+    git -C "$REPO" checkout -q -b feat/first
+    change_story "${STORY_DIR}/stories.sysml" US_901_Example
+    tc_commit "change US_901"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    real_git="$(command -v git)"
+    tc_stub git <<EOF
+#!/usr/bin/env bash
+for arg in "\$@"; do
+    [ "\$arg" != merge-base ] || exit 1
+done
+exec "${real_git}" "\$@"
+EOF
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 1 "merge base unknown: every story in the changed file is checked"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" \
+        "merge base unknown: the untouched legacy story draws S1"
+    tc_assert_not_grep "Note:" "$ERR" "merge base unknown: no story is left alone, so no note"
+
+    tc_reset_stubs
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 0 "merge base known: the same range passes"
+}
+
 # A story file the change renames is compared with the file it was
 # renamed from, so a renamed register touches only the stories whose
 # blocks the change alters.
@@ -1842,8 +1919,8 @@ case_test_first_range_mode() {
     tc_env "VSE_PRECOMMIT_RANGE=HEAD~1..HEAD"
     tc_run_hook
     tc_assert_rc 1 "test first, range mode: code alone in the range stops the check"
-    tc_assert_grep "reason: no test path changed in the range HEAD~1..HEAD" "$ERR" \
-        "test first, range mode: the reason names the range"
+    tc_assert_line "  reason: no test path changed in the range HEAD~1..HEAD" "$ERR" \
+        "test first, range mode: the reason names the range alone"
     tc_assert_not_grep "$RATIONALE" "$ERR" "test first, range mode: no rationale line is printed"
 
     # CI checks a push out on its branch, so a test changed on the
@@ -2062,6 +2139,9 @@ case_touched_range_mode
 case_touched_full_tree
 case_touched_brownfield
 case_touched_partial_install
+case_touched_renamed_feature
+case_touched_single_revision
+case_touched_merge_base_fallback
 case_touched_renamed_register
 case_touched_renamed_directory
 case_touched_renamed_range

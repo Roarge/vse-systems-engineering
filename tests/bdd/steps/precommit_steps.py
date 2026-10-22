@@ -2,9 +2,10 @@ r"""Step definitions for the commit-time scenarios.
 
 They cover the commit-time Rule of profile-gates.feature, the
 scenarios of ci-range.feature and commit-scope.feature, and the
-commit-time scenario of test-first.feature. Each scenario builds a git repository with the
-project-side hooks installed (world.py), commits the way an engineer
-does, with the hooks running, and reads what git and the hooks said.
+commit-time scenario of test-first.feature. Each scenario builds a git
+repository with the project-side hooks installed (world.py), commits
+the way an engineer does, with the hooks running, and reads what git
+and the hooks said.
 
 The story Given steps are the ones story-lint.feature uses, defined in
 lint_steps.py. world.py builds its repository in the same project
@@ -325,3 +326,17 @@ def check_fails(ctx, code):
 def check_passes(ctx):
     if ctx.result.returncode != 0:
         raise AssertionError("the check failed, " + _context(ctx))
+    # The test-first gate must have run and reported nothing. A gate
+    # the scenario turns off, or one that reports it could not check
+    # (a partial install at a disposition that lets the change through),
+    # would otherwise pass here unseen.
+    if dict(ctx.overrides).get("precommit_test_first") == "off":
+        raise AssertionError("precommit_test_first is off in this "
+                             "scenario, so it did not run")
+    if "precommit_test_first" in ctx.output:
+        raise AssertionError("precommit_test_first reported, "
+                             + _context(ctx))
+    if not re.search(r"^\[pre-commit\] (All checks passed\.|Checks complete)",
+                     ctx.output, re.MULTILINE):
+        raise AssertionError("the hook did not reach its summary, "
+                             + _context(ctx))
