@@ -633,15 +633,36 @@ class TraceabilityMatrixTests(unittest.TestCase):
         self.assertEqual(summary["System stories with a verification case"],
                          "0 of 1")
 
-    def test_verified_derived_system_story_completes_the_row(self):
-        # The second route: a system story derived from the stakeholder
-        # story, with every one of its own criteria reached by a
-        # verification case.
-        status, gaps, _summary = self.matrix(
+    def test_verified_derived_system_story_does_not_complete_the_row(self):
+        # A system story derived from the stakeholder story, with every
+        # one of its own criteria reached by a verification case, does
+        # not stand in for the stakeholder story's criteria. S8 judges
+        # the stakeholder story on its own criteria too.
+        status, gaps, summary = self.matrix(
             ("VC_1", ["SYS_1_Two.acceptance.fast",
                       "SYS_1_Two.acceptance.safe"]), system=True)
-        self.assertEqual(status, {"US_1_Two": "Complete"})
-        self.assertEqual(gaps, [])
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 2, gaps)
+        self.assertIn("`first`", named[0])
+        self.assertIn("`second`", named[1])
+        self.assertEqual(self.gaps_naming(gaps, "SYS_1_Two"), [])
+        self.assertEqual(
+            summary["Stakeholder stories with acceptance coverage"],
+            "0 of 1")
+        self.assertEqual(summary["System stories with a verification case"],
+                         "1 of 1")
+
+    def test_derived_system_story_does_not_fill_a_partial_row(self):
+        # One stakeholder criterion reached by its own case, the other
+        # by none: the verified system story does not close the gap.
+        status, gaps, _summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance.first"]),
+            ("VC_1", ["SYS_1_Two.acceptance"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`second`", named[0])
 
     def test_partly_verified_derived_system_story_leaves_a_gap(self):
         status, gaps, _summary = self.matrix(
