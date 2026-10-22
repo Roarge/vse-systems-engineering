@@ -171,7 +171,12 @@ Three forms are not used.
   outside any named criterion, is the form used before plugin version
   5.0.0. A story still in that form is migrated when it is next
   changed, by formalising its existing Given/When/Then text as
-  scenarios and named criteria without adding behaviour.
+  scenarios and named criteria without adding behaviour. The commit
+  gate and the pull-request check read only the stories a change
+  touches (§11.9.2), so a legacy story beside a changed one does not
+  block the change, and `pre-commit` names it in one note. The
+  full-tree check at a release tag reads every story, so a release
+  needs every story migrated.
 
 ### 11.3.2 Worked example
 
@@ -495,7 +500,7 @@ default, and only a recorded `gate_overrides` entry lowers one
 
 | Gate | Configuration key | Carrier | light | standard | full | What it checks |
 |---|---|---|---|---|---|---|
-| Gherkin conformance | `precommit_gherkin` | `pre-commit` and CI | block | block | block | The story lint findings S1 to S9 and F1 to F10 (§11.9.1) over every stories directory the change touches, and every changed feature file under `model/` outside one |
+| Gherkin conformance | `precommit_gherkin` | `pre-commit` and CI | block | block | block | The story lint findings S1 to S9 and F1 to F10 (§11.9.1) for the stories the change touches and the story and feature files it changes, including a changed feature file under `model/` outside a stories directory. The full-tree run at a release tag checks every story (§11.9.2) |
 | Test before code | `precommit_test_first` | `pre-commit` and CI | block | block | block | A change to a code path with no change to a test path, either in the commit set or on the branch since its merge base (the commit the branch started from). While `test_first.applies` is unrecorded, a finding only when test tooling is detected or a changed path matches a `code_paths` or `test_paths` glob already recorded (§11.5.2), and otherwise one info line suggesting `/vse-test-first` |
 | Gherkin first in session | `pretooluse_gherkin_first` | Claude Code `PreToolUse` | block | block | block | An agent edit that adds or changes a story whose feature file is missing or lacks the story tag (§11.9.3) |
 | Test first in session | `pretooluse_test_first` | Claude Code `PreToolUse` | block | block | block | An agent edit to a code path with no test evidence (§11.9.3) |
@@ -506,15 +511,20 @@ The story lint ships as `tools/lint/story-wellformed.py` under the
 engineering root:
 
 ```text
-story-wellformed.py [--only wellformed|gherkin|syntax] [--format text|json] PATH...
+story-wellformed.py [--only wellformed|gherkin|syntax] [--format text|json]
+    [--stories ID,ID] PATH...
 ```
 
 `--only wellformed` runs the §1.9 checks of the
 `precommit_story_wellformed` gate. `--only gherkin` runs the findings
 below for `precommit_gherkin`. `--only syntax` checks feature files
-without story context (F1, F2, F7, F8 and F9). Exit code 0 means clean,
-1 means findings, and 2 means a usage or environment error. A missing
-lint or a missing `python3` is itself reported at the gate's
+without story context (F1, F2, F7, F8 and F9). `--stories` restricts
+the findings about a story (S1 to S8, and the §1.9 checks) to the
+stories it names, which is how the commit-time gates check only the
+stories a change touches (§11.9.2). The findings about a file alone,
+F1 to F10 and S9, apply to the files named or found. Exit code 0 means
+clean, 1 means findings, and 2 means a usage or environment error. A
+missing lint or a missing `python3` is itself reported at the gate's
 disposition, so a broken install cannot pass quietly.
 
 | Code | Finding |
@@ -551,6 +561,21 @@ continuous integration the same hook runs in range mode, over the
 changes a pull request or a push brings, so that a fresh checkout with
 nothing staged cannot pass vacuously. Range mode needs the full git
 history (`fetch-depth: 0` in GitHub Actions).
+
+For `precommit_gherkin` and `precommit_story_wellformed`, the hook
+checks the stories a change touches. A story is touched when the
+change adds its declaration, alters the text of its block, or adds,
+changes, renames or deletes its feature file. The comparison is the
+one the in-session gate makes (§11.9.3), between the last commit and
+the staged set, or between the start and the end of the range (the
+merge base, for a pull request). Deleting a story touches nothing.
+Stories in the same stories directories that the change leaves alone
+and that still need migrating (S1, S3 or S9) are named in one note and
+do not block, and `/vse-audit` lists them (§11.3.1). For a tag push,
+and for a push with no previous commit that CI can read (one that
+creates a branch, for example), CI runs the hook over every tracked
+file, which checks every story. A release therefore needs every story
+migrated.
 
 For `precommit_test_first`, evidence is a changed path under
 `test_paths`, in the commit set or on the branch since its merge base.

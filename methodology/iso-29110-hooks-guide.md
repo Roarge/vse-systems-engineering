@@ -202,23 +202,25 @@ the install.
 
 1. **SysML model lint.** Run a SysML v2 parser against every changed
    `.sysml` file; fail on syntax error.
-2. **Story well-formedness.** For each changed file in
+2. **Story well-formedness.** For the stories the change touches in
    `model/core/stories/` or
-   `model/core/logical-architecture/components/.../stories/`, run the
-   story linter with `--only wellformed` (methodology §1.9 rules 2, 3,
-   6 and 9, plus the `storymeta` fields).
+   `model/core/logical-architecture/components/.../stories/` (see
+   "Touched stories" below), run the story linter with
+   `--only wellformed` and `--stories` naming them (methodology §1.9
+   rules 2, 3, 6 and 9, plus the `storymeta` fields).
 3. **Baselined-artefact protection.** If a file under a baselined
    path (configured in `.iso-config.yaml`) has been changed, require
    the commit message to reference an open Change Request issue.
 4. **Traceability integrity.** Reject commits that introduce dangling
    `derive`, `frame concern`, or `verify` references.
-5. **Gherkin conformance.** For every stories directory touched by a
-   changed story file or `.feature` file, run the story linter with
-   `--only gherkin` (methodology §11.9, findings S1 to S9 and F1 to
-   F10). A changed `.feature` file under `model/` that sits outside a
-   `stories/` directory is linted as well, so F10 reports it. A
-   `.feature` file outside `model/`, such as a Cucumber feature for the
-   project's code, is the project's own and is left alone.
+5. **Gherkin conformance.** For the stories the change touches, and
+   the story files and `.feature` files it changes, run the story
+   linter with `--only gherkin` and `--stories` naming those stories
+   (methodology §11.9, findings S1 to S9 and F1 to F10). A changed
+   `.feature` file under `model/` that sits outside a `stories/`
+   directory is linted as well, so F10 reports it. A `.feature` file
+   outside `model/`, such as a Cucumber feature for the project's
+   code, is the project's own and is left alone.
 6. **Test before code.** Where `test_first.applies` is `true`, reject a
    change to a code path that arrives with no change to a test path,
    either in the commit set or on the branch since its merge base
@@ -240,6 +242,23 @@ the install.
 `all` checks every tracked file. CI uses range mode (§4.4), because a
 fresh CI checkout has nothing staged and a staged-set check would pass
 vacuously.
+
+**Touched stories.** Checks 2 and 5 read the stories a change touches
+(methodology §11.9.2). A story is touched when the change adds its
+declaration block or alters the block's text, or adds, changes,
+renames or deletes its `<StoryIdentifier>.feature` file. The hook
+compares the blocks with the scanner of `lib/test-first.sh`, the one
+the `PreToolUse` Gherkin-first gate uses, so "touched" means the same
+at commit time and in session. The comparison runs between `HEAD` and
+the staged set, or between the start and the end of the range, where
+the start of `<base>...<head>` is the merge base. Deleting a story
+touches nothing. Stories in the same stories directories that the
+change leaves alone, and that would draw S1, S3 or S9, are named in one
+note that points at `/vse-audit`, and they never block a staged or
+range commit. With `all` every story is checked, so the run CI makes at
+a release tag needs every story migrated. Without `lib/test-first.sh`
+(a partial install) the hook cannot tell which stories are touched, so
+it checks every story in each stories directory the change touches.
 
 **Disposition per profile.** "Block" above describes the `full` profile.
 Checks 1, 2, and 4 carry the configuration keys `precommit_lint`,
@@ -453,8 +472,10 @@ per §10.8 of the methodology.
 The plugin ships `templates/github/traceability-check.yml`, installed at
 every profile per §3.4. It implements contract 3 directly. It implements
 contract 2 through the story lint, because its pre-commit step runs the
-`pre-commit` hook in range mode, and the `precommit_gherkin` gate
-reports S8 there at its configured disposition. It also runs
+`pre-commit` hook, and the `precommit_gherkin` gate reports S8 there at
+its configured disposition: for the stories a pull request or a push
+touches in range mode, and for every story at a release tag, where the
+hook reads every tracked file. It also runs
 `test_command` and `scenario_command` where test first applies, that
 is when `test_first.applies` is `true` and the command is recorded
 (methodology §11.8). A record where `test_first.applies` is `true`
