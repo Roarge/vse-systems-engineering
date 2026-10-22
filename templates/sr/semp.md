@@ -52,6 +52,10 @@ iso_ref: "SR.1"
 ### 2.4 Integration, Verification, and Validation
 
 > Describe the IVV approach. Reference the IVV Plan for detailed procedures.
+> Each acceptance criterion is a Gherkin scenario in the story's feature
+> file, reached by a verification or validation case (methodology §11.3).
+> Where test first applies, code is written test first, and the
+> scenarios run on the recorded scenario runner (§11.5, §11.8).
 
 - **Integration strategy:** (incremental, big-bang)
 - **Verification methods:** (inspection, analysis, demonstration, test)
@@ -90,15 +94,15 @@ iso_ref: "SR.1"
 | Tool | Purpose | Version |
 |------|---------|---------|
 | {{SYSML_TOOLCHAIN_NAME}} | SysML 2.0 modelling | {{SYSML_TOOLCHAIN_VERSION}} |
+| {{TEST_HARNESS}} | Test-first tools: the test harness behind `test_first.test_command` and any scenario runner behind `test_first.scenario_command`, or "none" where test first does not apply (methodology §11.5.3) | |
 | Git | Version control | |
 | Claude Code | SE companion (designed cognitive reserve) | |
 
 ### 4.2 Repository Structure
 
 ```
-models/           SysML 2.0 source files
-docs/pm/          PM work products
-docs/sr/          SR work products
+model/            SysML 2.0 source files
+docs/             PM and SR work products, one file per document
 build/            Generated outputs (gitignored)
 ```
 

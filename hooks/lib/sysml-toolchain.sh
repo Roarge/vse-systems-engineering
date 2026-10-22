@@ -124,10 +124,32 @@ vse_tc_candidates() {
     done
 }
 
+# _vse_tc_resolve <path>: print <path> with its symbolic links followed
+# (up to 40, so a loop of links ends) and its directory made physical
+# with pwd -P. readlink is used without -f, which macOS lacks.
+_vse_tc_resolve() {
+    local path="$1" link dir hops=0
+    while [ -L "$path" ] && [ "$hops" -lt 40 ]; do
+        link="$(readlink "$path")" || break
+        case "$link" in
+            /*) path="$link" ;;
+            *) path="$(dirname "$path")/${link}" ;;
+        esac
+        hops=$((hops + 1))
+    done
+    if dir="$(CDPATH='' cd -- "$(dirname "$path")" 2>/dev/null && pwd -P)"; then
+        path="${dir%/}/${path##*/}"
+    fi
+    printf '%s\n' "$path"
+}
+
 # Resolve a Java 21 or later binary into VSE_TC_JAVA. Order: VSE_JAVA,
-# JAVA_HOME/bin/java, java on PATH. Returns 1 with VSE_TC_REASON set.
+# JAVA_HOME/bin/java, java on PATH. One binary often fills several of
+# these (JAVA_HOME/bin/java is commonly the java on PATH through a
+# link), so a candidate whose resolved path was already tried is
+# skipped and each binary runs once. Returns 1 with VSE_TC_REASON set.
 vse_tc_java() {
-    local candidate major
+    local candidate output line said major resolved tried=$'\n'
     VSE_TC_JAVA=""
     VSE_TC_REASON=""
     for candidate in "${VSE_JAVA:-}" "${JAVA_HOME:+${JAVA_HOME}/bin/java}" "$(command -v java 2>/dev/null || true)"; do
@@ -135,9 +157,20 @@ vse_tc_java() {
         # an empty or non-executable candidate is skipped.
         # shellcheck disable=SC2015
         [ -n "$candidate" ] && [ -x "$candidate" ] || continue
-        major="$("$candidate" -version 2>&1 | sed -n '1s/.*version "\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*.*/\1/p')"
+        resolved="$(_vse_tc_resolve "$candidate")"
+        case "$tried" in
+            *$'\n'"${resolved}"$'\n'*) continue ;;
+        esac
+        tried="${tried}${resolved}"$'\n'
+        # The JVM runs once, and its output is kept for the reason. It
+        # prints "Picked up JAVA_TOOL_OPTIONS: ..." ahead of the version
+        # whenever that variable is set, so the version comes from the
+        # first line that names one, not from line 1.
+        output="$("$candidate" -version 2>&1 || true)"
+        line="$(printf '%s\n' "$output" | awk '!seen && /version "/ { print; seen = 1 }')"
+        major="$(printf '%s\n' "$line" | sed -n 's/.*version "\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*.*/\1/p')"
         if [ "$major" = "1" ]; then
-            major="$("$candidate" -version 2>&1 | sed -n '1s/.*version "1\.\([0-9][0-9]*\).*/\1/p')"
+            major="$(printf '%s\n' "$line" | sed -n 's/.*version "1\.\([0-9][0-9]*\).*/\1/p')"
         fi
         if [ -n "$major" ] && [ "$major" -ge 21 ] 2>/dev/null; then
             VSE_TC_JAVA="$candidate"
@@ -146,7 +179,10 @@ vse_tc_java() {
         if [ -n "$major" ]; then
             VSE_TC_REASON="java at ${candidate} is major ${major}, need 21 or later"
         else
-            VSE_TC_REASON="java at ${candidate} did not report a version: $("$candidate" -version 2>&1 | head -n 1 || true)"
+            # Quote the first thing the JVM said, passing over the
+            # JAVA_TOOL_OPTIONS banner, which is not a version line.
+            said="$(printf '%s\n' "$output" | awk '!seen && NF && !/^Picked up / { print; seen = 1 }')"
+            VSE_TC_REASON="java at ${candidate} printed no version line${said:+. It said: ${said}}"
         fi
     done
     [ -n "$VSE_TC_REASON" ] || VSE_TC_REASON="java not found (install Java 21 or later, or set JAVA_HOME or VSE_JAVA)"
@@ -195,7 +231,12 @@ vse_tc_pilot_paths() {
 
 # Classify a syside run. Sets VSE_TC_REASON when the run means
 # "unavailable" rather than "findings". The licence failure is text on
-# stdout with exit 2, so the text is the key, not the code.
+# stdout with exit 2, so the text is the key, not the code. The text is
+# matched with case rather than piped into grep -q. grep -q stops
+# reading at the first match, so a writer with more output than the
+# pipe holds is killed by SIGPIPE (the signal a process gets when it
+# writes to a pipe that nobody reads any more), and under pipefail the
+# pipeline then fails although the text matched.
 _vse_tc_classify_syside() {
     local rc="$1" out="$2"
     VSE_TC_REASON=""
@@ -204,25 +245,28 @@ _vse_tc_classify_syside() {
         124) VSE_TC_REASON="syside timed out" ;;
         127) VSE_TC_REASON="syside not on PATH" ;;
         *)
-            if printf '%s\n' "$out" | grep -q 'License check failed'; then
-                if printf '%s\n' "$out" | grep -qi 'expired'; then
-                    VSE_TC_REASON="licence expired, exit ${rc}"
-                else
-                    VSE_TC_REASON="licence check failed, exit ${rc}"
-                fi
-            elif printf '%s\n' "$out" | grep -q 'No display server detected'; then
-                # The Syside launcher refuses to start without X11,
-                # Wayland or xvfb-run. That is the tool being unavailable
-                # on this machine, not a finding against the model.
-                VSE_TC_REASON="no display server (the syside launcher needs X11, Wayland or xvfb-run), exit ${rc}"
-            fi
+            case "$out" in
+                *'License check failed'*)
+                    case "$out" in
+                        *[Ee][Xx][Pp][Ii][Rr][Ee][Dd]*) VSE_TC_REASON="licence expired, exit ${rc}" ;;
+                        *) VSE_TC_REASON="licence check failed, exit ${rc}" ;;
+                    esac
+                    ;;
+                *'No display server detected'*)
+                    # The Syside launcher refuses to start without X11,
+                    # Wayland or xvfb-run. That is the tool being
+                    # unavailable on this machine, not a finding against
+                    # the model.
+                    VSE_TC_REASON="no display server (the syside launcher needs X11, Wayland or xvfb-run), exit ${rc}"
+                    ;;
+            esac
             ;;
     esac
     return 0
 }
 
 _vse_tc_detect_syside() {
-    local dir out rc=0
+    local dir out first rc=0
     if ! command -v syside >/dev/null 2>&1; then
         VSE_TC_REASON="syside not on PATH"
         return 0
@@ -234,7 +278,8 @@ _vse_tc_detect_syside() {
     rm -rf "$dir"
     _vse_tc_classify_syside "$rc" "$out"
     if [ -z "$VSE_TC_REASON" ] && [ "$rc" -ne 0 ]; then
-        VSE_TC_REASON="syside exit ${rc} on the probe model: $(printf '%s\n' "$out" | head -n 1)"
+        first=${out%%$'\n'*}
+        VSE_TC_REASON="syside exit ${rc} on the probe model: ${first}"
     fi
 }
 
@@ -366,8 +411,8 @@ _vse_tc_validate_pilot() {
     return 0
 }
 
-# OpenSysML: diagnostics on stderr, GNU style; exit 0 leaves warnings
-# in place, so warning lines are promoted to findings here.
+# OpenSysML writes diagnostics on stderr in GNU style. Exit 0 leaves
+# warnings in place, so warning lines are promoted to findings here.
 _vse_tc_validate_opensysml() {
     local out rc=0 diag
     if ! command -v sysml >/dev/null 2>&1; then

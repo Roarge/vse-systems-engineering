@@ -6,7 +6,7 @@ A Claude Code plugin for systems engineering in Very Small Entities (VSEs).
 
 This plugin supports ISO/IEC 29110 aligned systems engineering workflows that are model-based and digital first, rooted in SysML 2.0 textual syntax. It carries the knowledge to guide a VSE through a story-driven adaptation of agile MBSE in which the user story is the canonical stakeholder-intent artefact at every stage. Stakeholder concerns are captured as `concern def` instances. Stakeholder stories `frame` those concerns. System stories `derive` from stakeholder stories. Subsystem stories `derive` from system stories. Architectural trade studies source their assessment criteria from the formalised `benefit` constraints already present on system stories, so architectural decisions cannot drift from stakeholder intent.
 
-The plugin guides rather than polices. Every project records a **rigour profile** (`light`, `standard`, or `full`, per methodology §0.10) that scales the artefact set, the ceremony, and the disposition of every automated gate. At `light` nothing blocks and the methodology advises. At `standard` (the default) gates warn and the core artefacts are required. At `full` the project runs audit-ready ISO/IEC 29110 conformance with blocking gates. Any single gate can be raised or lowered per project, and every deviation is recorded on a one-line tailoring record.
+The plugin guides rather than polices, above one floor. Every project records a **rigour profile** (`light`, `standard`, or `full`, per methodology §0.10) that scales the artefact set, the ceremony, and the disposition of the profile-scaled gates. At `light` the methodology advises and those gates warn, inform, or stay off. At `standard` (the default) they warn and the core artefacts are required. At `full` the project runs audit-ready ISO/IEC 29110 conformance with blocking gates. The floor holds at every profile: four Gherkin-first and test-first gates block at `light`, `standard` and `full` alike, so a story gets its Gherkin feature file (its acceptance criteria written as plain-text Given/When/Then scenarios) before it changes, and, where test first applies, code gets its failing test first (methodology §11). Only a `gate_overrides` entry recorded with its reason lowers one of these four (§0.10.4, §11.10). Any other single gate can be raised or lowered per project, and every deviation is recorded on a one-line tailoring record.
 
 The methodology rejects fixed-length iteration containers (Douglass nanocycle, microcycle, and macrocycle scheduling units). It embraces iteration as recursive practice. The story register is the cross-iteration index, and `StoryMeta.status` records each story's position. The git workflow operates per story: a `story/<US_id>_<short>` branch is opened from `main`, a draft pull request is opened on the first commit, iterative review proceeds on the draft, and the PR is squash-merged after the §8.6 review checklist passes (tiered by profile). Releases group `done` stories under `release-vN.M` tags.
 
@@ -19,11 +19,11 @@ Grounded in the PHAS-EAI framework (Georgsen, 2026):
 1. **Reduce information burden** by filtering guidance to the current story and its workflow stage.
 2. **Build designed cognitive reserve** by embedding SE competence in the tooling.
 3. **Provide machine-readable traceability** through SysML 2.0 model relationships (`derive`, `frame concern`, `satisfy`, `verify`, `allocation`).
-4. **Sustain attention** through environmental design rather than compliance mandates.
+4. **Sustain attention** through environmental design rather than compliance mandates, so even a gate that blocks is part of the working environment and names the fix in its reason.
 
 ## Skills
 
-The plugin ships 29 skills in five groups.
+The plugin ships 30 skills in five groups.
 
 ### Core orchestration skills
 
@@ -54,6 +54,7 @@ The plugin ships 29 skills in five groups.
 | session-journal | Manage cross-session continuity journal |
 | document-export | Export work products to docx, pptx, or pdf |
 | sysml-toolchain | Choose, install, switch, and run the SysML v2 toolchain (Syside, OMG pilot, OpenSysML), including the automatic fallback when a licence expires |
+| test-first | Record whether test first applies (§11.5) in the four places the methodology names, wire the stories' Gherkin features to a scenario runner, and resolve test-first denials, with `superpowers:test-driven-development` governing the cycle where it is installed |
 
 ### SysML 2.0 specialist skills
 
@@ -89,7 +90,7 @@ only (`disable-model-invocation`), so they never activate on their own.
 
 ## Slash commands
 
-The plugin ships thirteen `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
+The plugin ships fourteen `/vse-*` slash commands as quick entry points. Each command is a thin wrapper that hands off to the named skill.
 
 | Command | Delegates to | Use case |
 |---|---|---|
@@ -102,6 +103,7 @@ The plugin ships thirteen `/vse-*` slash commands as quick entry points. Each co
 | `/vse-audit` | `project-audit` | Audit project structure, story well-formedness, version drift |
 | `/vse-journal` | `session-journal` | Open or append the cross-session continuity journal |
 | `/vse-toolchain` | `sysml-toolchain` | Install, switch, or run the SysML v2 toolchain |
+| `/vse-test-first` | `test-first` | Record or revisit the test-first judgement, or wire the scenario runner |
 | `/vse-wiki-ingest` | `vse-wiki-ingest` | Ingest one source into the wiki (contributor) |
 | `/vse-wiki-lint` | `vse-wiki-lint` | Health-check the wiki (contributor) |
 | `/vse-wiki-refactor` | `vse-wiki-refactor` | Editorial sweep of the wiki (contributor) |
@@ -127,17 +129,17 @@ The tool surface for every subagent is restricted to `Read`, `Glob`, and `Grep`.
 
 The plugin's reference content sits in three surfaces:
 
-- **`methodology/`** carries the canonical methodology specification (§0 through §10 plus the ISO/IEC 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
+- **`methodology/`** carries the canonical methodology specification (§0 through §11, twelve section files, plus the ISO/IEC 29110 hooks guide). Shipped to every project that adopts the plugin, so the project carries its own copy and may modify the process locally.
 - **`wiki/pages/<layer>/`** holds atomic markdown reference pages, cross-linked with `[[wikilinks]]`. Each reference-bearing skill carries a generated routing table naming the pages it is expected to need (title, path, and a one-line read-when trigger) and reads those pages on demand with the Read tool, one page at a time. Nothing is concatenated and nothing is front-loaded. `wiki/INDEX.md` is the generated catalogue for anything a routing table does not cover.
 - **`templates/`** holds work-product templates copied into user projects by `project-setup`.
 
-See `wiki/INDEX.md` for the page catalogue and totals (165 atomic pages across 12 layers, routed to by 23 skills at the 4.0.1 release) and `wiki/CLAUDE.md` for the authoring schema.
+See `wiki/INDEX.md` for the page catalogue and totals (172 atomic pages across 13 layers, routed to by 24 skills at the 5.0.0 release) and `wiki/CLAUDE.md` for the authoring schema.
 
 ## Sources
 
 Knowledge is extracted from these sources, consulted in priority order:
 
-1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/10-project-management.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
+1. **The plugin's own methodology specification** at `methodology/00-methodology-overview.md` through `methodology/11-behaviour-and-test-driven-development.md` plus `methodology/iso-29110-hooks-guide.md`. When a project carries its own copy at `<project>/methodology/`, that copy wins.
 2. **ISO/IEC TR 29110-5-6-2:2014**, the Systems Engineering Profile for VSEs. ISO/IEC 29110-5-6-2 is at FDIS stage and is expected to be published as an international standard in 2026.
 3. **PHAS-EAI framework**: Georgsen (2026) doctoral thesis, Georgsen (2023) on LLM peer review in VSE engineering, and Georgsen (2026) on guiding attention in purposeful human activity systems.
 4. **Galinier et al.** on SME engineering practices.
@@ -171,6 +173,8 @@ The Syside Automator (part of the Pro Suite, `pip install syside`, Python 3.12+)
 
 - [Claude Code](https://claude.com/claude-code) CLI installed.
 - One SysML v2 toolchain: Syside (Editor for editing, Pro Suite for the `syside` CLI), the OMG SysML v2 Pilot Implementation (needs a Java 21 runtime, a headless JRE suffices), or OpenSysML (a static binary). `/vse-toolchain` detects what is missing and shows the install commands.
+- Python 3 (3.8 or later, standard library only). It runs the story lint that the commit-time Gherkin gate calls, the renderers that write `docs/generated/`, and the lifecycle hooks' fallback reader. Without it, a commit that touches a story or a feature file is refused at the `precommit_gherkin` disposition (block by default), because the lint cannot run.
+- `jq` (recommended). The lifecycle hooks read their JSON payload with it and fall back to `python3`, which also builds the post-edit image (the file as it would read after the edit) when `jq` is older than 1.6. With neither, the in-session gates let every edit through with a notice, and the commit-time and CI gates remain the backstop.
 - (Optional) Syside Pro Suite for diagrams, formatting, and the Automator Python API (`pip install syside`, Python 3.12+).
 
 ### Installation from a local clone
@@ -194,7 +198,7 @@ Inside a Claude Code session:
 
 ```text
 /plugin marketplace add Roarge/vse-systems-engineering
-/plugin install vse-systems-engineering@Roarge-vse-systems-engineering
+/plugin install vse-systems-engineering@vse-systems-engineering
 ```
 
 After adding the marketplace, you might need to restart Claude Code so it discovers the new source. Then install the plugin.
@@ -203,16 +207,18 @@ After adding the marketplace, you might need to restart Claude Code so it discov
 
 The plugin ships an ISO/IEC 29110 hook surface across two layers, specified in `methodology/iso-29110-hooks-guide.md`:
 
-- **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They inject project status including the rigour profile, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up. Lifecycle hooks are advisory at every profile.
-- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh` and `lib/sysml-toolchain.sh`. They cover SysML lint (through the recorded toolchain, with automatic fallback), story well-formedness, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. Which hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide.
+- **Lifecycle hooks** (registered in the plugin's `hooks.json`, run by the Claude Code harness): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `PreCompact`, `Notification`. They locate a project through its `.iso-config.yaml`, inject project status including the rigour profile and the behaviour-first and test-first policy, surface the §2.6 rule 7 reverse-engineering guard, and prompt for V&V or ADR follow-up. `PreToolUse` (matcher `Edit|Write|MultiEdit|NotebookEdit`) carries the two in-session gates of methodology §11.9. It denies an edit that adds or changes a story whose `<StoryIdentifier>.feature` is missing or lacks the story's tag, and, where test first applies, an edit to a code path while no test path has changed. The deny reason says what to write first. It also asks the human to confirm an edit that changes `gate_overrides` or `test_first`. `PostToolUse`, `Stop` and `SubagentStop` speak through one JSON object, `additionalContext` for the agent and `systemMessage` for the human, because their plain output never reaches the agent. Only `PreToolUse` denies, and it does so from the plugin update onwards, with no reinstall.
+- **Project-side git hooks** (installed into a user project under `<project>/.githooks/` by the `attention-regime` skill, activated with `git config core.hooksPath .githooks`): `pre-commit`, `commit-msg`, `prepare-commit-msg`, `post-merge`, `post-checkout`, the `pre-commit-traceability` delegate the pre-commit hook invokes, and the shared `lib/iso-profile.sh`, `lib/sysml-toolchain.sh` and `lib/test-first.sh`, beside the story lint under `tools/lint/`. They cover SysML lint (through the recorded toolchain, with automatic fallback), story well-formedness, Gherkin conformance and test before code (§11.9) for the stories and paths a change touches, conventional-commit patterns, baselined-artefact protection, and traceability on touched requirements. `pre-commit`, its delegate, the three libraries, `tools/lint/` and the CI workflow install at every profile, `light` included, because they carry the two commit-time gates of §11. Which other hooks an install copies, and whether each gate blocks, warns, informs, or stays off, is a function of the project rigour profile per §0.10.4 of the methodology and §3.4 of the hooks guide. No local `pre-push` hook ships: those obligations are continuous-integration contracts documented in §4.4 of the hooks guide. The CI workflow runs `pre-commit` over the range a pull request or a push brings, and over every story at a release or baseline tag.
 
-Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_profile`, `sysml_toolchain`, `gate_overrides`, `baselined_paths`, and the other keys per §8 of the hooks guide). The schema is reproduced in the `attention-regime` skill body.
+The in-session gates guide an agent and guarantee nothing on their own. A file written through the Bash tool passes unseen, and the `disableAllHooks` setting, a `--bare` session or a disabled plugin switches every lifecycle hook off. The commit-time and CI gates are the backstop (methodology §11.11).
+
+Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_profile`, `sysml_toolchain`, `gate_overrides`, `test_first`, `baselined_paths`, and the other keys per §8 of the hooks guide). The schema is reproduced in the `attention-regime` skill body.
 
 ### Starting a new project
 
 1. Open a fresh project directory in your terminal.
 2. Launch Claude Code and invoke `/vse-setup`.
-3. The skill enters Plan Mode, asks the rigour-profile question once (`light`, `standard`, or `full`, reversible later), drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. For a fresh project the default is the repo root. Brownfield adoption defaults to an `engineering/` subdirectory, and a custom sub-path is possible in both modes.
+3. The skill enters Plan Mode, asks the rigour-profile question once (`light`, `standard`, or `full`, reversible later), drafts the §8.3 layout (`model/core/{stakeholders, concerns, base-architecture, context, domain, stories/{stakeholder, system}, use-cases, ...}`, `model/variations/`, `methodology/`, `docs/`, etc.), and asks where the engineering work goes. For a fresh project the default is the repo root. Brownfield adoption defaults to an `engineering/` subdirectory, and a custom sub-path is possible in both modes. Under a custom sub-path the configuration stays at the project root, and `tools/lint/` and `tools/render/` are installed beside it as a second copy so that the gates find them. The renderers, and the story lint when it reads the verification and validation cases across the model, look for `model/` or `engineering/model/` from there, so they do not yet find the model under a custom sub-path, and the commit gate can then report a story's cases as missing. That is why `engineering/` is recommended.
 4. After Plan Mode approval, the skill scaffolds the directories, copies the methodology spec into the project's `methodology/` folder, writes the profile and its tailoring record, generates the profile-scaled document stubs, and prepares the `.github/`, `.iso-config.yaml`, and `.githooks/` scaffolding. Greenfield mode runs `git init` and an initial commit. Brownfield mode leaves staging to the engineer.
 5. From there, route through the orchestration skills:
    - `/vse-story` opens the first stakeholder story branch.
@@ -221,7 +227,7 @@ Project-side hook configuration sits in `<project>/.iso-config.yaml` (`project_p
 
 ### Picking up an existing VSE project
 
-Open the project directory in Claude Code. The `SessionStart` hook detects the `methodology/` folder (at the repo root for greenfield, or at `engineering/methodology/` for brownfield), reads the profile, the current branch, and any open story branches, surfaces the most recent plan-baseline tag and any open Change Requests, and prompts to load `vse-companion-overview` as the first action. From there, route through `story-orchestrator`, `release-orchestrator`, and the workflow-stage skills as required.
+Open the project directory in Claude Code. The `SessionStart` hook locates the project through its `.iso-config.yaml` (or, for older projects, the `methodology/` folder), at the repo root for greenfield or under `engineering/` for brownfield, reads the profile, the current branch, and any open story branches, surfaces the most recent plan-baseline tag and any open Change Requests, states the behaviour-first and test-first policy, and prompts to load `vse-companion-overview` as the first action. A project set up before 5.0.0 follows the migration steps of the 5.0.0 entry in `CHANGELOG.md` first. From there, route through `story-orchestrator`, `release-orchestrator`, and the workflow-stage skills as required.
 
 ### Demo walkthrough
 
@@ -229,4 +235,4 @@ The `demo/smart-sensor/` directory contains a worked example: a Wi-Fi-connected 
 
 ## Versioning
 
-The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **4.0.1**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.
+The plugin follows semantic versioning, with the plugin and marketplace manifests bumped in lockstep on every landed change. The current release is **5.0.0**. During a multi-PR train, release candidates accumulate under the `[Unreleased]` heading in `CHANGELOG.md` and the next rc number is assigned at merge time. See `CHANGELOG.md` for the full change history.

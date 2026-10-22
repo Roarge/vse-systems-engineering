@@ -10,10 +10,11 @@
 CLAUDE_CODE_VERSION ?= 2.1.224
 
 .PHONY: all validate lint check-versions check-validate check-hooks \
-        check-refs check-skills check-config check-routing \
-        check-toolchain test-hooks check-demo-generated
+        check-refs check-skills check-config check-templates check-routing \
+        check-mirrors check-test-first check-toolchain test-python test-bdd \
+        test-hooks check-demo-generated check-demo-lint validate-demo
 
-all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-toolchain test-hooks check-demo-generated
+all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated check-demo-lint validate-demo
 	@echo "All checks passed."
 
 validate:
@@ -183,7 +184,12 @@ check-routing:
 
 # The placeholder check is an error from the pre-overhaul hygiene
 # release onwards, because the placeholder now exists. The demo pin
-# stays a warning until demo sync promotes it.
+# stays a warning until demo sync promotes it. The test_first block and
+# the four test-first and Gherkin gates ship commented out, so a new
+# project starts at the profile defaults and records its own judgement.
+# A commented block is a "# <name>:" header line followed by commented
+# keys indented under the header (two blanks or more after the #), and
+# it ends at the first other line.
 check-config:
 	@echo "Checking ISO configuration files..."
 	@if grep -qF '{{PLUGIN_VERSION}}' templates/iso-config/.iso-config.yaml; then \
@@ -222,6 +228,96 @@ check-config:
 	     exit 1; \
 	     ;; \
 	 esac
+	@if grep -qE '^(test_first|gate_overrides):' templates/iso-config/.iso-config.yaml; then \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml records an active test_first or gate_overrides block. Both ship commented out, so a new project starts at the profile defaults and records its own test-first judgement with /vse-test-first"; \
+	   exit 1; \
+	 fi; \
+	 MISSING=$$(awk '\
+	   BEGIN { \
+	     n = split("test_first.applies test_first.rationale test_first.test_command test_first.scenario_command test_first.code_paths test_first.test_paths test_first.refactor_branches gate_overrides.precommit_gherkin gate_overrides.precommit_test_first gate_overrides.pretooluse_gherkin_first gate_overrides.pretooluse_test_first", want, " "); \
+	   } \
+	   /^# [a-z_][a-z_]*:[ \t]*$$/ { block = $$0; sub(/^# /, "", block); sub(/:.*/, "", block); next } \
+	   block != "" && /^#[ \t][ \t][ \t]*[a-z_][a-z_]*:/ { key = $$0; sub(/^#[ \t]*/, "", key); sub(/:.*/, "", key); seen[block "." key] = 1; next } \
+	   { block = "" } \
+	   END { sep = ""; for (i = 1; i <= n; i++) if (!(want[i] in seen)) { printf "%s%s", sep, want[i]; sep = " " } }' \
+	   templates/iso-config/.iso-config.yaml); \
+	 if [ -n "$$MISSING" ]; then \
+	   echo "ERROR: templates/iso-config/.iso-config.yaml lacks these keys in its commented test_first and gate_overrides blocks: $$MISSING"; \
+	   exit 1; \
+	 else \
+	   echo "  templates/iso-config/.iso-config.yaml carries the commented test_first block and the four test-first and Gherkin gates in its commented gate_overrides."; \
+	 fi
+
+# The story and case templates, checked the way a project meets them.
+# A template's name begins with _, which the story lint skips, so the
+# check copies the model templates into a scratch project under the
+# names of the identifiers they declare and runs the Gherkin rule set
+# there, once as shipped and once with each story at inProgress. This
+# target covers the story lint of the templates only. Their OpenSysML
+# validation, with the placeholders filled the same way, is in
+# validate-demo.
+check-templates:
+	@echo "Checking the story and case templates..."
+	@bash tests/hooks/check-templates.sh
+
+# The demo is a standalone project, so it carries byte-identical copies
+# of the methodology, the SysML library, the renderers and the story
+# lint. A change to one side lands in the same commit as the other. A
+# file pair is compared with cmp. A directory pair is compared file by
+# file over the names git lists on either side (tracked files, and
+# untracked files that no .gitignore rule ignores). So an OS or editor
+# artefact or a bytecode cache, which is ignored and never ships, is
+# skipped, and a new file that is not yet added still counts. A tracked
+# file missing from both sides is not a difference.
+check-mirrors:
+	@echo "Checking the demo mirrors..."
+	@git rev-parse --git-dir >/dev/null 2>&1 || { \
+	   echo "ERROR: check-mirrors lists files through git, so run it inside a git checkout"; \
+	   exit 1; \
+	 }
+	@EXIT_CODE=0; \
+	 CHECKED=0; \
+	 for pair in \
+	   methodology:demo/smart-sensor/methodology \
+	   templates/common/library/vse-library.sysml:demo/smart-sensor/model/library/vse-library.sysml \
+	   templates/tools/render:demo/smart-sensor/tools/render \
+	   templates/tools/lint:demo/smart-sensor/tools/lint; do \
+	   src=$${pair%%:*}; \
+	   copy=$${pair#*:}; \
+	   CHECKED=$$((CHECKED + 1)); \
+	   if [ -d "$$src" ]; then \
+	     REPORT=$$( { git -C "$$src" ls-files -z -co --exclude-standard; \
+	                  git -C "$$copy" ls-files -z -co --exclude-standard 2>/dev/null; } \
+	       | tr '\0' '\n' | LC_ALL=C sort -u | while IFS= read -r f; do \
+	         if [ ! -e "$$src/$$f" ] && [ ! -e "$$copy/$$f" ]; then \
+	           continue; \
+	         elif [ ! -e "$$copy/$$f" ]; then \
+	           echo "Only in $$src: $$f"; \
+	         elif [ ! -e "$$src/$$f" ]; then \
+	           echo "Only in $$copy: $$f"; \
+	         elif ! cmp -s "$$src/$$f" "$$copy/$$f"; then \
+	           echo "Files $$src/$$f and $$copy/$$f differ"; \
+	         fi; \
+	       done ); \
+	     [ -z "$$REPORT" ] || { printf '%s\n' "$$REPORT"; false; }; \
+	   else \
+	     cmp "$$src" "$$copy"; \
+	   fi || { \
+	     echo "ERROR: $$src and $$copy are not byte-identical"; \
+	     EXIT_CODE=1; \
+	   }; \
+	 done; \
+	 echo "  Checked $$CHECKED mirror pairs."; \
+	 exit $$EXIT_CODE
+
+# Test before code for the plugin itself (.claude/rules/tdd-bdd.md). A
+# range that changes a code path named in tests/test-first.yaml shall
+# also change a test path. The range defaults to origin/main...HEAD,
+# the branch's changes since it left main, and VSE_PRECOMMIT_RANGE
+# names another. CI passes the pull request's range.
+check-test-first:
+	@echo "Checking that code changes arrive with tests..."
+	@bash tests/hooks/check-test-first.sh
 
 # The behavioural hook tests under tests/hooks/. Every toolchain is
 # stubbed, so the assertions hold with no SysML tool installed, which
@@ -232,9 +328,31 @@ check-toolchain:
 	@echo "Checking the SysML toolchain library..."
 	@bash tests/hooks/check-toolchain.sh
 
+# The Python unit tests under tests/python/. They use the standard
+# library unittest module, because pytest is not importable by python3
+# locally or in CI.
+test-python:
+	@echo "Running the Python unit tests..."
+	@python3 -m unittest discover -s tests/python -t . -v
+
+# The plugin's own Gherkin scenarios under tests/features/, run by the
+# standard-library runner in tests/bdd/. A scenario still tagged @wip
+# fails the run (--fail-on-wip), so no work in progress reaches a
+# commit or a release. A directory that holds no .feature file passes
+# with a zero summary. The story lint then checks the same files in
+# syntax mode (F1, F2, F7, F8 and F9), because they describe the plugin
+# rather than a story and carry no story tag.
+test-bdd:
+	@echo "Running the plugin's Gherkin scenarios..."
+	@python3 tests/bdd/run.py --fail-on-wip tests/features
+	@python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
+
+# Every tests/hooks/test-*.sh file runs, found by glob, so a new hook
+# test joins the suite by its file name alone. The first failing file
+# stops the run. check-toolchain.sh runs under its own target.
 test-hooks:
 	@echo "Testing the hook scripts..."
-	@bash tests/hooks/test-pre-commit.sh && bash tests/hooks/test-session-start.sh
+	@for t in tests/hooks/test-*.sh; do bash "$$t" || exit 1; done
 
 # Methodology section 9.8 Contract 3: the demo's model-derived
 # artefacts are regenerated and shall match what is committed. The
@@ -256,4 +374,31 @@ check-demo-generated:
 	 else \
 	   echo "ERROR: demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."; \
 	   exit 1; \
+	 fi
+
+# The demo's stories against their feature files. The story lint of
+# methodology section 11.9.1 runs with both rule sets (the section 1.9
+# well-formedness checks and the Gherkin findings S1 to S9 and F1 to
+# F10) from the demo's engineering root, the way a project runs it.
+# Every demo story has its feature file and named criteria, so the lint
+# finds nothing.
+check-demo-lint:
+	@echo "Linting the demo's stories and feature files..."
+	@cd demo/smart-sensor && python3 tools/lint/story-wellformed.py model
+	@echo "  The demo's stories pass the story lint."
+
+# The demo model, and the model templates with their placeholders
+# filled, validated with OpenSysML, the demo's second reference
+# toolchain. A verify path that names a criterion, such as
+# US_001_SeeReadingsOnDashboard.acceptance.latestReadingShown, resolves
+# only when the story nests that criterion (methodology section 11.3).
+# CI installs OpenSysML v0.6.0 with its pinned checksum and then runs
+# the script, which fails when sysml is missing. Here the target skips
+# with a notice when sysml is not on PATH.
+validate-demo:
+	@echo "Validating the demo model and the model templates with OpenSysML..."
+	@if ! command -v sysml >/dev/null 2>&1; then \
+	   echo "  SKIPPED: sysml (OpenSysML) not on PATH. CI installs OpenSysML v0.6.0 and runs this check."; \
+	 else \
+	   bash tests/hooks/validate-demo.sh; \
 	 fi

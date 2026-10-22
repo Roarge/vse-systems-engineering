@@ -15,7 +15,7 @@ related:
   - iso29110-phase-gates
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-10-18
 referenced_by: [project-setup, release-orchestrator]
 ---
 
@@ -54,7 +54,7 @@ implementation environment.
 
 - Project Plan [reviewed]
 - SEMP [verified, accepted]
-- Data Model → `docs/sr/data-model.md`
+- Data Model → the SysML model, with an optional explicit data model package (methodology §9.5)
 - Implementation Environment
 
 ### Work products used
@@ -84,7 +84,7 @@ that operationalises SMART, satisfy, and verify links.
 
 - Stakeholder Requirements Specification [validated]
 - System Requirements Specification [verified, validated]
-- System Elements Requirements Specification → `docs/sr/system-element-requirements.md`
+- System Elements Requirements Specification → the plugin ships the template at `templates/sr/system-element-requirements.md` and the project copies it into `docs/` when it needs the document
 - Traceability Matrix [updated]
 - IVV Plan [published]
 - IVV Procedures [published]
@@ -120,13 +120,13 @@ mechanism that maps functional to physical elements.
 ### Work products created
 
 - System Design Document [verified, validated]
-- Justification Document [published] → `docs/pm/justification-document.md`
+- Justification Document [published] → `docs/justification-document.md`
 - IVV Plan [updated]
 - IVV Procedures [updated]
 - Traceability Matrix [updated]
-- System User Manual [preliminary] (optional) → `docs/sr/system-user-manual.md`
+- System User Manual [preliminary] (optional) → its template is kept in `docs/templates/` (methodology §10.10)
 - Verification Report [published]
-- Purchase Order [initiated] (if applicable) → `docs/pm/purchase-order.md`
+- Purchase Order [initiated] (if applicable) → its template is kept in `docs/templates/` (methodology §10.10)
 
 ### Work products used
 
@@ -181,11 +181,11 @@ embeds these reports in the model.
 ### Work products created
 
 - Verification Report [published]
-- Integration Report [published] → `docs/sr/integration-report.md`
+- Integration Report [published] → the plugin ships the template at `templates/sr/integration-report.md` and the project copies it into `docs/` when it needs the document
 - System [integrated, verified, validated, corrected]
 - Validation Report [published]
 - Product Acceptance Record
-- System Operation Guide [preliminary] (optional) → `docs/sr/system-operation-guide.md`
+- System Operation Guide [preliminary] (optional) → its template is kept in `docs/templates/` (methodology §10.10)
 - System [approved]
 
 ### Work products used
@@ -216,7 +216,7 @@ training documentation, and deliver the system.
 ### Work products created
 
 - System Maintenance Document [validated]
-- System Training Specifications [validated] → `docs/sr/training-specifications.md`
+- System Training Specifications [validated] → its template is kept in `docs/templates/` (methodology §10.10)
 - Product Acceptance Record [published]
 - Product [delivered]
 

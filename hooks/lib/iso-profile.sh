@@ -8,9 +8,19 @@
 #      §0.10.2)?
 #   2. What disposition does a named gate carry (methodology §0.10.4)?
 #
+# It also reads the values nested one level under a top-level key, such
+# as the test_first record (methodology §11.5.2), and the lists held by
+# a top-level key, such as protected_branches. A list may be an inline
+# flow list (a bracketed, comma-separated list on one line) or a block
+# sequence (one "- item" line per item, below the key and indented as
+# deep as the key or deeper), and both forms print one item per line.
+#
 # The configuration schema stays flat and at most two levels deep, so
-# awk is enough and no YAML library dependency is taken. The parsing
-# idiom is the one the shipped hooks already use for baselined_paths.
+# awk is enough and no YAML library dependency is taken. A "#" inside
+# a quoted value is kept, and any other "#" starts a comment. One
+# matching pair of outer quotes is removed and nothing else is decoded:
+# an escape inside a quoted value ('' in single quotes, \" in double
+# quotes) passes through verbatim.
 #
 # Sourcing the file resolves the configuration path and the profile
 # once, into ISO_CONFIG_FILE and ISO_PROFILE. Resolving eagerly keeps a
@@ -22,11 +32,19 @@
 # library rather than a git entry point, so git never invokes it.
 set -euo pipefail
 
-# Locate the project .iso-config.yaml. Greenfield layout keeps it at the
-# repository root, brownfield layout under engineering/. Prints nothing
-# when the project carries no configuration file.
+# Locate the project .iso-config.yaml. VSE_ISO_CONFIG, when it names a
+# readable file, wins over the search. A hook that has already found the
+# configuration (for example by walking up from an edited file to a
+# project below the git toplevel) exports it, and every reader then
+# agrees on one file. Otherwise the greenfield layout keeps the file at
+# the repository root, the brownfield layout under engineering/. Prints
+# nothing when the project carries no configuration file.
 _iso_locate_config() {
     local root
+    if [ -n "${VSE_ISO_CONFIG:-}" ] && [ -f "${VSE_ISO_CONFIG}" ] && [ -r "${VSE_ISO_CONFIG}" ]; then
+        printf '%s\n' "${VSE_ISO_CONFIG}"
+        return 0
+    fi
     root="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
     if [ -f "${root}/.iso-config.yaml" ]; then
         printf '%s\n' "${root}/.iso-config.yaml"
@@ -35,30 +53,192 @@ _iso_locate_config() {
     fi
 }
 
-# Read one top-level scalar key out of the configuration file.
-_iso_scalar() {
-    local key="$1" value
+# Awk functions shared by every reader below.
+#
+# iso_value takes the text after "key:" and returns it with any
+# trailing comment cut off. A quote opens a quoted token only where a
+# token starts: at the start of the value or, with list set, after "["
+# or ",". So a "#" inside a quoted token is kept, and an apostrophe in
+# the middle of a plain value opens nothing. Any "#" outside a quoted
+# token starts the comment, as it always has. With list set, the commas
+# that separate flow-list items come back as SUBSEP.
+#
+# iso_item trims a scalar value or one list item and removes one layer
+# of quotes, only when a matching pair wraps the whole text. Quotes
+# inside a plain value (pytest -k "not slow") are part of it.
+#
+# iso_flow prints the items of an inline flow list, as iso_value
+# returned it with list set, one per line. Empty items are skipped.
+#
+# iso_block_item reads one line after a key whose value is empty and
+# whose own line is indented by ind characters. A "- item" line
+# indented by ind characters or more is an item (YAML lets the dash sit
+# in the key's own column), read with the scalar rules and printed
+# unless it is empty. A dash with no space after it ("-src/*") is read
+# as an item too, because a missing space is a typo far more often than
+# a value that starts with a dash, and ending the sequence there would
+# leave the rest of the list unread in silence. Blank and comment lines
+# are passed over. It returns 1 to go on reading and 0 at the first
+# other line, which ends the sequence. A YAML document marker ("---" in
+# column one, alone or before a space or tab) ends it too, rather than
+# reading as the item "--". A comma inside a block item is part of it.
+#
+# "\047" is a single quote, which this shell string cannot hold.
+_ISO_AWK_LIB='
+function iso_value(s, list,    i, n, c, q, start, out) {
+    sub(/^[ \t]+/, "", s)
+    n = length(s)
+    q = ""
+    start = 1
+    out = ""
+    for (i = 1; i <= n; i++) {
+        c = substr(s, i, 1)
+        if (q == "\"" && c == "\\") {
+            out = out c substr(s, i + 1, 1)
+            i++
+            continue
+        }
+        if (q != "" && c == q) {
+            if (q == "\047" && substr(s, i + 1, 1) == q) {
+                out = out c c
+                i++
+                continue
+            }
+            q = ""
+        } else if (q == "") {
+            if (c == "#")
+                break
+            if (list && c == ",") {
+                out = out SUBSEP
+                start = 1
+                continue
+            }
+            if (start && (c == "\"" || c == "\047"))
+                q = c
+            if (list && c == "[")
+                start = 1
+            else if (c != " " && c != "\t")
+                start = 0
+        }
+        out = out c
+    }
+    sub(/[ \t]+$/, "", out)
+    return out
+}
+function iso_item(s,    f) {
+    sub(/^[ \t]+/, "", s)
+    sub(/[ \t]+$/, "", s)
+    f = substr(s, 1, 1)
+    if (length(s) >= 2 && (f == "\"" || f == "\047") && substr(s, length(s), 1) == f)
+        s = substr(s, 2, length(s) - 2)
+    return s
+}
+function iso_flow(value,    n, i, items, item) {
+    sub(/^\[/, "", value)
+    sub(/\]$/, "", value)
+    n = split(value, items, SUBSEP)
+    for (i = 1; i <= n; i++) {
+        item = iso_item(items[i])
+        if (item != "")
+            print item
+    }
+}
+function iso_block_item(s, ind,    rest, item) {
+    if (substr(s, 1, 3) == "---" && (length(s) == 3 || substr(s, 4, 1) ~ /[ \t]/))
+        return 0
+    rest = s
+    sub(/^[ \t]+/, "", rest)
+    if (rest == "" || substr(rest, 1, 1) == "#")
+        return 1
+    if (length(s) - length(rest) < ind || substr(rest, 1, 1) != "-")
+        return 0
+    item = iso_item(iso_value(substr(rest, 2), 0))
+    if (item != "")
+        print item
+    return 1
+}
+'
+
+# Read <key> from the configuration file. With <section> empty the key
+# is a top-level key, written in column one. Otherwise it is a key
+# indented under the top-level <section>: mapping, and the section ends
+# at the next line that starts in column one, other than a comment.
+# With list 0 the value is a scalar, printed with one layer of quotes
+# removed. With list 1 it is a list, printed one item per line: an
+# inline flow list, or, when nothing but a comment follows the key, a
+# block sequence. Prints nothing for a missing section or key, and
+# nothing when the project carries no configuration file.
+#
+# Usage: _iso_read <section|""> <key> <0|1>
+_iso_read() {
     [ -n "${ISO_CONFIG_FILE}" ] || return 0
-    value=$(awk -v key="$key" '
-        $0 ~ ("^" key ":") {
-            sub(/^[A-Za-z_]+:[[:space:]]*/, "")
-            sub(/[[:space:]]*#.*$/, "")
-            sub(/[[:space:]]+$/, "")
-            print
+    awk -v section="$1" -v key="$2" -v list="$3" "${_ISO_AWK_LIB}"'
+        BEGIN { inside = (section == "") }
+        { sub(/\r$/, "") }
+        !inside {
+            if (index($0, section ":") == 1)
+                inside = 1
+            next
+        }
+        block {
+            if (iso_block_item($0, indent))
+                next
             exit
         }
-    ' "$ISO_CONFIG_FILE")
-    _iso_unquote "$value"
+        section != "" && /^[^ \t#]/ { exit }
+        {
+            line = $0
+            if (section != "")
+                sub(/^[ \t]+/, "", line)
+            if (index(line, key ":") != 1)
+                next
+            value = iso_value(substr(line, length(key) + 2), list)
+            if (!list) {
+                print iso_item(value)
+                exit
+            }
+            if (value != "") {
+                iso_flow(value)
+                exit
+            }
+            block = 1
+            indent = length($0) - length(line)
+        }
+    ' "$ISO_CONFIG_FILE"
 }
 
-# Strip a single layer of surrounding quotes.
-_iso_unquote() {
-    local value="$1"
-    value="${value%\"}"
-    value="${value#\"}"
-    value="${value%\'}"
-    value="${value#\'}"
-    printf '%s\n' "$value"
+# Read one top-level scalar key out of the configuration file, with
+# one layer of quotes removed. Prints nothing for a missing key.
+_iso_scalar() {
+    _iso_read "" "$1" 0
+}
+
+# Print the value of <key> under the top-level <section>, with one layer
+# of quotes removed when a matching pair wraps the whole value. Prints
+# nothing for a missing section or key, the same as iso_section_list.
+#
+# Usage: iso_section_scalar test_first test_command
+iso_section_scalar() {
+    _iso_read "$1" "$2" 0
+}
+
+# Print the items of the list <key> under the top-level <section>, one
+# per line, quotes and surrounding spaces stripped. The list may be an
+# inline flow list or a block sequence. Prints nothing for a missing
+# section or key.
+#
+# Usage: iso_section_list test_first code_paths
+iso_section_list() {
+    _iso_read "$1" "$2" 1
+}
+
+# Print the items of the list held by the top-level <key>, one per line,
+# read the same way as iso_section_list. Prints nothing for a missing
+# key.
+#
+# Usage: iso_list protected_branches
+iso_list() {
+    _iso_read "" "$1" 1
 }
 
 # Print the path of the project .iso-config.yaml, or nothing when the
@@ -81,22 +261,9 @@ iso_profile() {
 # Usage: iso_gate_disposition commit_msg_pattern
 iso_gate_disposition() {
     local gate="$1"
-    local override=""
+    local override
 
-    if [ -n "${ISO_CONFIG_FILE}" ]; then
-        override=$(awk -v key="$gate" '
-            /^gate_overrides:/ { inside = 1; next }
-            inside && /^[A-Za-z]/ { inside = 0 }
-            inside && $0 ~ ("^[[:space:]]+" key ":") {
-                sub(/^[[:space:]]+[A-Za-z_]+:[[:space:]]*/, "")
-                sub(/[[:space:]]*#.*$/, "")
-                sub(/[[:space:]]+$/, "")
-                print
-                exit
-            }
-        ' "$ISO_CONFIG_FILE")
-        override="$(_iso_unquote "$override")"
-    fi
+    override="$(iso_section_scalar gate_overrides "$gate")"
 
     case "$override" in
         block|warn|info|off)
@@ -133,6 +300,11 @@ iso_gate_disposition() {
                 standard) printf 'warn\n' ;;
                 full)     printf 'block\n' ;;
             esac
+            ;;
+        # The Gherkin-first and test-first gates block at every profile,
+        # and only a gate_overrides entry lowers one (methodology §11.9).
+        precommit_gherkin|precommit_test_first|pretooluse_gherkin_first|pretooluse_test_first)
+            printf 'block\n'
             ;;
         *)
             echo "[iso-profile] Unknown gate '${gate}', reporting without blocking." >&2

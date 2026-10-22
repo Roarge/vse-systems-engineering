@@ -1847,3 +1847,199 @@ defines a Very Small Entity as an enterprise, an organisation, a
 department or a project having up to 25 people. `updated:` was bumped to
 2026-09-10 on that page. No title or summary changed, so INDEX and the
 routing blocks are untouched.
+
+## [2026-10-16] refactor | nested acceptance criteria validated
+
+Layer: tooling. A spike (a short experiment run before a design
+commits to a form) checked whether a story's acceptance can carry
+named criteria that a verification case verifies one at a time, with
+`verify <story>.acceptance.<name>`.
+
+Pages updated:
+
+- tooling-reference-implementation-rules (a rules-table row for a deep
+  verify that names an undeclared criterion, the validated pattern
+  extended with two criteria nested inside `requirement :>> acceptance`
+  and a `VAL_001` case that verifies each by name, paragraphs recording
+  the runs and their negative probes, a source citation for the
+  2026-10-16 runs, and the `acceptance-criteria` tag)
+
+The pilot 2026-07 on Java 21 and OpenSysML v0.6.0 both validated the
+extended pattern, and a copy of the Smart Sensor demo model with the
+acceptance of `US_001_SeeReadingsOnDashboard` split into two named
+criteria, with no diagnostic. Both refused an unknown criterion name
+and a missing semicolon with exit 1. The demo itself is unchanged.
+`updated:` was bumped to 2026-10-16 on that page. No title or summary
+changed, so INDEX and the routing blocks are untouched.
+
+## [2026-10-18] restructure | bdd-tdd layer added
+Schema extended for behaviour-driven and test-driven development
+practice sources. wiki/CLAUDE.md gains the bdd-tdd row in the VSE
+Source Layers table, `bdd-tdd/` in the directory layout and a closing
+clause in the layer paragraph. The five templates under wiki/schema/
+gain bdd-tdd in the layer enumeration. .claude/rules/wiki.md places
+the layer's sources lowest in the source-processing order, below the
+domain guides. Methodology §11 wins over every source in the layer.
+
+## [2026-10-18] ingest | Cucumber documentation and the superpowers test-driven-development skill
+Layer: bdd-tdd, methodology. Sources are the Cucumber Gherkin reference,
+the Tags, Conditional hooks and Step results sections of the Cucumber
+reference, and five pages of the Cucumber BDD section (overview,
+Example Mapping, discovery workshop, who does what, writing better
+Gherkin), all read on 2026-10-17, plus the superpowers
+test-driven-development skill at version 6.4.2 (SKILL.md and
+writing-good-tests.md, MIT licence, identical to the GitHub main branch
+on 2026-10-17). Every web citation carries its URL and access month
+with `raw: null`. The methodology page cites
+methodology/11-behaviour-and-test-driven-development.md.
+Pages authored:
+- gherkin-syntax-reference (new, reference)
+- gherkin-tags-and-tag-expressions (new, reference)
+- bdd-three-practices (new, concept)
+- bdd-discovery-workshop-and-example-mapping (new, process)
+- gherkin-declarative-style (new, pattern)
+- tdd-red-green-refactor (new, process, `confidence: medium` because
+  the skill is revised between releases and the page records 6.4.2)
+- behaviour-and-test-first (new, concept, methodology layer)
+Pages updated (cross-links): user-story-canonical-artefact,
+story-branch-pr-workflow, storymeta-lifecycle, methodology-overview,
+tooling-reference-implementation-rules.
+Routing resynced: story-orchestrator, needs-and-requirements,
+verification-validation, test-first. test-first gains its first rows,
+which replaces its empty marker block. INDEX regenerated.
+
+## [2026-10-18] refactor | section 11 corrections to existing pages
+Layer: methodology, ambse, tooling, iso29110, project-structure. Pages
+updated:
+- user-story-canonical-artefact (acceptance member, minimal form,
+  rules 4 and 7 to the feature-file and named-criterion form of §1.4.4,
+  §1.7.1 and §1.9)
+- story-branch-pr-workflow (opening-commit minimum of §8.5.1, seven PR
+  template sections with Test-first evidence, author item 4, reviewer
+  item 6, Contents block)
+- frame-concern-pattern, stakeholder-stories-workflow,
+  storymeta-lifecycle (acceptance and backlog wording to §11.4, and a
+  Contents block on storymeta-lifecycle, which the added citation
+  takes past 100 lines)
+- ambse-principles (see-also bullets that pointed at
+  methodology-overview for retired AMBSE cycle pages)
+- tooling-java-runtime (version check reads the first line naming a
+  version, past a JAVA_TOOL_OPTIONS banner)
+- tooling-reference-implementation-rules (which forms the templates and
+  the demo use, the 2026-10-17 demo validation, deep verify glossed at
+  first use)
+- iso29110-template-mapping, iso29110-pm-task-checklists,
+  iso29110-sr-task-checklists, iso29110-roles-and-work-products,
+  vse-model-tiers-and-templates, vse-canonical-project-layout
+  (work-product paths moved off the `docs/pm/` and `docs/sr/` folders,
+  which no skill writes any more, to the files `@project-setup` and
+  `@document-export` name under `docs/`, with the plugin template or
+  the methodology section named where no project path exists)
+The 2026-10-16 refactor entry says the demo itself is unchanged. That
+held on 2026-10-16. On 2026-10-17 every demo story gained a feature file
+and named criteria verified by full path, and both tools accepted the
+sixteen files. Its sentence on the demo copy means that both tools
+validated the extended pattern and the demo copy, and reported no
+diagnostic for either. LOG.md is append-only, so that entry stays as
+written.
+`updated:` bumped to 2026-10-18 on every page listed. No title or
+summary changed.
+
+## [2026-10-18] index | routing resync
+Pages indexed: 172. Layers: 13 (bdd-tdd added). Routing blocks
+regenerated: 4 (story-orchestrator, needs-and-requirements,
+verification-validation, test-first). Routing rows 245 to 261.
+Referencing skills 23 to 24. ToC drift: 0.
+
+## [2026-10-18] lint | post-ingest (section 11)
+
+Full rule set after the index run. Pages scanned: 172. Routing blocks
+scanned: 24, excluding the marker occurrences inside fenced blocks and
+inline code spans in `vse-wiki-index` and `vse-wiki-lint`. The same
+checks run on the branch before this ingest gave ERROR 0, WARN 258 and
+INFO 271.
+
+- **ERROR: 0.** Frontmatter integrity, routing bidirectionality in
+  both directions across 261 rows, path resolution, sorted order,
+  summary fidelity, wikilink resolution and every `raw:` path inside
+  the plugin tree all hold.
+- **WARN: 259.** 176 schema-drift findings (97 on process pages and
+  79 on pattern pages) and 83 wikilinks absent from `related:`. The
+  movement from the earlier run is two new schema-drift findings on
+  tdd-red-green-refactor, whose cycle and work-product headings do not
+  use the words step and postcondition, and one wikilink finding fewer,
+  because ambse-principles now lists methodology-overview in
+  `related:`. Every other WARN predates this ingest.
+- **INFO: 276.** 206 are `raw:` filenames under the gitignored
+  `sources/`, which is not present in this checkout and so could not be
+  resolved. 53 are `raw: null` web citations, 12 of them on this
+  ingest's pages, and 17 are source-freshness observations. No
+  orphans, no empty tag lists, no date inversions and no contradiction
+  candidates.
+
+## [2026-10-18] refactor | template paths and glosses after the section 11 ingest
+Layer: bdd-tdd, methodology, iso29110, project-structure. Pages
+updated:
+- tdd-red-green-refactor (headings The cycle and Work products renamed
+  Steps: the cycle and Postconditions and work products, the forms the
+  process template expects, with the Contents block in step, which
+  clears the two schema-drift warnings the ingest added)
+- iso29110-template-mapping, iso29110-pm-task-checklists,
+  iso29110-sr-task-checklists, vse-model-tiers-and-templates (the
+  Statement of Work, System Elements Requirements and Integration
+  Report lines said a skill that owns the template copies it, but no
+  skill body names that copy, so they now say the plugin ships the
+  template at `templates/pm/` or `templates/sr/` and the project copies
+  it into `docs/` when it needs the document, and the general sentence
+  on the other documents says the same of any template no skill names)
+- iso29110-template-mapping (summary and opening sentence widened from
+  the markdown template file a phase produces to its work products and
+  where each one lives, because the tables also list rendered
+  documents, a GitHub Issue and the SysML model, and the opening
+  paragraph rewrapped to the file's line width)
+- bdd-discovery-workshop-and-example-mapping (one sentence under the
+  postconditions heading records that the Who does what? narrative
+  order differs from the As a, I want, So that order of §11.2.2, which
+  wins, and §11.2.2 added to the methodology citation)
+- behaviour-and-test-first (runner and Scenario Outline glossed at
+  first use, in the wording of §11.8 and §11.2.3)
+- gherkin-tags-and-tag-expressions (red-green-refactor glossed at its
+  first use, the link to tdd-red-green-refactor)
+The lines that cite methodology §10.10 for `docs/templates/` are
+unchanged. They match the methodology, and the gap between §10.10 and
+the templates the plugin ships is a separate follow-up.
+`updated:` stays 2026-10-18 on every page listed. One summary changed,
+on iso29110-template-mapping, so its INDEX row and its rows in two
+routing blocks changed with it. No title changed. The `vse-wiki-lint`
+checks after the index run give ERROR 0, WARN 257 and INFO 276.
+
+## [2026-10-18] index | routing resync
+Pages indexed: 172. Routing blocks regenerated: 2 (project-setup,
+release-orchestrator), one row each, for the new summary of
+iso29110-template-mapping. Routing rows stay 261. Layers stay 13 and
+referencing skills stay 24. ToC drift: 0.
+
+## [2026-10-18] refactor | quoted page title and template wording
+Layer: bdd-tdd, iso29110. Pages updated:
+- bdd-discovery-workshop-and-example-mapping (the Cucumber page title
+  "Who does what?" now sits in quotation marks at each of its three
+  mentions, so the question mark reads as part of the title)
+- iso29110-template-mapping (the opening sentence now says the project
+  copies a plugin template into `docs/` when it needs the document,
+  rather than listing the template as a place a work product lives)
+`updated:` stays 2026-10-18 on both pages. No summary or title changed,
+so INDEX and the routing blocks are unchanged.
+
+## [2026-10-22] refactor | release-tag rule and quoted page titles
+Layer: methodology, bdd-tdd. Pages updated:
+- behaviour-and-test-first (after "migrated when it is next changed",
+  the page now says the commit and pull-request gates check only the
+  stories a change touches and the full-tree run at a release tag
+  checks every story, so a release needs every story migrated, per
+  §11.3.1 and §11.9.2)
+- bdd-three-practices (the Cucumber page title "Who does what?" now
+  sits in quotation marks)
+- gherkin-declarative-style (the same title in quotation marks at its
+  two mentions)
+`updated:` is 2026-10-22 on the three pages. No summary or title
+changed, so INDEX and the routing blocks are unchanged.

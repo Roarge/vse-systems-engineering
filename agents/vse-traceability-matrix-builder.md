@@ -3,7 +3,10 @@ name: vse-traceability-matrix-builder
 description: >
   Walks SysML 2.0 model files, extracts every requirement, satisfy
   link, and verify link, and synthesises a complete traceability matrix
-  with a gap report. Dispatched by two skills for the same work:
+  with a gap report. Reads the acceptance criteria nested in a story as
+  members of that story, each mirroring a Gherkin scenario, and resolves
+  deep verify chains such as verify <story>.acceptance.<name> to the
+  story and the criterion. Dispatched by two skills for the same work:
   traceability-guard (through which verification-validation also
   routes) and project-audit (its trace-integrity check), whenever the
   matrix walk would otherwise force the parent skill to load every
@@ -78,30 +81,65 @@ return an "Empty model" report and stop.
    lives in, and any `satisfy` or `verify` relationship statements in
    its body. Use `Grep` to locate declarations and `Read` to extract
    context.
+   - **Nested criteria are story members.** Each `requirement <name>`
+     nested inside a story's `requirement :>> acceptance` is one
+     acceptance criterion of that story. Record it under the story by
+     name. Never count it as a requirement of its own, as a story, or
+     as an orphan without an upward trace, because its upward trace is
+     the story's.
+   - **Scenarios.** Use `Glob` for the story's feature file,
+     `<ID>.feature` in the directory of the file that declares the
+     story, and `Grep` for the `@AC_<name>` tags in it. Each tag names
+     the criterion that mirrors its Gherkin scenario (methodology
+     §11.3.1). Gherkin is the plain-text Given/When/Then format in
+     which each criterion is stated.
+   - **Legacy acceptance.** A story whose acceptance is prose placed
+     directly in `requirement :>> acceptance`, the form used before
+     plugin version 5.0.0, has no named criteria. Read its coverage at
+     story level and flag it for migration.
 3. **Extract verification and validation cases.** For each
    `verification def` declaration, capture the identifier, the method
-   attribute if present, and any `verify` link target.
+   attribute if present, and any `verify` link target, with the
+   criteria each target reaches:
+   - `verify <story>` and `verify <story>.acceptance` reach every
+     criterion of the story, and `verify <story>.acceptance.<name>`
+     reaches the criterion `<name>` only (methodology §11.3.3).
+   - **Deep verify chains.** A target may run past the story into its
+     members and may start with a package qualifier, as in
+     `verify Stories::US_001.acceptance.latestReadingShown`. Resolve it
+     from the first `acceptance` segment: the story is the segment just
+     before it, and the segment after it names the criterion. Never
+     take the last segment as the story, which would read the
+     criterion as a story of that name and the case as covering
+     nothing.
 4. **Cross-link.** Build the matrix by joining requirements to their
    parent stakeholder needs (via §5.4.1 derivation, that is the
    `#derive` prefix on the derived story usage plus a
    `#derivation connection` whose ends are tagged `#original` and
    `#derive`, or via `satisfy` links where the project uses that form)
    and to their verification or validation cases (via `verify` links,
-   which name a member of the story usage by dot notation). Extract
-   derivation connections alongside the relationship statements in
-   step 2.
+   which name a member of the story usage by dot notation). Join each
+   case to the story criteria it reaches, as resolved in step 3.
+   Extract derivation connections alongside the relationship
+   statements in step 2.
 5. **Identify gaps** against the rule set:
    - Rule 1: system requirement that is the `#derive` end of no
      `#derivation connection` and carries no `satisfy` link upward (a
      doc-comment mention counts for neither)
-   - Rule 2: requirement without `verify` link (downward orphan)
+   - Rule 2: requirement without `verify` link (downward orphan), or
+     a system story criterion that no case reaches
    - Rule 2a: element requirement without `satisfy` to a system
      requirement, or without a verification case
-   - Rule 3: stakeholder need without a validation case
+   - Rule 3: stakeholder need without a validation case, or a
+     stakeholder story criterion that no validation case reaches
    - Rule 4: verification case without a `verify` link
    - Rule 5: bidirectional inconsistency, where a `satisfy` link, a
      `verify` target, or an `#original` or `#derive` end references an
-     identifier that does not exist in any model file
+     identifier that does not exist in any model file, or a deep
+     `verify` chain names a criterion its story does not declare
+   - Scenario mirror (§11.3.1): a criterion with no matching `@AC_`
+     tag in the story's feature file, a tag with no matching
+     criterion, or a story with no feature file
 6. **Suggest fixes.** For every gap, suggest the specific edit using
    the fix table from the traceability-guard skill. Phrase fixes as
    recommendations, never as commands.
@@ -116,7 +154,7 @@ skill will present this verbatim to the engineer for editing.
 
 **Model root:** [path used]
 **Files scanned:** [n]
-**Requirements:** [n]   **Element reqs:** [n]   **Verification cases:** [n]   **Validation cases:** [n]
+**Requirements:** [n]   **Element reqs:** [n]   **Acceptance criteria:** [n]   **Verification cases:** [n]   **Validation cases:** [n]
 
 ### Matrix
 
@@ -125,6 +163,13 @@ skill will present this verbatim to the engineer for editing.
 | [STK-001] | [REQ-001, REQ-002] | [ELE-001] | [VER-001] | [VAL-001] | Complete |
 | [STK-002] | [REQ-003] | (missing) | (missing) | [VAL-002] | Gap |
 
+### Criterion Coverage
+
+| Story | Criterion (`@AC_` tag) | Scenario in feature file | Cases reaching it | Status |
+|---|---|---|---|---|
+| [US_001] | [latestReadingShown] | yes | [VAL_001] | Complete |
+| [SYS_001] | [p99LatencyWithinOneSecond] | yes | (missing) | Gap |
+
 ### Gap Report
 
 **Gaps found:** [n]
@@ -132,6 +177,7 @@ skill will present this verbatim to the engineer for editing.
 | ID | Rule | Direction | Suggested fix |
 |---|---|---|---|
 | [REQ-005] | Rule 2 | downward | "Create a verification case with `verify REQ-005.acceptance;`" |
+| [SYS_001.p99LatencyWithinOneSecond] | Rule 2 | downward | "Create a verification case with `verify SYS_001.acceptance.p99LatencyWithinOneSecond;`" |
 | ... | ... | ... | ... |
 
 ### Bidirectional Consistency Check

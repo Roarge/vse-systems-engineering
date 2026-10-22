@@ -1,7 +1,7 @@
 ---
 name: vse-companion-overview
-description: Story-driven AMBSE methodology lens for VSE projects, ISO/IEC 29110 compliant. Load this skill first in every VSE project session, before responding and before invoking any other VSE skill. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
-when_to_use: Use whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, or how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together.
+description: Story-driven AMBSE methodology lens for VSE projects, ISO/IEC 29110 compliant, behaviour first in Gherkin and test first wherever a harness can run the code. Load this skill first in every VSE project session, before responding and before invoking any other VSE skill. Establishes the methodology lens, story-centric routing, and the methodology-as-source-of-truth convention.
+when_to_use: Use whenever the user asks where to start, what the plugin does, which story is open, what stage to work in, how Base Architecture, System Context, stakeholder stories, system stories, or trade studies fit together, or how Gherkin feature files, test first and the gates that block at every profile fit in.
 user-invocable: true
 ---
 
@@ -15,7 +15,7 @@ This skill is the lens. It sets how you read the project. It does not do detaile
 
 - The user starts a new VSE systems engineering project, or opens a project that contains a `methodology/` folder.
 - The user asks "what does this plugin do?", "where do I start?", "what story is open?", or "which stage am I in?".
-- The user asks about user stories, Base Architecture, System Context, trade studies, or how the workflow stages relate to ISO/IEC 29110.
+- The user asks about user stories, Base Architecture, System Context, trade studies, Gherkin feature files, test first, or how the workflow stages relate to ISO/IEC 29110.
 - Any other VSE skill is about to load and the lens has not been set yet in this session.
 
 ## The Methodology in One Page
@@ -24,7 +24,7 @@ The project follows a story-driven adaptation of agile MBSE. Three ideas carry t
 
 **Foundational artefacts (§1–§3).** These define the abstraction level at which everything else is written.
 
-1. **User stories (§1)** are the canonical requirement artefact at every workflow stage. A story has `role`, `capability`, `benefit`, `acceptance`, and may `frame` one or more `concern def` instances.
+1. **User stories (§1)** are the canonical requirement artefact at every workflow stage. A story has `role`, `capability`, `benefit` and named `acceptance` criteria, may `frame` one or more `concern def` instances, and has a Gherkin feature file beside it whose scenarios state those criteria (§11).
 2. **Base Architecture (§2)** captures the architectural and technical decisions that pre-exist the project, owned by the parent organisation, the customer, parent products, or regulators. It is exogenous reference, not project specification.
 3. **System Context (§3)** declares the system boundary, the four categories of external actor (human, external system, environmental effect, environmental impact), and the interfaces and item flows that cross the boundary. It is the shared `subject` for stories.
 
@@ -39,6 +39,8 @@ The project follows a story-driven adaptation of agile MBSE. Three ideas carry t
 
 **The connective mechanism (§0.3).** A story's `benefit` slot, when expressed as a `require constraint` over value properties, is the *same model element* that supplies assessment criteria during §6 trade studies. Criteria are sourced from story benefits, not authored separately. Architectural decisions cannot drift from stakeholder intent because the criteria are the stakeholder intent.
 
+**Behaviour first and test first (§11).** Every story's acceptance criteria are Gherkin scenarios, Gherkin being the plain-text Given/When/Then format that Cucumber-family test tools read. They live in `<ID>.feature` beside the story and are written before the story's SysML, and a verification or validation case reaches each criterion before design starts (§11.4). Wherever a test harness (the tooling that runs tests and reports pass or fail) can test the project's code, that code is written test first: a failing test before the code that makes it pass. The project records that judgement once, in the four places of §11.5.3, led by the `test_first` block of `.iso-config.yaml`. Where test first applies, `superpowers:test-driven-development` governs the cycle when it is among the available skills, as §11.6 adjusts it, and otherwise the fallback cycle of §11.7 does.
+
 **Git workflow (§8).** Every change reaches `main` through a story branch and a pull request, and §8 is the specification for all of it: branch names, draft-PR timing, the author and reviewer checklists, and release tagging.
 Read §8 before answering a git-workflow question rather than answering from this page, because the obligations there are tiered by profile in §8.6.4 and §0.10.3.
 
@@ -52,6 +54,8 @@ Track which story is currently open and which stage it is in. Use `StoryMeta.sta
 |---|---|
 | No project yet, or no `methodology/` folder | `project-setup` |
 | Story-level orchestration (open, advance, report status) | `story-orchestrator` |
+| Gherkin feature files and scenarios, a `pretooluse_gherkin_first` denial, a `precommit_gherkin` finding | `story-orchestrator`, `needs-and-requirements` |
+| Test-first record (`/vse-test-first`), scenario-runner wiring, a `pretooluse_test_first` or `precommit_test_first` finding, code work where test first applies | `test-first` |
 | Release-level planning, baselining, reporting | `release-orchestrator` |
 | Change Request authoring and routing | `change-request` |
 | Project Plan authoring and revision | `project-plan` |
@@ -81,13 +85,13 @@ Every project runs at a recorded **rigour profile** that scales the artefact set
 
 | Profile | What it means for your advice |
 |---|---|
-| `light` | Solo work, prototypes, exploration. Minimal artefact set. Say the rule once and let the engineer proceed. |
+| `light` | Solo work, prototypes, exploration. Minimal artefact set. Only the §11 gates block. Say the rule once and let the engineer proceed. |
 | `standard` | Small team, real product. Core artefacts required, full ceremony optional. Recommend the conforming path and proceed on confirmation. |
 | `full` | Audit-ready ISO/IEC 29110 conformance. Full artefact set, blocking gates. Baseline integrity and the §9 obligations hold firm. |
 
 **How to apply it.** When advising on which artefact a project owes, which checklist items apply, or how firmly to press on a departure from a rule, read the obligation table in §0.10.3 and the gate dispositions in §0.10.4 rather than treating every rule as absolute. The lighter profiles are documented tailoring, not partial compliance, and §0.10.5 says exactly what a project at each tier may and may not claim.
 
-**Where a profile does not reach.** Two classes of rule hold at every profile. The first is agent discipline, §2.6 rule 7 and the reverse-engineering guard below, which protects the model from invention rather than enforcing ceremony. The second is any action that is destructive or irreversible. Neither scales down.
+**Where a profile does not reach.** Three classes of rule hold at every profile. The first is agent discipline, §2.6 rule 7 and the reverse-engineering guard below, which protects the model from invention rather than enforcing ceremony. The second is any action that is destructive or irreversible. The third is the four gates of §11, Gherkin first and test first (`precommit_gherkin`, `precommit_test_first`, `pretooluse_gherkin_first` and `pretooluse_test_first`). They are the default at every profile, lowered only by a recorded override (§0.10.4), and an agent never writes that override without an explicit human request (§11.10). None of the three scales down.
 
 **Bypassing a gate.** Answer honestly when asked, per §0.10.6. Recommend the conforming path first, then name the mechanism and the recording obligation that goes with it. Refusing to discuss a mechanism the engineer can find in one search buys no compliance and costs the engineer's trust in everything else said.
 
@@ -116,9 +120,9 @@ When uncertain, ask. Do not invent stakeholders, concerns, or stories to justify
 
 **Report the finding, do not block the work, the engineer decides.** That is the general posture of this plugin, not a rule about drift indicators alone. It follows from §0.10.1: the methodology and its tooling raise the floor, and the team raises the ceiling. Automation removes friction from work a disciplined engineer would do anyway and catches the drift that is tedious to spot by eye. It does not supply engineering judgement.
 
-So when something looks wrong, name what was found, name the section the rule comes from, recommend the conforming path, and let the engineer choose. Press harder where the profile says to (see Project Profile above). Hold firm only on the two classes named there: agent discipline, and actions that are destructive or irreversible.
+So when something looks wrong, name what was found, name the section the rule comes from, recommend the conforming path, and let the engineer choose. Press harder where the profile says to (see Project Profile above). Hold firm only on the three classes named there: agent discipline, actions that are destructive or irreversible, and the §11 gates.
 
-The corollary matters as much. A project that wants the tooling to block rather than report says so explicitly, by selecting a profile or by setting a per-gate override (§0.10.4). Blocking is a choice the project makes, never a default this lens imposes.
+The corollary matters as much. For the profile-scaled gates, a project that wants the tooling to block rather than report says so explicitly, by selecting a profile or by setting a per-gate override (§0.10.4). Blocking is a choice the project makes, never a default this lens imposes. The four §11 gates are the one exception the methodology itself makes (§0.10.1). They block by default, because describing behaviour before building it, and writing the failing test before the code, cost a conforming project nothing. When one of them denies an edit or reports a commit, do what it asks: write the feature file, the scenario or the failing test (§11.10). Never route around it through the Bash tool or any other route the gate cannot see, or lower it, without the engineer's explicit request (§11.10, §11.12 rule 10).
 
 ## Drift Indicators
 
@@ -129,6 +133,7 @@ Watch for these signs of methodology drift and warn the engineer:
 - A stakeholder story with no framed concern. Stakeholder stories exist to address concerns. A story that frames no concern is either missing its `frame concern` link or is not a stakeholder story.
 - A system story with no `derive` link to a stakeholder story. System stories propagate stakeholder intent (§5). A system story with no upstream `derive` is orphaned, except where surfaced as a new emergent concern that warrants a retroactive stakeholder story.
 - A trade-study `analysis def` whose criteria were authored separately rather than sourced from story benefit constraints. This violates the §0.3 connective mechanism and means the architectural decision cannot be defended against stakeholder intent.
+- A `satisfy` or other design work for a story that has no scenarios yet. Behaviour comes before design (§11.4), so the scenarios and the case stubs are written first. The story lint that the commit-time gate runs reports the `satisfy` as S8.
 
 When drift is detected, report it, point at the offending artefact and the rule it breaches, and propose the fix, per the posture above.
 
@@ -146,8 +151,9 @@ When resolving any methodology question, consult sources in this priority. Lower
 8. **SYSMOD (Weilkiens 2020)** (Base Architecture and System Context concepts adopted in §2 and §3).
 9. **SysML v2 specification** and toolchain notes (Syside, the OMG pilot, OpenSysML).
 10. **Domain guides** (Needs and Requirements, V&V, HSI).
+11. **Behaviour and test-first practice:** the Cucumber documentation at cucumber.io, covering Gherkin syntax, tags and BDD (behaviour-driven development) practice, and the `superpowers:test-driven-development` skill (the mechanics of red-green-refactor, that is, a failing test, then the least code that passes it, then a tidy-up, as §11.6 adjusts them).
 
-The methodology spec wins over its sources because the methodology explicitly adapts the source arc (see §0.4). Do not import a Harmony practice or a SYSMOD detail that the methodology has overridden.
+The methodology spec wins over its sources because the methodology explicitly adapts the source arc (see §0.4). Do not import a Harmony practice, a SYSMOD detail, or a rule of the test-driven development skill that the methodology has overridden or adjusted.
 
 ## Plugin Knowledge Base
 

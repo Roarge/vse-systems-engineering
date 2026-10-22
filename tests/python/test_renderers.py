@@ -1,0 +1,675 @@
+"""Unit tests for the renderers under templates/tools/render/.
+
+sysml_model.py is the reader the three renderers share. These tests
+cover how it splits a verify target into a story and a member, how it
+pairs each acceptance criterion with its scenario in the story's
+feature file, and how stakeholder-reqs-doc.py and system-reqs-doc.py
+print a criterion, as a fenced gherkin block when the scenario is known
+and as its doc text otherwise.
+
+Run from the repository root:
+
+    python3 -m unittest discover -s tests/python -t . -v
+"""
+
+import importlib.util
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(HERE))
+RENDER = os.path.join(REPO, "templates", "tools", "render")
+
+# The reader and the renderers ship as loose scripts, so the test puts
+# their directory on the path and loads each renderer from its file. No
+# bytecode is written there, because the directory is mirrored byte for
+# byte into the demo.
+sys.dont_write_bytecode = True
+sys.path.insert(0, RENDER)
+
+import sysml_model  # noqa: E402
+
+
+def load_renderer(name):
+    """Load a renderer script, whose file name is not a module name."""
+    spec = importlib.util.spec_from_file_location(
+        name[:-len(".py")].replace("-", "_"), os.path.join(RENDER, name))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+RENDERERS = (
+    ("stakeholder", load_renderer("stakeholder-reqs-doc.py")),
+    ("system", load_renderer("system-reqs-doc.py")),
+)
+
+
+def write(root, relative, text):
+    """Write `text` to `relative` under `root` and return the path."""
+    path = Path(root) / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+class SplitTargetTests(unittest.TestCase):
+    def check(self, cases):
+        for qualified, expected in cases:
+            with self.subTest(qualified=qualified):
+                self.assertEqual(sysml_model._split_target(qualified),
+                                 expected)
+
+    def test_split_target_deep_chain(self):
+        self.check([
+            ("US_001_SeeReadings.acceptance.SeeLatest",
+             ("US_001_SeeReadings", "acceptance.SeeLatest")),
+            ("US_001_SeeReadings.acceptance.latestReadingShown",
+             ("US_001_SeeReadings", "acceptance.latestReadingShown")),
+        ])
+
+    def test_split_target_deep_chain_counts_as_acceptance_coverage(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = write(root, "model/cases.sysml", (
+                "package Cases {\n"
+                "    verification def VC_001_Latest {\n"
+                "        objective {\n"
+                "            verify US_001_SeeReadings.acceptance.SeeLatest;\n"
+                "        }\n"
+                "    }\n"
+                "}\n"))
+            model = sysml_model.Model(project_root=Path(root),
+                                      model_root="model")
+            sysml_model.parse_file(Path(root), path, model)
+        case = model.cases[0]
+        self.assertEqual(case.targets(), ["US_001_SeeReadings"])
+        self.assertTrue(case.reaches("US_001_SeeReadings", "SeeLatest"))
+
+    def test_split_target_pkg_prefix(self):
+        self.check([
+            ("Stories::US_001_SeeReadings.acceptance.SeeLatest",
+             ("US_001_SeeReadings", "acceptance.SeeLatest")),
+            ("S::Alarms.Queue.US_9_Y.acceptance.AllCleared",
+             ("US_9_Y", "acceptance.AllCleared")),
+            ("StakeholderStories::US_001_SeeReadings.acceptance",
+             ("US_001_SeeReadings", "acceptance")),
+        ])
+
+    def test_split_target_prefers_a_known_story(self):
+        # A story identifier that starts in lower case, behind a
+        # qualifier, is found among the known stories rather than taken
+        # for a member of the qualifier.
+        known = {"story_1", "US_001"}
+        for qualified, expected in (
+                ("P::story_1", ("story_1", "")),
+                ("P::story_1.sla", ("story_1", "sla")),
+                ("Stories::US_001.dashboardSla", ("US_001", "dashboardSla")),
+                ("P::Q::other", ("Q", "other"))):
+            with self.subTest(qualified=qualified):
+                self.assertEqual(
+                    sysml_model._split_target(qualified, known), expected)
+
+    def test_known_lower_case_story_is_verified_in_the_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            write(root, "model/core/stories/stakeholder/stories.sysml", (
+                "package P {\n"
+                "    requirement story_1 : UserStory {\n"
+                "        requirement :>> acceptance {\n"
+                "            requirement first { doc /* First. */ }\n"
+                "        }\n"
+                "    }\n"
+                "}\n"))
+            write(root, "model/core/verification-validation/cases.sysml",
+                  case_file(("VAL_1", ["P::story_1"])))
+            model = sysml_model.load_model(Path(root))
+        self.assertEqual(model.cases[0].verifies, [("story_1", "")])
+
+    def test_split_target_legacy_member(self):
+        self.check([
+            ("SYS_001_DashboardLatency::acceptance",
+             ("SYS_001_DashboardLatency", "acceptance")),
+            ("SYS_001_DashboardLatency::dashboardSla",
+             ("SYS_001_DashboardLatency", "dashboardSla")),
+            ("SYS_001_DashboardLatency.dashboardSla",
+             ("SYS_001_DashboardLatency", "dashboardSla")),
+            ("Stories::US_001_SeeReadings",
+             ("US_001_SeeReadings", "")),
+        ])
+
+
+class CriterionTests(unittest.TestCase):
+    def test_criterion_with_a_short_name_is_read(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = write(root, "model/stories/stakeholder/stories.sysml", (
+                "package Stories {\n"
+                "    requirement US_1_X : UserStory {\n"
+                "        requirement :>> acceptance {\n"
+                "            requirement <'AC1'> firstReading {\n"
+                "                doc /* The first reading is shown. */\n"
+                "            }\n"
+                "        }\n"
+                "    }\n"
+                "}\n"))
+            model = sysml_model.Model(project_root=Path(root),
+                                      model_root="model")
+            sysml_model.parse_file(Path(root), path, model)
+        self.assertEqual(
+            [(acceptance.label, acceptance.doc.text)
+             for acceptance in model.stories[0].acceptances],
+            [("firstReading", "The first reading is shown.")])
+
+
+STORY_DIR = "model/core/stories/stakeholder/"
+
+STORY = """\
+package ExampleStories {
+    private import VSE_Library::*;
+
+    requirement US_901_Example : UserStory {
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        requirement :>> acceptance {
+            requirement firstReading {
+                doc /* The first reading is shown. */
+            }
+            requirement latestReadingShown {
+                doc /* The later reading is shown. */
+            }
+            requirement alarmRaised {
+                doc /* An alarm is raised. */
+            }
+        }
+    }
+}
+"""
+
+# A Background, a second tag, a comment and a Rule around the scenarios,
+# so that each scenario's text has to be cut out of the file at the right
+# lines. alarmRaised has no scenario.
+FEATURE = """\
+# language: en
+@US_901_Example
+Feature: See the readings
+  As an operator
+  I want to see the readings
+  So that the device is known to work
+
+  Background:
+    Given the device is installed
+
+  @AC_firstReading @smoke
+  Scenario: The first reading appears
+    Given the device is switched on
+    When it takes a reading
+    Then the reading is shown
+
+  # Readings over time
+  Rule: A later reading replaces an earlier one
+
+    @AC_latestReadingShown
+    Scenario Outline: The later of two readings is shown
+      Given readings <first> and <second> were taken
+      When the operator opens the display
+      Then the display reads <second>
+
+      Examples:
+        | first | second |
+        | 1     | 2      |
+"""
+
+FIRST_READING = """\
+@AC_firstReading @smoke
+Scenario: The first reading appears
+  Given the device is switched on
+  When it takes a reading
+  Then the reading is shown"""
+
+LATEST_READING = """\
+@AC_latestReadingShown
+Scenario Outline: The later of two readings is shown
+  Given readings <first> and <second> were taken
+  When the operator opens the display
+  Then the display reads <second>
+
+  Examples:
+    | first | second |
+    | 1     | 2      |"""
+
+
+def scenarios(model):
+    """(criterion label, scenario) for every criterion of every story."""
+    return [(acceptance.label, acceptance.scenario)
+            for story in model.stories for acceptance in story.acceptances]
+
+
+class ScenarioTests(unittest.TestCase):
+    def setUp(self):
+        self.root = tempfile.mkdtemp(prefix="vse-render-test-")
+        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
+        write(self.root, STORY_DIR + "stories.sysml", STORY)
+
+    def test_scenario_attached_from_feature(self):
+        write(self.root, STORY_DIR + "US_901_Example.feature", FEATURE)
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual(scenarios(model), [
+            ("firstReading", FIRST_READING),
+            ("latestReadingShown", LATEST_READING),
+            ("alarmRaised", None),
+        ])
+
+    def test_scenario_ends_before_a_later_background(self):
+        # A Background after the first scenario is finding F7 of the
+        # structure check, not a parse error, so the file is still read.
+        late = FEATURE.replace(
+            "  Background:\n    Given the device is installed\n\n", ""
+        ).replace(
+            "  # Readings over time\n",
+            "  Background:\n    Given the device is installed\n\n"
+            "  # Readings over time\n")
+        write(self.root, STORY_DIR + "US_901_Example.feature", late)
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual(scenarios(model)[0], ("firstReading", FIRST_READING))
+
+    def test_first_scenario_with_a_tag_wins(self):
+        # The story lint reports a tag that two scenarios share, and until
+        # it is fixed the document shows the first of them.
+        twice = FEATURE.replace("    @AC_latestReadingShown",
+                                "    @AC_firstReading")
+        write(self.root, STORY_DIR + "US_901_Example.feature", twice)
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual(scenarios(model)[0], ("firstReading", FIRST_READING))
+
+    def test_scenario_empty_without_feature(self):
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual(scenarios(model), [
+            ("firstReading", None),
+            ("latestReadingShown", None),
+            ("alarmRaised", None),
+        ])
+
+    def test_feature_in_another_directory_is_not_read(self):
+        write(self.root, "model/core/stories/system/US_901_Example.feature",
+              FEATURE)
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual([scenario for _label, scenario in scenarios(model)],
+                         [None, None, None])
+
+    def test_feature_that_does_not_parse_is_not_used(self):
+        # A table row with one cell under a header of two is a parse
+        # error (F1), so the lint would stop this file at commit time.
+        broken = FEATURE.replace("        | 1     | 2      |",
+                                 "        | 1 |")
+        write(self.root, STORY_DIR + "US_901_Example.feature", broken)
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual([scenario for _label, scenario in scenarios(model)],
+                         [None, None, None])
+
+    def test_unreadable_feature_is_not_used(self):
+        path = Path(self.root) / STORY_DIR / "US_901_Example.feature"
+        path.write_bytes(FEATURE.encode("utf-8") + b"\xff\xfe\n")
+        model = sysml_model.load_model(Path(self.root))
+        self.assertEqual([scenario for _label, scenario in scenarios(model)],
+                         [None, None, None])
+
+    def installed_scenarios(self, lint=None, before="", after=""):
+        """The (label, scenario) pairs a fresh interpreter reads with a
+        copy of sysml_model.py under tools/render/. `lint` is the text of
+        tools/lint/gherkin.py beside it (None installs no tools/lint/),
+        `before` is code that runs before sysml_model is imported, with
+        the tools directory in TOOLS, and `after` is code that runs once
+        the pairs are printed."""
+        write(self.root, STORY_DIR + "US_901_Example.feature", FEATURE)
+        tools = tempfile.mkdtemp(prefix="vse-render-only-")
+        self.addCleanup(shutil.rmtree, tools, ignore_errors=True)
+        render = os.path.join(tools, "render")
+        os.makedirs(render)
+        shutil.copy(os.path.join(RENDER, "sysml_model.py"), render)
+        if lint is not None:
+            write(tools, "lint/gherkin.py", lint)
+        code = (
+            "import sys\n"
+            "sys.dont_write_bytecode = True\n"
+            "TOOLS = sys.argv[1]\n"
+            + before +
+            "sys.path.insert(0, TOOLS + '/render')\n"
+            "import sysml_model\n"
+            "model = sysml_model.load_model(sys.argv[2])\n"
+            "print([(a.label, a.scenario) for s in model.stories"
+            " for a in s.acceptances])\n"
+            + after)
+        completed = subprocess.run(
+            [sys.executable, "-I", "-c", code, tools, self.root],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True, check=False)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        return completed.stdout
+
+    def test_scenario_empty_without_lint(self):
+        # An older install has tools/render/ but no tools/lint/, so the
+        # reader has no Gherkin parser. It still reads the model.
+        self.assertEqual(
+            self.installed_scenarios(),
+            "[('firstReading', None), ('latestReadingShown', None), "
+            "('alarmRaised', None)]\n")
+
+    def test_scenario_empty_when_the_sibling_parser_has_no_parse(self):
+        # A tools/lint/gherkin.py that is not the shipped parser (an old
+        # or broken copy without parse) leaves the doc text in place.
+        self.assertEqual(
+            self.installed_scenarios(lint="VERSION = 1\n"),
+            "[('firstReading', None), ('latestReadingShown', None), "
+            "('alarmRaised', None)]\n")
+
+    def test_a_sibling_parser_without_parse_is_not_left_registered(self):
+        # A copy that is not used is removed from sys.modules, as a copy
+        # that fails to import is, so no later import finds it under the
+        # private name.
+        self.assertEqual(
+            self.installed_scenarios(
+                lint="VERSION = 1\n",
+                after="print('_vse_render_gherkin' in sys.modules)\n"),
+            "[('firstReading', None), ('latestReadingShown', None), "
+            "('alarmRaised', None)]\nFalse\n")
+
+    def test_an_unrelated_gherkin_module_is_never_used(self):
+        # The Cucumber package installs a top-level module named gherkin,
+        # with no parse function. It sits first on the path and is
+        # already imported, and the lint directory is on the path behind
+        # it, as when the story lint imports the reader. The reader still
+        # parses with the sibling ../lint/gherkin.py.
+        with open(os.path.join(REPO, "templates", "tools", "lint",
+                               "gherkin.py"), encoding="utf-8") as handle:
+            parser = handle.read()
+        fake = tempfile.mkdtemp(prefix="vse-fake-gherkin-")
+        self.addCleanup(shutil.rmtree, fake, ignore_errors=True)
+        write(fake, "gherkin/__init__.py", "VERSION = '29.0.0'\n")
+        before = (
+            "sys.path.insert(0, {!r})\n"
+            "import gherkin\n"
+            "sys.path.append(TOOLS + '/lint')\n").format(fake)
+        self.assertEqual(
+            self.installed_scenarios(lint=parser, before=before),
+            repr([("firstReading", FIRST_READING),
+                  ("latestReadingShown", LATEST_READING),
+                  ("alarmRaised", None)]) + "\n")
+
+
+def criterion(label, doc, scenario=None):
+    return sysml_model.Acceptance(
+        label=label, doc=sysml_model.DocBlock([doc]), scenario=scenario)
+
+
+def render(renderer, kind, acceptances):
+    """The document a renderer writes for one story of `kind`, ending in
+    the newline that write_document adds."""
+    story = sysml_model.Story(identifier="US_901_Example",
+                              source=STORY_DIR + "stories.sysml", kind=kind,
+                              acceptances=acceptances)
+    model = sysml_model.Model(project_root=Path("."), model_root="model",
+                              stories=[story])
+    _path, text = renderer.render(model)
+    return text if text.endswith("\n") else text + "\n"
+
+
+class RenderTests(unittest.TestCase):
+    def check(self, acceptances, expected, absent=None):
+        for kind, renderer in RENDERERS:
+            with self.subTest(renderer=kind):
+                text = render(renderer, kind, acceptances)
+                self.assertIn(expected, text)
+                if absent is not None:
+                    self.assertNotIn(absent, text)
+
+    def test_render_fenced_gherkin_block(self):
+        self.check([
+            criterion("firstReading", "The first reading is shown.",
+                      FIRST_READING),
+            criterion("latestReadingShown", "The later reading is shown.",
+                      LATEST_READING),
+            criterion("alarmRaised", "An alarm is raised."),
+        ], """\
+**Acceptance criteria**
+
+1. `firstReading`
+
+   ```gherkin
+   @AC_firstReading @smoke
+   Scenario: The first reading appears
+     Given the device is switched on
+     When it takes a reading
+     Then the reading is shown
+   ```
+
+2. `latestReadingShown`
+
+   ```gherkin
+   @AC_latestReadingShown
+   Scenario Outline: The later of two readings is shown
+     Given readings <first> and <second> were taken
+     When the operator opens the display
+     Then the display reads <second>
+
+     Examples:
+       | first | second |
+       | 1     | 2      |
+   ```
+
+3. An alarm is raised.
+""")
+
+    def test_render_falls_back_to_doc(self):
+        self.check([
+            criterion("firstReading", "The first reading is shown."),
+            criterion("alarmRaised", "An alarm is raised."),
+        ], """\
+**Acceptance criteria**
+
+1. The first reading is shown.
+2. An alarm is raised.
+""", absent="```")
+
+    def test_render_fence_outgrows_backticks_in_scenario(self):
+        scenario = ("@AC_reportSent\n"
+                    "Scenario: The report is sent\n"
+                    "  Given a report\n"
+                    "  When it is sent\n"
+                    "  Then the body reads\n"
+                    "    ```\n"
+                    "    reading 1\n"
+                    "    ```")
+        self.check([criterion("reportSent", "The report is sent.", scenario)],
+                   """\
+1. `reportSent`
+
+   ````gherkin
+   @AC_reportSent
+   Scenario: The report is sent
+     Given a report
+     When it is sent
+     Then the body reads
+       ```
+       reading 1
+       ```
+   ````
+""")
+
+    def test_render_block_indented_under_a_wide_number(self):
+        # The tenth item's content starts after "10. ", one column later
+        # than after "9. ", and a block indented less leaves the list.
+        acceptances = [criterion("c{}".format(number), "Text.")
+                       for number in range(1, 10)]
+        acceptances.append(criterion("c10", "Text.",
+                                     "@AC_c10\nScenario: Ten"))
+        self.check(acceptances, """\
+9. Text.
+
+10. `c10`
+
+    ```gherkin
+    @AC_c10
+    Scenario: Ten
+    ```
+""")
+
+
+MATRIX = load_renderer("traceability-matrix.py")
+
+STAKEHOLDER_STORIES = """\
+package Stories {
+    requirement US_1_Two : UserStory {
+        requirement :>> acceptance {
+            requirement first { doc /* The first. */ }
+            requirement second { doc /* The second. */ }
+        }
+    }
+}
+"""
+
+SYSTEM_STORIES = """\
+package SystemStories {
+    #derive requirement SYS_1_Two : UserStory {
+        requirement :>> acceptance {
+            requirement fast { doc /* Fast. */ }
+            requirement safe { doc /* Safe. */ }
+        }
+    }
+    #derivation connection sys1Derives {
+        end #original ::> US_1_Two;
+        end #derive ::> SYS_1_Two;
+    }
+}
+"""
+
+
+def case_file(*cases):
+    """A cases package holding one case per (identifier, targets)."""
+    lines = ["package Cases {"]
+    for identifier, targets in cases:
+        lines.append("    verification def {} {{".format(identifier))
+        lines.append("        objective {")
+        lines.extend("            verify {};".format(target)
+                     for target in targets)
+        lines.append("        }")
+        lines.append("    }")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+class TraceabilityMatrixTests(unittest.TestCase):
+    """Coverage is judged per named criterion, as the story lint's S8
+    judges it (methodology section 11.3.3)."""
+
+    def matrix(self, *cases, system=False):
+        """The rows, gap lines and summary of a model holding US_1_Two
+        (criteria first and second), with SYS_1_Two (criteria fast and
+        safe) derived from it when `system` is set, and the cases."""
+        with tempfile.TemporaryDirectory() as root:
+            write(root, "model/core/stories/stakeholder/stories.sysml",
+                  STAKEHOLDER_STORIES)
+            if system:
+                write(root, "model/core/stories/system/stories.sysml",
+                      SYSTEM_STORIES)
+            write(root, "model/core/verification-validation/cases.sysml",
+                  case_file(*cases))
+            model = sysml_model.load_model(Path(root))
+        status = {row[0]: row[-1] for row in MATRIX.matrix_rows(model)}
+        return status, MATRIX.gap_findings(model), dict(
+            MATRIX.summary_rows(model))
+
+    def gaps_naming(self, gaps, story):
+        return [line for line in gaps if "`{}`".format(story) in line]
+
+    def test_story_with_an_unreached_criterion_is_a_gap(self):
+        status, gaps, summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance.first"]))
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`second`", named[0])
+        self.assertNotIn("`first`", named[0])
+        self.assertEqual(
+            summary["Stakeholder stories with acceptance coverage"],
+            "0 of 1")
+
+    def test_each_unreached_criterion_is_listed(self):
+        status, gaps, _summary = self.matrix(
+            ("VAL_1", ["US_1_Two.sla"]))
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 2, gaps)
+        self.assertIn("`first`", named[0])
+        self.assertIn("`second`", named[1])
+
+    def test_every_criterion_reached_is_complete(self):
+        for cases in (
+                [("VAL_1", ["US_1_Two.acceptance.first",
+                            "US_1_Two.acceptance.second"])],
+                [("VAL_1", ["US_1_Two.acceptance.first"]),
+                 ("VAL_2", ["US_1_Two.acceptance.second"])],
+                [("VAL_1", ["US_1_Two.acceptance"])],
+                [("VAL_1", ["US_1_Two"])]):
+            with self.subTest(cases=cases):
+                status, gaps, summary = self.matrix(*cases)
+                self.assertEqual(status, {"US_1_Two": "Complete"})
+                self.assertEqual(gaps, [])
+                self.assertEqual(
+                    summary["Stakeholder stories with acceptance coverage"],
+                    "1 of 1")
+
+    def test_system_story_lists_each_unreached_criterion(self):
+        status, gaps, summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance"]),
+            ("VC_1", ["SYS_1_Two.acceptance.fast"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Complete"})
+        named = self.gaps_naming(gaps, "SYS_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`safe`", named[0])
+        self.assertEqual(
+            summary["System stories with every criterion verified"], "0 of 1")
+
+    def test_verified_derived_system_story_does_not_complete_the_row(self):
+        # A system story derived from the stakeholder story, with every
+        # one of its own criteria reached by a verification case, does
+        # not stand in for the stakeholder story's criteria. S8 judges
+        # the stakeholder story on its own criteria too.
+        status, gaps, summary = self.matrix(
+            ("VC_1", ["SYS_1_Two.acceptance.fast",
+                      "SYS_1_Two.acceptance.safe"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 2, gaps)
+        self.assertIn("`first`", named[0])
+        self.assertIn("`second`", named[1])
+        self.assertEqual(self.gaps_naming(gaps, "SYS_1_Two"), [])
+        self.assertEqual(
+            summary["Stakeholder stories with acceptance coverage"],
+            "0 of 1")
+        self.assertEqual(
+            summary["System stories with every criterion verified"], "1 of 1")
+
+    def test_derived_system_story_does_not_fill_a_partial_row(self):
+        # One stakeholder criterion reached by its own case, the other
+        # by none: the verified system story does not close the gap.
+        status, gaps, _summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance.first"]),
+            ("VC_1", ["SYS_1_Two.acceptance"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`second`", named[0])
+
+    def test_partly_verified_derived_system_story_leaves_a_gap(self):
+        status, gaps, _summary = self.matrix(
+            ("VC_1", ["SYS_1_Two.acceptance.fast"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        self.assertEqual(len(self.gaps_naming(gaps, "US_1_Two")), 2, gaps)
+
+
+if __name__ == "__main__":
+    unittest.main()

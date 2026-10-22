@@ -5,6 +5,11 @@ dev_docs/
 # Wiki lint scratch output (contributor-side, never committed)
 wiki/LINT_REPORT.md
 
+# Superpowers design specs and plans (contributor-side). The superpowers
+# skills write them under docs/superpowers/, and every tracked file
+# ships to installers, so they stay out of the committed tree.
+docs/superpowers/
+
 # Python bytecode cache. The renderer scripts suppress it at runtime,
 # but py_compile and manual imports still write it.
 __pycache__/

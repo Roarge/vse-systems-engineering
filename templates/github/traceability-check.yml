@@ -1,17 +1,45 @@
 # Story-branch trace gate.
 #
 # Per methodology §8.5.4, every pull request lands a story (or a small
-# coherent group of stories) on `main`. This workflow runs the SysML
-# validation and traceability check on every PR so that no story
-# branch merges with broken `derive`, `frame concern`, or `verify`
-# links. See `methodology/08-project-structure.md` §8.5–§8.6 for the
-# full PR review obligations and `methodology/iso-29110-hooks-guide.md`
-# §6 for the CI integration pattern.
+# coherent group of stories) on `main`. This workflow runs on every PR,
+# on every push to `main` and on every release or baseline tag push, so
+# that no story branch merges with broken `derive`, `frame concern`, or
+# `verify` links, with a story that lacks its Gherkin feature file, or
+# with code that arrived without its test. See
+# `methodology/08-project-structure.md` §8.5 and §8.6 for the full PR
+# review obligations and `methodology/iso-29110-hooks-guide.md` §4.4
+# and §6 for the CI integration pattern.
 #
-# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: invoke
-# the project-side `pre-commit` hook from `<project>/.githooks/` (which
-# orchestrates the trace check internally) from your host's PR
-# pipeline. The hook is host-agnostic plain bash.
+# The workflow installs at every profile (hooks guide §3.4). How each
+# step treats a finding:
+#
+#   - The commit-time gates step runs the project-side pre-commit hook
+#     over the change under test. Every gate reads its disposition from
+#     .iso-config.yaml (methodology §0.10.4), so the step carries no
+#     continue-on-error toggle. The Gherkin and test-first gates block
+#     at every profile until a recorded override lowers one (§11.9).
+#     For a pull request or a push the story gates check the stories
+#     the change touches. For a tag push, and for a push whose previous
+#     tip the checkout cannot read (one that creates a branch, for
+#     example), they check every story, so a release tag needs every
+#     story migrated (§11.9.2).
+#   - Model validation and the Contract 3 freshness check block as
+#     written, which is the `full` profile setting. A `light` or
+#     `standard` install makes both advisory by uncommenting the
+#     `continue-on-error: true` line in each of the two steps.
+#   - The test and scenario steps run `test_first.test_command` and
+#     `test_first.scenario_command` where test first applies, that is
+#     when `test_first.applies` is true and the project records the
+#     command (methodology §11.8). A failing test fails the workflow at
+#     every profile, and so does a record where test first applies
+#     without its test_command (methodology §11.5.2).
+#
+# Translating to GitLab CI, Forgejo Actions, or Gitea Actions: check
+# out the full history, set VSE_PRECOMMIT_RANGE to the change under
+# test (base...head for a merge request, before..after for a push, and
+# `all` for a tag), and invoke the project-side `pre-commit` hook from
+# `<project>/.githooks/`, which orchestrates the gates internally, from
+# your host's pipeline. The hook is host-agnostic plain bash.
 
 name: SysML Validation (story-branch trace gate)
 
@@ -28,7 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        # The full history, because the commit-time gates read the
+        # range of commits a pull request or a push brings, and the
+        # test-first gate looks for the merge base (hooks guide §4.4).
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve the SysML toolchain
         id: toolchain
@@ -114,8 +147,9 @@ jobs:
         # One call site for all three toolchains: the library the
         # pre-commit hook sources, in its executable form. It runs the
         # recorded preference, falls back along the fixed order, and
-        # prints why. Blocking as written (full profile). A standard
-        # install makes it advisory by uncommenting continue-on-error.
+        # prints why. Blocking as written (full profile). A light or
+        # standard install makes it advisory by uncommenting
+        # continue-on-error (methodology §0.10.4).
         # continue-on-error: true
         env:
           SYSIDE_LICENSE_KEY: ${{ secrets.SYSIDE_LICENSE_KEY }}
@@ -158,19 +192,153 @@ jobs:
         if: steps.toolchain.outputs.toolchain != 'syside'
         run: echo "Formatting check skipped. ${{ steps.toolchain.outputs.toolchain }} has no formatter (only Syside ships one)."
 
-      - name: Run project-side pre-commit checks
-        # Invokes the project-side pre-commit hook from .githooks/, which
-        # orchestrates SysML lint, story well-formedness (§1.9), and
-        # traceability integrity. The hook is project-determined; this
-        # CI step runs the same checks at the unbypassable gate.
-        run: |
-          if [ -x .githooks/pre-commit ]; then
-              .githooks/pre-commit
-          elif [ -x hooks/pre-commit-traceability.sh ]; then
-              hooks/pre-commit-traceability.sh
-          fi
+      - name: Run the commit-time gates over the change
+        # The project-side pre-commit hook from .githooks/ in range mode
+        # (methodology §11.9.2, hooks guide §4.1). A fresh checkout has
+        # nothing staged, so the hook reads the files that
+        # VSE_PRECOMMIT_RANGE names instead: a pull request's changes
+        # since its base, a push's changes since the previous tip, or
+        # every tracked file (all) for a tag push and for a push whose
+        # previous tip this checkout does not hold. It runs story
+        # well-formedness (§1.9), Gherkin conformance (§11.9.1, which
+        # checks Contract 2 per criterion as finding S8), test before
+        # code, and traceability integrity. The two story gates check
+        # the stories the range touches, and every story with all
+        # (§11.9.2). It skips its SysML lint in range mode, because the
+        # validation step above covers the model. Every gate reads its
+        # disposition from .iso-config.yaml, so this step has no
+        # continue-on-error toggle at any profile.
         env:
           CI: true
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+          if [ ! -x .githooks/pre-commit ]; then
+              echo "::error::.githooks/pre-commit is missing or not executable (run @attention-regime), so the commit-time gates did not run."
+              exit 1
+          fi
+          RANGE=all
+          WHAT="every tracked file"
+          case "$GITHUB_EVENT_NAME" in
+              pull_request)
+                  RANGE="${PR_BASE_SHA}...${PR_HEAD_SHA}"
+                  WHAT="the pull request's changes since its base"
+                  ;;
+              push)
+                  case "$GITHUB_REF" in
+                      refs/tags/*)
+                          WHAT="every tracked file, because a tag push brings no range of changes"
+                          ;;
+                      *)
+                          # A previous tip of all zeros means the push
+                          # created the branch.
+                          case "$PUSH_BEFORE" in
+                              *[!0]*)
+                                  if git cat-file -e "${PUSH_BEFORE}^{commit}" 2>/dev/null; then
+                                      RANGE="${PUSH_BEFORE}..${PUSH_AFTER}"
+                                      WHAT="the push's changes since the previous tip"
+                                  else
+                                      WHAT="every tracked file, because this checkout does not hold the previous tip ${PUSH_BEFORE}"
+                                  fi
+                                  ;;
+                              *)
+                                  WHAT="every tracked file, because the push has no previous tip"
+                                  ;;
+                          esac
+                          ;;
+                  esac
+                  ;;
+          esac
+          echo "The commit-time gates read ${WHAT} (VSE_PRECOMMIT_RANGE=${RANGE})."
+          if ! VSE_PRECOMMIT_RANGE="$RANGE" .githooks/pre-commit; then
+              echo "::error::A commit-time gate stopped the change, or the hook could not read the range (see the lines above)."
+              exit 1
+          fi
+
+      - name: Read the test-first record
+        # test_command and scenario_command from the test_first block of
+        # .iso-config.yaml (methodology §11.5.2), read through the
+        # libraries the hooks use, so that CI and the hooks agree on
+        # quoting, comments and the applies value. Scenarios and tests
+        # run only where test first applies (methodology §11.8), so
+        # unless test_first.applies is true no command is read. A
+        # command that is not read leaves its step below skipped. Where
+        # test_first.applies is true, test_command is required
+        # (methodology §11.5.2), so a record without it fails this step
+        # rather than leave the workflow green with no test run.
+        id: test-first
+        run: |
+          set -euo pipefail
+          LIB=""
+          for candidate in .githooks/lib hooks/lib; do
+              if [ -r "${candidate}/iso-profile.sh" ] && [ -r "${candidate}/test-first.sh" ]; then
+                  LIB="$candidate"
+                  break
+              fi
+          done
+          if [ -z "$LIB" ]; then
+              echo "::warning::.githooks/lib/iso-profile.sh or .githooks/lib/test-first.sh is not installed (run @attention-regime), so test_command and scenario_command were not read and no test ran."
+              exit 0
+          fi
+          # shellcheck source=/dev/null
+          . "${LIB}/iso-profile.sh"
+          # shellcheck source=/dev/null
+          . "${LIB}/test-first.sh"
+          APPLIES="$(vse_tf_applies)"
+          if [ "$APPLIES" != "true" ]; then
+              echo "test_first.applies is ${APPLIES:-not recorded}, so no recorded test or scenario runs (methodology §11.8)."
+              exit 0
+          fi
+          TEST_COMMAND="$(iso_section_scalar test_first test_command)"
+          SCENARIO_COMMAND="$(iso_section_scalar test_first scenario_command)"
+          echo "test_first.test_command: ${TEST_COMMAND:-not recorded}"
+          echo "test_first.scenario_command: ${SCENARIO_COMMAND:-not recorded}"
+          if [ -z "$TEST_COMMAND" ]; then
+              echo "::error::test_first.applies is true but test_first.test_command is not recorded (methodology §11.5.2). Record it with /vse-test-first."
+              exit 1
+          fi
+          {
+              echo "test_command=${TEST_COMMAND}"
+              echo "scenario_command=${SCENARIO_COMMAND}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run the recorded tests (test_command)
+        # Runs where test first applies and test_first records
+        # test_command (methodology §11.7 and §11.8), from the top-level
+        # directory of the repository, the directory that code_paths and
+        # test_paths are relative to. A failing test fails the workflow
+        # at every profile. Add any set-up step the command needs, such
+        # as actions/setup-python, above this step.
+        if: steps.test-first.outputs.test_command != ''
+        env:
+          TEST_COMMAND: ${{ steps.test-first.outputs.test_command }}
+        run: |
+          set -euo pipefail
+          echo "Running test_first.test_command: ${TEST_COMMAND}"
+          if ! bash -c "$TEST_COMMAND"; then
+              echo "::error::test_first.test_command failed. Run '${TEST_COMMAND}' locally and make the failing tests pass (methodology §11.7)."
+              exit 1
+          fi
+
+      - name: Run the recorded scenarios (scenario_command)
+        # Runs where test first applies and test_first records
+        # scenario_command (methodology §11.8), from the same directory
+        # as the tests. The runner reads the feature files beside the
+        # stories, in its strict mode, so an undefined or pending step
+        # fails. A failing scenario fails the workflow at every profile.
+        if: steps.test-first.outputs.scenario_command != ''
+        env:
+          SCENARIO_COMMAND: ${{ steps.test-first.outputs.scenario_command }}
+        run: |
+          set -euo pipefail
+          echo "Running test_first.scenario_command: ${SCENARIO_COMMAND}"
+          if ! bash -c "$SCENARIO_COMMAND"; then
+              echo "::error::test_first.scenario_command failed. Run '${SCENARIO_COMMAND}' locally and make the failing scenarios pass (methodology §11.8)."
+              exit 1
+          fi
 
       - name: Check derived-artefact freshness (Contract 3)
         # Per `methodology/iso-29110-hooks-guide.md` §4.4 Contract 3, the
@@ -179,10 +347,10 @@ jobs:
         # landed without its rendered artefacts, which is the one way
         # documentation drift can still happen under §9.8.
         #
-        # Disposition per hooks guide §3.4. The step is blocking as written,
-        # which is the `full` profile setting. A `standard` profile install
-        # makes it advisory by uncommenting the `continue-on-error` line
-        # below, and a `light` profile install deletes the step.
+        # Disposition per hooks guide §3.4 and methodology §0.10.4. The
+        # step is blocking as written, which is the `full` profile
+        # setting. A `light` or `standard` profile install makes it
+        # advisory by uncommenting the `continue-on-error` line below.
         # continue-on-error: true
         run: |
           set -euo pipefail
@@ -266,5 +434,5 @@ jobs:
       - name: Report results
         if: failure()
         run: |
-          echo "::error::Model validation or traceability check failed."
-          echo "Run '.githooks/lib/sysml-toolchain.sh validate <files>' and '@traceability-guard' locally to identify and fix issues."
+          echo "::error::Model validation, a commit-time gate, or a recorded test failed."
+          echo "Run '.githooks/lib/sysml-toolchain.sh validate <files>', 'VSE_PRECOMMIT_RANGE=origin/main...HEAD .githooks/pre-commit', the recorded test_command and '@traceability-guard' locally to identify and fix issues."

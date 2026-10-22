@@ -5,7 +5,7 @@
 # what to enforce.
 
 # Plugin version recorded at /vse-setup time.
-plugin_version: "4.0.1"
+plugin_version: "5.0.0"
 
 # Project rigour profile per methodology section 0.10.
 # One of: light | standard | full. Absent means standard.
@@ -14,6 +14,15 @@ project_profile: standard
 # SysML v2 toolchain: the demo prefers the OMG pilot implementation and
 # validates under OpenSysML as the second reference (README validation record).
 sysml_toolchain: omg-pilot
+
+# Test-first record per methodology section 11.5. The demo holds SysML
+# models and documents and no implementation code, so test first does
+# not apply and no code path is watched. The judgement is recorded in
+# the four places of section 11.5.3: here, in CLAUDE.md, in
+# docs/semp.md and in docs/project-plan.md.
+test_first:
+  applies: false
+  rationale: "No implementation code, models and documents only. SysML: not viable, no execution runtime, so the stories follow the model-tier test first of section 11.4. tools/render and tools/lint are vendored copies, tested in the plugin repository where they are maintained. No shell scripts and no CI configuration."
 
 # Baselined paths require an open Change Request and a
 # "(CR #<n>)" reference in the commit message.

@@ -17,7 +17,7 @@ The relations read are `derive` (stakeholder story to system story, methodology 
 
 ## Gaps
 
-A stakeholder story is complete when a validation case exercises its acceptance, or when a system story derived from it is exercised by a verification case. A case counts only where it verifies the story itself or the story's `acceptance` member. One whose targets are all nested constraint requirements, such as `<story>.sla`, verifies those constraints rather than the acceptance criteria, so it does not close the row on its own.
+A stakeholder story is complete when verification or validation cases reach every one of its acceptance criteria, by the coverage rule of methodology section 11.3.3, the rule the story lint applies before a story may move to `inProgress`. A system story derived from it does not stand in for a criterion that no case reaches. A system story is verified when verification cases reach every one of its criteria. A case whose targets are all nested constraint requirements, such as `<story>.sla`, verifies those constraints rather than the acceptance criteria, so it reaches no criterion.
 
 No gaps detected.
 
@@ -33,4 +33,4 @@ No gaps detected.
 | Validation cases | 4 |
 | Satisfy relations | 4 |
 | Stakeholder stories with acceptance coverage | 4 of 4 |
-| System stories with a verification case | 4 of 4 |
+| System stories with every criterion verified | 4 of 4 |

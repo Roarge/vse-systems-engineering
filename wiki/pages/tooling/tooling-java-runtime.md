@@ -12,13 +12,15 @@ sources:
     raw: null
   - citation: "vse-systems-engineering plugin (2026). Pilot runs on Ubuntu 24.04 under WSL2 with openjdk-21-jre-headless, recorded 2026-09-09."
     raw: null
+  - citation: "vse-systems-engineering plugin (2026). Validator library hooks/lib/sysml-toolchain.sh (vse_tc_java) and its JAVA_TOOL_OPTIONS banner tests in tests/hooks/check-toolchain.sh, recorded 2026-10-16."
+    raw: hooks/lib/sysml-toolchain.sh
 related:
   - tooling-omg-pilot-batch-validation
   - tooling-sysml-toolchain-choice
   - tooling-validator-fallback-process
 confidence: high
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [sysml-toolchain, attention-regime]
 ---
 
@@ -46,15 +48,15 @@ The plugin shows the command and runs a system package manager only after the en
 
 ## How the wrapper finds Java
 
-The validator library resolves the runtime in this order: the `VSE_JAVA` variable when set, then `$JAVA_HOME/bin/java`, then `java` on the PATH. The first candidate whose version major is 21 or more wins, and a candidate that is too old is reported by version so the engineer sees which one was tried.
+The validator library resolves the runtime in this order: the `VSE_JAVA` variable when set, then `$JAVA_HOME/bin/java`, then `java` on the PATH. The first candidate whose version major is 21 or more wins, and a candidate that is too old is reported by version so the engineer sees which one was tried. It reads each candidate's version from the first line of the `java -version` output that contains `version "`, for the reason given under Version check.
 
 ## Version check
 
 ```bash
-java -version 2>&1 | head -1
+java -version 2>&1 | awk '!seen && /version "/ { print; seen = 1 }'
 ```
 
-prints a line such as `openjdk version "21.0.12" 2026-07-21`. The number before the first dot is the major version and must be 21 or more. The old `1.8` numbering identifies Java 8 and fails the check.
+prints the first line that names a version, such as `openjdk version "21.0.12" 2026-07-21`. Reading line 1 instead, as `head -1` does, goes wrong whenever `JAVA_TOOL_OPTIONS` is set, because the JVM then prints a `Picked up JAVA_TOOL_OPTIONS:` banner before the version line. The number before the first dot is the major version and must be 21 or more. The old `1.8` numbering identifies Java 8 and fails the check.
 
 ## Continuous integration
 

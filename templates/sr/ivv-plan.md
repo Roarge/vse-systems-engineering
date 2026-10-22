@@ -124,7 +124,7 @@ iso_ref: "SR.2, SR.5"
   1. (step)
   2. (step)
 - **Expected result:**
-- **Acceptance criteria:**
+- **Acceptance criteria:** (the `@AC_<name>` scenarios this case reaches through `verify <story>.acceptance.<name>`, methodology §11.3.3)
 
 ## 6. Defect Management
 

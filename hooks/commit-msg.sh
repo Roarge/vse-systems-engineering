@@ -42,6 +42,20 @@ else
     # An install without the library reports rather than blocks, which
     # is the standard-profile disposition for both gates.
     iso_gate_disposition() { printf 'warn\n'; }
+    # The library's search for the configuration: VSE_ISO_CONFIG when
+    # it names a readable file, then the greenfield and brownfield
+    # layouts.
+    iso_config_path() {
+        local root
+        root="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+        if [ -n "${VSE_ISO_CONFIG:-}" ] && [ -f "${VSE_ISO_CONFIG}" ] && [ -r "${VSE_ISO_CONFIG}" ]; then
+            printf '%s\n' "${VSE_ISO_CONFIG}"
+        elif [ -f "${root}/.iso-config.yaml" ]; then
+            printf '%s\n' "${root}/.iso-config.yaml"
+        elif [ -f "${root}/engineering/.iso-config.yaml" ]; then
+            printf '%s\n' "${root}/engineering/.iso-config.yaml"
+        fi
+    }
 fi
 
 PATTERN_DISPOSITION="$(iso_gate_disposition commit_msg_pattern)"
@@ -111,13 +125,9 @@ if [ "$CR_DISPOSITION" = "off" ]; then
     exit 0
 fi
 
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
-ISO_CONFIG=""
-if [ -f "${ROOT}/.iso-config.yaml" ]; then
-    ISO_CONFIG="${ROOT}/.iso-config.yaml"
-elif [ -f "${ROOT}/engineering/.iso-config.yaml" ]; then
-    ISO_CONFIG="${ROOT}/engineering/.iso-config.yaml"
-fi
+# The configuration comes from the same search as the dispositions, so
+# both read one file, VSE_ISO_CONFIG included.
+ISO_CONFIG="$(iso_config_path)"
 
 if [ -n "$ISO_CONFIG" ]; then
     BASELINED=$(awk '
@@ -150,7 +160,12 @@ if [ -n "$ISO_CONFIG" ]; then
     done < <(git diff --cached --name-only --diff-filter=ACM)
 
     if [ -n "$BASELINED_HIT" ]; then
-        if ! echo "$FULL_MSG" | grep -qE '\(CR #[0-9]+\)|CR #[0-9]+|Refs?: CR #[0-9]+'; then
+        # The message is read from a here-string, not piped in. grep -q
+        # stops at the first match, so a writer still writing a long
+        # message would be killed by SIGPIPE (the signal a process gets
+        # when it writes to a pipe that nobody reads any more), and
+        # pipefail would turn the match into a miss.
+        if ! grep -qE '\(CR #[0-9]+\)|CR #[0-9]+|Refs?: CR #[0-9]+' <<< "$FULL_MSG"; then
             case "$CR_DISPOSITION" in
                 block)
                     report_cr_finding "[commit-msg]"

@@ -1,0 +1,5 @@
+project_profile: standard
+
+storymeta:
+  required_fields: [points, priority, status]
+  valid_statuses: [backlog, ready, inProgress, done]

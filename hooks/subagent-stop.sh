@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
 # SubagentStop hook for the vse-systems-engineering plugin.
 #
-# Per methodology/iso-29110-hooks-guide.md §5.6. When using subagents
-# for parallel work, aggregate compliance check results from each
-# subagent.
+# Per methodology/iso-29110-hooks-guide.md §5.6. Runs when a subagent
+# ends its turn. It follows the Stop contract of §5.5, so it runs
+# stop.sh for the SubagentStop event: silent while stop_hook_active is
+# true, a one-line completion note for the user as a systemMessage, and
+# the test-first finding as additionalContext, each once for each
+# session and state of the working tree. It keeps a marker of its own
+# (vse-subagent-stop.<session_id>), so a subagent never uses up what
+# the main agent is told at Stop. stop.sh documents the rest.
 #
-# This hook is intentionally minimal in v2. It echoes a marker so the
-# orchestrating session can see that a subagent completed within a VSE
-# project context, and surfaces the project's current state path as a
-# reminder of where to write any compliance findings.
+# Output contract. Claude never sees plain stdout at SubagentStop, so
+# stop.sh prints exactly one JSON object, or nothing.
 #
-# Exit 0 always.
+# stdin: the SubagentStop JSON payload, passed on to stop.sh.
+# stdout: one JSON object, or nothing.
 set -euo pipefail
 
-# Skip silently outside a VSE project.
-if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
-    exit 0
-fi
-
-echo "[subagent complete in VSE project context. Methodology spec at $(test -d methodology && echo methodology/ || echo engineering/methodology/).]"
-
-exit 0
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/stop.sh" SubagentStop

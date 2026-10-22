@@ -10,21 +10,65 @@
 #   2. Synchronous-review mentions -> PM.O4 Meeting Record reminder.
 #   3. Reverse-engineering prompts -> §2.6 rule 7 guard.
 #
+# The project is located from the working directory as SessionStart
+# locates it (hooks/README.md section 1): through its .iso-config.yaml,
+# the canonical project marker, with vse_tf_locate_workdir, else by a
+# methodology/ or engineering/methodology/ folder, the fallback for
+# projects that predate the configuration and for an install without
+# hooks/lib/. Outside a project the hook is silent.
+#
+# The prompt is read from .prompt, then from .user_message when that is
+# empty, with vse_hj_read of hooks/lib/hook-json.sh, which uses jq and
+# falls back to python3. Without that library it is read with jq alone,
+# as before the library existed. With neither tool the prompt reads as
+# empty and the hook is silent.
+#
 # stdin: JSON payload from Claude Code with the user prompt.
 # stdout: appended to the prompt context.
 # Exit 0 always.
 set -euo pipefail
 
-INPUT=$(cat)
-PROMPT=$(echo "$INPUT" | jq -r '.prompt // .user_message // ""' 2>/dev/null || echo "")
+UPS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+UPS_PAYLOAD="$(mktemp "${TMPDIR:-/tmp}/vse-user-prompt-submit.XXXXXX")" || exit 0
+trap 'rm -f "$UPS_PAYLOAD"' EXIT
+cat > "$UPS_PAYLOAD" || exit 0
+PROMPT=""
+if [ -r "${UPS_LIB}/hook-json.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/hook-json.sh"
+    # A payload that cannot be read is read once, so its one line on
+    # stderr is not repeated.
+    if PROMPT="$(vse_hj_read "$UPS_PAYLOAD" .prompt)" && [ -z "$PROMPT" ]; then
+        PROMPT="$(vse_hj_read "$UPS_PAYLOAD" .user_message)" || PROMPT=""
+    fi
+else
+    PROMPT="$(jq -r '.prompt // .user_message // ""' "$UPS_PAYLOAD" 2>/dev/null || echo "")"
+fi
+
+UPS_PROJECT=""
+if [ -r "${UPS_LIB}/iso-profile.sh" ] && [ -r "${UPS_LIB}/test-first.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/iso-profile.sh"
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/test-first.sh"
+    if vse_tf_locate_workdir "$(pwd -P)"; then
+        UPS_PROJECT=1
+    fi
+fi
 
 # Skip silently outside a VSE project.
-if [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
+if [ -z "$UPS_PROJECT" ] && [ ! -d "methodology" ] && [ ! -d "engineering/methodology" ]; then
     exit 0
 fi
 
+# Each heuristic reads the prompt from a here-string, not a pipe.
+# grep -q stops at the first match, so a writer still writing a long
+# prompt would be killed by SIGPIPE (the signal a process gets when it
+# writes to a pipe that nobody reads any more), and pipefail would turn
+# the match into a miss.
+
 # Heuristic 1: edits + plausibly baselined artefact references.
-if echo "$PROMPT" | grep -qiE '(change|edit|modify|update|delete|revise|amend).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture|risk register|cm strategy)'; then
+if grep -qiE '(change|edit|modify|update|delete|revise|amend).*(plan|baselined|US_[0-9]+|SYS_[0-9]+|architecture|risk register|cm strategy)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, PM.O3]
@@ -37,7 +81,7 @@ EOF
 fi
 
 # Heuristic 2: meeting/review mentions.
-if echo "$PROMPT" | grep -qiE '(meeting|reviewed with|sync|standup|workshop|kickoff) (today|yesterday|this morning|earlier|just now)'; then
+if grep -qiE '(meeting|reviewed with|sync|standup|workshop|kickoff) (today|yesterday|this morning|earlier|just now)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, PM.O4]
@@ -48,7 +92,7 @@ EOF
 fi
 
 # Heuristic 3: reverse-engineering of pre-existing context (§2.6 rule 7).
-if echo "$PROMPT" | grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)'; then
+if grep -qiE '(generate|create|infer|complete|fill in|fill out|reverse[- ]?engineer|derive).*(stories|stakeholders|concerns|requirements).*(for|from|based on|covering|matching).*(platform|architecture|existing|current|legacy|base|infrastructure)' <<< "$PROMPT"; then
     cat <<'EOF'
 
 [methodology reminder, agent discipline (§2.6 rule 7)]

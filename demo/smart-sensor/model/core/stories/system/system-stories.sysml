@@ -7,6 +7,11 @@
 // verification cases can reference it, the §0.3 connective
 // mechanism).
 //
+// As for the stakeholder stories, each story's acceptance criteria
+// are the scenarios of its feature file, <ID>.feature beside this
+// file, each mirrored here by a named criterion nested in
+// `requirement :>> acceptance` (§11.3).
+//
 // Identifier convention: SYS_<n>_<ShortName>.
 
 package SmartSensor_SystemStories {
@@ -53,11 +58,13 @@ package SmartSensor_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* Given the device is online and reporting at the
-                   nominal interval, when a reading is captured at
-                   time t, then the dashboard renders that reading
-                   no later than t + 5 seconds at the 95th percentile
-                   over a 1-hour window. */
+            requirement readingRenderedInTime {
+                doc /* Given the device is online and reporting at the
+                       nominal interval, when a reading is captured at
+                       time t, then the dashboard renders that reading
+                       no later than t + 5 seconds at the 95th percentile
+                       over a 1-hour window. */
+            }
         }
     }
 
@@ -92,9 +99,11 @@ package SmartSensor_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* Given N unacknowledged alerts (N up to 1000) are
-                   shown, when the operator selects "Acknowledge all",
-                   then all N transition within 1 second. */
+            requirement allAlertsTransitioned {
+                doc /* Given N unacknowledged alerts (N up to 1000) are
+                       shown, when the operator selects "Acknowledge all",
+                       then all N transition within 1 second. */
+            }
         }
     }
 
@@ -129,11 +138,13 @@ package SmartSensor_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* Given a calibration command carrying a reference
-                   value, when the device accepts it on the
-                   maintenance port, then the stored offset survives
-                   a power cycle and the next reading published to
-                   the cloud carries the corrected value. */
+            requirement offsetPersistedAndApplied {
+                doc /* Given a calibration command carrying a reference
+                       value, when the device accepts it on the
+                       maintenance port, then the stored offset survives
+                       a power cycle and the next reading published to
+                       the cloud carries the corrected value. */
+            }
         }
     }
 
@@ -176,11 +187,13 @@ package SmartSensor_SystemStories {
         }
 
         requirement :>> acceptance {
-            doc /* Given an alert raised at time t, when an audit
-                   query runs at any instant between t and t plus the
-                   retention period, then the store returns that
-                   alert with a digest that matches the value
-                   recorded at t. */
+            requirement alertReturnedWithRecordedDigest {
+                doc /* Given an alert raised at time t, when an audit
+                       query runs at any instant between t and t plus the
+                       retention period, then the store returns that
+                       alert with a digest that matches the value
+                       recorded at t. */
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 ---
 name: change-request
-description: Author and process Change Requests under PM.O3 (§10.4.2). Drafts the impact analysis (cost, schedule, technical, risk), opens the GitHub Issue with the change-request label, and tracks the lifecycle (submitted, evaluated, agreed, in implementation, done, rejected, postponed).
-when_to_use: Use when a baselined artefact (Project Plan, baselined story, baselined architecture, anything on .iso-config.yaml baselined_paths) is about to be modified, when /vse-cr is invoked, when the user says "open a CR", "change the Plan", or "modify the baselined story", or when another skill routes here on detecting a baselined-path edit.
+description: Author and process Change Requests under PM.O3 (§10.4.2). Drafts the impact analysis (cost, schedule, technical, risk, with the Gherkin scenarios, cases and tests the change touches), opens the GitHub Issue with the change-request label, and tracks the lifecycle (submitted, evaluated, agreed, in implementation, done, rejected, postponed).
+when_to_use: Use when a baselined artefact (Project Plan, baselined story or its feature file, baselined architecture, anything on .iso-config.yaml baselined_paths) is about to be modified, when /vse-cr is invoked, when the user says "open a CR", "change the Plan", "modify the baselined story", or "change a baselined scenario", or when another skill routes here on detecting a baselined-path edit.
 user-invocable: true
 ---
 
@@ -57,8 +57,14 @@ The impact analysis is required by §10.4.2 and ISO/IEC 29110 PM.2.2. It covers 
 |---|---|
 | Cost | Effort hours, tooling cost, third-party dependencies that change. |
 | Schedule | Release boundaries affected, milestones at risk, prerequisite work that must finish first. |
-| Technical | Architectural reach, requirement traceability touched, V&V cases that must be re-run. |
+| Technical | Architectural reach, requirement traceability touched, and the V&V impact below. |
 | Risk | New risks introduced, existing risks revalued, mitigations that change owner or status. |
+
+**V&V impact, within the Technical dimension.** Name what the change touches, by identifier, so that the evaluator can see what must be rewritten and re-run:
+
+- **Scenarios.** Each Gherkin scenario the change adds, changes or retires, by its feature file and its `@AC_<name>` tag. Gherkin is the plain-text Given/When/Then format in which every acceptance criterion is stated, one scenario per criterion in the story's `<ID>.feature` (§11.2, §11.3). A change to a story starts with its feature file (§11.4), so the scenarios are the first thing the implementing branch changes.
+- **Cases.** Each verification or validation case that reaches an affected criterion (`verify <story>`, `verify <story>.acceptance`, or `verify <story>.acceptance.<name>`, §11.3.3), and whether its objective or its body must change or only its run must be repeated.
+- **Tests, where test first applies.** Read the `test_first` block of `.iso-config.yaml` (§11.5.2). With `applies: true`, name the test files under `test_paths` that cover the affected code and the `test_command` run that must pass again. Where `scenario_command` is recorded, also name the step definitions that bind the affected scenarios and the scenario run that must pass again. A change to code arrives with a change to its tests on the same branch (§11.7, §11.9). With `applies: false`, say so in one line. Route any question about the record to `@test-first`.
 
 Render the impact analysis as a markdown block with one heading per dimension and a status line at the top (`Lifecycle: submitted`).
 
@@ -120,7 +126,8 @@ Acquirer agreement is the substance of the `agreed` state rather than a formalit
 
 ## Hand-offs
 
-- `/vse-story` for opening the implementation branch once `agreed` is reached.
+- `/vse-story` for opening the implementation branch once `agreed` is reached. The branch changes the affected scenarios first (§11.4).
+- `@test-first` (`/vse-test-first`) when the change touches code where test first applies, or when `test_first` is not recorded.
 - `@release-orchestrator` when the change affects release scope (release notes, version planning, baseline integrity at the next release tag).
 - `@project-plan` when the change is a Project Plan revision and the implementing branch is a Plan-revision PR rather than a story branch.
 

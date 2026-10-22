@@ -40,7 +40,10 @@ disagree, the methodology wins.
   files). Every story is a requirement usage typed by `UserStory`.
   Stakeholder stories US_001 to US_004, and system stories SYS_001 to
   SYS_004 whose sharpened benefit sits in a nested requirement usage
-  carrying a `require constraint` per §5.4.2.
+  carrying a `require constraint` per §5.4.2. Each story's acceptance
+  criteria are the Gherkin scenarios (Given/When/Then examples) of its
+  feature file, `<ID>.feature` beside the story register, each
+  mirrored by a named criterion in the story (§11.2, §11.3).
 - **Validation approach:** stakeholder review of the story register
   plus validation cases VAL_001 to VAL_004 for stakeholder-side
   checks.
@@ -75,7 +78,8 @@ build-versus-buy decisions are open in the current release scope.
 - **Verification methods:** verification cases VC_001 to VC_004
   (`model/core/verification-validation/verification-cases/`), one
   per system story, each taking that story's sharpened constraint
-  and its acceptance criterion, methods per §9 scale mapping.
+  and its named acceptance criterion by its full path (§11.3.3),
+  methods per §9 scale mapping.
 - **Validation approach:** validation cases VAL_001 to VAL_004
   against stakeholder stories, exercised at release boundaries.
 - **Base Architecture constraint exemption:** `MemoryConstraint`
@@ -127,9 +131,10 @@ hook.
 | Tool | Purpose | Version |
 |------|---------|---------|
 | OMG SysML v2 Pilot Implementation | SysML v2 validation (preferred, `omg-pilot`) | release 2026-07, kernel 0.61.0 |
-| OpenJDK | Java runtime for the pilot | 21.0.12 |
+| OpenJDK | Java runtime for the pilot | 21.0.12.1 |
 | OpenSysML | SysML v2 validation (fallback) | v0.6.0 |
 | Sensmetry Syside | SysML 2.0 modelling and validation (optional) | per `syside.toml` |
+| none | Test-first tools: test first does not apply, because the demo holds no implementation code (`test_first` in `.iso-config.yaml`, methodology §11.5.3) | not applicable |
 | Git | Version control, story branches per §8 | system |
 | Claude Code | SE companion (designed cognitive reserve) | with the vse-systems-engineering plugin |
 

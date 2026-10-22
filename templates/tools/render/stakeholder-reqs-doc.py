@@ -11,6 +11,11 @@ The source is the stakeholder story register, that is every
 `requirement <ID> : UserStory` story usage, and every legacy
 `requirement def <ID> :> UserStory`, under `stories/stakeholder/`, per the
 methodology section 9.5 artefact mapping.
+
+Each acceptance criterion prints as the scenario tagged `@AC_<name>` in
+the story's feature file, in a fenced gherkin block, when the file holds
+that scenario and tools/lint/ is installed beside tools/render/. Any
+other criterion prints its doc text.
 """
 
 import os
@@ -32,37 +37,6 @@ def field_line(label, value):
     return f"- **{label}:** {value if value else EMPTY}"
 
 
-def acceptance_lines(story):
-    """Render the acceptance criteria as an ordered list.
-
-    A criterion that runs to several paragraphs forces a blank line
-    between every item, because a tight list and an indented continuation
-    paragraph do not read as one list in Markdown.
-    """
-    lines = []
-    if not story.acceptances:
-        lines.append(
-            "No acceptance criterion is declared. The story is not yet "
-            "well-formed under methodology section 1.9."
-        )
-        return lines
-    loose = any(
-        len(acceptance.doc.paragraphs) > 1 for acceptance in story.acceptances
-    )
-    for position, acceptance in enumerate(story.acceptances, start=1):
-        if loose and position > 1:
-            lines.append("")
-        paragraphs = acceptance.doc.paragraphs
-        if not paragraphs:
-            lines.append(f"{position}. (no criterion text recorded)")
-            continue
-        lines.append(f"{position}. {paragraphs[0]}")
-        for extra in paragraphs[1:]:
-            lines.append("")
-            lines.append(f"   {extra}")
-    return lines
-
-
 def story_section(story):
     lines = [f"## {story.identifier}", ""]
     lines.append(field_line("Stakeholder role", story.role))
@@ -72,7 +46,7 @@ def story_section(story):
     lines.append("")
     lines.append("**Acceptance criteria**")
     lines.append("")
-    lines.extend(acceptance_lines(story))
+    lines.extend(sysml_model.acceptance_lines(story))
     lines.append("")
     return lines
 

@@ -45,7 +45,7 @@ iso_ref: "SR.2"
 - **Rationale:** (why this element requirement exists)
 - **Satisfies:** REQ-xxx
 - **Priority:** Essential / Desirable / Optional
-- **Acceptance criteria:** (measurable condition for verification)
+- **Acceptance criteria:** (the `@AC_<name>` scenarios of the component story's feature file, each a measurable condition for verification, methodology §11.3)
 - **Verification method:** Test / Analysis / Inspection / Demonstration
 
 #### SER-002: (requirement title)
@@ -81,7 +81,8 @@ iso_ref: "SR.2"
 ## 4. Traceability
 
 > Summary of element requirement to system requirement traceability.
-> The full matrix is maintained in `docs/sr/traceability-matrix.md`.
+> The full matrix is rendered from the model into
+> `docs/generated/traceability-matrix.md`.
 
 | Element Req | System Req | Element | Status |
 |-------------|-----------|---------|--------|

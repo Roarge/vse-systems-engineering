@@ -6,8 +6,9 @@ description: >
   against a system concept. Use this agent from needs-and-requirements
   during SR.2 persona-driven elicitation when each persona benefits
   from being analysed in its own context. Returns a suggestion-shaped
-  markdown package: per-persona interview script, candidate needs, and
-  trace links back to the persona. The engineer edits the result
+  markdown package: per-persona interview script, candidate needs,
+  draft Gherkin scenarios (Given/When/Then) for each candidate need,
+  and trace links back to the persona. The engineer edits the result
   before any need is recorded in the StRS.
 
   <example>
@@ -74,7 +75,23 @@ For each persona in turn, perform the following:
 4. **Trace back to the persona.** Each candidate need carries a
    `source` attribute naming the persona of origin. If a candidate
    plausibly comes from more than one persona, list every contributor.
-5. **Surface conflicts.** If two personas' candidate needs would
+5. **Draft scenarios.** For each candidate need, draft one or more
+   Gherkin scenarios that would show the need is met. Gherkin is the
+   plain-text Given/When/Then format in which the methodology states
+   every acceptance criterion (§11.2). Each scenario is one concrete
+   example: zero or more Given steps for the context, then one or more
+   When steps for the action, then one or more Then steps for an
+   outcome someone could observe and check. Write the steps in
+   stakeholder language, from the persona's point of view. Propose a
+   criterion name for each scenario in lowerCamelCase, that is, words
+   run together with each word after the first capitalised (for
+   example `latestReadingShown`). It would become the scenario's
+   `@AC_<name>` tag. Where only a person could judge the outcome, for
+   example a stakeholder's verdict during a field trial, say so, because
+   a validation case rather than a test runner would then verify it
+   (§11.8). These are suggestions only. The parent skill writes a
+   feature file only for needs the engineer accepts (§11.4).
+6. **Surface conflicts.** If two personas' candidate needs would
    compete (for example, ease of use against tamper resistance), flag
    the conflict explicitly under a "Conflicts to resolve" heading.
    Do not arbitrate. The engineer makes the call.
@@ -109,6 +126,18 @@ editing.
 | STK-[draft-1] | [stakeholder language statement] | [Function/Fit/Form/Quality/Compliance] | [persona name] |
 | ... | ... | ... | ... |
 
+**Draft scenarios** (suggestions only, one or more per candidate need)
+
+STK-[draft-1], criterion `[lowerCamelCaseName]`:
+
+    Scenario: [short title]
+      Given [context]
+      When [action]
+      Then [observable outcome]
+
+(repeat for every candidate need, and mark any scenario that only a
+person could judge)
+
 **Probes for follow-up**
 
 - [open issue or question for the engineer to raise in the actual interview]
@@ -128,10 +157,11 @@ editing.
 
 ### Suggestion for the engineer
 
-These interviews and candidate needs are drafts for your review. Edit
-freely, drop candidates that do not survive scrutiny, and only then
-record the surviving needs in the Stakeholder Requirements
-Specification through the parent skill.
+These interviews, candidate needs and draft scenarios are drafts for
+your review. Edit freely, drop candidates that do not survive scrutiny,
+and only then record the surviving needs in the Stakeholder
+Requirements Specification through the parent skill, which writes each
+accepted need's feature file from its scenarios before the story.
 ```
 
 ## Reporting Style
@@ -141,7 +171,10 @@ Specification through the parent skill.
 - UK English throughout. No em-dashes, no semicolons in body text, no
   contractions.
 - Stakeholder language only. Avoid solution-domain vocabulary in the
-  candidate need statements.
+  candidate need statements and in the scenario steps.
+- Draft scenarios are suggestions, not a feature file. Do not propose a
+  file name, a Feature header or a story tag, because the story
+  identifier does not exist until the engineer accepts the need.
 - Do not write any files. Do not propose to modify the StRS or any
   SysML model file. The parent skill is responsible for all file
   operations.

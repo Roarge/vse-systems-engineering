@@ -14,6 +14,7 @@ story-driven agile MBSE methodology, ISO/IEC 29110 aligned.
 - **Engineering root:** {{ENGINEERING_ROOT}}
 - **Profile:** {{PROFILE}} (rigour profile per methodology §0.10)
 - **Toolchain:** {{SYSML_TOOLCHAIN}} (SysML v2 validator per `.iso-config.yaml` `sysml_toolchain`)
+- **Test-first:** {{TEST_FIRST}} (whether test first applies and the test command, per `.iso-config.yaml` `test_first`, methodology §11.5)
 
 ## Methodology
 
@@ -35,6 +36,13 @@ restate.
 
 ## Pointers, not restatements
 
+- Behaviour first: a story's Gherkin feature file and its scenarios
+  come before its SysML, its cases and any design: §11.2 to §11.4.
+- Test first: where it applies, the failing test comes before the
+  code, and an installed test-driven development skill governs the
+  cycle: §11.5 to §11.7.
+- Gates that block at every profile, and the self-bypass rule: §11.9
+  and §11.10.
 - Branch model, pull request workflow, and review checklists: §8.
 - Which artefacts and which gates this project owes at its profile:
   §0.10.

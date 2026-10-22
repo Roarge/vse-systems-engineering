@@ -15,7 +15,7 @@ related:
   - iso29110-template-mapping
 confidence: high
 created: 2026-05-04
-updated: 2026-05-04
+updated: 2026-10-18
 referenced_by: [project-setup, release-orchestrator]
 ---
 
@@ -90,6 +90,6 @@ referenced_by: [project-setup, release-orchestrator]
 - [[iso29110-overview]] for the profile context.
 - [[iso29110-pm-process]] and [[iso29110-sr-process]] for the
   activities each role and work product participates in.
-- [[iso29110-template-mapping]] for the file paths under
-  `docs/pm/` and `docs/sr/` where each work product lives in a
-  scaffolded VSE project.
+- [[iso29110-template-mapping]] for where each work product
+  lives in a scaffolded VSE project, mostly one file per document
+  directly under `docs/`.

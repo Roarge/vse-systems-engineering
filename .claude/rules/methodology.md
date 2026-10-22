@@ -6,7 +6,7 @@ paths:
 # Methodology Rules
 
 `methodology/` holds the canonical specification of the process the
-plugin enforces (§0 to §10 plus the ISO/IEC 29110 hooks guide). It is the
+plugin enforces (§0 to §11 plus the ISO/IEC 29110 hooks guide). It is the
 source of truth for every workflow stage, and skill bodies and wiki
 pages may summarise it but never override it. Where any source
 disagrees, the methodology wins, and ISO/IEC 29110 is the process

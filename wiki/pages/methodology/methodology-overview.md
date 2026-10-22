@@ -22,9 +22,10 @@ related:
   - methodology-library-packaging
   - benefit-as-criterion
   - sysmod-toolbox-anatomy
+  - behaviour-and-test-first
 confidence: high
 created: 2026-05-05
-updated: 2026-08-13
+updated: 2026-10-18
 referenced_by: [story-orchestrator, release-orchestrator, project-setup, project-audit]
 ---
 
@@ -80,4 +81,4 @@ Foundational artefacts (Base Architecture, System Context) are treated as *evolv
 
 ## Related Methodology Material
 
-The methodology specification continues with project structure and Git workflow (see [[story-branch-pr-workflow]]), the ISO/IEC TR 29110-5-6-2 compliance mapping (see [[iso-29110-compliance-mapping]]), project management practice (see [[project-management-workflow]]), and the forthcoming SysML v2 library packaging that will let downstream projects adopt the methodology by `import` rather than by re-declaration (see [[methodology-library-packaging]]).
+The methodology specification continues with project structure and Git workflow (see [[story-branch-pr-workflow]]), the ISO/IEC TR 29110-5-6-2 compliance mapping (see [[iso-29110-compliance-mapping]]), project management practice (see [[project-management-workflow]]), behaviour-driven and test-driven development (see [[behaviour-and-test-first]]), and the forthcoming SysML v2 library packaging that will let downstream projects adopt the methodology by `import` rather than by re-declaration (see [[methodology-library-packaging]]).

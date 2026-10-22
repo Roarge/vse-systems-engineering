@@ -10,7 +10,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
+      # The full history, so the test-first check can find the merge
+      # base of a pull request's range.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate plugin manifest JSON
         run: |
@@ -236,6 +240,115 @@ jobs:
               exit 1
               ;;
           esac
+          # The test_first block and the four test-first and Gherkin
+          # gates ship commented out, so a new project starts at the
+          # profile defaults and records its own judgement. A commented
+          # block is a "# <name>:" header line followed by commented
+          # keys indented under the header (two blanks or more after the
+          # #), and it ends at the first other line.
+          if grep -qE '^(test_first|gate_overrides):' templates/iso-config/.iso-config.yaml; then
+            echo "::error::templates/iso-config/.iso-config.yaml records an active test_first or gate_overrides block. Both ship commented out, so a new project starts at the profile defaults and records its own test-first judgement with /vse-test-first"
+            exit 1
+          fi
+          MISSING=$(awk '
+            BEGIN {
+              n = split("test_first.applies test_first.rationale test_first.test_command test_first.scenario_command test_first.code_paths test_first.test_paths test_first.refactor_branches gate_overrides.precommit_gherkin gate_overrides.precommit_test_first gate_overrides.pretooluse_gherkin_first gate_overrides.pretooluse_test_first", want, " ")
+            }
+            /^# [a-z_][a-z_]*:[ \t]*$/ { block = $0; sub(/^# /, "", block); sub(/:.*/, "", block); next }
+            block != "" && /^#[ \t][ \t][ \t]*[a-z_][a-z_]*:/ { key = $0; sub(/^#[ \t]*/, "", key); sub(/:.*/, "", key); seen[block "." key] = 1; next }
+            { block = "" }
+            END { sep = ""; for (i = 1; i <= n; i++) if (!(want[i] in seen)) { printf "%s%s", sep, want[i]; sep = " " } }' \
+            templates/iso-config/.iso-config.yaml)
+          if [ -n "$MISSING" ]; then
+            echo "::error::templates/iso-config/.iso-config.yaml lacks these keys in its commented test_first and gate_overrides blocks: $MISSING"
+            exit 1
+          else
+            echo "templates/iso-config/.iso-config.yaml carries the commented test_first block and the four test-first and Gherkin gates in its commented gate_overrides."
+          fi
+
+      - name: Check the story and case templates
+        run: |
+          # A template's name begins with _, which the story lint
+          # skips, so the check copies the model templates into a
+          # scratch project under the names of the identifiers they
+          # declare and runs the Gherkin rule set there, once as
+          # shipped and once with each story at inProgress.
+          if ! bash tests/hooks/check-templates.sh; then
+            echo "::error::tests/hooks/check-templates.sh found a story or case template the story lint does not pass"
+            exit 1
+          fi
+
+      - name: Check the demo mirrors
+        run: |
+          # The demo is a standalone project, so it carries
+          # byte-identical copies of the methodology, the SysML
+          # library, the renderers and the story lint. A change to one
+          # side lands in the same commit as the other. A file pair is
+          # compared with cmp. A directory pair is compared file by
+          # file over the names git lists on either side (tracked
+          # files, and untracked files that no .gitignore rule
+          # ignores). So an OS or editor artefact or a bytecode cache,
+          # which is ignored and never ships, is skipped, and a new
+          # file that is not yet added still counts. A tracked file
+          # missing from both sides is not a difference.
+          if ! git rev-parse --git-dir >/dev/null 2>&1; then
+            echo "::error::check-mirrors lists files through git, so run it inside a git checkout"
+            exit 1
+          fi
+          EXIT_CODE=0
+          CHECKED=0
+          for pair in \
+            methodology:demo/smart-sensor/methodology \
+            templates/common/library/vse-library.sysml:demo/smart-sensor/model/library/vse-library.sysml \
+            templates/tools/render:demo/smart-sensor/tools/render \
+            templates/tools/lint:demo/smart-sensor/tools/lint; do
+            src=${pair%%:*}
+            copy=${pair#*:}
+            CHECKED=$((CHECKED + 1))
+            if [ -d "$src" ]; then
+              REPORT=$( { git -C "$src" ls-files -z -co --exclude-standard
+                          git -C "$copy" ls-files -z -co --exclude-standard 2>/dev/null; } \
+                | tr '\0' '\n' | LC_ALL=C sort -u | while IFS= read -r f; do
+                  if [ ! -e "$src/$f" ] && [ ! -e "$copy/$f" ]; then
+                    continue
+                  elif [ ! -e "$copy/$f" ]; then
+                    echo "Only in $src: $f"
+                  elif [ ! -e "$src/$f" ]; then
+                    echo "Only in $copy: $f"
+                  elif ! cmp -s "$src/$f" "$copy/$f"; then
+                    echo "Files $src/$f and $copy/$f differ"
+                  fi
+                done )
+              [ -z "$REPORT" ] || { printf '%s\n' "$REPORT"; false; }
+            else
+              cmp "$src" "$copy"
+            fi || {
+              echo "::error::$src and $copy are not byte-identical"
+              EXIT_CODE=1
+            }
+          done
+          echo "Checked $CHECKED mirror pairs."
+          exit $EXIT_CODE
+
+      - name: Check that code changes arrive with tests
+        env:
+          VSE_PRECOMMIT_RANGE: ${{ github.event.pull_request.base.sha }}...${{ github.sha }}
+        run: |
+          # Test before code for the plugin itself. A pull request that
+          # changes a code path named in tests/test-first.yaml shall
+          # also change a test path. The range is the pull request's
+          # base...the commit under test, so the check reads the
+          # changes since their merge base. A push to main carries
+          # changes that were checked as a pull request, so the step
+          # is skipped there with a notice.
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "::notice::The test-first check runs on pull requests only, so it is skipped on this push."
+            exit 0
+          fi
+          if ! bash tests/hooks/check-test-first.sh; then
+            echo "::error::tests/hooks/check-test-first.sh found code changed with no test change, or could not read the range"
+            exit 1
+          fi
 
       - name: Check the SysML toolchain library
         run: |
@@ -248,16 +361,35 @@ jobs:
             exit 1
           fi
 
+      - name: Run the Python unit tests
+        run: |
+          # Standard library unittest only, because pytest is not
+          # importable by python3 locally or on this runner.
+          python3 -m unittest discover -s tests/python -t . -v
+
+      - name: Run the plugin's Gherkin scenarios
+        run: |
+          # The standard-library runner in tests/bdd/. A scenario
+          # still tagged @wip fails the run (--fail-on-wip), so no work
+          # in progress reaches a commit or a release. A directory that
+          # holds no .feature file passes with a zero summary. The story
+          # lint then checks the same files in syntax mode (F1, F2, F7,
+          # F8 and F9), because they describe the plugin rather than a
+          # story and carry no story tag.
+          python3 tests/bdd/run.py --fail-on-wip tests/features
+          python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
+
       - name: Test the hook scripts
         run: |
-          if ! bash tests/hooks/test-pre-commit.sh; then
-            echo "::error::tests/hooks/test-pre-commit.sh reported a failing case"
-            exit 1
-          fi
-          if ! bash tests/hooks/test-session-start.sh; then
-            echo "::error::tests/hooks/test-session-start.sh reported a failing case"
-            exit 1
-          fi
+          # Every tests/hooks/test-*.sh file runs, found by glob, so a
+          # new hook test joins the suite by its file name alone. The
+          # first failing file stops the run.
+          for t in tests/hooks/test-*.sh; do
+            if ! bash "$t"; then
+              echo "::error::$t reported a failing case"
+              exit 1
+            fi
+          done
 
       - name: Check the demo's generated artefacts
         run: |
@@ -276,5 +408,50 @@ jobs:
           )
           if ! git diff --exit-code -- demo/smart-sensor/docs/generated/; then
             echo "::error::demo/smart-sensor/docs/generated/ is stale. Re-run the renderers and commit the result."
+            exit 1
+          fi
+
+      - name: Lint the demo's stories and feature files
+        run: |
+          # The story lint of methodology section 11.9.1, with both
+          # rule sets (the section 1.9 well-formedness checks and the
+          # Gherkin findings S1 to S9 and F1 to F10), run from the
+          # demo's engineering root the way a project runs it. Every
+          # demo story has its feature file and named criteria, so the
+          # lint finds nothing.
+          cd demo/smart-sensor
+          if ! python3 tools/lint/story-wellformed.py model; then
+            echo "::error::the demo's stories draw story lint findings, listed above"
+            exit 1
+          fi
+
+      - name: Install OpenSysML v0.6.0
+        run: |
+          # The second reference toolchain of the demo's validation
+          # record, installed user-level the way the sysml-toolchain
+          # skill installs it. The checksum is from the release's
+          # SHA256SUMS.txt, and a mismatch stops the step with nothing
+          # extracted.
+          set -euo pipefail
+          DL="$(mktemp -d)"
+          curl -fsSL -o "$DL/opensysml-linux-amd64.tar.gz" \
+            https://github.com/Open-MBEE/OpenSysML/releases/download/v0.6.0/opensysml-linux-amd64.tar.gz
+          echo "15d4a2d12a0adaadcbb1ed53946061a113c793e60a9e159b790936938323fc38  $DL/opensysml-linux-amd64.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$DL/opensysml-linux-amd64.tar.gz" -C "$HOME/.local/bin" sysml sysml-lsp
+          rm -rf "$DL"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Validate the demo model and the model templates with OpenSysML
+        run: |
+          # The demo model, and the model templates with their
+          # placeholders filled, validated with OpenSysML. A verify
+          # path that names a criterion resolves only when the story
+          # nests that criterion (methodology section 11.3). The
+          # script fails when sysml is missing, so a broken install
+          # cannot pass here, where the Makefile target would skip.
+          sysml -version
+          if ! bash tests/hooks/validate-demo.sh; then
+            echo "::error::tests/hooks/validate-demo.sh found OpenSysML findings in the demo model or the model templates, or OpenSysML is unavailable"
             exit 1
           fi

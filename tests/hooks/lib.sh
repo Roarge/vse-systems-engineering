@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 # Shared helpers for the behavioural hook tests under tests/hooks/.
 #
-# Sourced by check-toolchain.sh, test-pre-commit.sh and
-# test-session-start.sh. Provides a scratch git repository with the
-# project-side hooks installed, a stub directory that shadows the real
-# SysML toolchains, assertion helpers, and a pass/fail summary.
+# Sourced by check-toolchain.sh and the test-*.sh files beside it.
+# Provides a scratch git repository with the project-side hooks
+# installed, a stub directory that shadows the real SysML toolchains, a
+# PATH directory without named tools (tc_bin_without), assertion
+# helpers, and a pass/fail summary.
 #
 # Two runners:
-#   tc_run_hook, tc_run_lib, tc_run_lib_fn are sandboxed. PATH is the
-#     stub directory followed by /usr/bin and /bin, HOME is a scratch
-#     directory, and the pilot home points inside it, so nothing the
-#     machine has installed can reach the code under test.
+#   tc_run_hook, tc_run_lifecycle, tc_run_lib, tc_run_lib_fn are
+#     sandboxed. PATH is the stub directory followed by /usr/bin and
+#     /bin, HOME is a scratch directory, and the pilot home points
+#     inside it, so nothing the machine has installed can reach the
+#     code under test.
 #   tc_run_real uses the machine's own PATH and HOME, for the sections
 #     that exercise a really installed toolchain. Those sections are
 #     guarded and print SKIPPED when the tool is absent, which is what
@@ -84,43 +86,79 @@ tc_teardown() {
 # ------------------------------------------------------------- fixture
 
 # Scratch git repository with the project-side hooks installed the way
-# @attention-regime installs them, plus an empty fake HOME and an empty
-# stub directory.
+# @attention-regime installs them, the story lint and the renderers it
+# imports under tools/, plus an empty fake HOME and an empty stub
+# directory.
 tc_setup_repo() {
+    local name
     REPO="$(tc_mktemp_d)"
     git -C "$REPO" init -q -b main
     git -C "$REPO" config user.email "hook-test@example.invalid"
     git -C "$REPO" config user.name "VSE hook test"
     git -C "$REPO" config commit.gpgsign false
-    mkdir -p "${REPO}/.githooks/lib"
+    mkdir -p "${REPO}/.githooks/lib" "${REPO}/tools"
     cp "${TC_PLUGIN_ROOT}/hooks/pre-commit.sh" "${REPO}/.githooks/pre-commit"
     cp "${TC_PLUGIN_ROOT}/hooks/pre-commit-traceability.sh" "${REPO}/.githooks/pre-commit-traceability.sh"
     cp "${TC_PLUGIN_ROOT}/hooks/lib/iso-profile.sh" "${REPO}/.githooks/lib/iso-profile.sh"
     cp "${TC_PLUGIN_ROOT}/hooks/lib/sysml-toolchain.sh" "${REPO}/.githooks/lib/sysml-toolchain.sh"
+    cp "${TC_PLUGIN_ROOT}/hooks/lib/test-first.sh" "${REPO}/.githooks/lib/test-first.sh"
     chmod +x "${REPO}/.githooks/pre-commit" \
              "${REPO}/.githooks/pre-commit-traceability.sh" \
              "${REPO}/.githooks/lib/iso-profile.sh" \
-             "${REPO}/.githooks/lib/sysml-toolchain.sh"
+             "${REPO}/.githooks/lib/sysml-toolchain.sh" \
+             "${REPO}/.githooks/lib/test-first.sh"
+    # The lint imports ../render/sysml_model.py, so both directories
+    # are installed. Bytecode caches are left behind.
+    for name in lint render; do
+        mkdir -p "${REPO}/tools/${name}"
+        find "${TC_PLUGIN_ROOT}/templates/tools/${name}" -maxdepth 1 -type f \
+            -exec cp {} "${REPO}/tools/${name}/" \;
+    done
     git -C "$REPO" config core.hooksPath .githooks
     FAKEHOME="$(tc_mktemp_d)"
     STUBS="$(tc_mktemp_d)"
 }
 
-# tc_config <profile> <toolchain|-> [override=<block|warn|info|off>]
+# tc_config <profile> <toolchain|-> [spec ...]
+#
+# Each spec is <gate>=<block|warn|info|off>, or override=<disp>, the
+# older form that means precommit_lint. Every spec lands in one
+# gate_overrides block, in the order given. A spec without "=" is
+# refused with return 2 before anything is written.
 tc_config() {
-    local profile="$1" toolchain="$2" extra="${3:-}"
+    local profile="$1" toolchain="$2" spec gate
+    shift 2
+    for spec in "$@"; do
+        case "$spec" in
+            *=*) : ;;
+            *)
+                printf "tc_config: '%s' is not a <gate>=<disposition> spec\n" "$spec" >&2
+                return 2
+                ;;
+        esac
+    done
     {
         printf 'project_profile: %s\n' "$profile"
         if [ "$toolchain" != "-" ]; then
             printf 'sysml_toolchain: %s\n' "$toolchain"
         fi
-        case "$extra" in
-            override=*)
-                printf 'gate_overrides:\n'
-                printf '  precommit_lint: %s\n' "${extra#override=}"
-                ;;
-        esac
+        if [ "$#" -gt 0 ]; then
+            printf 'gate_overrides:\n'
+            for spec in "$@"; do
+                gate="${spec%%=*}"
+                if [ "$gate" = "override" ]; then
+                    gate="precommit_lint"
+                fi
+                printf '  %s: %s\n' "$gate" "${spec#*=}"
+            done
+        fi
     } > "${REPO}/.iso-config.yaml"
+}
+
+# tc_config_append: append stdin verbatim to the project configuration,
+# for keys tc_config does not write.
+tc_config_append() {
+    cat >> "${REPO}/.iso-config.yaml"
 }
 
 # tc_stub <name>: write an executable stub into $STUBS from stdin.
@@ -189,6 +227,28 @@ exit "\${SYSML_RC:-0}"
 EOF
 }
 
+# jq 1.5 has no halt_error. The stub refuses any program that calls it,
+# with the compile error and exit status 3 jq 1.5 gives, and passes
+# every other call to the real jq found when the stub is written.
+tc_stub_old_jq() {
+    local real
+    real="$(command -v jq)"
+    tc_stub jq <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+for arg in "\$@"; do
+    case "\$arg" in
+        *halt_error*)
+            echo "jq: error: halt_error/1 is not defined at <top-level>, line 18:" >&2
+            echo "jq: 1 compile error" >&2
+            exit 3
+            ;;
+    esac
+done
+exec "${real}" "\$@"
+EOF
+}
+
 # A stub that records the fact it ran and nothing else. Used to prove a
 # gate did not reach for a validator at all.
 tc_stub_recorder() {
@@ -225,6 +285,17 @@ tc_write() {
     cat > "${REPO}/${path}"
 }
 
+# tc_mark_plugin_repo [<dir>]: make <dir> ($REPO by default) the
+# plugin repository as the hooks recognise it: the wiki schema file
+# wiki/CLAUDE.md and a plugin manifest that names the plugin.
+tc_mark_plugin_repo() {
+    local dir="${1:-$REPO}"
+    mkdir -p "${dir}/wiki" "${dir}/.claude-plugin"
+    printf '# Wiki schema\n' > "${dir}/wiki/CLAUDE.md"
+    printf '{\n  "name": "vse-systems-engineering",\n  "version": "5.0.0"\n}\n' \
+        > "${dir}/.claude-plugin/plugin.json"
+}
+
 # Write a file outside the repository, for transcripts and fixtures.
 tc_write_at() {
     local path="$1"
@@ -240,6 +311,20 @@ tc_commit() {
     git -C "$REPO" commit -q --no-verify -m "$1"
 }
 
+# tc_tag_many <dir> <prefix> <count>: tag HEAD of the repository at
+# <dir> as <prefix>1 to <prefix><count>, in one git call. Twelve
+# thousand tags of about sixteen characters list as some 200 KB, more
+# than a pipe buffer holds (64 KiB), so a reader that stops after the
+# first line leaves the writer blocked on a full pipe.
+tc_tag_many() {
+    local dir="$1" prefix="$2" count="$3" head
+    head="$(git -C "$dir" rev-parse HEAD)"
+    awk -v prefix="$prefix" -v count="$count" -v head="$head" 'BEGIN {
+        for (i = 1; i <= count; i++)
+            printf "create refs/tags/%s%d %s\n", prefix, i, head
+    }' | git -C "$dir" update-ref --stdin
+}
+
 # -------------------------------------------------------------- runner
 
 # tc_env NAME=VALUE ...: environment for the next runner call. With no
@@ -249,6 +334,8 @@ tc_env() {
     TC_ENV=("$@")
 }
 
+# Stdin is the file named by TC_STDIN, or empty when it is unset, so
+# code under test never reads the terminal of whoever runs the tests.
 _tc_capture() {
     local outf errf
     outf="$(mktemp "${TC_ROOT}/out.XXXXXX")"
@@ -256,7 +343,7 @@ _tc_capture() {
     RC=0
     # env is an external process, so the errexit context of this caller
     # cannot leak into the code under test.
-    "$@" > "$outf" 2> "$errf" < /dev/null || RC=$?
+    "$@" > "$outf" 2> "$errf" < "${TC_STDIN:-/dev/null}" || RC=$?
     # shellcheck disable=SC2034
     OUT="$(cat "$outf")"
     # shellcheck disable=SC2034
@@ -267,11 +354,13 @@ _tc_capture() {
 # Sandboxed run inside $REPO. The stub directory shadows /usr/bin, HOME
 # and the pilot home are scratch, and every variable an installer or an
 # outer run might carry into the sandbox is removed, including the probe
-# budget, so a case that pins it sets it deliberately.
+# budget, the configuration path and the pull request branch CI names
+# (GITHUB_HEAD_REF), so a case that pins one sets it deliberately
+# through tc_env.
 _tc_sandboxed() {
     _tc_capture env -C "$REPO" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
-        -u VSE_TC_PROBE_TIMEOUT \
+        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \
@@ -281,6 +370,35 @@ _tc_sandboxed() {
 
 tc_run_hook() {
     _tc_sandboxed ./.githooks/pre-commit
+}
+
+# tc_install_githook <name>: install hooks/<name>.sh as .githooks/<name>,
+# for the git hooks tc_setup_repo does not install.
+tc_install_githook() {
+    local name="$1"
+    cp "${TC_PLUGIN_ROOT}/hooks/${name}.sh" "${REPO}/.githooks/${name}"
+    chmod +x "${REPO}/.githooks/${name}"
+}
+
+# tc_run_githook <name> [arg ...]: run .githooks/<name> sandboxed in
+# $REPO, the way git runs it, with the arguments git would pass.
+tc_run_githook() {
+    local name="$1"
+    shift
+    _tc_sandboxed "./.githooks/${name}" "$@"
+}
+
+# tc_run_lifecycle <hook-basename> <json>: run a lifecycle hook the way
+# the harness does, sandboxed in $REPO with the JSON payload on stdin
+# and CLAUDE_PLUGIN_ROOT naming the plugin root. TC_HOOK_ROOT, when
+# set, replaces the plugin root, so a self-test can run a stub hook.
+tc_run_lifecycle() {
+    local hook="$1" json="$2" root TC_STDIN
+    root="${TC_HOOK_ROOT:-${TC_PLUGIN_ROOT}}"
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$json" > "$TC_STDIN"
+    _tc_sandboxed CLAUDE_PLUGIN_ROOT="$root" "${root}/hooks/${hook}.sh"
+    rm -f "$TC_STDIN"
 }
 
 # Run the library as the command-line entry point CI and the Makefile
@@ -310,10 +428,12 @@ tc_run_lib_fn() {
 }
 
 # Run inside $REPO with the machine's real PATH and HOME, for the
-# installed-toolchain sections.
+# installed-toolchain sections. The configuration path and an outer
+# GITHUB_HEAD_REF are dropped here too, so an outer value cannot steer
+# a real-tool case.
 tc_run_real() {
     _tc_capture env -C "$REPO" \
-        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN \
+        -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${TC_REAL_PATH}" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
         "$@"
@@ -328,6 +448,47 @@ tc_real_available() {
     [ "$RC" -eq 0 ]
 }
 
+# tc_bin_without [<tool> ...]: print a new scratch directory holding a
+# symbolic link to every program in /usr/bin and /bin except the named
+# tools. A case passes it as PATH to take jq or python3 out of reach
+# while every other program still runs. Where /bin and /usr/bin hold
+# the same name, the /usr/bin program is linked. The links are made by
+# one ln call per source directory, in the POSIX form that names the
+# target directory last (GNU ln -t is not available on macOS).
+tc_bin_without() {
+    local dir src entry name tool keep
+    local links
+    dir="$(tc_mktemp_d)"
+    for src in /usr/bin /bin; do
+        links=()
+        for entry in "${src}"/*; do
+            name="${entry##*/}"
+            # A directory is not a program, a glob that matched nothing
+            # is not a file, and a name linked from /usr/bin stays.
+            if [ -d "$entry" ] || { [ ! -e "$entry" ] && [ ! -L "$entry" ]; }; then
+                continue
+            fi
+            if [ -e "${dir}/${name}" ] || [ -L "${dir}/${name}" ]; then
+                continue
+            fi
+            keep=1
+            for tool in "$@"; do
+                if [ "$name" = "$tool" ]; then
+                    keep=0
+                    break
+                fi
+            done
+            if [ "$keep" -eq 1 ]; then
+                links+=("$entry")
+            fi
+        done
+        if [ "${#links[@]}" -gt 0 ]; then
+            ln -s "${links[@]}" "$dir"
+        fi
+    done
+    printf '%s\n' "$dir"
+}
+
 # Sandboxed run in an arbitrary directory, for the SessionStart hook,
 # which is not installed into a repository.
 tc_run_in() {
@@ -335,7 +496,7 @@ tc_run_in() {
     shift
     _tc_capture env -C "$dir" \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
-        -u VSE_TC_PROBE_TIMEOUT \
+        -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
         HOME="${FAKEHOME}" \
         VSE_SYSML_PILOT_HOME="$(tc_pilot_home)" \
@@ -387,6 +548,18 @@ tc_assert_grep() {
         tc_pass "$name"
     else
         tc_fail "$name" "expected to find: ${pattern}
+$(_tc_context)"
+    fi
+}
+
+# tc_assert_line <exact-line> <text> <case>: one line of the text is
+# exactly the expected line, not merely a line that contains it.
+tc_assert_line() {
+    local line="$1" text="$2" name="$3"
+    if printf '%s\n' "$text" | grep -qxF -- "$line"; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected a line equal to: ${line}
 $(_tc_context)"
     fi
 }
@@ -454,6 +627,44 @@ tc_assert_empty() {
     else
         tc_fail "$name" "expected empty, got:
 ${text}"
+    fi
+}
+
+# tc_assert_json <jq-filter> <case>: stdout is exactly one JSON value
+# and the filter holds on it. A hook that prints two objects fails even
+# when both satisfy the filter, because the output contract allows
+# exactly one. A failure shows what jq wrote on stderr, such as the
+# error for a filter it cannot compile, and a missing jq fails with a
+# line that says so.
+tc_assert_json() {
+    local filter="$1" name="$2" jq_err="" held=0
+    if ! command -v jq > /dev/null 2>&1; then
+        tc_fail "$name" "jq is not installed, so no JSON assertion can hold
+$(_tc_context)"
+        return 0
+    fi
+    if jq_err="$(printf '%s' "$OUT" | jq -e "$filter" 2>&1 > /dev/null)" \
+        && jq_err="$(printf '%s' "$OUT" | jq -e -s 'length == 1' 2>&1 > /dev/null)"; then
+        held=1
+    fi
+    if [ "$held" -eq 1 ]; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected one JSON value satisfying: ${filter}${jq_err:+
+--- jq ---
+${jq_err}}
+$(_tc_context)"
+    fi
+}
+
+# tc_assert_json_silent <case>: the hook printed nothing on stdout.
+tc_assert_json_silent() {
+    local name="$1"
+    if [ -z "$OUT" ]; then
+        tc_pass "$name"
+    else
+        tc_fail "$name" "expected no stdout
+$(_tc_context)"
     fi
 }
 

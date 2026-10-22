@@ -44,12 +44,15 @@ def cell(values):
 
 
 def verification_cases_for(model, story):
-    """Verification cases reaching a stakeholder story, direct or derived.
+    """Verification cases traced to a stakeholder story, direct or derived.
 
     A verification case targets a system-side requirement (methodology
-    section 5.4.6), so it usually reaches a stakeholder story through the
-    system story derived from it. A case naming the stakeholder story
-    directly is recorded as well rather than being discarded.
+    section 5.4.6), so it is usually traced to a stakeholder story through
+    the system story derived from it. A case naming the stakeholder story
+    directly is recorded as well rather than being discarded. The list
+    fills the row's Verification Case cell only. A case on a derived
+    system story reaches none of the stakeholder story's own criteria, so
+    it does not make the row complete (stakeholder_story_is_covered).
     """
     cases = []
     for case in model.cases_verifying(story.identifier, kind="verification"):
@@ -62,34 +65,44 @@ def verification_cases_for(model, story):
     return cases
 
 
-def stakeholder_story_is_covered(model, story):
-    """True when the story's acceptance has coverage by either route.
+def unreached_criteria(model, story, kind=""):
+    """The names of the story's criteria that no case reaches, in
+    declaration order, counting only cases of `kind` when one is given.
 
-    Coverage comes from either of the two routes the methodology defines.
-    A validation case exercises the stakeholder story directly (section
-    4.3.6). A verification case exercises a system story derived from it
-    (sections 5.4.1 and 5.4.6). A story with no acceptance criterion has
-    nothing to cover and is therefore never complete, per section 1.9.
+    A case reaches a criterion under the coverage rule of methodology
+    section 11.3.3, the rule the story lint's finding S8 applies, so the
+    matrix and the commit gate judge a criterion alike.
     """
-    if not story.acceptances:
-        return False
-    for case in model.cases:
-        if case.covers_acceptance(story.identifier):
-            return True
-    for derived in model.derived_from(story.identifier):
-        for case in model.cases_of_kind("verification"):
-            if case.covers_acceptance(derived):
-                return True
-    return False
+    cases = model.cases_of_kind(kind) if kind else model.cases
+    return [
+        acceptance.label
+        for acceptance in story.acceptances
+        if not any(case.reaches(story.identifier, acceptance.label)
+                   for case in cases)
+    ]
 
 
 def system_story_is_verified(model, story):
+    """True when verification cases reach every criterion of the story."""
     if not story.acceptances:
         return False
-    for case in model.cases_of_kind("verification"):
-        if case.covers_acceptance(story.identifier):
-            return True
-    return False
+    return not unreached_criteria(model, story, kind="verification")
+
+
+def stakeholder_story_is_covered(model, story):
+    """True when cases reach every criterion of the story.
+
+    The story is judged on its own criteria, by verification and
+    validation cases alike, as the story lint's finding S8 judges it
+    before the story may move to inProgress (methodology sections 11.3.3
+    and 11.4). A verified system story derived from it does not stand in
+    for a criterion that no case reaches. A story with no acceptance
+    criterion has nothing to cover and is therefore never complete, per
+    section 1.9.
+    """
+    if not story.acceptances:
+        return False
+    return not unreached_criteria(model, story)
 
 
 def matrix_rows(model):
@@ -135,11 +148,12 @@ def gap_findings(model):
                 f"`{story.identifier}` declares no acceptance criterion, so "
                 "no case can cover it (methodology section 1.9)."
             )
-        elif not stakeholder_story_is_covered(model, story):
-            findings.append(
-                f"`{story.identifier}` has neither a validation case against "
-                "its acceptance nor a verified system story derived from it."
-            )
+        else:
+            for label in unreached_criteria(model, story):
+                findings.append(
+                    f"`{story.identifier}` has no case that reaches its "
+                    f"criterion `{label}` (methodology section 11.3.3)."
+                )
 
     for story in model.stories_of_kind("system"):
         if not story.acceptances:
@@ -148,10 +162,12 @@ def gap_findings(model):
                 "no verification case can cover it (methodology section 1.9)."
             )
         elif not system_story_is_verified(model, story):
-            findings.append(
-                f"`{story.identifier}` has no verification case against its "
-                "acceptance (methodology section 5.4.6)."
-            )
+            for label in unreached_criteria(model, story, kind="verification"):
+                findings.append(
+                    f"`{story.identifier}` has no verification case that "
+                    f"reaches its criterion `{label}` (methodology section "
+                    "5.4.6)."
+                )
         if not model.originals_of(story.identifier):
             findings.append(
                 f"`{story.identifier}` derives from no stakeholder story "
@@ -189,7 +205,7 @@ def summary_rows(model):
             f"{len(covered)} of {len(stakeholder)}",
         ),
         (
-            "System stories with a verification case",
+            "System stories with every criterion verified",
             f"{len(verified)} of {len(system)}",
         ),
     ]
@@ -230,13 +246,16 @@ def render(model):
     lines.append("## Gaps")
     lines.append("")
     lines.append(
-        "A stakeholder story is complete when a validation case exercises "
-        "its acceptance, or when a system story derived from it is "
-        "exercised by a verification case. A case counts only where it "
-        "verifies the story itself or the story's `acceptance` member. "
-        "One whose targets are all nested constraint requirements, such "
-        "as `<story>.sla`, verifies those constraints rather than the "
-        "acceptance criteria, so it does not close the row on its own."
+        "A stakeholder story is complete when verification or validation "
+        "cases reach every one of its acceptance criteria, by the "
+        "coverage rule of methodology section 11.3.3, the rule the story "
+        "lint applies before a story may move to `inProgress`. A system "
+        "story derived from it does not stand in for a criterion that no "
+        "case reaches. A system story is verified when verification "
+        "cases reach every one of its criteria. A case whose targets are "
+        "all nested constraint requirements, such as `<story>.sla`, "
+        "verifies those constraints rather than the acceptance criteria, "
+        "so it reaches no criterion."
     )
     lines.append("")
     findings = gap_findings(model)

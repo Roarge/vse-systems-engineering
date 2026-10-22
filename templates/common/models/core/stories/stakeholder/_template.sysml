@@ -5,6 +5,11 @@
 // optional frame concern). Add typed bindings (use case, verification
 // case) as the story progresses to elaborated form per §1.7.2.
 //
+// Behaviour comes first (§11.4). Write the story's feature file from
+// _template.feature beside this file, then write the story here with
+// one named criterion for each scenario, named after the scenario's
+// @AC_ tag (§11.3.1).
+//
 // Identifier convention: US_<n>_<ShortName> per §1.6.
 //
 // One story per file. Replace this template with the actual story.
@@ -22,15 +27,17 @@ package {{PROJECT_NAME}}_StakeholderStories {
         subject :>> system : {{PROJECT_NAME}}_System;
         stakeholder :>> role : Operator;
 
-        attribute :>> capability = "(I want ...)";
-        attribute :>> benefit    = "(so that ...)";
+        attribute :>> capability = "(what the role wants to do)";
+        attribute :>> benefit    = "(the value the role gains)";
 
         frame concern : FastIncidentResponse;
 
         requirement :>> acceptance {
-            doc /* Given <preconditions>,
-                   when <action>,
-                   then <expected outcome>. */
+            requirement exampleCriterion {
+                doc /* Given <preconditions>,
+                       when <action>,
+                       then <expected outcome>. */
+            }
         }
     }
 

@@ -15,7 +15,7 @@ related:
   - tooling-sysml-toolchain-choice
 confidence: high
 created: 2026-05-04
-updated: 2026-09-10
+updated: 2026-10-18
 referenced_by: [project-setup, project-audit]
 ---
 
@@ -143,7 +143,7 @@ be executable. It autodetects the engineering root via its
 ## See also
 
 - [[vse-model-tiers-and-templates]] for the SysML model tiers and
-  the document templates that live under `docs/pm/` and `docs/sr/`.
+  where each ISO/IEC 29110 work product sits under `docs/`.
 - [[methodology-overview]] for the centre-of-gravity model
   recorded in `.vse-iteration.yml`.
 - [[story-branch-pr-workflow]] for the closure

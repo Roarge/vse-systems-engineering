@@ -105,6 +105,43 @@ tc_run_lib java
 tc_assert_rc 2 "java: 17.0.2 is rejected"
 tc_assert_grep "is major 17, need 21 or later" "$ERR" "java: 17 reason names the major"
 
+# A JVM prints "Picked up JAVA_TOOL_OPTIONS: ..." on stderr ahead of
+# its version line whenever that variable is set, which CI runners and
+# managed workstations often do. The version is read from the first
+# line that names one, so the banner must not hide it. The stub takes
+# the whole version line, because a legacy JVM says "java version"
+# where a modern one says "openjdk version".
+tc_stub_java_banner_first() {
+    local version_line="$1"
+    tc_stub java <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+if [ "\${1:-}" = "-version" ]; then
+    echo 'Picked up JAVA_TOOL_OPTIONS: -Dfoo=bar' >&2
+    echo '${version_line}' >&2
+    exit 0
+fi
+cat > /dev/null
+exit 0
+EOF
+}
+
+case_java_banner_first() {
+    tc_env
+
+    tc_stub_java_banner_first 'openjdk version "21.0.12" 2026-07-21'
+    tc_run_lib_fn vse_tc_java
+    tc_assert_rc 0 "java: a JAVA_TOOL_OPTIONS banner before 21.0.12 is skipped"
+
+    tc_stub_java_banner_first 'java version "1.8.0_402"'
+    tc_run_lib_fn vse_tc_java
+    tc_assert_rc 1 "java: a JAVA_TOOL_OPTIONS banner before 1.8.0_402 is rejected"
+    tc_assert_grep "is major 8, need 21 or later" "$ERR" \
+        "java: the reason past a banner names major 8"
+}
+
+case_java_banner_first
+
 tc_stub_java "21.0.12"
 tc_run_lib java
 tc_assert_rc 0 "java: 21.0.12 is accepted"
@@ -143,8 +180,57 @@ chmod +x "${STUBS}/deadjava/java"
 tc_env "VSE_JAVA=${STUBS}/deadjava/java" "PATH=${STUBS}/deadjava:${STUBS}:/usr/bin:/bin"
 tc_run_lib java
 tc_assert_rc 2 "java: a JVM that never starts is rejected"
-tc_assert_grep "did not report a version: Error occurred during initialization of VM" \
-    "$ERR" "java: the reason quotes the first line the binary printed"
+tc_assert_grep "java at ${STUBS}/deadjava/java printed no version line. It said: Error occurred during initialization of VM" \
+    "$ERR" "java: the reason quotes the first line the binary printed, as what it said"
+
+# A JVM that prints the JAVA_TOOL_OPTIONS banner and no version line.
+# The banner is not quoted as if it were the version line, and the
+# JVM runs once, not a second time to read the line to quote.
+mkdir -p "${STUBS}/bannerjava"
+cat > "${STUBS}/bannerjava/java" <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf 'run\n' >> "${TC_INVOCATIONS:-/dev/null}"
+echo 'Picked up JAVA_TOOL_OPTIONS: -Dfoo=bar' >&2
+exit 1
+EOF
+chmod +x "${STUBS}/bannerjava/java"
+: > "${FAKEHOME}/java-runs"
+tc_env "VSE_JAVA=${STUBS}/bannerjava/java" "PATH=${STUBS}/bannerjava:${STUBS}:/usr/bin:/bin" \
+    "TC_INVOCATIONS=${FAKEHOME}/java-runs"
+tc_run_lib java
+tc_assert_rc 2 "java: a JVM that prints only the banner is rejected"
+tc_assert_grep "java at ${STUBS}/bannerjava/java printed no version line" "$ERR" \
+    "java: the reason says no version line was printed"
+tc_assert_not_grep "Picked up" "$ERR" "java: the banner is not quoted as the version line"
+# VSE_JAVA and PATH both name this binary, so it fills two candidate
+# slots, and a binary already tried is not run again.
+tc_assert_eq 1 "$(grep -c '^run$' "${FAKEHOME}/java-runs" || true)" \
+    "java: a binary named by two candidate slots runs once"
+
+# JAVA_HOME/bin/java is often the java on PATH through a symbolic link.
+# A candidate is resolved through its links before it runs, so a Java
+# 17 that VSE_JAVA and PATH reach through a relative link and JAVA_HOME
+# names directly runs once, and the reason still names it.
+mkdir -p "${STUBS}/home17/bin" "${STUBS}/linkbin"
+cat > "${STUBS}/home17/bin/java" <<'JAVA17'
+#!/usr/bin/env bash
+set -uo pipefail
+printf 'run\n' >> "${TC_INVOCATIONS:-/dev/null}"
+echo 'openjdk version "17.0.2" 2022-01-18' >&2
+exit 0
+JAVA17
+chmod +x "${STUBS}/home17/bin/java"
+ln -s ../home17/bin/java "${STUBS}/linkbin/java"
+: > "${FAKEHOME}/java17-runs"
+tc_env "VSE_JAVA=${STUBS}/linkbin/java" "JAVA_HOME=${STUBS}/home17" \
+    "PATH=${STUBS}/linkbin:${STUBS}:/usr/bin:/bin" "TC_INVOCATIONS=${FAKEHOME}/java17-runs"
+tc_run_lib java
+tc_assert_rc 2 "java: a Java 17 in every candidate slot is rejected"
+tc_assert_grep "java at ${STUBS}/linkbin/java is major 17, need 21 or later" "$ERR" \
+    "java: the reason names the first slot that reached the Java 17"
+tc_assert_eq 1 "$(grep -c '^run$' "${FAKEHOME}/java17-runs" || true)" \
+    "java: a binary reached through a link from other slots runs once"
 
 tc_env
 
@@ -174,6 +260,50 @@ tc_assert_rc 2 "detect syside: expired licence is unavailable"
 tc_assert_grep "syside unavailable (licence expired, exit 2)" "$ERR" \
     "detect syside: expired licence reason"
 
+# The reason comes from the first lines, and the output goes on for
+# more than a pipe buffer holds (64 KiB). The whole output is read, so
+# the reason is found every time, not only when the writer finished
+# before the reader stopped.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "License check failed:"
+echo "  License expired. Please contact the Syside support team."
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }'
+exit 2
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: expired licence with a long report is unavailable"
+tc_assert_grep "syside unavailable (licence expired, exit 2)" "$ERR" \
+    "detect syside: expired licence reason found in a long report"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: No display server detected and 'xvfb-run' is not installed." >&2
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }' >&2
+exit 1
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: a headless launcher with a long report is unavailable"
+tc_assert_grep "syside unavailable (no display server" "$ERR" \
+    "detect syside: headless launcher reason found in a long report"
+
+# Any other failure quotes the first line of the output, however long
+# the output runs.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: the probe model could not be read"
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }'
+exit 3
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: another failure with a long report is unavailable"
+tc_assert_grep "syside unavailable (syside exit 3 on the probe model: Error: the probe model could not be read)" "$ERR" \
+    "detect syside: another failure quotes the first line of a long report"
+
+tc_stub_syside
 tc_env SYSIDE_OK=1
 tc_run_lib detect syside
 tc_assert_rc 0 "detect syside: a passing check is available"

@@ -11,9 +11,9 @@ proceed.
 **What ships.** Installing the plugin clones the entire committed git
 tree into the installer's `${CLAUDE_PLUGIN_ROOT}`. Every tracked file
 reaches end users. The only content that does not ship is gitignored
-content, currently `sources/`, `dev_docs/`, `.obsidian/`, `.envrc`,
-`.claude/` (except the committed `rules/`), `CLAUDE.local.md`, and the
-scratch artefact `wiki/LINT_REPORT.md`.
+content, currently `sources/`, `dev_docs/`, `docs/superpowers/`,
+`.obsidian/`, `.envrc`, `.claude/` (except the committed `rules/`),
+`CLAUDE.local.md`, and the scratch artefact `wiki/LINT_REPORT.md`.
 
 **What activates.** The harness auto-loads only the mount points in
 `.claude-plugin/plugin.json`: skills from `skills/`, slash commands from

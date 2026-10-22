@@ -1,7 +1,7 @@
 ---
 name: needs-and-requirements
-description: Elicit stakeholder needs and derive system requirements as `UserStory` usages linked through `derive` and `frame concern`.
-when_to_use: Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
+description: Elicit stakeholder needs and derive system requirements as `UserStory` usages linked through `derive` and `frame concern`, each with Gherkin scenarios as its acceptance criteria, run as tests where test first applies.
+when_to_use: Use when opening a concern, drafting a stakeholder story (§4) or system story (§5), writing the Gherkin scenarios that state a story's acceptance criteria, framing a concern, or formalising a benefit constraint that will feed §6 trade studies.
 user-invocable: true
 ---
 
@@ -9,7 +9,7 @@ user-invocable: true
 
 If the VSE lens (vse-companion-overview) is not yet loaded this session, load it first.
 
-You guide the engineer through the user-story-driven workflow stages of the methodology: §4 Stakeholder Requirements Engineering and §5 System Requirements Definition and Analysis. The §1 user-story authoring discipline runs through both stages and you enforce it in every story you help author. You also run the §3 System Context completeness checks that bound the stakeholder set, and you route structural follow-up work to the right specialist skill.
+You guide the engineer through the user-story-driven workflow stages of the methodology: §4 Stakeholder Requirements Engineering and §5 System Requirements Definition and Analysis. The §1 user-story authoring discipline runs through both stages and you enforce it in every story you help author. So does behaviour first (§11.4): each story's acceptance criteria are Gherkin scenarios, written in the story's feature file before the story itself. Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read. You also run the §3 System Context completeness checks that bound the stakeholder set, and you route structural follow-up work to the right specialist skill.
 
 The canonical artefact is the requirement usage typed by `UserStory` declared in §1. Stakeholder requirements (StRS) and system requirements (SyRS) are rendered downstream from `model/core/stories/stakeholder/` and `model/core/stories/system/` rather than authored as free-standing documents.
 
@@ -19,6 +19,7 @@ The skill activates when the engineer asks to:
 
 - elicit stakeholder needs or open a new concern,
 - draft a stakeholder user story or revise an existing one,
+- write or revise the Gherkin scenarios that state a story's acceptance criteria,
 - derive system stories from one or more stakeholder stories,
 - frame a concern with the story that addresses it,
 - formalise a benefit as a `require constraint`,
@@ -29,7 +30,7 @@ The skill is also dispatched into by `@story-orchestrator` when the engineer is 
 ## Inputs
 
 - Project layout per §8.3, in particular `model/core/stakeholders/`, `model/core/concerns/`, `model/core/stories/stakeholder/`, `model/core/stories/system/`, `model/core/context/`, `model/core/use-cases/`, and `model/core/verification-validation/`.
-- The methodology copy at `<project>/methodology/` (sections §1, §3, §4, §5 are the load-bearing inputs).
+- The methodology copy at `<project>/methodology/` (sections §1, §3, §4, §5 and §11 are the load-bearing inputs).
 - An optional informal stakeholder list provided at project start, for example a project plan, a statement of work, or an ad-hoc note the engineer hands to you. The skill formalises this list into the stakeholder taxonomy.
 - The §3 System Context, where each interacting stakeholder must also appear as an actor (per §3.6 rule 5).
 
@@ -66,15 +67,16 @@ Themes are working notes, not modelled SysML elements. Prioritisation is recorde
 
 ### Step 4: Generate stakeholder user stories
 
-For each prioritised theme, author one or more story usages (`requirement US_<n>_<Short> : UserStory`) per §1. Each stakeholder story shall:
+For each prioritised theme, author one or more story usages (`requirement <StoryIdentifier> : UserStory`) per §1, behaviour first (§11.4): the story's feature file before the story, and each scenario before the criterion that mirrors it. Here and below, `<StoryIdentifier>` stands for the full story identifier, `US_<n>_<Short>` for a stakeholder story (as in `US_001_SeeReadingsOnDashboard`) and `SYS_<n>_<Short>` for a system story. Each stakeholder story shall:
 
+- have its feature file, `<StoryIdentifier>.feature`, beside the register file that declares the story, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/stakeholder/_template.feature`. The file carries the one tag `@<StoryIdentifier>`, the narrative lines `As a <role>`, `I want <capability>` and `So that <benefit>` (`As an` and `I want to` where English needs them), and one scenario per acceptance criterion, tagged `@AC_<name>` with `<name>` in lowerCamelCase (words run together, the first in lower case, each later word capitalised, as in `ackAllWithinOneSecond`) and steps in the order Given, When, Then (per §11.2),
 - redefine its `subject` (`subject :>> system : <PartDef>`) with a part def from §2 (Base Architecture) or §3 (System Context), typically the project's system part def, declared before `role` (per §1.9 rule 2),
 - redefine `role` with a part def from `model/core/stakeholders/` (`stakeholder :>> role : <PartDef>`, per §1.4.1 / §1.9 rule 3),
-- declare narrative `capability` and `benefit` strings,
+- declare narrative `capability` and `benefit` strings, which the feature file's narrative repeats word for word (per §11.2.2),
 - `frame` one or more concerns from `model/core/concerns/` (per §1.4.6),
-- declare at least one `acceptance` criterion in Given/When/Then form, in `requirement :>> acceptance`, before transitioning to `ready` (per §1.4.4 / §1.9 rule 4).
+- mirror each scenario with a criterion of the same name nested in `requirement :>> acceptance` (`requirement <name> { doc /* ... */ }`, the `doc` restating the scenario in prose), with at least one before transitioning to `ready` (per §1.4.4 / §1.9 rule 4 / §11.3).
 
-Stories enter the model in §1.7.1 minimal form and progress through the lifecycle as detail emerges. The narrative `capability` and `benefit` strings are retained throughout (per §1.7.2 / §1.9 rule 6).
+Stories enter the model in §1.7.1 minimal form and progress through the lifecycle as detail emerges. The narrative `capability` and `benefit` strings are retained throughout (per §1.7.2 / §1.9 rule 6). When revising a story, change its scenario first and then the criterion that mirrors it. A story whose acceptance is still prose placed directly in `requirement :>> acceptance`, the form used before plugin version 5.0.0, is migrated at that revision: formalise its existing Given/When/Then text as scenarios and named criteria, without adding behaviour (§11.3.1). The commit gate and the pull-request check read only the stories a change touches, so a legacy story the revision leaves alone in the same register does not block it. The CI run at a release tag reads every story, so a release needs them all migrated (§11.9.2). The story's status, branch and draft PR go through `@story-orchestrator`.
 
 #### Dispatch to `vse-stakeholder-elicitor`
 
@@ -82,19 +84,21 @@ When Step 1 has produced a register with two or more named personas, each carryi
 
 **What to pass.** A short message containing the system concept (one or two sentences), the persona list with role, concerns, and priority for each, and the paths to any prior specifications, regulatory references, or competitor documents the agent should consult.
 
-**Return contract.** The subagent returns a suggestion-shaped markdown package: per-persona interview script, candidate need statements in stakeholder language attributed to each persona, and a cross-persona conflict summary. Present this verbatim to the engineer and explicitly invite editing. Only candidates that survive engineer review become stakeholder stories through Step 4. The subagent never writes files.
+**Return contract.** The subagent returns a suggestion-shaped markdown package: per-persona interview script, candidate need statements in stakeholder language attributed to each persona, a Draft scenarios section with Given/When/Then scenarios and a proposed lowerCamelCase criterion name for each candidate need, and a cross-persona conflict summary. Present this verbatim to the engineer and explicitly invite editing. Only candidates that survive engineer review become stakeholder stories through Step 4, and their edited scenarios seed the feature file written there before the story. The subagent never writes files.
 
 ### Step 5: Optional use-case elaboration
 
 Where a stakeholder story's capability is non-trivial (a capability that spans several actor-system interactions), declare a `use case def` per §1.4.5 in `model/core/use-cases/`. The use case names the story as its `objective`, which couples the story's `role` and the use case's `actor` by shared part-def typing (per §1.9 rule 5).
 
-Use-case elaboration is permitted at the stakeholder level but not required. Many stakeholder stories never warrant a use case. Their `capability` and `acceptance` are sufficient.
+Use-case elaboration is permitted at the stakeholder level but not required. Many stakeholder stories never warrant a use case. Their `capability` and `acceptance` are sufficient. Where a use case is warranted, it follows the validation case stub of Step 6, because the case stub precedes any elaboration (§4.3.6, §11.4).
 
 Hand off the use-case body authoring to `@sysml2-cases`.
 
 ### Step 6: Validation plan
 
-For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/` whose `objective` includes a `verify` clause naming the member of the story usage by dot notation (`verify <story>.acceptance`). Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
+For each acceptance criterion, declare a `verification def` in `model/core/verification-validation/validation-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/validation-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <StoryIdentifier>.acceptance.<name>`). One case may reach every criterion of the story with `verify <StoryIdentifier>.acceptance` (§11.3.3). Validation cases at this level exercise stakeholder intent, not system internals. The split between validation cases (§4) and verification cases (§5) is methodology discipline, not syntax.
+
+The case exists as a stub, holding its subject and objective, from the moment the story moves to `inProgress` and before any use case elaborates it (§4.3.6, §11.4). This step completes it. Every criterion of an `inProgress` or `done` story is reached by at least one case, and the `precommit_gherkin` gate blocks a commit where one is not, by default at every profile (§11.9).
 
 Hand off the verification-case body detail to `@verification-validation`.
 
@@ -112,6 +116,8 @@ A system story shall keep the **same** `role` as the stakeholder story (per §5.
 
 Framed concerns propagate from the stakeholder story to the system story.
 
+Each system story's feature file comes first, as in Workflow A Step 4, beside the register file that declares the story and started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/stories/system/_template.feature`. Its narrative repeats the stakeholder story's role with the system story's own capability and benefit. Its scenarios state the system-level criteria in system vocabulary, with outcomes stated against measurable thresholds where the story has them, and each is mirrored by a criterion of the same name nested in `requirement :>> acceptance` (per §5.4.1 / §11.3). So `SYS_142_BatchAcknowledgement.feature` carries the scenario tagged `@AC_p99LatencyWithinOneSecond`, and the story declares `requirement p99LatencyWithinOneSecond`.
+
 ### Step 2: Formalise benefit and capability detail
 
 Within each system story, formalise benefit and capability detail as `require constraint` clauses over value properties declared as attributes on the story (per §5.4.2). This step is critical. Per §0.3, the `benefit` constraint is the same model element that supplies assessment criteria during §6 trade studies. A story whose benefit cannot be formalised is permitted, but it cannot supply trade-study criteria.
@@ -120,7 +126,7 @@ State the formalisation pressure to the engineer when a benefit remains an infor
 
 ### Step 3: Story analysis
 
-For each system story whose capability warrants behavioural detail, choose one of three analysis approaches per §5.4.3. The approaches are equivalent in outcome and complementary in practice:
+For each system story whose capability warrants behavioural detail, choose one of three analysis approaches per §5.4.3. The analysis follows the verification case stub of Step 6, written when the story moves to `inProgress` (§5.4.6, §11.4). The approaches are equivalent in outcome and complementary in practice:
 
 | Capability character | Approach | Construct |
 |---|---|---|
@@ -144,7 +150,9 @@ The hazard-identification sub-workflow (FMEA, FTA, STPA, security threat models)
 
 ### Step 6: Verification plan
 
-For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/` whose `objective` verifies the acceptance by dot notation (`verify <story>.acceptance`, per §5.4.6). Verification cases at this level exercise system internals, distinct from §4 validation cases.
+For each system-story acceptance criterion, declare a `verification def` in `model/core/verification-validation/verification-cases/`, started from `${CLAUDE_PLUGIN_ROOT}/templates/common/models/core/verification-validation/verification-cases/_template.sysml`, whose `objective` names the criterion by dot notation (`verify <StoryIdentifier>.acceptance.<name>`, per §5.4.6). One case may reach every criterion of the story with `verify <StoryIdentifier>.acceptance`, and may also verify a formalised benefit such as `verify <StoryIdentifier>.sla` (§11.3.3). Verification cases at this level exercise system internals, distinct from §4 validation cases.
+
+As at Workflow A Step 6, the case is first written as a stub when the story moves to `inProgress`, before the story analysis of Step 3, and this step completes it (§11.4).
 
 Hand off verification-case detail to `@verification-validation`.
 
@@ -162,7 +170,7 @@ Hand off structural changes to `@sysml2-modelling` (interface and item authoring
 
 Each entry names a rule and the section it comes from, states the concrete risk of departing from it, and recommends the conforming path. The default is to proceed once the engineer has confirmed with that information in hand. One entry is a hard stop and says so.
 
-Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press.
+Obligations scale with the project profile, methodology §0.10. Read `project_profile` per the lens convention before deciding how firmly to press. Behaviour first does not scale: the Gherkin gates of §11.9 block at every profile, lowered only by a recorded override (entry 4).
 
 1. **Reverse-engineering the Base Architecture. Hard stop at every profile.** Forward-going stories only. The skill does not author "context stories" that record narrative around pre-existing decisions (per §2.1 corollary 2 and §2.6 rule 7), and it does not invent a stakeholder, a concern, or a need in order to make an existing architectural choice look justified. This is agent discipline rather than ceremony, so no profile relaxes it. Context stories are authored only on explicit human request with explicit confirmation of intent, and the content belongs to the engineer. State the constraint plainly when the engineer's prompt drifts toward justifying an existing architectural choice, and offer the two conforming paths: record the rationale as prose in `docs/decisions/`, or ask for the context story explicitly and own it.
 
@@ -170,13 +178,13 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 
 3. **Dropping the narrative attributes.** The narrative `capability` and `benefit` strings are retained throughout the story's lifecycle (per §1.7.2 and §1.9 rule 6), because the typed bindings that replace them are readable to a tool and not to a stakeholder. The edit is reversible through git. At `light`, name the rule once and proceed. At `standard` and `full`, wait for explicit confirmation.
 
-4. **Marking a story `ready` without acceptance.** A story declares at least one `acceptance` criterion in Given/When/Then form before it reaches `ready` (per §1.4.4 and §1.9 rule 4). Without one, nothing downstream can bind a verification case to the story. Recommend authoring the missing criterion first. At `light`, state the gap once and proceed. At `standard` and `full`, wait for explicit confirmation.
+4. **Marking a story `ready` without a scenario.** A story's feature file holds at least one `@AC_` scenario, mirrored by a named criterion, before the story reaches `ready` (per §1.4.4, §1.9 rule 4 and §11.4). Without one, nothing downstream can bind a verification case to the story. The story lint (`tools/lint/story-wellformed.py`, §11.9.1) reports the gap as S8, and the `precommit_gherkin` gate that runs it blocks the commit at every profile unless a recorded override lowers it (§11.9). Write the scenario and its criterion first, and do not set the status ahead of them (§11.10). The same holds for a story without its feature file, which the in-session `pretooluse_gherkin_first` gate denies before the story is written.
 
 ## Hand-offs
 
 | Topic | Route to |
 |---|---|
-| Branch and PR management for the story under edit | `@story-orchestrator` |
+| Branch and PR management for the story under edit, its status, or a Gherkin-first denial | `@story-orchestrator` |
 | Trade study against a formalised benefit constraint | `@architecture-design` |
 | Verification or validation case body detail | `@verification-validation` |
 | Action def, state def, sequence-style action body | `@sysml2-behaviour` |
@@ -184,16 +192,19 @@ Obligations scale with the project profile, methodology §0.10. Read `project_pr
 | Item def, flow type, logical data schema | `@sysml2-modelling` |
 | Package layout for new stakeholder set or concern register | `@sysml2-model-structure` |
 | Edit to a baselined story | `@change-request` |
+| Wiring the feature files to a scenario runner where test first applies | `@test-first` |
 
 ## Outputs
 
 - `model/core/stakeholders/<role>.sysml`. One `part def` per stakeholder role.
 - `model/core/concerns/<concern>.sysml`. One `concern def` per concern, with `subject`, `stakeholder`, and `require constraint`.
-- `model/core/stories/stakeholder/<US_id>_<short>.sysml`. Stakeholder stories per §1, with `frame concern` to the concern register.
-- `model/core/stories/system/<US_id>_<short>.sysml`. System stories with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
+- `model/core/stories/stakeholder/<StoryIdentifier>.feature`. One Gherkin feature file per stakeholder story, beside the file that declares it, one scenario per acceptance criterion (§11.2). Its stem is the full story identifier, as in `US_001_SeeReadingsOnDashboard.feature`.
+- `model/core/stories/stakeholder/<register>.sysml`. The register of stakeholder stories per §1, under a working name such as `stakeholder-stories.sysml` (§8.3.1), with `frame concern` to the concern register and one named criterion per scenario.
+- `model/core/stories/system/<StoryIdentifier>.feature`. One Gherkin feature file per system story, beside the file that declares it, with the full story identifier as its stem (§11.2).
+- `model/core/stories/system/<register>.sysml`. The register of system stories, under a working name such as `system-stories.sysml`, with the `#derive` prefix on the story usage and a `#derivation connection` (ends `#original`, `#derive`) back to the originating stakeholder story.
 - `model/core/use-cases/<name>.sysml`. Optional use-case elaborations whose `objective` names the story.
-- `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that verify acceptance criteria exercising stakeholder intent.
-- `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that verify acceptance criteria exercising system internals.
+- `model/core/verification-validation/validation-cases/<name>.sysml`. Validation cases (§4) that reach acceptance criteria by name, exercising stakeholder intent.
+- `model/core/verification-validation/verification-cases/<name>.sysml`. Verification cases (§5) that reach acceptance criteria by name, exercising system internals.
 - Updated `model/core/context/architecture-context.sysml` where the stakeholder set extends the System Context with a previously unmodelled actor.
 
 ## Knowledge base
@@ -210,12 +221,17 @@ search: `grep -ril "<term>" <wiki-root>/pages`.
 | AMBSE Requirements as Model Elements; Stakeholder Identification | pages/ambse/ambse-requirements-as-models.md | Requirements as model elements rather than text, and how stakeholders are identified in AMBSE |
 | AMBSE System Requirements Derivation | pages/ambse/ambse-system-requirements-derivation.md | Deriving system requirements from stakeholder needs, one per thing the system must do or be |
 | AMBSE Use Case Driven Elicitation | pages/ambse/ambse-use-case-driven-elicitation.md | Use cases as the structuring mechanism for stakeholder requirements in AMBSE |
+| Discovery workshops and Example Mapping | pages/bdd-tdd/bdd-discovery-workshop-and-example-mapping.md | Running a discovery workshop or an Example Mapping session to find a story's rules, examples and open questions |
+| Behaviour-driven development: the three practices | pages/bdd-tdd/bdd-three-practices.md | What BDD is, its discovery, formulation and automation practices, and where each sits in the methodology |
+| Declarative Gherkin: describe behaviour, not implementation | pages/bdd-tdd/gherkin-declarative-style.md | Writing scenarios that describe behaviour rather than implementation, in a declarative style that survives redesign |
+| Gherkin syntax reference | pages/bdd-tdd/gherkin-syntax-reference.md | Gherkin keywords, steps, Background, Outlines, doc strings, data tables and comments, with the limits §11 sets |
 | HSI Domains: 13 Perspectives | pages/hsi/hsi-domains.md | The thirteen HSI domains (manpower, training, safety and the rest) and what each asks of a design |
 | Human-Systems Integration Foundations: TOP in Environment | pages/hsi/hsi-foundations.md | Human-Systems Integration as a transdisciplinary approach, and the technology, organisation, and people frame |
 | HSI in Architecture | pages/hsi/hsi-in-architecture.md | Where human-systems concerns enter architectural decisions and allocations |
 | HSI in Requirements | pages/hsi/hsi-in-requirements.md | How HSI concerns become requirements alongside technical ones from the start |
 | Lightweight HSI for VSEs: Tiered Approach | pages/hsi/hsi-vse-tiered-approach.md | Tiered HSI practice for a VSE with no dedicated human factors team or simulation facilities |
 | Base Architecture: Forward-Going Stories and the Reverse-Engineering Guard | pages/methodology/base-architecture-corollaries.md | Decisions that pre-exist the project, forward-going stories, and the reverse-engineering guard |
+| Behaviour first and test first (§11) | pages/methodology/behaviour-and-test-first.md | Section 11 in one page: a feature file per story, mirrored criteria, story ordering, the test-first record, gates |
 | Benefit constraint as trade-study criterion | pages/methodology/benefit-as-criterion.md | Using the benefit constraint of a user story as an assessment criterion in architectural trade studies |
 | frame concern: linking stories to stakeholder concerns | pages/methodology/frame-concern-pattern.md | The frame concern member that ties a User Story to persistent stakeholder concerns in the model |
 | Coupling story role to use-case actor via objective | pages/methodology/role-actor-coupling.md | Coupling a story role to a use-case actor through the shared objective |

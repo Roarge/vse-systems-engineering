@@ -61,6 +61,12 @@ above, so the trace from any subsystem-level capability back to a
 stakeholder concern is a chain of `derive` and `frame concern` relationships
 through the model — not a manual matrix.
 
+§11 sets the behaviour-first and test-first discipline that runs across
+all four stages. Every story's acceptance criteria are Gherkin
+scenarios (plain-text Given/When/Then examples) written before design,
+and any implementation code kept in the repository is written test
+first, wherever a test harness can run it.
+
 ## 0.3 The Connective Mechanism — `benefit` as Trade-Study Criterion
 
 The most important structural property of this methodology is that the
@@ -108,6 +114,7 @@ entering §6.
 | §8 | Project Structure and Git Workflow | drafted (`08-project-structure.md`) |
 | §9 | ISO/IEC TR 29110‑5‑6‑2 Compliance | drafted (`09-iso-29110-compliance.md`) |
 | §10 | Project Management | drafted (`10-project-management.md`) |
+| §11 | Behaviour-Driven and Test-Driven Development | drafted (`11-behaviour-and-test-driven-development.md`) |
 | — | Compliance hooks guide | drafted (`iso-29110-hooks-guide.md`) — companion document |
 | §A | Worked example — stakeholder stories | open |
 | §B | Worked example — system stories and analyses | open |
@@ -122,7 +129,9 @@ Appendix examples are deferred until the project example domain is fixed.
 The canonical artefact specification. Drafted in `01-user-stories.md`. Defines
 the `UserStory` requirement definition and the story usages typed by it, with
 `role`, `capability`, `benefit`, `acceptance`, and optional `frame concern`.
-All workflow stages (§4–§7) consume and produce story usages.
+All workflow stages (§4–§7) consume and produce story usages. Each
+acceptance criterion is a Gherkin scenario in a feature file beside the
+story, mirrored by a named criterion in the model (§11).
 
 ### 0.6.2 §2 — Base Architecture
 
@@ -240,15 +249,19 @@ shared reference for all stories' `subject` declarations and for any
 4. **Generate stakeholder user stories.** Apply §1 to author one or more
    story usages typed by `UserStory` per capability theme. Each story `frame`s
    the concern(s) it addresses (per §1.4.6). Stories enter the model in
-   §1.7.1 minimal form and progress as detail emerges.
+   §1.7.1 minimal form and progress as detail emerges. Each story's
+   feature file is written first, with the narrative and the scenarios
+   known so far (§11.4).
 5. **Elaborate story scenarios (optional).** Where a story's capability is
    non-trivial, declare a `use case def` that names the story as its
    `objective` per §1.4.5. The use case carries scenario detail; the
    story remains the carrier of stakeholder intent.
-6. **Create/update validation plan.** Each story's acceptance criteria
-   is linked to a `verification def`. Verification cases that
-   exercise stakeholder intent (rather than system internals) constitute
-   the validation plan.
+6. **Create/update validation plan.** Each acceptance criterion is
+   reached by a `verification def` that verifies it by name. The case
+   stub is written when the story moves to `inProgress`, before step 5
+   elaborates it (§11.4), and this step completes the case. Verification
+   cases that exercise stakeholder intent (rather than system internals)
+   constitute the validation plan.
 
 **Artefacts produced:**
 
@@ -269,7 +282,8 @@ shared reference for all stories' `subject` declarations and for any
    System stories have the *same* `role` (the stakeholder is unchanged),
    but the `capability` is restated in system-internal vocabulary, and
    `benefit` is sharpened toward measurable constraints. Framed concerns
-   propagate.
+   propagate. Each system story gets its own feature file first, with
+   scenarios in system vocabulary (§11.4).
 2. **Generate system requirements.** Within each system story, formalise
    benefit and capability detail as `require constraint` clauses over
    value properties. Add stories or constraints that emerged from
@@ -297,7 +311,8 @@ shared reference for all stories' `subject` declarations and for any
 6. **Create/update verification plan.** Each acceptance criterion is
    bound to a `verification def` that exercises the system model.
    These cases verify (rather than validate) and complement the
-   validation plan from §4.
+   validation plan from §4. As at §4, the case stub precedes the
+   analysis of step 3 (§11.4), and this step completes the case.
 
 **Artefacts produced:**
 
@@ -457,8 +472,10 @@ machine-readable counterpart.
 The following topics are not covered by this methodology specification and
 shall be addressed by separate documents:
 
-- Detailed design beyond subsystem boundaries (handed off to the
-  engineering disciplines)
+- Detailed design beyond subsystem boundaries, and construction
+  (handed off to the engineering disciplines). §11 adds only a
+  test-first discipline for implementation code kept in the project
+  repository.
 - Iteration length, ceremonies (sprints, stand-ups, retrospectives), and
   team composition. §8 specifies the *artefact* lifecycle (branch and PR
   state); calendar and team practice remain project-determined.
@@ -480,12 +497,21 @@ would do anyway, and it catches the classes of drift that are tedious to
 spot by eye. It does not supply engineering judgement, and it is not
 designed to.
 
-Enforcement is therefore a project choice rather than a default posture.
-Where the tooling detects drift, it reports what it found and names the
-section of this specification the finding comes from. The engineer
-decides what follows. A project that wants the tooling to block rather
-than report says so explicitly, by selecting a profile (§0.10.2) or by
-setting a per-gate override (§0.10.4).
+For the profile-scaled gates, enforcement is therefore a project choice
+rather than a default posture. Where the tooling detects drift, it
+reports what it found and names the section of this specification the
+finding comes from. The engineer decides what follows. A project that
+wants the tooling to block rather than report says so explicitly, by
+selecting a profile (§0.10.2) or by setting a per-gate override
+(§0.10.4).
+
+The Gherkin-first and test-first gates of §11 are the exception. They
+are a default floor at every profile: they block unless a recorded
+override lowers them (§0.10.4, §11.10). A disciplined engineer already
+describes behaviour before building it, and already writes a failing
+test before the code wherever a harness can run it. The floor therefore
+costs a conforming project nothing, and it catches the drift that is
+hardest to repair later.
 
 This section is the normative home of that choice. Skills, git hooks,
 lifecycle hooks, and templates implement it. Where an implementation
@@ -497,12 +523,12 @@ Every project records a **rigour profile**. The profile scales the
 artefact set, the ceremony, and the enforcement disposition of the
 automated gates. It does not change the methodology itself. The same
 workflow stages, the same story artefact, and the same well-formedness
-rules (§1.9) apply at every profile.
+rules (§1.9, §11.12) apply at every profile.
 
 | Profile | Meaning |
 |---|---|
-| `light` | Solo work, prototypes, exploration. The methodology guides, nothing blocks, minimal artefact set. |
-| `standard` | Small team, real product. Gates warn, core artefacts required, full ceremony optional. This is the default. |
+| `light` | Solo work, prototypes, exploration. The methodology guides, only the Gherkin-first and test-first gates of §11 block, minimal artefact set. |
+| `standard` | Small team, real product. Profile-scaled gates warn, core artefacts required, full ceremony optional. This is the default. |
 | `full` | Audit-ready ISO/IEC 29110 conformance. Complete §9 mapping, blocking gates, full artefact set. |
 
 **Selecting a profile.** Two questions settle most cases.
@@ -562,8 +588,11 @@ specifies the obligation in full.
 | `StoryMeta` required fields | §1.5 | `[status]` | `[status, priority]` | `[points, priority, status]` |
 | `baselined_paths` default | §10.4.2 | `[]`, so the CR machinery stays dormant | `[docs/project-plan.md]` | `[docs/project-plan.md, docs/cm-strategy.md, docs/risk-register.md, docs/disposal-management-approach.md, model/library/]` |
 | Change Request four-axis impact analysis | §10.4.2 | Not applicable while `baselined_paths` is empty | Brief form permitted. An axis may read "negligible" with one line | R in full form |
-| Traceability | §9.8 | `/vse-trace` on demand | `/vse-trace`, warning gates, advisory CI | Blocking gates and blocking CI |
+| Traceability | §9.8 | `/vse-trace`, an info-level commit check, advisory CI | `/vse-trace`, warning gates, advisory CI | Blocking gates and blocking CI |
 | Status and branch consistency CI check | §8.7 | None | Rec | R |
+| Feature file per story, one scenario per acceptance criterion | §11.2 to §11.4 | R | R | R |
+| Test-first record (`test_first`) | §11.5 | R | R | R |
+| Test-first evidence in the pull request | §8.6.1, §11.7 | R where test first applies | R where test first applies | R where test first applies |
 
 **`methodology/` is deliberately absent from the default
 `baselined_paths` at every profile, including `full`.** Placing the
@@ -576,17 +605,19 @@ line.
 
 ### 0.10.4 Gate dispositions
 
-A **gate** is an automated check that runs outside Claude Code, in a git
-hook or in CI. Each gate has a **disposition** per profile:
+A **gate** is an automated check that can stop an operation. It runs in
+a git hook, in CI, or in the Claude Code `PreToolUse` hook, which runs
+before each file edit an agent makes. Each gate has a **disposition**
+per profile:
 
 | Disposition | Behaviour |
 |---|---|
-| `block` | The gate reports its finding and the operation stops. |
+| `block` | The gate reports its finding and the operation stops. In `PreToolUse` the agent's tool call is denied. |
 | `warn` | The gate reports its finding and the operation proceeds. |
 | `info` | The gate prints one summary line and the operation proceeds. |
 | `off` | The gate does not run. |
 
-Five gates carry a per-profile disposition and may be overridden
+Nine gates carry a per-profile disposition and may be overridden
 individually. The configuration key is the name used in
 `.iso-config.yaml`.
 
@@ -595,38 +626,54 @@ individually. The configuration key is the name used in
 | Conventional-commit pattern (`commit-msg`) | `commit_msg_pattern` | off | warn | block |
 | Change Request reference for baselined paths (`commit-msg`) | `commit_msg_cr_reference` | off | warn | block |
 | SysML lint on changed model files (`pre-commit`) | `precommit_lint` | warn | warn | block |
-| Story well-formedness (`pre-commit`) | `precommit_story_wellformed` | off | warn | block |
+| Story well-formedness, §1.9 rules 2, 3, 6 and 9 (`pre-commit`) | `precommit_story_wellformed` | off | warn | block |
 | Traceability on touched requirements (`pre-commit`) | `precommit_traceability` | info | warn | block |
+| Gherkin conformance, §11.9 (`pre-commit`) | `precommit_gherkin` | block | block | block |
+| Test before code, §11.9 (`pre-commit`) | `precommit_test_first` | block | block | block |
+| Gherkin first in session, §11.9 (`PreToolUse`) | `pretooluse_gherkin_first` | block | block | block |
+| Test first in session, §11.9 (`PreToolUse`) | `pretooluse_test_first` | block | block | block |
 
 At `light` the Change Request gate is `off` because the default
 `baselined_paths` list is empty, so the gate would have nothing to
 check. A `light` project that baselines a path raises that one gate with
 an override.
 
+§1.9 rule 4, the acceptance rule, belongs to `precommit_gherkin` rather
+than to `precommit_story_wellformed`, so no finding carries two
+dispositions.
+
 The disposition columns govern a gate wherever its hook is installed.
 The installation matrix in §3.4 of the hooks guide defines the per-tier
-install set, and at `light` the `pre-commit` and `commit-msg` hooks are
-not installed by default, so their rows take effect only when a light
-project adds those hooks through the §3.4 phased-rollout path. The
-light column then applies as written.
+install set. The `pre-commit` hook installs at every profile, because it
+carries the two commit-time gates of §11, so at `light` its SysML lint
+warns and its traceability check prints one line. The `commit-msg` hook
+is not installed at `light` by default, so its two rows take effect only
+when a light project adds that hook through the §3.4 phased-rollout
+path. The light column then applies as written.
 
 The remaining automated surfaces are not per-gate configurable:
 
 - **Continuous integration traceability workflow**
-  (`.github/workflows/traceability-check.yml`). Not installed at
-  `light`. Installed as advisory (non-blocking) at `standard`. Installed
-  as blocking at `full`.
+  (`.github/workflows/traceability-check.yml`). Installed at every
+  profile. Its pre-commit step runs the commit-time gates over the
+  changes a pull request or push brings, and reads each gate's
+  disposition from `.iso-config.yaml`, so the table above governs it.
+  Its model-validation and derived-artefact steps are advisory
+  (non-blocking) at `light` and `standard` and blocking at `full`.
 - **`prepare-commit-msg`, `post-merge`, and `post-checkout`.** These
   three hooks are informational at every profile. They prepopulate,
   regenerate, or report, and they never block.
-- **Claude Code lifecycle hooks.** Advisory at every profile. They
-  inject context and surface reminders. They do not deny a tool call.
+- **Claude Code lifecycle hooks.** `PreToolUse` carries the two
+  in-session gates of §11.9 and may deny an agent's tool call. Every
+  other lifecycle hook, including `PostToolUse`, `Stop` and
+  `SubagentStop`, stays advisory at every profile. They add context
+  and surface reminders, and they never deny a tool call.
 - **Pre-push checks.** No local pre-push hook ships. The four pre-push
   obligations are documented as continuous-integration contracts in §4.4
   of the companion hooks guide, and a `full` project implements them
   there.
 
-**Per-gate overrides.** A project may set any of the five keys above in
+**Per-gate overrides.** A project may set any of the nine keys above in
 `.iso-config.yaml`, and the override wins over the profile column:
 
 ```yaml
@@ -642,6 +689,11 @@ configuration over code. A project changes a disposition by editing
 scripts stay identical across projects and an upgrade does not overwrite
 the project's intent. Record any override on the tailoring line
 (§0.10.2).
+
+The four gates of §11 differ from the other five in one respect. Their
+default is a floor rather than a profile choice, so an override that
+lowers one names its reason on the tailoring line, and an agent never
+writes such an override without an explicit human request (§11.10).
 
 ### 0.10.5 ISO/IEC 29110 conformance
 
@@ -675,6 +727,12 @@ Pretending otherwise wastes the engineer's time and misrepresents what
 the tooling does. The methodology's position is that a bypass is a
 legitimate engineering act when the engineer records why.
 
+The in-session `PreToolUse` gates of §11.9 can be bypassed too, in
+several ways (§11.11). The engineer's routes are a recorded override in
+`.iso-config.yaml` and editing outside Claude Code, where no lifecycle
+hook runs. The recording obligation below covers both. An agent never
+bypasses a gate on its own initiative (§11.10).
+
 **The recording obligation.** At `full`, a bypass and its rationale are
 recorded in the Correction Register (§10.5.2), because the register is
 the artefact an assessor reads. At `standard` and `light`, one line in
@@ -695,13 +753,14 @@ thing the skill says.
 **Where bypass does not apply.** A check that runs in continuous
 integration is not reachable from a workstation. A project that needs a
 genuinely unbypassable gate puts that gate in CI and protects the branch,
-which is why the `full` profile installs the CI workflow and enables
-branch protection. See §11 of the companion hooks guide.
+which is why every profile installs the CI workflow and the `full`
+profile enables branch protection. See §11 of the companion hooks guide.
 
 ---
 
 *End of overview. All process-description sections are drafted:
-§1 (`01-user-stories.md`) through §10 (`10-project-management.md`),
+§1 (`01-user-stories.md`) through §11
+(`11-behaviour-and-test-driven-development.md`),
 plus the ISO/IEC TR 29110‑5‑6‑2 compliance mapping (`§9`) and the
 companion `iso-29110-hooks-guide.md`. Worked-example appendices
 (§A–§C) remain open for elaboration with project-specific cases.*

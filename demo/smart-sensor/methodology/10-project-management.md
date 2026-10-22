@@ -130,15 +130,17 @@ tag on acceptance.
 The SEMP (ISO/IEC 29110 product 21) is either a top-level section of the
 Project Plan or a separate document at `docs/semp.md`, project-
 determined. It describes the engineering management approach and is
-where this methodology spec is *referenced* — i.e., the SEMP cites
-§0–§8 and §10 of this methodology as the engineering process to be
-followed.
+where this methodology spec is *referenced*, that is, the SEMP cites
+§0–§8, §10 and §11 of this methodology as the engineering process to be
+followed. The SEMP cites §11 because it is one of the four places that
+record the test-first judgement (§11.5.3).
 
 A minimal SEMP states:
 
 - Methodology (this spec) and version;
 - Engineering tools (SysML v2 implementation, IDE, linter,
-  CI/renderer);
+  CI/renderer, and the test harness and any scenario runner where test
+  first applies, §11.5.3);
 - Engineering interfaces (between this project and adjacent projects,
   contractors, certifying authorities);
 - Mission assurance and review cadence (linked to iteration cadence);
