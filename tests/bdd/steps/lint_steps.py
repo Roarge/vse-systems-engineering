@@ -139,6 +139,19 @@ def validation_case(ctx, text):
         handle.write(text)
 
 
+@step(r"a validation case that verifies ([\w.]+)")
+def validation_case_verifying(ctx, target):
+    validation_case(ctx, (
+        "package ExampleCases {{\n"
+        "    verification def VAL_901_Example {{\n"
+        "        subject s : ExampleSystem;\n"
+        "        objective {{\n"
+        "            verify {};\n"
+        "        }}\n"
+        "    }}\n"
+        "}}\n").format(target))
+
+
 @step(r"a validation case written on one line that verifies ([\w.]+)")
 def one_line_case(ctx, target):
     # The case header, its subject and its objective share one line, as

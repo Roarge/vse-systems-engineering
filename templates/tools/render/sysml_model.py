@@ -275,20 +275,20 @@ class Case:
                 seen.append(target)
         return seen
 
-    def covers_acceptance(self, identifier: str) -> bool:
-        """True when the case verifies the story's acceptance.
+    def reaches(self, identifier: str, criterion: str) -> bool:
+        """True when the case reaches the named criterion of the story.
 
-        A case that names only a constraint member verifies that
-        constraint, not the acceptance criteria, so it does not count as
-        acceptance coverage. A case that names the story with no member
-        verifies the whole story, acceptance included.
+        This is the coverage rule of methodology section 11.3.3, which the
+        story lint's finding S8 applies too. `verify <story>` and
+        `verify <story>.acceptance` reach every criterion of the story,
+        and `verify <story>.acceptance.<name>` reaches the criterion
+        `<name>` only. A case that names only a constraint member, such
+        as `<story>.sla`, verifies that constraint and reaches no
+        criterion.
         """
-        for target, member in self.verifies:
-            if target != identifier:
-                continue
-            if member == "" or member.split(".")[0] == "acceptance":
-                return True
-        return False
+        reaching = ("", "acceptance", "acceptance." + criterion)
+        return any(target == identifier and member in reaching
+                   for target, member in self.verifies)
 
 
 @dataclass

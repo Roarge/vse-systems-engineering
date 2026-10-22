@@ -88,7 +88,7 @@ class SplitTargetTests(unittest.TestCase):
             sysml_model.parse_file(Path(root), path, model)
         case = model.cases[0]
         self.assertEqual(case.targets(), ["US_001_SeeReadings"])
-        self.assertTrue(case.covers_acceptance("US_001_SeeReadings"))
+        self.assertTrue(case.reaches("US_001_SeeReadings", "SeeLatest"))
 
     def test_split_target_pkg_prefix(self):
         self.check([
@@ -465,6 +465,138 @@ class RenderTests(unittest.TestCase):
     Scenario: Ten
     ```
 """)
+
+
+MATRIX = load_renderer("traceability-matrix.py")
+
+STAKEHOLDER_STORIES = """\
+package Stories {
+    requirement US_1_Two : UserStory {
+        requirement :>> acceptance {
+            requirement first { doc /* The first. */ }
+            requirement second { doc /* The second. */ }
+        }
+    }
+}
+"""
+
+SYSTEM_STORIES = """\
+package SystemStories {
+    #derive requirement SYS_1_Two : UserStory {
+        requirement :>> acceptance {
+            requirement fast { doc /* Fast. */ }
+            requirement safe { doc /* Safe. */ }
+        }
+    }
+    #derivation connection sys1Derives {
+        end #original ::> US_1_Two;
+        end #derive ::> SYS_1_Two;
+    }
+}
+"""
+
+
+def case_file(*cases):
+    """A cases package holding one case per (identifier, targets)."""
+    lines = ["package Cases {"]
+    for identifier, targets in cases:
+        lines.append("    verification def {} {{".format(identifier))
+        lines.append("        objective {")
+        lines.extend("            verify {};".format(target)
+                     for target in targets)
+        lines.append("        }")
+        lines.append("    }")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+class TraceabilityMatrixTests(unittest.TestCase):
+    """Coverage is judged per named criterion, as the story lint's S8
+    judges it (methodology section 11.3.3)."""
+
+    def matrix(self, *cases, system=False):
+        """The rows, gap lines and summary of a model holding US_1_Two
+        (criteria first and second), with SYS_1_Two (criteria fast and
+        safe) derived from it when `system` is set, and the cases."""
+        with tempfile.TemporaryDirectory() as root:
+            write(root, "model/core/stories/stakeholder/stories.sysml",
+                  STAKEHOLDER_STORIES)
+            if system:
+                write(root, "model/core/stories/system/stories.sysml",
+                      SYSTEM_STORIES)
+            write(root, "model/core/verification-validation/cases.sysml",
+                  case_file(*cases))
+            model = sysml_model.load_model(Path(root))
+        status = {row[0]: row[-1] for row in MATRIX.matrix_rows(model)}
+        return status, MATRIX.gap_findings(model), dict(
+            MATRIX.summary_rows(model))
+
+    def gaps_naming(self, gaps, story):
+        return [line for line in gaps if "`{}`".format(story) in line]
+
+    def test_story_with_an_unreached_criterion_is_a_gap(self):
+        status, gaps, summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance.first"]))
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`second`", named[0])
+        self.assertNotIn("`first`", named[0])
+        self.assertEqual(
+            summary["Stakeholder stories with acceptance coverage"],
+            "0 of 1")
+
+    def test_each_unreached_criterion_is_listed(self):
+        status, gaps, _summary = self.matrix(
+            ("VAL_1", ["US_1_Two.sla"]))
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        named = self.gaps_naming(gaps, "US_1_Two")
+        self.assertEqual(len(named), 2, gaps)
+        self.assertIn("`first`", named[0])
+        self.assertIn("`second`", named[1])
+
+    def test_every_criterion_reached_is_complete(self):
+        for cases in (
+                [("VAL_1", ["US_1_Two.acceptance.first",
+                            "US_1_Two.acceptance.second"])],
+                [("VAL_1", ["US_1_Two.acceptance.first"]),
+                 ("VAL_2", ["US_1_Two.acceptance.second"])],
+                [("VAL_1", ["US_1_Two.acceptance"])],
+                [("VAL_1", ["US_1_Two"])]):
+            with self.subTest(cases=cases):
+                status, gaps, summary = self.matrix(*cases)
+                self.assertEqual(status, {"US_1_Two": "Complete"})
+                self.assertEqual(gaps, [])
+                self.assertEqual(
+                    summary["Stakeholder stories with acceptance coverage"],
+                    "1 of 1")
+
+    def test_system_story_lists_each_unreached_criterion(self):
+        status, gaps, summary = self.matrix(
+            ("VAL_1", ["US_1_Two.acceptance"]),
+            ("VC_1", ["SYS_1_Two.acceptance.fast"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Complete"})
+        named = self.gaps_naming(gaps, "SYS_1_Two")
+        self.assertEqual(len(named), 1, gaps)
+        self.assertIn("`safe`", named[0])
+        self.assertEqual(summary["System stories with a verification case"],
+                         "0 of 1")
+
+    def test_verified_derived_system_story_completes_the_row(self):
+        # The second route: a system story derived from the stakeholder
+        # story, with every one of its own criteria reached by a
+        # verification case.
+        status, gaps, _summary = self.matrix(
+            ("VC_1", ["SYS_1_Two.acceptance.fast",
+                      "SYS_1_Two.acceptance.safe"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Complete"})
+        self.assertEqual(gaps, [])
+
+    def test_partly_verified_derived_system_story_leaves_a_gap(self):
+        status, gaps, _summary = self.matrix(
+            ("VC_1", ["SYS_1_Two.acceptance.fast"]), system=True)
+        self.assertEqual(status, {"US_1_Two": "Gap"})
+        self.assertEqual(len(self.gaps_naming(gaps, "US_1_Two")), 2, gaps)
 
 
 if __name__ == "__main__":

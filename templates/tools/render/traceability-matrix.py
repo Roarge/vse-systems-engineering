@@ -62,32 +62,47 @@ def verification_cases_for(model, story):
     return cases
 
 
+def unreached_criteria(model, story, kind=""):
+    """The names of the story's criteria that no case reaches, in
+    declaration order, counting only cases of `kind` when one is given.
+
+    A case reaches a criterion under the coverage rule of methodology
+    section 11.3.3, the rule the story lint's finding S8 applies, so the
+    matrix and the commit gate judge a criterion alike.
+    """
+    cases = model.cases_of_kind(kind) if kind else model.cases
+    return [
+        acceptance.label
+        for acceptance in story.acceptances
+        if not any(case.reaches(story.identifier, acceptance.label)
+                   for case in cases)
+    ]
+
+
+def system_story_is_verified(model, story):
+    """True when verification cases reach every criterion of the story."""
+    if not story.acceptances:
+        return False
+    return not unreached_criteria(model, story, kind="verification")
+
+
 def stakeholder_story_is_covered(model, story):
     """True when the story's acceptance has coverage by either route.
 
     Coverage comes from either of the two routes the methodology defines.
-    A validation case exercises the stakeholder story directly (section
-    4.3.6). A verification case exercises a system story derived from it
-    (sections 5.4.1 and 5.4.6). A story with no acceptance criterion has
-    nothing to cover and is therefore never complete, per section 1.9.
+    Cases exercise the stakeholder story directly (section 4.3.6), and
+    then every one of its criteria has to be reached by a case. Or a
+    verified system story derived from it carries the coverage (sections
+    5.4.1 and 5.4.6). A story with no acceptance criterion has nothing to
+    cover and is therefore never complete, per section 1.9.
     """
     if not story.acceptances:
         return False
-    for case in model.cases:
-        if case.covers_acceptance(story.identifier):
-            return True
-    for derived in model.derived_from(story.identifier):
-        for case in model.cases_of_kind("verification"):
-            if case.covers_acceptance(derived):
-                return True
-    return False
-
-
-def system_story_is_verified(model, story):
-    if not story.acceptances:
-        return False
-    for case in model.cases_of_kind("verification"):
-        if case.covers_acceptance(story.identifier):
+    if not unreached_criteria(model, story):
+        return True
+    for identifier in model.derived_from(story.identifier):
+        derived = model.story(identifier)
+        if derived is not None and system_story_is_verified(model, derived):
             return True
     return False
 
@@ -136,10 +151,12 @@ def gap_findings(model):
                 "no case can cover it (methodology section 1.9)."
             )
         elif not stakeholder_story_is_covered(model, story):
-            findings.append(
-                f"`{story.identifier}` has neither a validation case against "
-                "its acceptance nor a verified system story derived from it."
-            )
+            for label in unreached_criteria(model, story):
+                findings.append(
+                    f"`{story.identifier}` has no case that reaches its "
+                    f"criterion `{label}`, and no verified system story "
+                    "derived from it."
+                )
 
     for story in model.stories_of_kind("system"):
         if not story.acceptances:
@@ -148,10 +165,12 @@ def gap_findings(model):
                 "no verification case can cover it (methodology section 1.9)."
             )
         elif not system_story_is_verified(model, story):
-            findings.append(
-                f"`{story.identifier}` has no verification case against its "
-                "acceptance (methodology section 5.4.6)."
-            )
+            for label in unreached_criteria(model, story, kind="verification"):
+                findings.append(
+                    f"`{story.identifier}` has no verification case that "
+                    f"reaches its criterion `{label}` (methodology section "
+                    "5.4.6)."
+                )
         if not model.originals_of(story.identifier):
             findings.append(
                 f"`{story.identifier}` derives from no stakeholder story "
