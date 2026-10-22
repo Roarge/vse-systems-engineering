@@ -871,9 +871,9 @@ _vse_tf_file_has() {
 
 # Return 0 when the package.json <file> has a "test" key in its
 # top-level "scripts" object, other than an empty script or the npm
-# placeholder ("no test specified"). The reader follows strings, with their escapes, and the
-# nesting of objects and arrays, so the same key elsewhere, such as
-# directories.test, does not count.
+# placeholder ("no test specified"). The reader follows strings, with
+# their escapes, and the nesting of objects and arrays, so the same key
+# elsewhere, such as directories.test, does not count.
 _vse_tf_npm_test() {
     [ -f "$1" ] || return 1
     LC_ALL=C awk '
