@@ -341,6 +341,37 @@ class StorySideTests(unittest.TestCase):
         self.assertIn((STK + "Orphan.feature", 1, "F3"), alone)
         self.assertEqual(both, alone)
 
+    def test_stories_outside_a_stories_directory_are_not_checked(self):
+        # The stories of model/core/requirements/ draw nothing: not S1
+        # for US_301 (no feature file), not S4, S5 or S8 for US_302
+        # (whose feature file draws F10 alone), and not S9 for the
+        # legacy definition US_303. The story in the stories directory
+        # is still checked.
+        self.assertEqual(lint("outside"), [
+            ("model/core/requirements/US_302_WithFeature.feature", 1,
+             "F10"),
+            (SYSML, 4, "S1"),
+        ])
+
+    def test_stories_outside_when_their_directory_is_named(self):
+        # The pre-commit hook names a changed feature file outside a
+        # stories directory as itself, so its directory is checked.
+        self.assertEqual(
+            lint("outside",
+                 paths=["model/core/requirements/US_302_WithFeature.feature"]),
+            [("model/core/requirements/US_302_WithFeature.feature", 1,
+              "F10")])
+
+    def test_F10_says_to_move_the_story_as_well(self):
+        # A story declared outside a stories directory is not checked,
+        # so the advice cannot be to leave the feature file beside it.
+        findings = story_wellformed.lint_paths(
+            ["model"], "gherkin", Path(FIXTURES) / "outside")
+        message = next(finding.message for finding in findings
+                       if finding.code == "F10")
+        self.assertIn("move the story there first if it is declared "
+                      "elsewhere", message)
+
     def test_register_file_four_stories(self):
         # Four stories in one register file, each paired with its own
         # feature file. Only the third has none.

@@ -36,7 +36,7 @@ never opened, because reading it could block the lint for ever.
 | Option | Effect |
 |---|---|
 | `--only wellformed` | The §1.9 checks, codes W2, W3, W6, W9 and W10, for the stories in the `.sysml` files named or found. The `precommit_story_wellformed` gate runs this. A `.sysml` file that cannot be read is left to `--only gherkin`. |
-| `--only gherkin` | Findings S1 to S9 and F1 to F10 of §11.9.1, for every directory that holds a named file or that a directory search finds. The `precommit_gherkin` gate runs this. |
+| `--only gherkin` | Findings S1 to S9 and F1 to F10 of §11.9.1, for every directory that holds a named file or that a directory search finds. The story findings (the S codes) are reported only for stories in a `stories/` directory. The `precommit_gherkin` gate runs this. |
 | `--only syntax` | F1, F2, F7, F8 and F9 for feature files on their own, with no story context. |
 | no `--only` | Both `wellformed` and `gherkin`. |
 | `--format json` | A JSON array of findings instead of text lines. |
@@ -74,6 +74,12 @@ These behaviours are worth knowing.
   plugin's in-session Gherkin-first hook reads. Any other declaration
   that types or specialises `UserStory` is finding S9, so a story the
   hook cannot read is never passed unchecked.
+- **Stories live in a `stories/` directory.** §11.2.1 pairs each story
+  with its feature file in a stories directory, so the S findings are
+  reported only there. A story declared in another directory, such as
+  `model/core/requirements/`, is not checked, and a feature file beside
+  it draws F10, whose advice is to move the story into a stories
+  directory with its feature file.
 - **Where coverage comes from.** Finding S8 needs to know which
   verification and validation cases reach each criterion, and which
   `satisfy` relationships name each story. The lint reads both from the

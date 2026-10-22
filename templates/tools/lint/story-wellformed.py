@@ -33,7 +33,11 @@ Rule sets
   come from an imported library.
 * `--only gherkin`: findings S1 to S9 and F1 to F10 of section 11.9.1,
   for every directory that holds a named file or that a named directory
-  search finds. This is the `precommit_gherkin` gate.
+  search finds. This is the `precommit_gherkin` gate. Section 11.2.1
+  pairs stories with feature files in stories directories, so the story
+  findings are reported only in a directory that lies under one named
+  `stories`. A story declared elsewhere is not checked, and a feature
+  file beside it draws F10.
 * `--only syntax`: F1, F2, F7, F8 and F9 for the `.feature` files named
   or found, with no story context.
 * No `--only`: wellformed and gherkin.
@@ -45,8 +49,8 @@ wellformed rule set skips it.
 A story is what the plugin's in-session Gherkin-first hook reads as one:
 a requirement usage declared as `requirement <ID> : UserStory` or
 `requirement <ID> : VSE_Library::UserStory`. Any other declaration that
-types or specialises UserStory is finding S9, so that a story the hook
-cannot read never passes unchecked.
+types or specialises UserStory in a stories directory is finding S9, so
+that a story the hook cannot read never passes unchecked.
 
 Finding S8 reads every verification and validation case, and every
 `satisfy`, in the model root (`model/` or `engineering/model/` under the
@@ -869,13 +873,18 @@ def _criterion_tags(scenario) -> List["gherkin.Tag"]:
     return [tag for tag in scenario.tags if tag.name.startswith("@AC_")]
 
 
-def _in_stories_directory(entry: FeatureFile, project_root: Path) -> bool:
-    full = entry.full.resolve()
+def _parts(full: Path, project_root: Path) -> Tuple[str, ...]:
+    """The parts of the resolved path, relative to the project root when
+    it lies inside it."""
+    resolved = full.resolve()
     try:
-        parts = full.relative_to(project_root.resolve()).parts
+        return resolved.relative_to(project_root.resolve()).parts
     except ValueError:
-        parts = full.parts
-    return "stories" in parts[:-1]
+        return resolved.parts
+
+
+def _in_stories_directory(entry: FeatureFile, project_root: Path) -> bool:
+    return "stories" in _parts(entry.full, project_root)[:-1]
 
 
 def _narrative_order(entry: FeatureFile) -> Optional[Finding]:
@@ -908,9 +917,11 @@ def _check_feature(entry: FeatureFile, project_root: Path) -> List[Finding]:
     if not _in_stories_directory(entry, project_root):
         findings.append(Finding(
             entry.display, 1, "F10",
-            "{} is not under a stories/ directory. Move it beside the "
-            ".sysml file that declares its story".format(entry.full.name),
-            "§11.2.1"))
+            "{} is not under a stories/ directory. A story and its feature "
+            "file belong together in a stories/ directory, so move the "
+            "story there first if it is declared elsewhere, then move this "
+            "file beside the .sysml file that declares it".format(
+                entry.full.name), "§11.2.1"))
     if not entry.ok:
         return findings
     feature = entry.feature
@@ -1219,6 +1230,11 @@ def _check_directory(workspace: Workspace, full: Path, display: str,
             entry = workspace.feature_file(file_full, file_display)
             features[file_full.name] = entry
             findings.extend(_check_feature(entry, workspace.project_root))
+    # Stories are paired with their feature files in stories directories
+    # alone (§11.2.1). A story declared elsewhere is not checked, and a
+    # feature file beside it draws F10.
+    if "stories" not in _parts(full, workspace.project_root):
+        return findings
     for entry in sysml_entries:
         for line, text in entry.scan.unreadable:
             findings.append(Finding(
