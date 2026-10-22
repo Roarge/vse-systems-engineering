@@ -189,10 +189,10 @@ report tc_run_real
 '
     _tc_capture env PATH="${wrap}:${PATH}" TMPDIR="$(tc_mktemp_d)" \
         bash -c "$nested" nested "${TC_LIB_DIR}/lib.sh"
-    tc_assert_rc 0 "without env -C: the nested test script exits 0"
-    tc_assert_line "tc_run_in: ok" "$OUT" "without env -C: tc_run_in runs in the directory it names"
-    tc_assert_line "tc_run_hook: ok" "$OUT" "without env -C: the sandboxed runner runs in the scratch repository"
-    tc_assert_line "tc_run_real: ok" "$OUT" "without env -C: tc_run_real runs in the scratch repository"
+    tc_assert_rc 0 "without env -C: the nested test script exits 0"  # portability: ok a case name, not a call
+    tc_assert_line "tc_run_in: ok" "$OUT" "without env -C: tc_run_in runs in the directory it names"  # portability: ok a case name, not a call
+    tc_assert_line "tc_run_hook: ok" "$OUT" "without env -C: the sandboxed runner runs in the scratch repository"  # portability: ok a case name, not a call
+    tc_assert_line "tc_run_real: ok" "$OUT" "without env -C: tc_run_real runs in the scratch repository"  # portability: ok a case name, not a call
 }
 
 # On macOS the temporary directory is reached through a symbolic link
@@ -266,23 +266,23 @@ case_bsd_grep_stub() {
     local file
     tc_stub_bsd_grep
     tc_env
-    tc_run_in "$REPO" sh -c 'printf "a1\n" | grep -oP "a[0-9]"'
+    tc_run_in "$REPO" sh -c 'printf "a1\n" | grep -oP "a[0-9]"'  # portability: ok the BSD grep stub must refuse it
     tc_assert_rc 2 "BSD grep stub: -P in the group -oP exits 2"
     tc_assert_line "grep: invalid option -- P" "$ERR" "BSD grep stub: -P is refused with BSD's message"
     tc_assert_match '^usage: grep ' "$ERR" "BSD grep stub: the refusal prints the usage text"
     tc_assert_empty "$OUT" "BSD grep stub: a refused call prints nothing on stdout"
-    tc_run_in "$REPO" grep -qP x /dev/null
+    tc_run_in "$REPO" grep -qP x /dev/null  # portability: ok the BSD grep stub must refuse it
     tc_assert_rc 2 "BSD grep stub: -P in the group -qP exits 2"
-    tc_run_in "$REPO" grep --perl-regexp x /dev/null
+    tc_run_in "$REPO" grep --perl-regexp x /dev/null  # portability: ok the BSD grep stub must refuse it
     tc_assert_rc 2 "BSD grep stub: --perl-regexp exits 2"
     tc_assert_line "grep: unrecognized option \`--perl-regexp'" "$ERR" \
         "BSD grep stub: --perl-regexp is refused with BSD's message"
-    tc_run_in "$REPO" sh -c 'printf "b\n" | grep "a\|b"'
-    tc_assert_rc 2 "BSD grep stub: \\| in a basic regular expression exits 2"
+    tc_run_in "$REPO" sh -c 'printf "b\n" | grep "a\|b"'  # portability: ok the BSD grep stub must refuse it
+    tc_assert_rc 2 "BSD grep stub: \\| in a basic regular expression exits 2"  # portability: ok a case name, not a call
     tc_assert_grep '\| in a basic regular expression' "$ERR" \
-        "BSD grep stub: the refusal of \\| says why"
-    tc_run_in "$REPO" sh -c 'printf "b\n" | grep -e x -e "a\|b"'
-    tc_assert_rc 2 "BSD grep stub: \\| in a pattern given with -e exits 2"
+        "BSD grep stub: the refusal of \\| says why"  # portability: ok a case name, not a call
+    tc_run_in "$REPO" sh -c 'printf "b\n" | grep -e x -e "a\|b"'  # portability: ok the BSD grep stub must refuse it
+    tc_assert_rc 2 "BSD grep stub: \\| in a pattern given with -e exits 2"  # portability: ok a case name, not a call
 
     tc_run_in "$REPO" sh -c 'printf "a1\nb\n" | grep -oE "a[0-9]"'
     tc_assert_rc 0 "BSD grep stub: -oE runs the real grep"
@@ -292,12 +292,12 @@ case_bsd_grep_stub() {
     file="$(tc_mktemp_d)/text"
     printf '%s\n' 'a\|b' > "$file"
     tc_run_in "$REPO" grep -F 'a\|b' "$file"
-    tc_assert_rc 0 "BSD grep stub: \\| with -F is a fixed string"
-    tc_run_in "$REPO" grep 'a\\|b' "$file"
+    tc_assert_rc 0 "BSD grep stub: \\| with -F is a fixed string"  # portability: ok a case name, not a call
+    tc_run_in "$REPO" grep 'a\\|b' "$file"  # portability: ok an escaped backslash, which the stub must pass
     tc_assert_rc 0 "BSD grep stub: an escaped backslash before | is not \\|"
-    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -e -P'
+    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -e -P'  # portability: ok -P is the pattern here
     tc_assert_eq "-P" "$OUT" "BSD grep stub: -P after -e is a pattern"
-    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -- -P'
+    tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -- -P'  # portability: ok -P is the pattern here
     tc_assert_eq "-P" "$OUT" "BSD grep stub: -P after -- is a pattern"
     tc_reset_stubs
 }
@@ -305,14 +305,14 @@ case_bsd_grep_stub() {
 case_bsd_date_stub() {
     tc_stub_bsd_date
     tc_env
-    tc_run_in "$REPO" date -u -d '30 days ago' +%Y
+    tc_run_in "$REPO" date -u -d '30 days ago' +%Y  # portability: ok the BSD date stub must refuse it
     tc_assert_rc 1 "BSD date stub: -d exits 1"
     tc_assert_line "date: illegal option -- d" "$ERR" "BSD date stub: -d is refused with BSD's message"
     tc_assert_match '^usage: date ' "$ERR" "BSD date stub: the refusal prints the usage text"
     tc_assert_empty "$OUT" "BSD date stub: a refused call prints nothing on stdout"
-    tc_run_in "$REPO" date -ud yesterday +%Y
+    tc_run_in "$REPO" date -ud yesterday +%Y  # portability: ok the BSD date stub must refuse it
     tc_assert_line "date: illegal option -- d" "$ERR" "BSD date stub: -d in the group -ud is refused"
-    tc_run_in "$REPO" date --date=yesterday +%Y
+    tc_run_in "$REPO" date --date=yesterday +%Y  # portability: ok the BSD date stub must refuse it
     tc_assert_rc 1 "BSD date stub: --date exits 1"
     tc_assert_line "date: illegal option -- -" "$ERR" \
         "BSD date stub: --date is refused as getopt refuses a long option"
