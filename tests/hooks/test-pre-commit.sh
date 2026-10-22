@@ -1261,6 +1261,122 @@ case_touched_story_blocks() {
     tc_assert_not_grep "Note:" "$ERR" "touched story: no note for a touched story"
 }
 
+# commit_broken_feature [<dir>]: the register of commit_register, a
+# verification case that reaches US_901_Example's criterion, and a last
+# step line in US_901_Example.feature that does not parse, committed
+# with the hooks bypassed, as a broken feature file already on the
+# branch would sit there.
+commit_broken_feature() {
+    local dir="${1:-$STORY_DIR}" model="${1:-$STORY_DIR}"
+    model="${model%%/core/*}"
+    commit_register "$dir"
+    tc_write "${model}/core/verification-validation/verification-cases/v.sysml" <<'EOF'
+package V {
+    verification def VC_901_Example {
+        objective {
+            verify US_901_Example.acceptance.firstReading;
+        }
+    }
+}
+EOF
+    printf '    Banana y\n' >> "${REPO}/${dir}/US_901_Example.feature"
+    tc_stage "${model}/core/verification-validation/verification-cases/v.sysml" \
+        "${dir}/US_901_Example.feature"
+    tc_commit "add a case and break the feature file"
+}
+
+# change_status <file> <story> <status>: set the status of one story
+# and stage the file.
+change_status() {
+    local file="$1" story="$2" status="$3"
+    awk -v story="$story" -v status="$status" '
+        index($0, "requirement " story " : UserStory") { inside = 1 }
+        inside && sub(/StoryStatus::[A-Za-z]+/, "StoryStatus::" status) { inside = 0 }
+        { print }
+    ' "${REPO}/${file}" > "${REPO}/${file}.new"
+    mv "${REPO}/${file}.new" "${REPO}/${file}"
+    tc_stage "$file"
+}
+
+# assert_legacy_unchecked <label>: no finding names the untouched
+# legacy story, so naming the touched story's feature file does not
+# widen the check.
+assert_legacy_unchecked() {
+    local label="$1"
+    tc_assert_not_grep "S1 US_902_Legacy" "$ERR" "${label}: the untouched legacy story draws no S1"
+    tc_assert_not_grep "S3 US_902_Legacy" "$ERR" "${label}: the untouched legacy story draws no S3"
+}
+
+# A touched story is checked with its feature file, so a feature file
+# the change leaves alone that does not parse is reported (F1) and the
+# story is not passed with its scenario checks skipped. The untouched
+# legacy story is still only noted, which a blocked commit never
+# reaches, so the note is checked with the gate lowered to warn.
+case_touched_unparsed_feature() {
+    tc_setup_repo
+    story_config light
+    commit_broken_feature
+    change_status "${STORY_DIR}/stories.sysml" US_901_Example inProgress
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "unparsed feature, staged: a status change to its story stops the commit"
+    tc_assert_grep "${STORY_DIR}/US_901_Example.feature:13: F1 " "$ERR" \
+        "unparsed feature, staged: finding F1 is shown"
+    assert_legacy_unchecked "unparsed feature, staged"
+
+    story_config light precommit_gherkin=warn
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "unparsed feature, warn: the commit proceeds"
+    tc_assert_grep "${STORY_DIR}/US_901_Example.feature:13: F1 " "$ERR" \
+        "unparsed feature, warn: finding F1 is shown"
+    tc_assert_match '^\[pre-commit\] warning: precommit_gherkin: ' "$ERR" \
+        "unparsed feature, warn: the gate warns"
+    assert_legacy_noted "unparsed feature, warn"
+
+    tc_setup_repo
+    story_config light
+    mkdir -p "${REPO}/engineering"
+    mv "${REPO}/.iso-config.yaml" "${REPO}/engineering/.iso-config.yaml"
+    mv "${REPO}/tools" "${REPO}/engineering/tools"
+    commit_broken_feature "engineering/${STORY_DIR}"
+    change_status "engineering/${STORY_DIR}/stories.sysml" US_901_Example inProgress
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "unparsed feature, brownfield: a status change to its story stops the commit"
+    tc_assert_grep "[pre-commit] The paths below are relative to engineering/" "$ERR" \
+        "unparsed feature, brownfield: the paths are said to be relative to engineering/"
+    tc_assert_grep "${STORY_DIR}/US_901_Example.feature:13: F1 " "$ERR" \
+        "unparsed feature, brownfield: finding F1 is shown relative to engineering/"
+    assert_legacy_unchecked "unparsed feature, brownfield"
+}
+
+# The same in range mode, as CI checks a pull request and a push.
+case_touched_unparsed_feature_range() {
+    local clone
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_broken_feature
+    git -C "$REPO" checkout -q -b feat/start
+    change_status "${STORY_DIR}/stories.sysml" US_901_Example inProgress
+    tc_commit "start US_901"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 1 "unparsed feature, range: a status change to its story fails"
+    tc_assert_grep "${STORY_DIR}/US_901_Example.feature:13: F1 " "$ERR" \
+        "unparsed feature, range: finding F1 is shown"
+    assert_legacy_unchecked "unparsed feature, range"
+
+    run_in_clone "$clone" "HEAD~1..HEAD"
+    tc_assert_rc 1 "unparsed feature, two-dot range: a status change to its story fails"
+    tc_assert_grep "${STORY_DIR}/US_901_Example.feature:13: F1 " "$ERR" \
+        "unparsed feature, two-dot range: finding F1 is shown"
+}
+
 # A change to a story's feature file alone touches the story, so the
 # story is checked although its block is unchanged.
 case_touched_feature_only() {
@@ -2292,6 +2408,8 @@ case_python_missing_blocks
 case_stub_library_blocks_new_gates
 case_touched_sibling_not_blocking
 case_touched_story_blocks
+case_touched_unparsed_feature
+case_touched_unparsed_feature_range
 case_touched_feature_only
 case_touched_deleted_story
 case_touched_unreadable_declaration

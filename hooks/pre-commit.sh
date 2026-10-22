@@ -9,9 +9,10 @@
 #   2. The story lint, tools/lint/story-wellformed.py under the
 #      engineering root, over the stories the change touches (a story
 #      whose declaration block it adds or alters, or whose feature file
-#      it adds, changes, renames or deletes) and the story and feature
-#      files it changes, and over every changed .feature file under
-#      model/ that sits outside stories/, so that F10 reports it.
+#      it adds, changes, renames or deletes), the story and feature
+#      files it changes, the feature file of each touched story, and
+#      every changed .feature file under model/ that sits outside
+#      stories/, so that F10 reports it.
 #      Stories the change leaves alone are listed in one note and never
 #      block. With the range all every story is checked. A .feature
 #      file outside model/ is the project's own, such as a Cucumber
@@ -508,9 +509,22 @@ if [ "$ENG_INSIDE" -eq 1 ]; then
             renamed_from="$(rename_source "$changed")"
             story_image "$BEFORE_REV" "${renamed_from:-$changed}" "${STORY_TMP}/before"
             story_image "$AFTER_REV" "$changed" "${STORY_TMP}/after"
-            TOUCHED_LIST="${TOUCHED_LIST}$(vse_tf_touched_stories "${STORY_TMP}/before" "${STORY_TMP}/after")"$'\n'
+            touched_ids="$(vse_tf_touched_stories "${STORY_TMP}/before" "${STORY_TMP}/after")"
+            TOUCHED_LIST="${TOUCHED_LIST}${touched_ids}"$'\n'
             STORY_PATH_LIST="${STORY_PATH_LIST}${rel}"$'\n'
             STORY_DIR_LIST="${STORY_DIR_LIST}${dir}"$'\n'
+            # The feature file of each touched story is named too, so
+            # that its findings about the file alone (F1 to F10) are
+            # reported. A feature file that does not parse would
+            # otherwise pass unread, and with it the story checks that
+            # need its scenarios and its tag.
+            while IFS= read -r touched_id; do
+                [ -n "$touched_id" ] || continue
+                [ -f "${ENG_ROOT}/${dir}/${touched_id}.feature" ] || continue
+                STORY_PATH_LIST="${STORY_PATH_LIST}${dir}/${touched_id}.feature"$'\n'
+            done <<EOF2
+$touched_ids
+EOF2
             continue
         fi
         stem="${rel##*/}"

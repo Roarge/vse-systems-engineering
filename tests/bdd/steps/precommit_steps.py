@@ -136,6 +136,19 @@ def committed_register(ctx, migrated, legacy):
     world.commit_unchecked(ctx, "feat: add the register", "model")
 
 
+@step(r"the committed feature file of (\w+) holds a step line that does "
+      r"not parse")
+def committed_unparsed_feature(ctx, story):
+    # The line is committed with the hooks bypassed, as a feature file
+    # that reached the branch before its gate blocked would hold it.
+    path = os.path.join(STORIES, story + ".feature")
+    with open(os.path.join(project(ctx), path), "a",
+              encoding="utf-8") as handle:
+        handle.write("    Banana y\n")
+    world.commit_unchecked(ctx, "test: break the feature file of " + story,
+                           path)
+
+
 @step(r"a branch whose commits change only the story (\w+)")
 def branch_changes_story(ctx, story):
     world.git(ctx, "checkout", "-q", "-b", "feature/" + story)

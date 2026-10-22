@@ -10,10 +10,10 @@ Feature: The commit gates check the stories a change touches
   file it was renamed from, so renaming it touches none of its stories.
   A story file moved on its own to another stories directory leaves its
   feature files behind, so its stories count as touched. The commit
-  gate and the pull-request check read the stories a change touches and
-  the feature files it changes. A story the change leaves alone is
-  listed in one note instead, and the full-tree run at a release tag
-  checks every story.
+  gate and the pull-request check read the stories a change touches,
+  the feature file of each, and the feature files it changes. A story
+  the change leaves alone is listed in one note instead, and the
+  full-tree run at a release tag checks every story.
 
   Background:
     Given a VSE project at the light profile
@@ -40,6 +40,11 @@ Feature: The commit gates check the stories a change touches
   Scenario: A story file moved alone to another stories directory checks its stories
     When the engineer moves the story file alone to the stories directory operator
     Then the commit is refused with finding S1 for US_901_Example
+
+  Scenario: A touched story whose feature file does not parse is refused
+    Given the committed feature file of US_901_Example holds a step line that does not parse
+    When the engineer commits a change to the story US_901_Example only
+    Then the commit is refused with finding F1
 
   Scenario: Changing only a story's feature file checks that story
     When the engineer commits a new feature file for US_902_Legacy only
