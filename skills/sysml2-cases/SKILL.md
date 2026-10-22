@@ -133,8 +133,9 @@ verification def VAL_001_OperatorSeeReadings {
 | `verify <story>.acceptance.<name>` | The criterion `<name>` only |
 
 Prefer the narrowest form when different cases verify different
-criteria, so that the traceability matrix shows which case verifies
-which scenario. Only the `<story>::<member>` form is retired: `::`
+criteria, so that the model records which case verifies which
+scenario. The traceability matrix lists every criterion that no case
+reaches as a gap. Only the `<story>::<member>` form is retired: `::`
 after the story addresses a definition member, and the reference
 implementations refuse it (§5.4.6). A package may still qualify the
 story at the front of the chain, so

@@ -247,8 +247,10 @@ objective holds one of these clauses:
 | `verify <story>.acceptance.<name>` | The criterion `<name>` only |
 
 The narrowest form is preferred when different cases verify different
-criteria, because the traceability matrix then shows which case
-verifies which scenario. The path uses dot notation. The `::` namespace
+criteria, because the model then records which case verifies which
+scenario. The traceability matrix judges each criterion by this rule
+and lists every criterion that no case reaches as a gap. The path uses
+dot notation. The `::` namespace
 form addresses a definition member, and the reference implementations
 refuse it (§5.4.6).
 
