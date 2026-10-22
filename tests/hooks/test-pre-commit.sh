@@ -1161,8 +1161,11 @@ EOF
 # §11.9): a story whose declaration block the change adds or alters,
 # compared with the PreToolUse scanner of lib/test-first.sh, or whose
 # feature file it adds, changes, renames or deletes. A story file the
-# change renames is compared with the story file it was renamed from.
-# Deleting a story touches nothing. A story the change leaves alone that
+# change renames within its directory, or moves with the whole
+# directory, is compared with the story file it was renamed from. A
+# story file moved on its own to another directory, and a template
+# renamed to a working name, bring their stories in as new. Deleting a
+# story touches nothing. A story the change leaves alone that
 # still needs migrating is listed in one note and never blocks a staged
 # or range commit. A run over every tracked file checks every story.
 
@@ -1622,6 +1625,100 @@ case_touched_renamed_range() {
     tc_assert_rc 1 "renamed, range: a pull request that renames the register and changes the legacy story fails"
     tc_assert_grep "${STORY_DIR}/register.sysml:20: S1 US_902_Legacy has no feature file" "$ERR" \
         "renamed, range: the changed legacy story draws S1"
+}
+
+# A story file moved on its own to another stories directory leaves its
+# feature files behind, in a directory that still holds them. Its
+# stories count as touched, so the migrated story, parted from its
+# feature file, draws S1.
+MOVED_ALONE="model/core/stories/operator/stories.sysml"
+
+# assert_moved_alone_checked <label>: both stories of the moved file are
+# checked and the commit or check is stopped.
+assert_moved_alone_checked() {
+    local label="$1"
+    tc_assert_rc 1 "${label}: stopped"
+    tc_assert_grep "${MOVED_ALONE}:4: S1 US_901_Example has no feature file" "$ERR" \
+        "${label}: the story parted from its feature file draws S1"
+    tc_assert_grep "${MOVED_ALONE}:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "${label}: the legacy story in the moved file is checked"
+    tc_assert_not_grep "Note:" "$ERR" "${label}: no story is left alone, so no note"
+}
+
+case_touched_moved_alone() {
+    tc_setup_repo
+    story_config light
+    commit_register
+    mkdir -p "${REPO}/${MOVED_ALONE%/*}"
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "$MOVED_ALONE"
+    tc_env
+    tc_run_hook
+    assert_moved_alone_checked "moved alone, staged"
+}
+
+# The same move read from a range: a pull request (the after image is
+# the range end), a push, and a single revision (the after image is the
+# working tree).
+case_touched_moved_alone_range() {
+    local clone
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_register
+    git -C "$REPO" checkout -q -b feat/move
+    mkdir -p "${REPO}/${MOVED_ALONE%/*}"
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "$MOVED_ALONE"
+    tc_commit "move the register on its own"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    assert_moved_alone_checked "moved alone, range"
+    run_in_clone "$clone" "HEAD~1..HEAD"
+    assert_moved_alone_checked "moved alone, two-dot range"
+    run_in_clone "$clone" "HEAD~1"
+    assert_moved_alone_checked "moved alone, single revision"
+}
+
+# Templates (names that begin with "_") hold no stories, so a directory
+# whose story and feature files all moved, with its templates left
+# behind, moved whole, and the moved register keeps its stories
+# untouched.
+case_touched_moved_leaving_templates() {
+    local moved="model/core/stories/operator"
+    tc_setup_repo
+    story_config light
+    commit_register
+    printf 'package StoryTemplate;\n' | tc_write "${STORY_DIR}/_template.sysml"
+    printf '@US_000_Template\nFeature: A template\n' | tc_write "${STORY_DIR}/_template.feature"
+    tc_stage "${STORY_DIR}/_template.sysml" "${STORY_DIR}/_template.feature"
+    tc_commit "add the templates"
+    mkdir -p "${REPO}/${moved}"
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "${STORY_DIR}/US_901_Example.feature" "${moved}/"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "moved without the templates: the move alone proceeds"
+    assert_legacy_noted "moved without the templates"
+}
+
+# A template is never a rename source, because the lint never checks
+# it. A template renamed to a working name brings its stories in as new,
+# so the legacy story in it is checked.
+case_touched_template_renamed() {
+    tc_setup_repo
+    story_config light
+    tc_write "${STORY_DIR}/_template.sysml" < "$REGISTER_PIECE"
+    tc_write "${STORY_DIR}/US_901_Example.feature" < "${SCENARIOS}/feature-tagged.feature"
+    tc_stage "${STORY_DIR}/_template.sysml" "${STORY_DIR}/US_901_Example.feature"
+    tc_commit "add the template"
+    git -C "$REPO" mv "${STORY_DIR}/_template.sysml" "${STORY_DIR}/stories.sysml"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "renamed template: the commit is stopped"
+    tc_assert_grep "${STORY_DIR}/stories.sysml:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "renamed template: its stories are new, so the legacy story draws S1"
+    tc_assert_not_grep "Note:" "$ERR" "renamed template: no story is left alone, so no note"
 }
 
 # Only a story file pairs with a story file. A file moved into a
@@ -2209,6 +2306,10 @@ case_touched_renamed_register
 case_touched_renamed_directory
 case_touched_renamed_directory_range
 case_touched_renamed_range
+case_touched_moved_alone
+case_touched_moved_alone_range
+case_touched_moved_leaving_templates
+case_touched_template_renamed
 case_touched_moved_into_stories
 case_test_first_code_without_test
 case_test_first_code_with_test

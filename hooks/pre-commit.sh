@@ -313,7 +313,12 @@ fi
 # three-dot range), and the after image is the index or the range end.
 # A story file the change renames, as git detects renames, takes its
 # before image from the story file it was renamed from, so renaming a
-# register or a stories directory touches none of its stories.
+# register or a stories directory touches none of its stories. That
+# holds for a rename within one directory and for a file whose whole
+# directory moved. A story file moved on its own to another directory
+# leaves its feature files behind, and a template (a name that begins
+# with "_") renamed to a working name was never checked, so their
+# stories count as new.
 # The changed story and feature files that still exist are passed,
 # with the touched identifiers in --stories, so the lint reports the
 # story-side findings for those stories and the findings about a file
@@ -379,20 +384,69 @@ if [ "$SCOPE_TOUCHED" -eq 1 ]; then
     fi
 fi
 
+# Usage: dir_holds_stories <revision> <directory from the top level>:
+# 0 when the directory holds a story or feature file of its own at
+# <revision>, read as story_image reads a file. A template (a name that
+# begins with "_") does not count, and neither does a file in a
+# subdirectory. When git cannot list the directory, it counts as
+# holding one, which only widens the check.
+dir_holds_stories() {
+    local names name
+    case "$1" in
+        none) return 1 ;;
+        -)
+            for name in "$2"/*.sysml "$2"/*.feature; do
+                [ -f "$name" ] || continue
+                case "${name##*/}" in
+                    _*) continue ;;
+                esac
+                return 0
+            done
+            return 1
+            ;;
+        :) names="$(git --literal-pathspecs ls-files -z -- "$2/" | tr '\0' '\n')" || return 0 ;;
+        *) names="$(git --literal-pathspecs ls-tree -z --name-only "$1" -- "$2/" | tr '\0' '\n')" || return 0 ;;
+    esac
+    while IFS= read -r name; do
+        case "$name" in
+            "$2"/*/*|"$2"/_*) continue ;;
+            "$2"/*.sysml|"$2"/*.feature) return 0 ;;
+        esac
+    done <<EOF
+$names
+EOF
+    return 1
+}
+
 # Usage: rename_source <path from the top level>: print the story file
 # the change renamed to <path>, or nothing. Only a story file under the
 # engineering root pairs, so a file moved into a stories directory from
-# elsewhere brings its stories in as new.
+# elsewhere brings its stories in as new. A template never pairs, so a
+# template renamed to a working name brings its stories in as new too.
+# A story file moved to another directory pairs only when its whole
+# directory moved, that is when the old directory holds no story or
+# feature file in the after image. Otherwise its feature files stayed
+# behind, and its stories count as touched. The rename list is read
+# from a here-string, so the awk that stops at the first match cannot
+# cut off a writer.
 rename_source() {
     local from
     [ -n "$RENAMES" ] || return 0
-    from="$(printf '%s\n' "$RENAMES" | VSE_RENAMED="$1" awk '
+    from="$(VSE_RENAMED="$1" awk '
         NR % 3 == 2 { old = $0 }
         NR % 3 == 0 && $0 == ENVIRON["VSE_RENAMED"] { print old; exit }
-    ')"
+    ' <<< "$RENAMES")"
     case "$from" in
-        "${ENG_PREFIX}"stories/*.sysml|"${ENG_PREFIX}"*/stories/*.sysml) printf '%s\n' "$from" ;;
+        "${ENG_PREFIX}"stories/*.sysml|"${ENG_PREFIX}"*/stories/*.sysml) : ;;
+        *) return 0 ;;
     esac
+    case "${from##*/}" in
+        _*) return 0 ;;
+    esac
+    if [ "${from%/*}" != "${1%/*}" ] && dir_holds_stories "$AFTER_REV" "${from%/*}"; then
+        return 0
+    fi
+    printf '%s\n' "$from"
 }
 
 # Usage: story_image <revision> <path from the top level> <file>

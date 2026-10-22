@@ -224,6 +224,17 @@ def commit_renamed_register(ctx, name, story):
     world.commit(ctx, "refactor: rename the register", "model")
 
 
+@step(r"the engineer moves the story file alone to the stories directory "
+      r"(\w+)")
+def commit_moved_register(ctx, name):
+    # The feature files stay in the old directory, which still holds
+    # them, so the moved stories are parted from their feature files.
+    target = os.path.join(os.path.dirname(STORIES), name)
+    os.makedirs(os.path.join(project(ctx), target), exist_ok=True)
+    world.git(ctx, "mv", REGISTER, os.path.join(target, "stories.sysml"))
+    world.commit(ctx, "refactor: move the register", "model")
+
+
 @step(r"the engineer commits a new feature file for (\w+) only")
 def commit_new_feature(ctx, story):
     # The narrative lines repeat the role, capability and benefit of
@@ -273,6 +284,15 @@ def refused_with_finding(ctx, code):
         raise AssertionError("the commit was not refused, " + _context(ctx))
     if not _shows_code(ctx.output, code):
         raise AssertionError("no finding {}, {}".format(code, _context(ctx)))
+
+
+@step(r"the commit is refused with finding (\w+) for (\w+)")
+def refused_with_finding_for(ctx, code, story):
+    refused_with_finding(ctx, code)
+    if not re.search(r"\b{} {}\b".format(re.escape(code), re.escape(story)),
+                     ctx.output):
+        raise AssertionError("no finding {} for {}, {}".format(
+            code, story, _context(ctx)))
 
 
 @step(r"the commit is refused by the gate (\w+)")
