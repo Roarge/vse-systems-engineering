@@ -29,5 +29,14 @@ methodology/                    @smart-sensor-demo-owner
 # is a tailoring decision, so a human owner reviews it (§11.10).
 .iso-config.yaml                @smart-sensor-demo-owner
 
+# Gate logic: the git hooks, the CI workflows and the story lint carry
+# the gates the configuration above sets, including the Gherkin-first
+# and test-first gates (methodology §11.9). A change that weakens one
+# lowers a gate as surely as a gate_overrides entry does, so a human
+# owner reviews it (§11.10).
+.githooks/                      @smart-sensor-demo-owner
+.github/workflows/              @smart-sensor-demo-owner
+tools/lint/                     @smart-sensor-demo-owner
+
 # Base Architecture (elevated review per §2.6 rule 4)
 model/core/base-architecture/   @smart-sensor-demo-owner
