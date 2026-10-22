@@ -380,6 +380,148 @@ else
         "took ${TC_ELAPSED} seconds"
 fi
 
+# A signal that reaches the perl fallback (INT from Ctrl-C, TERM or
+# HUP) is passed on to the command's process group, as coreutils
+# timeout passes it on. Without that, Ctrl-C during a hung licence
+# check stops perl and its alarm but not the command, which runs on in
+# a group the terminal no longer reaches. The launcher stub records its
+# process group (its own process ID, as it leads the group) and the
+# wrapper's process ID (its parent), then waits in a child. Each case
+# signals the wrapper, then checks that the wrapper ended with that
+# signal and that no member of the group is left. A zombie (a process
+# that has ended and waits only to be collected by its parent) does not
+# count. The budget is 20 seconds and a case waits at most 5, so a pass
+# never comes from the alarm. A command at a terminal has INT at its
+# default, but bash 3.2 starts a background job with INT ignored, so
+# the case resets INT before it starts the driver.
+TC_GROUP_RECORD="${FAKEHOME}/group-record"
+TC_WRAPPER_RC="${FAKEHOME}/wrapper-rc"
+TC_WRAPPER_OUT="${FAKEHOME}/wrapper-out"
+tc_stub hung-launcher <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s %s\n' "$$" "$PPID" > "$TC_GROUP_RECORD"
+if [ "${TC_LAUNCHER_STOP:-0}" = 1 ]; then
+    kill -s STOP "$$"
+fi
+sleep 60
+exit 0
+EOF
+
+# Print the members of process group $1 that are still running.
+tc_group_members() {
+    ps -A -o pgid= -o stat= -o pid= -o args= | awk -v g="$1" '$1 == g && $2 !~ /^Z/'
+}
+
+# The caller case runs this driver instead of the library's, so that
+# whether the caller goes on after the wrapper shows on stdout.
+# shellcheck disable=SC2016
+TC_CALLER_DRIVER='
+. ./.githooks/lib/sysml-toolchain.sh
+set +e
+_vse_tc_timeout 20 hung-launcher
+echo "the caller went on after exit $?"
+'
+
+# tc_signal_case <signal> <rc> <mode> <case>: run the wrapper on the
+# launcher in the background, signal it, and expect exit <rc> with no
+# member of the group left. The mode is one of:
+#   wrapper  the signal goes to the wrapper alone.
+#   stopped  the launcher stops itself first, and the signal waits
+#            until it has.
+#   caller   the signal goes to the caller and the wrapper together, as
+#            Ctrl-C reaches every process in the foreground, and the
+#            caller must stop rather than go on.
+tc_signal_case() {
+    local sig="$1" want="$2" mode="$3" name="$4" bg grp="" wrapper="" i left
+    local stop=0 driver="$TC_DRIVER" targets
+    [ "$mode" = stopped ] && stop=1
+    [ "$mode" = caller ] && driver="$TC_CALLER_DRIVER"
+    rm -f "$TC_GROUP_RECORD" "$TC_WRAPPER_RC" "$TC_WRAPPER_OUT"
+    tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" "TC_GROUP_RECORD=${TC_GROUP_RECORD}" \
+        "TC_LAUNCHER_STOP=${stop}"
+    # The perl program is perl's, not this shell's, to expand.
+    # shellcheck disable=SC2016
+    ( _tc_sandboxed perl -e '$SIG{INT} = "DEFAULT"; exec { $ARGV[0] } @ARGV' \
+        bash -c "$driver" tc-driver _vse_tc_timeout 20 hung-launcher
+      printf '%s\n' "$OUT" > "$TC_WRAPPER_OUT"
+      printf '%s\n' "$RC" > "$TC_WRAPPER_RC" ) &
+    bg=$!
+    i=0
+    while [ ! -s "$TC_GROUP_RECORD" ] && [ "$i" -lt 50 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+    if [ -s "$TC_GROUP_RECORD" ]; then
+        read -r grp wrapper < "$TC_GROUP_RECORD" || true
+    fi
+    if [ -z "$grp" ] || [ -z "$wrapper" ]; then
+        tc_fail "${name}: the launcher starts" "no group record after 5 seconds"
+        wait "$bg" || true
+        return 0
+    fi
+    i=0
+    while [ "$stop" = 1 ] && [ "$i" -lt 50 ]; do
+        case "$(ps -o stat= -p "$grp" || true)" in
+            *T*) break ;;
+        esac
+        sleep 0.1
+        i=$((i + 1))
+    done
+    targets="$wrapper"
+    if [ "$mode" = caller ]; then
+        targets="$(ps -o ppid= -p "$wrapper" | tr -d ' ') ${wrapper}"
+    fi
+    # shellcheck disable=SC2086
+    kill -s "$sig" $targets 2>/dev/null || true
+    i=0
+    while [ ! -s "$TC_WRAPPER_RC" ] && [ "$i" -lt 50 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+    if [ -s "$TC_WRAPPER_RC" ]; then
+        tc_assert_eq "$want" "$(cat "$TC_WRAPPER_RC")" "${name}: the wrapper ends with the signal"
+    else
+        tc_fail "${name}: the wrapper ends with the signal" \
+            "still running 5 seconds after ${sig}"
+        kill -s KILL "$wrapper" 2>/dev/null || true
+    fi
+    if [ "$mode" = caller ]; then
+        if grep -qF "the caller went on" "$TC_WRAPPER_OUT" 2>/dev/null; then
+            tc_fail "${name}: the caller stops as well" "$(cat "$TC_WRAPPER_OUT")"
+        else
+            tc_pass "${name}: the caller stops as well"
+        fi
+    fi
+    i=0
+    left="$(tc_group_members "$grp")"
+    while [ -n "$left" ] && [ "$i" -lt 30 ]; do
+        sleep 0.1
+        i=$((i + 1))
+        left="$(tc_group_members "$grp")"
+    done
+    if [ -z "$left" ]; then
+        tc_pass "${name}: no member of the command's group is left"
+    else
+        tc_fail "${name}: no member of the command's group is left" "$left"
+    fi
+    kill -s KILL -- "-${grp}" 2>/dev/null || true
+    wait "$bg" || true
+}
+
+tc_signal_case INT 130 wrapper "perl fallback, INT"
+tc_signal_case TERM 143 wrapper "perl fallback, TERM"
+tc_signal_case HUP 129 wrapper "perl fallback, HUP"
+# CONT follows the passed-on signal, so a stopped member wakes to
+# receive it rather than holding the wrapper until the alarm.
+tc_signal_case TERM 143 stopped "perl fallback, TERM to a stopped command"
+# Perl ends itself with the signal it passed on. A shell that took
+# Ctrl-C while it waited stops only when its command died of INT, and
+# goes on when the command exited normally, even with status 130.
+tc_signal_case INT 130 caller "perl fallback, Ctrl-C"
+rm -f "${STUBS}/hung-launcher"
+tc_env
+
 # With no perl either, the probe runs with no limit, so a slow probe
 # that passes is still read as available.
 tc_stub syside <<'EOF'
