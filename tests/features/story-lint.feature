@@ -14,6 +14,12 @@ Feature: Story lint
     When the engineer runs the story lint
     Then the lint reports finding S1 for US_901_Example
 
+  Scenario: A feature file that holds no Feature fails S1
+    Given a story file US_901_Example with the acceptance criterion firstReading
+    And an empty feature file for US_901_Example
+    When the engineer runs the story lint
+    Then the lint reports finding S1 for US_901_Example
+
   Scenario: A criterion without a matching scenario tag fails S4
     Given a story file US_901_Example with the acceptance criterion firstReading
     And a feature file for US_901_Example with no scenarios

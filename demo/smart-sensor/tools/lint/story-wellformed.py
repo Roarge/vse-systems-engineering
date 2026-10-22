@@ -537,6 +537,15 @@ class FeatureFile:
         return self.feature is not None and not any(
             finding.code in ("F1", "F2") for finding in self.findings)
 
+    @property
+    def empty(self) -> bool:
+        """True when the file was read and parsed with no F1 or F2 but
+        holds no Feature, as an empty file or one of blank lines and
+        comments alone does. Cucumber accepts such a file, so the parser
+        reports nothing, and the story side reports S1."""
+        return self.feature is None and not any(
+            finding.code in ("F1", "F2") for finding in self.findings)
+
     def tag_names(self) -> List[str]:
         return [tag.name for tag in self.feature.tags] if self.feature else []
 
@@ -1098,6 +1107,12 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
             "{} has no feature file. Write {}, tagged @{} and opening "
             "with the story's narrative lines".format(
                 sid, _display(directory, name), sid), "§11.2.1, §11.4"))
+    elif feature.empty:
+        findings.append(Finding(
+            path, story.line, "S1",
+            "{} holds no Feature. Write the Feature, tagged @{} and "
+            "opening with the story's narrative lines".format(name, sid),
+            "§11.2.2, §11.4"))
     elif feature.ok and "@" + sid not in feature.tag_names():
         findings.append(Finding(
             path, story.line, "S1",
@@ -1128,7 +1143,12 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
                     criterion.name, sid, criterion.type_name or "a definition",
                     criterion.name), "§11.3.1"))
 
+    # The scenarios of the feature file, none for one that holds no
+    # Feature, or None when there is no file or it does not parse.
     scenarios = None  # type: Optional[list]
+    tags = []  # type: List[Tuple[str, int]]
+    if feature is not None and feature.empty:
+        scenarios = []
     if feature is not None and feature.ok:
         scenarios = feature.feature.all_scenarios()
         tags = [(tag.name[len("@AC_"):], tag.line)
@@ -1155,12 +1175,12 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
                     .format(tag, sid, tag), "§11.3.1"))
         if feature.narrative_order is None:
             findings.extend(_check_narrative(feature, sid, shape))
-        if rank >= 1 and not tags:
-            findings.append(Finding(
-                path, story.line, "S8",
-                "{} has no scenario tagged @AC_<name>, and {}. Write at "
-                "least one scenario, or set the status to backlog".format(
-                    name, _standing(sid, status)), "§11.4"))
+    if scenarios is not None and rank >= 1 and not tags:
+        findings.append(Finding(
+            path, story.line, "S8",
+            "{} has no scenario tagged @AC_<name>, and {}. Write at "
+            "least one scenario, or set the status to backlog".format(
+                name, _standing(sid, status)), "§11.4"))
 
     if rank >= 2:
         for criterion in shape.criteria:

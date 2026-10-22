@@ -95,12 +95,34 @@ class CleanTests(unittest.TestCase):
 class StorySideTests(unittest.TestCase):
     def test_S1_missing_feature(self):
         # US_111 has no feature file, US_112's feature carries another
-        # story's tag (which is also F4), US_113 is the twin.
+        # story's tag (which is also F4), US_113 is the twin. The feature
+        # file of US_114 is empty, and that of US_115 holds comments and
+        # blank lines only, so neither holds a Feature. US_114 is ready,
+        # so it also draws the S8 for a ready story with no scenario.
+        # US_115 is backlog but satisfied, so it draws the S8 for a
+        # satisfy naming a story with no scenarios.
         self.assertEqual(lint("S1"), [
             (STK + "US_112_WrongTag.feature", 2, "F4"),
             (SYSML, 4, "S1"),
             (SYSML, 20, "S1"),
+            (SYSML, 52, "S1"),
+            (SYSML, 52, "S8"),
+            (SYSML, 68, "S1"),
+            (SYSML, 68, "S8"),
         ])
+
+    def test_S1_says_the_feature_file_holds_no_feature(self):
+        findings = story_wellformed.lint_paths(
+            ["model"], "gherkin", Path(FIXTURES) / "S1")
+        messages = {finding.message for finding in findings
+                    if finding.code == "S1"}
+        for name in ("US_114_EmptyFeature", "US_115_CommentsOnly"):
+            with self.subTest(story=name):
+                self.assertIn(
+                    "{0}.feature holds no Feature. Write the Feature, "
+                    "tagged @{0}".format(name),
+                    " ".join(message for message in messages
+                             if name in message))
 
     def test_S1_clean(self):
         self.assertEqual(lint("clean"), [])
@@ -602,6 +624,10 @@ class CommandLineTests(unittest.TestCase):
                 (STK + "US_112_WrongTag.feature", 2, "F4"),
                 (SYSML, 4, "S1"),
                 (SYSML, 20, "S1"),
+                (SYSML, 52, "S1"),
+                (SYSML, 52, "S8"),
+                (SYSML, 68, "S1"),
+                (SYSML, 68, "S8"),
             ])
         for item in findings:
             self.assertEqual(sorted(item),

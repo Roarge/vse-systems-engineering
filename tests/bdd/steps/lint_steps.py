@@ -103,6 +103,14 @@ def feature_for(ctx, story):
     feature_file(ctx, "feature-no-scenarios.feature", story)
 
 
+@step(r"an empty feature file for (\w+)")
+def empty_feature(ctx, story):
+    path = os.path.join(project(ctx), STORIES, story + ".feature")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8"):
+        pass
+
+
 @step(r"a feature file for (\w+) with no scenarios")
 def feature_without_scenarios(ctx, story):
     feature_file(ctx, "feature-no-scenarios.feature", story)

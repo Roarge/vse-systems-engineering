@@ -48,4 +48,36 @@ package FixtureS1 {
             }
         }
     }
+
+    requirement US_114_EmptyFeature : UserStory {
+        @StoryMeta { points = 3; priority = Priority::high; status = StoryStatus::ready; }
+
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        attribute :>> capability = "see the first reading";
+        attribute :>> benefit    = "the device is known to work";
+
+        requirement :>> acceptance {
+            requirement firstReading {
+                doc /* Given the device is switched on, when it takes a reading, then the reading is shown. */
+            }
+        }
+    }
+
+    requirement US_115_CommentsOnly : UserStory {
+        @StoryMeta { points = 3; priority = Priority::high; status = StoryStatus::backlog; }
+
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        attribute :>> capability = "see the first reading";
+        attribute :>> benefit    = "the device is known to work";
+
+        requirement :>> acceptance {
+            requirement firstReading {
+                doc /* Given the device is switched on, when it takes a reading, then the reading is shown. */
+            }
+        }
+    }
 }
