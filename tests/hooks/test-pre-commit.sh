@@ -1136,10 +1136,11 @@ EOF
 # The story gates check the stories a change touches (methodology
 # §11.9): a story whose declaration block the change adds or alters,
 # compared with the PreToolUse scanner of lib/test-first.sh, or whose
-# feature file it adds, changes, renames or deletes. Deleting a story
-# touches nothing. A story the change leaves alone that still needs
-# migrating is listed in one note and never blocks a staged or range
-# commit. A run over every tracked file checks every story.
+# feature file it adds, changes, renames or deletes. A story file the
+# change renames is compared with the story file it was renamed from.
+# Deleting a story touches nothing. A story the change leaves alone that
+# still needs migrating is listed in one note and never blocks a staged
+# or range commit. A run over every tracked file checks every story.
 
 REGISTER_PIECE="${SCENARIOS}/register-migrated-and-legacy.sysml"
 
@@ -1407,6 +1408,98 @@ case_touched_partial_install() {
     tc_assert_rc 1 "touched, partial install: the commit is stopped"
     tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" \
         "touched, partial install: the whole stories directory is checked"
+}
+
+# A story file the change renames is compared with the file it was
+# renamed from, so a renamed register touches only the stories whose
+# blocks the change alters.
+case_touched_renamed_register() {
+    local register="${STORY_DIR}/register.sysml"
+    tc_setup_repo
+    story_config light
+    commit_register
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "$register"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "renamed register: a rename alone proceeds"
+    assert_legacy_noted "renamed register"
+    tc_assert_grep "All checks passed" "$OUT" "renamed register: the note is not counted as a warning"
+
+    change_story "$register" US_901_Example
+    tc_run_hook
+    tc_assert_rc 0 "renamed register: a rename with a change to the migrated story proceeds"
+    assert_legacy_noted "renamed register, migrated story changed"
+
+    change_story "$register" US_902_Legacy
+    tc_run_hook
+    tc_assert_rc 1 "renamed register: a rename with a change to the legacy story stops the commit"
+    tc_assert_grep "${register}:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "renamed register: the changed legacy story draws S1"
+    tc_assert_not_grep "Note:" "$ERR" "renamed register: no note for a touched story"
+}
+
+# A renamed stories directory renames every file in it, so it behaves
+# as a renamed register. The feature file moves too, so the migrated
+# story is touched and checked, and passes.
+case_touched_renamed_directory() {
+    local moved="model/core/stories/operator"
+    tc_setup_repo
+    story_config light
+    commit_register
+    git -C "$REPO" mv "$STORY_DIR" "$moved"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "renamed directory: a rename alone proceeds"
+    assert_legacy_noted "renamed directory"
+
+    change_story "${moved}/stories.sysml" US_902_Legacy
+    tc_run_hook
+    tc_assert_rc 1 "renamed directory: a change to the legacy story stops the commit"
+    tc_assert_grep "${moved}/stories.sysml:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "renamed directory: the changed legacy story draws S1"
+}
+
+# In range mode the rename is read from the range, so a pull request or
+# a push that renames the register and changes the migrated story
+# passes.
+case_touched_renamed_range() {
+    local clone
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_register
+    git -C "$REPO" checkout -q -b feat/rename
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "${STORY_DIR}/register.sysml"
+    change_story "${STORY_DIR}/register.sysml" US_901_Example
+    tc_commit "rename the register and change US_901"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 0 "renamed, range: a pull request that renames the register passes"
+    assert_legacy_noted "renamed, range"
+
+    run_in_clone "$clone" "HEAD~1..HEAD"
+    tc_assert_rc 0 "renamed, two-dot range: the push that renames the register passes"
+    assert_legacy_noted "renamed, two-dot range"
+}
+
+# Only a story file pairs with a story file. A file moved into a
+# stories directory from elsewhere brings its stories in as new.
+case_touched_moved_into_stories() {
+    tc_setup_repo
+    story_config light
+    tc_write model/core/drafts/stories.sysml < "$REGISTER_PIECE"
+    tc_stage model/core/drafts/stories.sysml
+    tc_commit "add a draft register"
+    mkdir -p "${REPO}/${STORY_DIR}"
+    git -C "$REPO" mv model/core/drafts/stories.sysml "${STORY_DIR}/stories.sysml"
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "moved into stories: the commit is stopped"
+    tc_assert_grep "S1 US_902_Legacy has no feature file" "$ERR" \
+        "moved into stories: its stories are new to the stories directory"
 }
 
 # ----------------------------------------- 11. test before code (4)
@@ -1969,6 +2062,10 @@ case_touched_range_mode
 case_touched_full_tree
 case_touched_brownfield
 case_touched_partial_install
+case_touched_renamed_register
+case_touched_renamed_directory
+case_touched_renamed_range
+case_touched_moved_into_stories
 case_test_first_code_without_test
 case_test_first_code_with_test
 case_test_first_branch_evidence

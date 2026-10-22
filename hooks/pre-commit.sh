@@ -311,6 +311,9 @@ fi
 # Deleting a story touches nothing. The before image is HEAD in staged
 # mode and the range start in range mode (the merge base for a
 # three-dot range), and the after image is the index or the range end.
+# A story file the change renames, as git detects renames, takes its
+# before image from the story file it was renamed from, so renaming a
+# register or a stories directory touches none of its stories.
 # The changed story and feature files that still exist are passed,
 # with the touched identifiers in --stories, so the lint reports the
 # story-side findings for those stories and the findings about a file
@@ -361,6 +364,36 @@ cleanup_story_tmp() {
     fi
 }
 trap cleanup_story_tmp EXIT
+
+# The story files the change renames, as git detects renames (git diff
+# -M), read as lines of three: the status, the old path and the new
+# path. The file set reads a rename as a deletion and an addition, so
+# without this a renamed register would have no before image and every
+# story in it would count as new. A failure here only widens the check.
+RENAMES=""
+if [ "$SCOPE_TOUCHED" -eq 1 ]; then
+    if [ -z "$RANGE" ]; then
+        RENAMES="$(git diff --cached -M --name-status --diff-filter=R -z | tr '\0' '\n')" || RENAMES=""
+    else
+        RENAMES="$(git diff -M --name-status --diff-filter=R -z "$RANGE" | tr '\0' '\n')" || RENAMES=""
+    fi
+fi
+
+# Usage: rename_source <path from the top level>: print the story file
+# the change renamed to <path>, or nothing. Only a story file under the
+# engineering root pairs, so a file moved into a stories directory from
+# elsewhere brings its stories in as new.
+rename_source() {
+    local from
+    [ -n "$RENAMES" ] || return 0
+    from="$(printf '%s\n' "$RENAMES" | VSE_RENAMED="$1" awk '
+        NR % 3 == 2 { old = $0 }
+        NR % 3 == 0 && $0 == ENVIRON["VSE_RENAMED"] { print old; exit }
+    ')"
+    case "$from" in
+        "${ENG_PREFIX}"stories/*.sysml|"${ENG_PREFIX}"*/stories/*.sysml) printf '%s\n' "$from" ;;
+    esac
+}
 
 # Usage: story_image <revision> <path from the top level> <file>
 story_image() {
@@ -418,7 +451,8 @@ if [ "$ENG_INSIDE" -eq 1 ]; then
         if [ "$kind" = story ]; then
             [ -f "${ENG_ROOT}/${rel}" ] || continue
             [ -n "$STORY_TMP" ] || STORY_TMP="$(mktemp -d "${TMPDIR:-/tmp}/vse-stories.XXXXXX")"
-            story_image "$BEFORE_REV" "$changed" "${STORY_TMP}/before"
+            renamed_from="$(rename_source "$changed")"
+            story_image "$BEFORE_REV" "${renamed_from:-$changed}" "${STORY_TMP}/before"
             story_image "$AFTER_REV" "$changed" "${STORY_TMP}/after"
             TOUCHED_LIST="${TOUCHED_LIST}$(vse_tf_touched_stories "${STORY_TMP}/before" "${STORY_TMP}/after")"$'\n'
             STORY_PATH_LIST="${STORY_PATH_LIST}${rel}"$'\n'

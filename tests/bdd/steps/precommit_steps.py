@@ -35,17 +35,17 @@ def _context(ctx):
 REGISTER = os.path.join(STORIES, "stories.sysml")
 
 
-def _change_story(ctx, story):
+def _change_story(ctx, story, register=REGISTER):
     """Alter the block of `story` in the register, and no other block:
     its points value changes."""
-    path = os.path.join(project(ctx), REGISTER)
+    path = os.path.join(project(ctx), register)
     with open(path, encoding="utf-8") as handle:
         text = handle.read()
     start = text.find("requirement {} : UserStory".format(story))
     points = text.find("points = ", start)
     if start < 0 or points < 0:
         raise AssertionError("{} holds no story {} with points".format(
-            REGISTER, story))
+            register, story))
     end = text.find(";", points)
     text = text[:points] + "points = 8" + text[end:]
     with open(path, "w", encoding="utf-8") as handle:
@@ -210,6 +210,17 @@ def commit_change(ctx, path):
 def commit_story_change(ctx, story):
     _change_story(ctx, story)
     world.commit(ctx, "feat: change {}".format(story), "model")
+
+
+@step(r"the engineer renames the story file to (\S+) and changes the story "
+      r"(\w+)")
+def commit_renamed_register(ctx, name, story):
+    # git mv stages the rename, and the change to the one story is
+    # staged with it, so git pairs the two names as a rename.
+    target = os.path.join(STORIES, name)
+    world.git(ctx, "mv", REGISTER, target)
+    _change_story(ctx, story, target)
+    world.commit(ctx, "refactor: rename the register", "model")
 
 
 @step(r"the engineer commits a new feature file for (\w+) only")

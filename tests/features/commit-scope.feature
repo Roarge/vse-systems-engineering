@@ -5,10 +5,12 @@ Feature: The commit gates check the stories a change touches
 
   A change touches a story when it adds the story's declaration, alters
   the text of its block, or adds, changes, renames or deletes its
-  feature file. The commit gate and the pull-request check read the
-  stories a change touches and the feature files it changes. A story
-  the change leaves alone is listed in one note instead, and the
-  full-tree run at a release tag checks every story.
+  feature file. A story file the change renames is compared with the
+  file it was renamed from, so renaming it touches none of its stories.
+  The commit gate and the pull-request check read the stories a change
+  touches and the feature files it changes. A story the change leaves
+  alone is listed in one note instead, and the full-tree run at a
+  release tag checks every story.
 
   Background:
     Given a VSE project at the light profile
@@ -21,6 +23,15 @@ Feature: The commit gates check the stories a change touches
 
   Scenario: The touched story without a feature file is refused
     When the engineer commits a change to the story US_902_Legacy only
+    Then the commit is refused with finding S1
+
+  Scenario: A renamed story file keeps its untouched stories untouched
+    When the engineer renames the story file to register.sysml and changes the story US_901_Example
+    Then the commit goes through
+    And the engineer is told that US_902_Legacy still needs migrating
+
+  Scenario: A renamed story file still checks the story the change alters
+    When the engineer renames the story file to register.sysml and changes the story US_902_Legacy
     Then the commit is refused with finding S1
 
   Scenario: Changing only a story's feature file checks that story
