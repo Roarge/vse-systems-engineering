@@ -139,7 +139,8 @@ A minimal SEMP states:
 
 - Methodology (this spec) and version;
 - Engineering tools (SysML v2 implementation, IDE, linter,
-  CI/renderer);
+  CI/renderer, and the test harness and any scenario runner where test
+  first applies, §11.5.3);
 - Engineering interfaces (between this project and adjacent projects,
   contractors, certifying authorities);
 - Mission assurance and review cadence (linked to iteration cadence);

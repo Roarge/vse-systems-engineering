@@ -386,6 +386,8 @@ concern def OperatorSafety {
 }
 
 requirement SYS_198_MaintenanceLockout : UserStory {
+    @StoryMeta { points = 3; priority = Priority::critical; status = StoryStatus::ready; }
+
     subject :>> system : Aiwell_OnlineSentral;
     stakeholder :>> role : SafetyOfficer;
 
@@ -394,9 +396,20 @@ requirement SYS_198_MaintenanceLockout : UserStory {
 
     frame concern : OperatorSafety;
 
-    requirement :>> acceptance { doc /* … */ }
+    requirement :>> acceptance {
+        requirement actuatorsHeldUntilAcknowledged {
+            doc /* While maintenance mode is active, no actuator
+                   shall move until the operator gives a positive
+                   acknowledgement. */
+        }
+    }
 }
 ```
+
+Like every system story, `SYS_198_MaintenanceLockout` has its own
+feature file beside the register file that declares it, written before
+the story (§11.4), so `SYS_198_MaintenanceLockout.feature` carries the
+scenario tagged `@AC_actuatorsHeldUntilAcknowledged`.
 
 Hazard identification, fault tree analysis, and security threat
 modelling are *sub-methodologies* with their own structure (out of

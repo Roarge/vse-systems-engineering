@@ -588,7 +588,7 @@ specifies the obligation in full.
 | `StoryMeta` required fields | §1.5 | `[status]` | `[status, priority]` | `[points, priority, status]` |
 | `baselined_paths` default | §10.4.2 | `[]`, so the CR machinery stays dormant | `[docs/project-plan.md]` | `[docs/project-plan.md, docs/cm-strategy.md, docs/risk-register.md, docs/disposal-management-approach.md, model/library/]` |
 | Change Request four-axis impact analysis | §10.4.2 | Not applicable while `baselined_paths` is empty | Brief form permitted. An axis may read "negligible" with one line | R in full form |
-| Traceability | §9.8 | `/vse-trace` on demand | `/vse-trace`, warning gates, advisory CI | Blocking gates and blocking CI |
+| Traceability | §9.8 | `/vse-trace`, an info-level commit check, advisory CI | `/vse-trace`, warning gates, advisory CI | Blocking gates and blocking CI |
 | Status and branch consistency CI check | §8.7 | None | Rec | R |
 | Feature file per story, one scenario per acceptance criterion | §11.2 to §11.4 | R | R | R |
 | Test-first record (`test_first`) | §11.5 | R | R | R |
@@ -727,11 +727,11 @@ Pretending otherwise wastes the engineer's time and misrepresents what
 the tooling does. The methodology's position is that a bypass is a
 legitimate engineering act when the engineer records why.
 
-The in-session `PreToolUse` gates of §11.9 can be bypassed too, in two
-ways: by a recorded override in `.iso-config.yaml`, or by editing
-outside Claude Code, where no lifecycle hook runs. The recording
-obligation below covers both. An agent never bypasses a gate on its own
-initiative (§11.10).
+The in-session `PreToolUse` gates of §11.9 can be bypassed too, in
+several ways (§11.11). The engineer's routes are a recorded override in
+`.iso-config.yaml` and editing outside Claude Code, where no lifecycle
+hook runs. The recording obligation below covers both. An agent never
+bypasses a gate on its own initiative (§11.10).
 
 **The recording obligation.** At `full`, a bypass and its rationale are
 recorded in the Correction Register (§10.5.2), because the register is

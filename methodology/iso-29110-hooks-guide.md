@@ -417,12 +417,12 @@ They are expensive, and a check that adds seconds to every push is a
 check the engineer learns to skip. And they are exactly the class of
 obligation that must not be bypassable from a workstation, which a local
 hook can never guarantee and a required status check on a protected
-branch can (see §11 and methodology §0.10.6).
+branch can (see this guide's §11 and methodology §0.10.6).
 
 The four contracts remain part of the methodology. A `full`-profile
 project implements them in CI, gated as required status checks on `main`
 and on release tags. A `standard` project implements as many as it finds
-useful, advisory. Contract 2 now ships at every profile, as finding S8
+useful, advisory. Contract 2 ships at every profile, as finding S8
 of the `precommit_gherkin` gate, which runs in the `pre-commit` hook and
 in CI (methodology §11.9). The contracts are stated here so a CI
 implementer has the specification without reading the deleted script.
@@ -457,7 +457,10 @@ contract 2 through the story lint, because its pre-commit step runs the
 reports S8 there at its configured disposition. It also runs
 `test_command` and `scenario_command` where test first applies, that
 is when `test_first.applies` is `true` and the command is recorded
-(methodology §11.8). Range mode needs the full history, so the workflow
+(methodology §11.8). A record where `test_first.applies` is `true`
+without `test_command` is invalid (methodology §11.5.2), so the
+workflow fails on it rather than pass with no test run. Range mode
+needs the full history, so the workflow
 checks out with `fetch-depth: 0` and sets `VSE_PRECOMMIT_RANGE` per
 event: the pull request's base and head for a pull request, the
 previous and new commits for a push, and every tracked file (`all`) for
@@ -809,13 +812,12 @@ case "$target" in
         # The shipped hook asks only when gate_overrides or test_first change.
         emit ask "This edit changes gate_overrides or test_first. Confirm that a human asked for it (methodology §11.10)."
         ;;
-    */library/*)
-        exit 0   # the library is never gated
-        ;;
     */stories/*.sysml)
-        # Templates are never gated. They sit in subdirectories such as
+        # Templates and the model library are never Gherkin-gated.
+        # Templates sit in subdirectories such as
         # stories/stakeholder/_template.sysml, so match the file name alone.
         case "$(basename "$target")" in _*) exit 0;; esac
+        case "$target" in */model/library/*) exit 0;; esac
         # touched_story_ids applies the edit to the file first, then lists
         # the stories it adds or changes. Untouched siblings are not gated.
         for id in $(touched_story_ids "$payload" "$target"); do
@@ -1437,6 +1439,7 @@ Two patterns work well for customisation:
 | Lifecycle hook output ignored | A reminder or denial printed by `PreToolUse`, `PostToolUse`, `Stop` or `SubagentStop` never reaches Claude | Print exactly one JSON object on stdout and send diagnostics to stderr (§5). Plain stdout reaches Claude only for `SessionStart` and `UserPromptSubmit` |
 | `PreToolUse` denies a story edit | The reason names a missing `<ID>.feature` or a missing `@<ID>` tag | Write the feature file first, with the story tag and the narrative (methodology §11.2). For a story in the pre-5.0.0 form, formalise its existing Given/When/Then text without adding behaviour |
 | `PreToolUse` denies a code edit | The reason says no test change was found, or that a shallow clone or detached HEAD gives no branch evidence | Write or change the failing test first (methodology §11.7). In CI or a shallow clone, fetch the full history. Restructuring without a behaviour change belongs on a `refactor/` branch |
+| Edit made through the Bash tool | A file written by a redirect, `sed -i` or a script reaches the working tree without any in-session gate seeing it | `PreToolUse` sees only the file tools it is registered for (methodology §11.11). The `pre-commit` gates and CI are the backstop, because they check what is committed whichever tool wrote it. An agent never writes a denied file through the Bash tool (methodology §11.10) |
 | `jq` and `python3` both missing | Every in-session gate lets edits through with a notice | Install `jq`. Until then the `pre-commit` gates and CI are the only check (methodology §11.11) |
 | Preferred SysML toolchain unavailable (licence expired, no Java 21, binary missing) | `pre-commit` prints `<tool> unavailable (...); validating with <next> instead`, or at `block` refuses with "No SysML toolchain is available" | Run `/vse-toolchain` to install or switch, or lower the gate with `gate_overrides.precommit_lint` |
 | False positives blocking valid work | `pre-commit` blocks legitimate edits | Review `.iso-config.yaml` first, since the finding is usually a configuration problem. Lower the gate with a `gate_overrides` entry (methodology §0.10.4) rather than editing the script. For the single occurrence, bypass with a recorded rationale per methodology §0.10.6 |
@@ -1454,8 +1457,12 @@ Doing so is project work, not plugin work. The plugin ships one CI
 implementation, `templates/github/traceability-check.yml`, installed at
 every profile (§3.4). Its pre-commit step carries the gate dispositions
 from `.iso-config.yaml`, including the Gherkin-first and test-first
-gates, and its other steps are advisory at `light` and `standard` and
-blocking at `full`. Contracts 1 and 4 in §4.4 are documented
+gates. Its model-validation and Contract 3 freshness steps are advisory
+at `light` and `standard` and blocking at `full`. Its test and scenario
+steps fail the workflow at every profile where test first applies, and
+so does a record where test first applies without its `test_command`
+(methodology §11.5.2). Its formatting check is always advisory.
+Contracts 1 and 4 in §4.4 are documented
 specifications that the project implements against its own CI platform,
 because each depends on the project's tag pattern, renderer choice, and
 configuration-management scope.

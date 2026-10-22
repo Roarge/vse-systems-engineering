@@ -60,26 +60,26 @@ construction and delivery process appropriate to its product type.
 
 | ISO objective | Coverage | Methodology element(s) |
 |---|---|---|
-| PM.O1 — Plan and SOW reviewed and accepted; tasks and resources sized | Full | §10.3 Project Planning produces *Project Plan* with §10.3.1–§10.3.13 elements; PR/review cycle (§8.5–§8.6) provides acceptance |
-| PM.O2 — Progress monitored; corrections taken; closure with Acceptance Record | Full | §10.5 Assessment and Control; §10.6 Closure; *Progress Status Record* and *Product Acceptance Record* are first-class artefacts |
-| PM.O3 — Change Requests received, analysed for cost/schedule/risk/technical impact | Full | §10.4 Plan Execution (Change Request lifecycle); §8.4–§8.5 (PR-based change workflow); §1 lifecycle StoryMeta states |
-| PM.O4 — Review meetings; agreements registered and tracked | Full | §10.4 Plan Execution; *Meeting Record* artefact; PR review (§8.6) provides asynchronous review record |
-| PM.O5 — Risk Management Approach; risks identified, analysed, prioritised, monitored | Full | §10.7 Risk Management Approach; integrated into Project Plan |
-| PM.O6 — Product/Configuration Management Strategy; baselines, releases, storage | Full | §10.8 Configuration Management Strategy; §8.3 Repository structure; git as the version-control substrate; StoryMeta lifecycle |
-| PM.O7 — Quality Assurance via verification, validation, review tasks | Full | V&V cases throughout §4–§7; review checklists in §8.6; CI lint and well-formedness gates |
-| PM.O8 — Disposal Management Approach to end existence of system entity | Full | §10.9 Disposal Management Approach; ties to dependability concerns in §5.4.5 |
+| PM.O1: Plan and SOW reviewed and accepted, tasks and resources sized | Full | §10.3 Project Planning produces *Project Plan* with §10.3.1–§10.3.13 elements; PR/review cycle (§8.5–§8.6) provides acceptance |
+| PM.O2: Progress monitored, corrections taken, closure with Acceptance Record | Full | §10.5 Assessment and Control; §10.6 Closure; *Progress Status Record* and *Product Acceptance Record* are first-class artefacts |
+| PM.O3: Change Requests received, analysed for cost/schedule/risk/technical impact | Full | §10.4 Plan Execution (Change Request lifecycle); §8.4–§8.5 (PR-based change workflow); §1 lifecycle StoryMeta states |
+| PM.O4: Review meetings, and agreements registered and tracked | Full | §10.4 Plan Execution; *Meeting Record* artefact; PR review (§8.6) provides asynchronous review record |
+| PM.O5: Risk Management Approach, and risks identified, analysed, prioritised and monitored | Full | §10.7 Risk Management Approach; integrated into Project Plan |
+| PM.O6: Product/Configuration Management Strategy, baselines, releases and storage | Full | §10.8 Configuration Management Strategy; §8.3 Repository structure; git as the version-control substrate; StoryMeta lifecycle |
+| PM.O7: Quality Assurance via verification, validation, review tasks | Full | V&V cases throughout §4–§7; review checklists in §8.6; CI lint and well-formedness gates |
+| PM.O8: Disposal Management Approach to end existence of system entity | Full | §10.9 Disposal Management Approach; ties to dependability concerns in §5.4.5 |
 
 ## 9.4 SR objective coverage
 
 | ISO objective | Coverage | Methodology element(s) |
 |---|---|---|
-| SR.O1 — Tasks performed per current Project Plan | Full | §10.3 Project Plan integrates §1–§7 task structure; SR Initiation in §10.3 |
-| SR.O2 — System requirements defined, analysed, baselined, communicated | Full | §1 (UserStory base type); §4 (stakeholder stories + concerns); §5 (system stories with `require constraint`); StoryMeta lifecycle baselines via `done` status |
-| SR.O3 — System architectural design developed and baselined; consistency and traceability to requirements | Full | §6 (architectural analysis with `variation`/`variant`); §7 (subsystem decomposition with allocation); Traceability via `derive`, `frame concern`, `verify`, `allocation` |
-| SR.O4 — System elements produced/acquired with acceptance tests; traceability | Specification, plus test-first discipline | §5.4.6 and §7 specify verification cases. §11 requires a failing test before implementation code wherever a harness can run it, and states each acceptance criterion as a Gherkin scenario. *Construction* of system elements is otherwise out of scope per §9.2 |
-| SR.O5 — System elements integrated; consistency and traceability to architecture | Specification only | §7.3.4 inter-subsystem interfaces; §10.4 references SR.5 integration tasks in the Plan. *Execution* is project-determined |
-| SR.O6 — System Configuration baselined and stored; change requests detected | Full | §8.3 repository; §8.4–§8.6 PR workflow; §10.8 CM Strategy; StoryMeta lifecycle |
-| SR.O7 — V&V tasks performed; defects corrected; reports stored | Specification + report templates | §4.3.6, §5.4.6, §7 V&V case definitions; *Verification Report* and *Validation Report* artefact templates in §9.5 |
+| SR.O1: Tasks performed per current Project Plan | Full | §10.3 Project Plan integrates §1–§7 task structure; SR Initiation in §10.3 |
+| SR.O2: System requirements defined, analysed, baselined, communicated | Full | §1 (UserStory base type); §4 (stakeholder stories + concerns); §5 (system stories with `require constraint`); StoryMeta lifecycle baselines via `done` status |
+| SR.O3: System architectural design developed and baselined, with consistency and traceability to requirements | Full | §6 (architectural analysis with `variation`/`variant`); §7 (subsystem decomposition with allocation); Traceability via `derive`, `frame concern`, `verify`, `allocation` |
+| SR.O4: System elements produced/acquired with acceptance tests, and traceability | Specification, plus test-first discipline | §5.4.6 and §7 specify verification cases. §11 requires a failing test before implementation code wherever a harness can run it, and states each acceptance criterion as a Gherkin scenario. *Construction* of system elements is otherwise out of scope per §9.2 |
+| SR.O5: System elements integrated, with consistency and traceability to architecture | Specification only | §7.3.4 inter-subsystem interfaces; §10.4 references SR.5 integration tasks in the Plan. *Execution* is project-determined |
+| SR.O6: System Configuration baselined and stored, and change requests detected | Full | §8.3 repository; §8.4–§8.6 PR workflow; §10.8 CM Strategy; StoryMeta lifecycle |
+| SR.O7: V&V tasks performed, defects corrected, reports stored | Specification + report templates | §4.3.6, §5.4.6, §7 V&V case definitions; *Verification Report* and *Validation Report* artefact templates in §9.5 |
 
 ## 9.5 Artefact mapping
 
