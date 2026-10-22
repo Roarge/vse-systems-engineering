@@ -225,6 +225,36 @@ fi
         "physical scratch root: the root equals its own pwd -P"
 }
 
+# A scratch root that mktemp cannot make must stop the test script
+# where lib.sh is sourced. Otherwise the root falls back to the working
+# directory, which under make is the plugin root, and the scratch
+# repositories land in the tree that ships. Here TMPDIR names a missing
+# directory. The nested script sets no teardown trap, because its
+# working directory sits under this run's scratch root and would match
+# the teardown's name guard, which would remove the evidence.
+case_scratch_root_needs_mktemp() {
+    local work missing listing
+    work="$(tc_mktemp_d)"
+    missing="${TC_ROOT}/no-such-dir"
+    tc_env
+    # shellcheck disable=SC2016  # expanded by the nested shell
+    _tc_capture _tc_in_dir "$work" env TMPDIR="$missing" bash -c '
+. "$1"
+tc_setup_repo
+printf "lib.sh carried on with TC_ROOT=%s\n" "$TC_ROOT"
+' nested "${TC_LIB_DIR}/lib.sh"
+    if [ "$RC" -ne 0 ]; then
+        tc_pass "failed mktemp: the nested test script exits non-zero"
+    else
+        tc_fail "failed mktemp: the nested test script exits non-zero" "$(_tc_context)"
+    fi
+    tc_assert_grep "mktemp" "$ERR" "failed mktemp: stderr names mktemp as the cause"
+    tc_assert_not_grep "lib.sh carried on" "$OUT" \
+        "failed mktemp: the script stops where lib.sh is sourced"
+    listing="$(ls -A "$work")"
+    tc_assert_empty "$listing" "failed mktemp: nothing is written to the working directory"
+}
+
 # ------------------------------------------------ BSD-behaviour stubs
 
 # Each stub refuses a GNU-only form with the message and exit status of
@@ -501,6 +531,7 @@ case_runners_drop_outer_vse_iso_config
 case_runners_drop_outer_github_head_ref
 case_runners_without_env_dash_c
 case_scratch_root_is_physical
+case_scratch_root_needs_mktemp
 case_bsd_grep_stub
 case_bsd_date_stub
 case_bwk_awk_stub

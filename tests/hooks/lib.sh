@@ -50,8 +50,12 @@ TC_SKIP_COUNT=0
 # physical path, because on macOS the temporary directory is reached
 # through a symbolic link (/var links to /private/var) and a hook that
 # resolves its directory with pwd -P would otherwise print a path the
-# test never built.
-TC_ROOT="$(cd "$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")" && pwd -P)"
+# test never built. The two steps stay two statements. Nested in one,
+# a failed mktemp would leave cd an empty name, which keeps the working
+# directory, so errexit (set -e) would not stop the script and the
+# scratch root would become the working directory.
+TC_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")"
+TC_ROOT="$(cd -- "$TC_ROOT" && pwd -P)"
 
 # Extra environment for the next runner call, as NAME=VALUE words.
 TC_ENV=()
