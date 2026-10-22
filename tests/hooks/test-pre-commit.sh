@@ -285,11 +285,23 @@ EOF
     tc_stage model/core/verification-validation/verification-cases/v.sysml
 }
 
+# Every traceability case runs twice, once with the grep of the machine
+# (TRACE_GREP=gnu) and once with the BSD grep stub (TRACE_GREP=bsd),
+# which refuses what the grep of macOS refuses. trace_grep installs the
+# stub for the second pass. A case that configures the project without
+# trace_config calls it directly.
+trace_grep() {
+    if [ "${TRACE_GREP:-gnu}" = "bsd" ]; then
+        tc_stub_bsd_grep
+    fi
+}
+
 # The traceability cases stage a story with no feature file and no
 # @StoryMeta, so the two story gates are off and the traceability gate
 # is the one the case observes.
 trace_config() {
     tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off
+    trace_grep
 }
 
 case_trace_covered() {
@@ -358,6 +370,7 @@ EOF
 case_trace_comment_only() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/core/domain/d.sysml <<'EOF'
 package L {
@@ -388,9 +401,14 @@ EOF
 # the project's stories are typed by. Nothing in a project verifies
 # them, and project-setup stages the library on the first commit, so a
 # gate that read them would stop that commit at the full profile.
+#
+# Only a directory named library is skipped, at the top of the
+# repository or below it. A directory whose name merely ends in
+# "library", such as mylibrary, holds project content and is read.
 case_trace_library_skipped() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/library/vse-library.sysml \
         < "${TC_PLUGIN_ROOT}/templates/common/library/vse-library.sysml"
@@ -403,6 +421,134 @@ case_trace_library_skipped() {
         "shipped library: no library definition is reported as a gap"
     tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
         "shipped library: 0 touched elements, so the gate says nothing"
+
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write library/top.sysml <<'EOF'
+package T {
+    requirement US_9_T : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_write model/mylibrary/m.sysml <<'EOF'
+package M {
+    requirement US_9_M : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_stage library/top.sysml
+    tc_stage model/mylibrary/m.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "library prefix: the story under mylibrary/ stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "library prefix: exactly one gap is counted"
+    tc_assert_grep "model/mylibrary/m.sysml: requirement 'US_9_M' has no verification case" "$OUT" \
+        "library prefix: a directory named mylibrary is read"
+    tc_assert_not_grep "US_9_T" "$OUT" \
+        "library prefix: a library/ directory at the top of the repository is skipped"
+}
+
+# A verify clause counts for a requirement only when the name it reaches
+# ends there. verify US_9_XY names US_9_XY, not US_9_X, so US_9_X is a
+# gap. The name may end the line, and "verify requirement" is the same
+# clause as "verify".
+case_trace_word_boundary() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+    }
+    requirement US_9_XY : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_9_XY {
+        subject sys : Sys;
+        objective {
+            verify US_9_XY;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "word boundary: the story whose name is only a prefix stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "word boundary: exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "word boundary: verify US_9_XY does not count for US_9_X"
+    tc_assert_not_grep "requirement 'US_9_XY'" "$OUT" \
+        "word boundary: verify US_9_XY counts for US_9_XY"
+
+    tc_write model/core/verification-validation/verification-cases/w.sysml <<'EOF'
+package W {
+    verification def VC_9_X {
+        subject sys : Sys;
+        objective {
+            verify requirement US_9_X
+            ;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/w.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "word boundary: a name that ends the line counts"
+    tc_assert_grep "4 touched element(s) checked, no trace gaps" "$OUT" \
+        "word boundary: both stories and both cases are checked and clean"
+}
+
+# The gate reads a requirement definition (requirement def) and a
+# declaration with a short name (<R1>) by the name that follows them.
+# The definition specialises another (:>), and the usage is typed (:).
+case_trace_declaration_forms() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/requirements/r.sysml <<'EOF'
+package R {
+    requirement def <RD1> RangeRequirement :> RequirementCheck {
+        doc /* A reading stays within the range. */
+    }
+    requirement <R1> rangeLimit : RangeRequirement;
+}
+EOF
+    tc_stage model/core/requirements/r.sysml
+    tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_R1 {
+        subject sys : Sys;
+        objective {
+            verify R::rangeLimit;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "declaration forms: the unverified definition stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "declaration forms: exactly one gap is counted"
+    tc_assert_grep "requirement 'RangeRequirement' has no verification case" "$OUT" \
+        "declaration forms: the definition is read by its name, after def and the short name"
+    tc_assert_not_grep "requirement 'rangeLimit'" "$OUT" \
+        "declaration forms: the usage is read by its name, after the short name, and is verified"
+    tc_assert_not_grep "requirement 'def'" "$OUT" \
+        "declaration forms: the keyword def is not read as a name"
 }
 
 # A KerML note (//* ... */) may span lines, and a story inside it is
@@ -411,6 +557,7 @@ case_trace_library_skipped() {
 case_trace_note_and_string() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/core/domain/d.sysml <<'EOF'
 package L {
@@ -2374,22 +2521,28 @@ for disposition in block warn; do
     case_partial_install "$disposition"
 done
 case_context_filtering
-case_trace_covered
-case_trace_gap
-case_trace_long_warning_counted
-case_trace_comment_only
-case_trace_library_skipped
-case_trace_note_and_string
-case_trace_deep_verify_counts
-case_trace_nested_criterion_not_a_requirement
-case_trace_range_mode
-case_trace_filenames_with_spaces
-case_trace_cannot_list_staged
-case_trace_textconv_ignored
-case_trace_all_reads_the_index
-case_trace_all_from_subdirectory
-case_trace_untyped_acceptance
-case_trace_acceptance_opener_removed
+for TRACE_GREP in gnu bsd; do
+    printf '\n# The traceability gate with %s grep\n' "$TRACE_GREP"
+    case_trace_covered
+    case_trace_gap
+    case_trace_long_warning_counted
+    case_trace_comment_only
+    case_trace_library_skipped
+    case_trace_word_boundary
+    case_trace_declaration_forms
+    case_trace_note_and_string
+    case_trace_deep_verify_counts
+    case_trace_nested_criterion_not_a_requirement
+    case_trace_range_mode
+    case_trace_filenames_with_spaces
+    case_trace_cannot_list_staged
+    case_trace_textconv_ignored
+    case_trace_all_reads_the_index
+    case_trace_all_from_subdirectory
+    case_trace_untyped_acceptance
+    case_trace_acceptance_opener_removed
+done
+TRACE_GREP=gnu
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full

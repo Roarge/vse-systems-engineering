@@ -1,8 +1,9 @@
 r"""Step definitions for the commit-time scenarios.
 
 They cover the commit-time Rule of profile-gates.feature, the
-scenarios of ci-range.feature and commit-scope.feature, and the
-commit-time scenario of test-first.feature. Each scenario builds a git
+scenarios of ci-range.feature, commit-scope.feature and
+traceability-gate.feature, and the commit-time scenario of
+test-first.feature. Each scenario builds a git
 repository with the project-side hooks installed (world.py), commits
 the way an engineer does, with the hooks running, and reads what git
 and the hooks said.
@@ -317,6 +318,12 @@ def refused_by_gate(ctx, gate):
             gate, _context(ctx)))
 
 
+@step(r"the commit is refused")
+def refused(ctx):
+    if ctx.result.returncode == 0 or ctx.landed:
+        raise AssertionError("the commit was not refused, " + _context(ctx))
+
+
 @step(r"the commit goes through")
 def commit_goes_through(ctx):
     if ctx.result.returncode != 0 or not ctx.landed:
@@ -345,6 +352,14 @@ def told_still_needs_migrating(ctx, story):
     if not lines:
         raise AssertionError("no line names {} as still to migrate, {}"
                              .format(story, _context(ctx)))
+
+
+@step(r"the engineer is told that (\w+) has no verification case")
+def told_no_verification_case(ctx, name):
+    if "requirement '{}' has no verification case".format(name) \
+            not in ctx.output:
+        raise AssertionError("{} is not named as unverified, {}".format(
+            name, _context(ctx)))
 
 
 @step(r"the check fails with finding (\w+)")

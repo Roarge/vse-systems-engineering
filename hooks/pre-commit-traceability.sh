@@ -86,7 +86,7 @@ fi
 # definitions the project's stories are typed by, not requirements the
 # project has to verify. Leaving them in would report the library as a
 # wall of gaps on the first commit that stages it.
-SYSML_FILES=$(printf '%s\n' "$CHANGED" | grep '\.sysml$' | grep -v '\(^\|/\)library/' || true)
+SYSML_FILES=$(printf '%s\n' "$CHANGED" | grep '\.sysml$' | grep -Ev '(^|/)library/' || true)
 
 if [ -z "$SYSML_FILES" ]; then
     exit 0
@@ -295,28 +295,45 @@ added_text() {
 # For a modified file only the names on added lines count, which is
 # what keeps the gate off pre-existing content. For a newly added file
 # every line is added, so every name in it counts.
+#
+# Usage: collect_touched <pattern> <extract>. grep -oE prints each
+# declaration that matches the extended regular expression <pattern>,
+# and the sed -E substitution <extract> cuts the name out of it. Both
+# are POSIX forms, so BSD grep and sed (macOS) read them as GNU does.
 collect_touched() {
-    local pattern="$1" file names name
+    local pattern="$1" extract="$2" file names name
     while IFS= read -r file; do
         [ -n "$file" ] || continue
-        names=$(added_text "$file" | grep -oP "$pattern" || true)
+        names=$(added_text "$file" | grep -oE "$pattern" | sed -E "$extract" || true)
         for name in $names; do
             printf '%s\t%s\n' "$file" "$name"
         done
     done <<< "$SYSML_FILES"
 }
 
-TOUCHED_REQS=$(collect_touched 'requirement\s+(?:def\s+)?(?:<[^>]*>\s*)?\K[A-Za-z_]\w*(?=\s*:>?\s*[A-Za-z_])' | sort -u)
-TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
+# A requirement declaration is "requirement", an optional "def", an
+# optional short name in angle brackets, then the name, followed by ":"
+# or ":>" and a type. The match runs on to the first letter of the
+# type, so the substitution keeps only the name.
+TOUCHED_REQS=$(collect_touched \
+    'requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?[A-Za-z_][A-Za-z0-9_]*[[:space:]]*:>?[[:space:]]*[A-Za-z_]' \
+    's/^requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?([A-Za-z_][A-Za-z0-9_]*).*$/\3/' \
+    | sort -u)
+TOUCHED_VERS=$(collect_touched \
+    'verification[[:space:]]+def[[:space:]]+[A-Za-z0-9_]+' \
+    's/^verification[[:space:]]+def[[:space:]]+//' \
+    | sort -u)
 
 # Does any .sysml file in the repository carry a verify link to $1?
 # The target may follow any chain of "::" and "." segments, such as a
 # package and the requirement groups the story sits in, and may run on
-# past it, as in verify <story>.acceptance.<name>.
+# past it, as in verify <story>.acceptance.<name>. The name must end
+# there, at a character that cannot continue a name or at the end of
+# the line, so verify US_9_XY is not a link to US_9_X.
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qP "verify\s+(?:requirement\s+)?(?:[A-Za-z_]\w*(?:::|\.))*${req}\b" "$sysml" 2>/dev/null; then
+        if grep -qE "verify[[:space:]]+(requirement[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*(::|[.]))*${req}([^A-Za-z0-9_]|\$)" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
@@ -339,7 +356,9 @@ done <<< "$TOUCHED_REQS"
 while IFS=$'\t' read -r file ver; do
     [ -z "${ver:-}" ] && continue
     CHECKED=$((CHECKED + 1))
-    if ! grep -qP 'verify\s+(?:requirement\s+)?[A-Za-z_]' "$file" 2>/dev/null; then
+    # "verify requirement X" starts with a letter after "verify" too, so
+    # this one pattern covers both forms of the clause.
+    if ! grep -qE 'verify[[:space:]]+[A-Za-z_]' "$file" 2>/dev/null; then
         FINDINGS="${FINDINGS}  ${file}: verification case '${ver}' has no verify link"$'\n'
         GAPS=$((GAPS + 1))
     fi
