@@ -1560,6 +1560,30 @@ case_touched_renamed_directory() {
         "renamed directory: the changed legacy story draws S1"
 }
 
+# Read from a range, a stories directory that moved whole still pairs
+# its files, because the old directory holds nothing at the range end,
+# or in the working tree for a single revision.
+case_touched_renamed_directory_range() {
+    local moved="model/core/stories/operator" clone
+    tc_setup_repo
+    story_config light
+    git -C "$REPO" add .githooks tools .iso-config.yaml
+    tc_commit "install the hooks"
+    commit_register
+    git -C "$REPO" checkout -q -b feat/move-directory
+    git -C "$REPO" mv "$STORY_DIR" "$moved"
+    tc_commit "move the stories directory"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 0 "renamed directory, range: the move alone passes"
+    assert_legacy_noted "renamed directory, range"
+    run_in_clone "$clone" "HEAD~1"
+    tc_assert_rc 0 "renamed directory, single revision: the move alone passes"
+    assert_legacy_noted "renamed directory, single revision"
+}
+
 # In range mode the rename is read from the range, so a pull request or
 # a push that renames the register and changes the migrated story
 # passes.
@@ -1584,6 +1608,20 @@ case_touched_renamed_range() {
     run_in_clone "$clone" "HEAD~1..HEAD"
     tc_assert_rc 0 "renamed, two-dot range: the push that renames the register passes"
     assert_legacy_noted "renamed, two-dot range"
+
+    # The same rename with a change to the legacy story checks it.
+    git -C "$REPO" checkout -q main
+    git -C "$REPO" checkout -q -b feat/rename-legacy
+    git -C "$REPO" mv "${STORY_DIR}/stories.sysml" "${STORY_DIR}/register.sysml"
+    change_story "${STORY_DIR}/register.sysml" US_902_Legacy
+    tc_commit "rename the register and change US_902"
+    clone="$(tc_mktemp_d)/clone"
+    git clone -q "$REPO" "$clone"
+    git -C "$clone" checkout -q --detach
+    run_in_clone "$clone" "origin/main...HEAD"
+    tc_assert_rc 1 "renamed, range: a pull request that renames the register and changes the legacy story fails"
+    tc_assert_grep "${STORY_DIR}/register.sysml:20: S1 US_902_Legacy has no feature file" "$ERR" \
+        "renamed, range: the changed legacy story draws S1"
 }
 
 # Only a story file pairs with a story file. A file moved into a
@@ -2169,6 +2207,7 @@ case_touched_single_revision
 case_touched_merge_base_fallback
 case_touched_renamed_register
 case_touched_renamed_directory
+case_touched_renamed_directory_range
 case_touched_renamed_range
 case_touched_moved_into_stories
 case_test_first_code_without_test
