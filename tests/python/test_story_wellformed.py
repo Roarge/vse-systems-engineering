@@ -376,6 +376,46 @@ class StorySideTests(unittest.TestCase):
         self.assertIn("move the story there first if it is declared "
                       "elsewhere", message)
 
+    def test_S8_qualified_story_identifier_in_lower_case(self):
+        # `verify P::story_1;` reaches the story story_1, whose
+        # identifier starts in lower case, rather than a story P.
+        with tempfile.TemporaryDirectory() as root:
+            stories = os.path.join(root, STK)
+            os.makedirs(stories)
+            with open(os.path.join(stories, "story_1.feature"), "w",
+                      encoding="utf-8") as handle:
+                handle.write("@story_1\n"
+                             "Feature: See the first reading\n"
+                             "  As an operator\n"
+                             "  I want to see the first reading\n"
+                             "  So that the device is known to work\n"
+                             "\n"
+                             "  @AC_firstReading\n"
+                             "  Scenario: The first reading appears\n"
+                             "    When it takes a reading\n"
+                             "    Then the reading is shown\n")
+            with open(os.path.join(stories, "stories.sysml"), "w",
+                      encoding="utf-8") as handle:
+                handle.write(
+                    "package P {\n"
+                    "    requirement story_1 : UserStory {\n"
+                    "        @StoryMeta { status = StoryStatus::inProgress; }\n"
+                    "        requirement :>> acceptance {\n"
+                    "            requirement firstReading { doc /* x */ }\n"
+                    "        }\n"
+                    "    }\n"
+                    "}\n")
+            cases = os.path.join(root, "model", "core", "cases.sysml")
+            with open(cases, "w", encoding="utf-8") as handle:
+                handle.write("package V {\n"
+                             "    verification def VAL_1 {\n"
+                             "        objective { verify P::story_1; }\n"
+                             "    }\n"
+                             "}\n")
+            findings = story_wellformed.lint_paths(["model"], "gherkin",
+                                                   Path(root))
+        self.assertEqual(triples(findings), [])
+
     def test_register_file_four_stories(self):
         # Four stories in one register file, each paired with its own
         # feature file. Only the third has none.

@@ -100,6 +100,35 @@ class SplitTargetTests(unittest.TestCase):
              ("US_001_SeeReadings", "acceptance")),
         ])
 
+    def test_split_target_prefers_a_known_story(self):
+        # A story identifier that starts in lower case, behind a
+        # qualifier, is found among the known stories rather than taken
+        # for a member of the qualifier.
+        known = {"story_1", "US_001"}
+        for qualified, expected in (
+                ("P::story_1", ("story_1", "")),
+                ("P::story_1.sla", ("story_1", "sla")),
+                ("Stories::US_001.dashboardSla", ("US_001", "dashboardSla")),
+                ("P::Q::other", ("Q", "other"))):
+            with self.subTest(qualified=qualified):
+                self.assertEqual(
+                    sysml_model._split_target(qualified, known), expected)
+
+    def test_known_lower_case_story_is_verified_in_the_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            write(root, "model/core/stories/stakeholder/stories.sysml", (
+                "package P {\n"
+                "    requirement story_1 : UserStory {\n"
+                "        requirement :>> acceptance {\n"
+                "            requirement first { doc /* First. */ }\n"
+                "        }\n"
+                "    }\n"
+                "}\n"))
+            write(root, "model/core/verification-validation/cases.sysml",
+                  case_file(("VAL_1", ["P::story_1"])))
+            model = sysml_model.load_model(Path(root))
+        self.assertEqual(model.cases[0].verifies, [("story_1", "")])
+
     def test_split_target_legacy_member(self):
         self.check([
             ("SYS_001_DashboardLatency::acceptance",

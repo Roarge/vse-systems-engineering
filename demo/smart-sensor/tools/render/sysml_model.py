@@ -269,6 +269,18 @@ class Case:
     subject: str = ""
     verifies: List[Tuple[str, str]] = field(default_factory=list)
     doc: DocBlock = field(default_factory=DocBlock)
+    # Each verify target as written, in order, for resolved().
+    references: List[str] = field(default_factory=list)
+
+    def resolved(self, known) -> List[Tuple[str, str]]:
+        """The (story, member) pairs of the verify targets, split with
+        `known`, the story identifiers the model declares."""
+        pairs: List[Tuple[str, str]] = []
+        for reference in self.references:
+            pair = _split_target(reference, known)
+            if pair[0] and pair not in pairs:
+                pairs.append(pair)
+        return pairs
 
     def targets(self) -> List[str]:
         """Story identifiers this case verifies, in declaration order."""
@@ -563,7 +575,7 @@ def _last_segment(qualified: str) -> str:
     return qualified.split("::")[-1]
 
 
-def _split_target(qualified: str) -> Tuple[str, str]:
+def _split_target(qualified: str, known=()) -> Tuple[str, str]:
     """Split a verify target into the story identifier and the member.
 
     A target that names an `acceptance` segment anchors on the first one.
@@ -571,11 +583,14 @@ def _split_target(qualified: str) -> Tuple[str, str]:
     so `Stories::US_001.acceptance.SeeLatest` reads as story `US_001` and
     member `acceptance.SeeLatest` whatever case the criterion name takes.
 
-    Without an `acceptance` segment the case of each segment decides.
-    Story identifiers start with a capital under the methodology naming
-    conventions (US_, SYS_, VC_, VAL_ per section 1.6), and members such as
-    `dashboardSla` start lower case. The distinction is what separates
-    `SYS_001_X::dashboardSla` from a plain `SYS_001_X`.
+    Without an `acceptance` segment, the last segment that names one of
+    the `known` story identifiers is the story, so `P::story_1` reads as
+    the story `story_1` when the model declares it. Failing that, the
+    case of each segment decides. Story identifiers start with a capital
+    under the methodology naming conventions (US_, SYS_, VC_, VAL_ per
+    section 1.6), and members such as `dashboardSla` start lower case.
+    The distinction is what separates `SYS_001_X::dashboardSla` from a
+    plain `SYS_001_X`.
     """
     segments = [segment for segment in re.split(r"::|\.", qualified) if segment]
     if not segments:
@@ -583,6 +598,9 @@ def _split_target(qualified: str) -> Tuple[str, str]:
     if "acceptance" in segments[1:]:
         index = segments.index("acceptance", 1)
         return segments[index - 1], ".".join(segments[index:])
+    for index in range(len(segments) - 1, -1, -1):
+        if segments[index] in known:
+            return segments[index], ".".join(segments[index + 1:])
     # The story is the last segment that starts with a capital letter, and
     # everything after it is the member path, so `US_001.dashboardSla`
     # reads as story `US_001` and member `dashboardSla`.
@@ -661,11 +679,12 @@ def _attach_doc(line: str, docs: List[str], target) -> bool:
 
 def _add_verifies(text: str, case: Case) -> None:
     """Add the targets of the verify clauses in `text` to the case,
-    each once, in order."""
+    each once, in order. load_model() splits them again once every
+    story of the model is known."""
     for raw_target in _RE_VERIFY.findall(text):
-        target, member = _split_target(raw_target)
-        if target and (target, member) not in case.verifies:
-            case.verifies.append((target, member))
+        if raw_target not in case.references:
+            case.references.append(raw_target)
+    case.verifies = case.resolved(())
 
 
 def parse_file(project_root: Path, path: Path, model: Model) -> None:
@@ -944,6 +963,9 @@ def load_model(project_root: Optional[Path] = None) -> Model:
     )
     for path in paths:
         parse_file(root, path, model)
+    known = {story.identifier for story in model.stories}
+    for case in model.cases:
+        case.verifies = case.resolved(known)
     _attach_scenarios(root, model)
     return model
 

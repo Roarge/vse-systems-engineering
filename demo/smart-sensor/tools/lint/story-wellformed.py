@@ -1042,11 +1042,14 @@ class World:
     verified: Dict[str, set] = field(default_factory=dict)
     satisfied: Dict[str, List[Tuple[str, str]]] = field(default_factory=dict)
 
-    def add(self, entry: SysmlFile) -> None:
+    def add(self, entry: SysmlFile, known: set) -> None:
+        """Record the cases and satisfy relationships of one file. A
+        verify target is split with `known`, the story identifiers the
+        model declares, so `P::story_1` reaches the story `story_1`."""
         if entry.model is None:
             return
         for case in entry.model.cases:
-            for target, member in case.verifies:
+            for target, member in case.resolved(known):
                 self.verified.setdefault(target, set()).add(member)
         for satisfaction in entry.model.satisfactions:
             self.satisfied.setdefault(satisfaction.requirement, []).append(
@@ -1076,11 +1079,14 @@ def _world(workspace: Workspace, scope_files: List[SysmlFile]) -> World:
                     display = os.path.relpath(
                         str(full), str(workspace.project_root))
                     entries.append(workspace.sysml_file(full, display))
-    seen = set()
-    for entry in entries:
-        if id(entry) not in seen:
-            seen.add(id(entry))
-            world.add(entry)
+    unique = list({id(entry): entry for entry in entries}.values())
+    known = set()
+    for entry in unique:
+        known.update(story.identifier for story in entry.scan.stories)
+        if entry.model is not None:
+            known.update(story.identifier for story in entry.model.stories)
+    for entry in unique:
+        world.add(entry, known)
     return world
 
 
