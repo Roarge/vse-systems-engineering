@@ -99,8 +99,9 @@ These behaviours are worth knowing.
   `requirement <ID> : UserStory` or
   `requirement <ID> : VSE_Library::UserStory`. This is the form the
   plugin's in-session Gherkin-first hook reads. Any other declaration
-  that types or specialises `UserStory` is finding S9, so a story the
-  hook cannot read is never passed unchecked.
+  in a stories directory that types or specialises `UserStory` is
+  finding S9, so a story the hook cannot read is never passed
+  unchecked.
 - **Stories live in a `stories/` directory.** §11.2.1 pairs each story
   with its feature file in a stories directory, so the S findings are
   reported only there. A story declared in another directory, such as
