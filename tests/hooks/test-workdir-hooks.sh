@@ -294,6 +294,39 @@ case_many_tags() {
         "pre-compact, many tags: the latest release is named"
 }
 
+# ------------------------------------------------------- BSD date
+
+# The reminder's threshold is computed without GNU date -d, which BSD
+# date (macOS) lacks. With the BSD date stub on PATH the Change Request
+# opened in 2020 is still reported, in a project found by its
+# configuration and in one found by its methodology/ folder. A Change
+# Request opened today is not stale, so beside it only the 2020 one is
+# counted.
+case_notification_bsd_date() {
+    local config green today
+    config="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${config}/.iso-config.yaml"
+    green="$(tc_mktemp_d)"
+    mkdir -p "${green}/methodology"
+    tc_stub_bsd_date
+    assert_fires notification "$config" "BSD date, config only"
+    assert_fires notification "$green" "BSD date, methodology fallback"
+
+    today="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    mv "${STUBS}/gh" "${STUBS}/gh.saved"
+    tc_stub gh <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+printf '[{"number":7,"createdAt":"%s"},{"number":8,"createdAt":"%s"}]\n' "${STALE_DATE}" "${today}"
+EOF
+    run_workdir notification "$config"
+    tc_assert_rc 0 "notification, BSD date, one stale and one new: exit 0"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, BSD date, one stale and one new: only the stale Change Request is counted"
+    mv "${STUBS}/gh.saved" "${STUBS}/gh"
+    rm -f "${STUBS}/date"
+}
+
 case_config_only
 case_from_subdirectory
 case_nested_brownfield
@@ -304,6 +337,7 @@ case_library_missing
 case_long_prompt
 case_prompt_without_jq
 case_many_tags
+case_notification_bsd_date
 
 if tc_summary "test-workdir-hooks"; then
     exit 0

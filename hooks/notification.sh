@@ -35,10 +35,15 @@ fi
 # Stale Change Requests (open longer than 14 days) via gh CLI.
 # A future revision will read the threshold from .iso-config.yaml's
 # change_request.stale_threshold_days field.
+#
+# jq computes the threshold itself (now, in seconds since 1970, less 14
+# days), so no date arithmetic is needed from date, whose options differ
+# between GNU and BSD (macOS). gh gives createdAt in the UTC form
+# fromdateiso8601 reads, such as 2020-01-02T03:04:05Z.
 if command -v gh >/dev/null 2>&1; then
     STALE_CRS=$(gh issue list -l change-request -s open --json number,createdAt 2>/dev/null \
-        | jq -r --arg threshold "$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)" \
-            '[.[] | select(.createdAt < $threshold)] | length' 2>/dev/null || echo "0")
+        | jq -r '[.[] | select((.createdAt | fromdateiso8601) < (now - 14 * 86400))] | length' \
+            2>/dev/null || echo "0")
     if [ "$STALE_CRS" -gt 0 ]; then
         echo "[VSE notification] ${STALE_CRS} Change Request(s) open >14 days. Run /vse-cr to review."
     fi
