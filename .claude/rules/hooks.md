@@ -43,14 +43,19 @@ a hook body.
 **Output contract.** Plain stdout reaches the model only for
 `SessionStart` and `UserPromptSubmit`. For `PreToolUse`,
 `PostToolUse`, `Stop` and `SubagentStop`, Claude never sees plain
-text. When one of these hooks has something to say, its stdout
+stdout. When one of these hooks has something to say, its stdout
 carries exactly one JSON object with `hookSpecificOutput.hookEventName`
-set to the event name. Diagnostics go to stderr, never stdout.
+set to the event name. Diagnostics go to stderr, never stdout. Exit 2
+with stderr does reach the model, so an exit-2 path must not carry
+diagnostics.
 
 **Testing.** Hook changes follow `.claude/rules/tdd-bdd.md`, so the
 failing test comes first. Source the script directly with the same
 environment variables and stdin the harness would provide, and record
 expected exit codes. Lifecycle hook tests feed the stdin JSON payload
-through `tc_run_lifecycle` in `tests/hooks/lib.sh` and assert on the
-single JSON object the hook prints. Do not rely on Claude to feel
+through `tc_run_lifecycle` in `tests/hooks/lib.sh`. For `PreToolUse`,
+`PostToolUse`, `Stop` and `SubagentStop` they assert that the hook
+prints exactly one JSON object when it has something to say
+(`tc_assert_json`), nothing otherwise (`tc_assert_json_silent`), and
+never `permissionDecision: allow`. Do not rely on Claude to feel
 whether the hook fires.

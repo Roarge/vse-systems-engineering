@@ -71,5 +71,6 @@ scenario, then the failing unit or hook test, then the code.
 - Each pull request body carries a "Test-first evidence" section with
   the red output, that is, the failing command and its first failing
   lines.
-- `tests/hooks/check-test-first.sh` enforces test-before-code in CI.
+- `tests/hooks/check-test-first.sh` enforces test-before-code under
+  `make all` and in CI.
   It fails a branch that changes code without changing a test.
