@@ -233,6 +233,46 @@ case_long_prompt() {
         "user-prompt-submit, long prompt: the reverse-engineering reminder"
 }
 
+# ------------------------------------------------ payload without jq
+
+# run_prompt <dir> <json> <bin>: run user-prompt-submit in <dir> with
+# <json> on stdin and <bin> as PATH, to take a JSON tool out of reach.
+run_prompt() {
+    local dir="$1" json="$2" bin="$3" TC_STDIN
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$json" > "$TC_STDIN"
+    tc_env "TMPDIR=${SNAP_TMP}" "PATH=${bin}"
+    tc_run_in "$dir" CLAUDE_PLUGIN_ROOT="$TC_PLUGIN_ROOT" bash "${TC_PLUGIN_ROOT}/hooks/user-prompt-submit.sh"
+    tc_env
+    rm -f "$TC_STDIN"
+}
+
+# Without jq the prompt is read with python3, through the payload
+# reader of hooks/lib/hook-json.sh, so the reminders are still given.
+# The prompt is read from .prompt, then from .user_message when that is
+# empty or absent.
+case_prompt_without_jq() {
+    local dir bin
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    bin="$(tc_bin_without jq)"
+    run_prompt "$dir" '{"prompt":"please update the project plan for US_001","hook_event_name":"UserPromptSubmit"}' "$bin"
+    tc_assert_rc 0 "user-prompt-submit, no jq: exit 0"
+    tc_assert_grep "$FIRES_user_prompt_submit" "$OUT" \
+        "user-prompt-submit, no jq: the prompt is read with python3"
+    run_prompt "$dir" '{"user_message":"we had a meeting today","hook_event_name":"UserPromptSubmit"}' "$bin"
+    tc_assert_rc 0 "user-prompt-submit, no jq, user_message: exit 0"
+    tc_assert_grep "[methodology reminder, PM.O4]" "$OUT" \
+        "user-prompt-submit, no jq, user_message: the field is read when .prompt is absent"
+    run_prompt "$dir" '{"prompt":"","user_message":"update the risk register","hook_event_name":"UserPromptSubmit"}' "$bin"
+    tc_assert_grep "$FIRES_user_prompt_submit" "$OUT" \
+        "user-prompt-submit, no jq, empty prompt: .user_message is read"
+    bin="$(tc_bin_without jq python3)"
+    run_prompt "$dir" '{"prompt":"update the risk register","hook_event_name":"UserPromptSubmit"}' "$bin"
+    tc_assert_rc 0 "user-prompt-submit, neither jq nor python3: exit 0"
+    tc_assert_empty "$OUT" "user-prompt-submit, neither jq nor python3: nothing is printed"
+}
+
 # A project with more tags than a pipe buffer holds in a listing. The
 # snapshot names the latest plan baseline and release.
 case_many_tags() {
@@ -259,6 +299,7 @@ case_methodology_fallback
 case_outside
 case_library_missing
 case_long_prompt
+case_prompt_without_jq
 case_many_tags
 
 if tc_summary "test-workdir-hooks"; then

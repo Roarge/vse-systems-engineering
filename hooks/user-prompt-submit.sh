@@ -17,15 +17,34 @@
 # projects that predate the configuration and for an install without
 # hooks/lib/. Outside a project the hook is silent.
 #
+# The prompt is read from .prompt, then from .user_message when that is
+# empty, with vse_hj_read of hooks/lib/hook-json.sh, which uses jq and
+# falls back to python3. Without that library it is read with jq alone,
+# as before the library existed. With neither tool the prompt reads as
+# empty and the hook is silent.
+#
 # stdin: JSON payload from Claude Code with the user prompt.
 # stdout: appended to the prompt context.
 # Exit 0 always.
 set -euo pipefail
 
-INPUT=$(cat)
-PROMPT=$(echo "$INPUT" | jq -r '.prompt // .user_message // ""' 2>/dev/null || echo "")
-
 UPS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+UPS_PAYLOAD="$(mktemp "${TMPDIR:-/tmp}/vse-user-prompt-submit.XXXXXX")" || exit 0
+trap 'rm -f "$UPS_PAYLOAD"' EXIT
+cat > "$UPS_PAYLOAD" || exit 0
+PROMPT=""
+if [ -r "${UPS_LIB}/hook-json.sh" ]; then
+    # shellcheck source=/dev/null
+    . "${UPS_LIB}/hook-json.sh"
+    # A payload that cannot be read is read once, so its one line on
+    # stderr is not repeated.
+    if PROMPT="$(vse_hj_read "$UPS_PAYLOAD" .prompt)" && [ -z "$PROMPT" ]; then
+        PROMPT="$(vse_hj_read "$UPS_PAYLOAD" .user_message)" || PROMPT=""
+    fi
+else
+    PROMPT="$(jq -r '.prompt // .user_message // ""' "$UPS_PAYLOAD" 2>/dev/null || echo "")"
+fi
+
 UPS_PROJECT=""
 if [ -r "${UPS_LIB}/iso-profile.sh" ] && [ -r "${UPS_LIB}/test-first.sh" ]; then
     # shellcheck source=/dev/null
