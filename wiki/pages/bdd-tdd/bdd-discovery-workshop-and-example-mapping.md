@@ -39,7 +39,7 @@ Behaviour-driven development (BDD) describes the behaviour a stakeholder expects
 
 - "As late as possible before development on a new User Story begins".
 - "A good rule-of-thumb is 3-6 people" / "at a bare minimum your Three Amigos should be present: a product owner, a developer, and a tester."
-- The Three Amigos are the product owner, tester and developer perspectives, brought together in one meeting. "The Three Amigos is a meeting that takes user stories and turns them into clean, thorough Gherkin scenarios" (Who does what?). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run.
+- The Three Amigos are the product owner, tester and developer perspectives, brought together in one meeting. "The Three Amigos is a meeting that takes user stories and turns them into clean, thorough Gherkin scenarios" ("Who does what?"). Gherkin is the plain-text Given/When/Then format that Cucumber-family test tools read and run.
 - The three perspectives:
   - Product owner: "This person is most concerned with the scope of the application."
   - Tester: "This person will be generating lots of Scenarios, and lots of edge cases."
@@ -74,12 +74,12 @@ The actor for every step is the workshop group (the Three Amigos at minimum). Th
 This is a synthesis grounded in §11, and the methodology wins.
 
 - The yellow card becomes the story and its `<ID>.feature` with the tag and the narrative. Zero scenarios are allowed in `backlog` (§11.4).
-- The Cucumber page Who does what? describes the Feature narrative as "`In order to` ... `As a` ... `I want`", whereas methodology §11.2.2, which wins, requires "As a / I want / So that" in that order, and the plugin's story lint (its automated check of stories and feature files) reports F6 when the lines are missing or out of order.
+- The Cucumber page "Who does what?" describes the Feature narrative as "`In order to` ... `As a` ... `I want`", whereas methodology §11.2.2, which wins, requires "As a / I want / So that" in that order, and the plugin's story lint (its automated check of stories and feature files) reports F6 when the lines are missing or out of order.
 - A blue rule becomes, where wanted, a Gherkin `Rule:` that "Groups scenarios" and "states no criterion of its own" (§11.2.4). This fits the Gherkin Reference's Rule "to represent one business rule" (see [[gherkin-syntax-reference]]).
 - Each green example becomes one scenario with one `@AC_<name>` tag, mirrored by a named criterion (§11.2.3, §11.3.1). A scenario is written before the criterion that mirrors it (§11.4, consequence 3).
 - A sliced story enters the backlog. It need not yet exist as a file (§8.7). Once it is written as a file, it carries its feature file with the story tag and the narrative (§11.4, consequence 4).
 - Red cards have no artefact in §11. This page makes no claim about where they are recorded.
-- Who formulates afterwards: the whole team, or a pair with product owner review (Who does what?).
+- Who formulates afterwards: the whole team, or a pair with product owner review ("Who does what?").
 
 ## See also
 

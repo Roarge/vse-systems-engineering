@@ -25,7 +25,8 @@ Quick reference linking each ISO/IEC 29110 phase to the work products
 it produces and to where each one lives in a project: a markdown file
 under `docs/`, a document rendered from the model into
 `docs/generated/`, a GitHub Issue, the SysML model itself, or a
-template the project copies when it needs the document. The plugin
+plugin template the project copies into `docs/` when it needs the
+document. The plugin
 keeps its templates in `templates/pm/` and `templates/sr/`. A
 project's work products sit under `docs/` (or `engineering/docs/` in
 brownfield layouts), one file per document directly in it, apart from

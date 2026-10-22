@@ -2018,3 +2018,14 @@ Pages indexed: 172. Routing blocks regenerated: 2 (project-setup,
 release-orchestrator), one row each, for the new summary of
 iso29110-template-mapping. Routing rows stay 261. Layers stay 13 and
 referencing skills stay 24. ToC drift: 0.
+
+## [2026-10-18] refactor | quoted page title and template wording
+Layer: bdd-tdd, iso29110. Pages updated:
+- bdd-discovery-workshop-and-example-mapping (the Cucumber page title
+  "Who does what?" now sits in quotation marks at each of its three
+  mentions, so the question mark reads as part of the title)
+- iso29110-template-mapping (the opening sentence now says the project
+  copies a plugin template into `docs/` when it needs the document,
+  rather than listing the template as a place a work product lives)
+`updated:` stays 2026-10-18 on both pages. No summary or title changed,
+so INDEX and the routing blocks are unchanged.
