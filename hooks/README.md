@@ -62,9 +62,12 @@ on their own (methodology §11.11). A file written through the Bash
 tool passes unseen, the `disableAllHooks` setting, a `--bare` session
 or a disabled plugin switches every lifecycle hook off, and without
 `jq` and `python3` the hooks cannot read their input and let the call
-through. The `pre-commit` and CI gates are the backstop. One limit
-belongs to locating the project. A brownfield project nested below
-the git top level, with its configuration at
+through. A `jq` older than 1.6 cannot build the post-edit image (the
+file as it would read after the edit), so `python3` builds it, and
+where `python3` is missing as well the story and configuration gates
+let the edit through. The `pre-commit` and CI gates are the backstop.
+One limit belongs to locating the project. A brownfield project nested
+below the git top level, with its configuration at
 `proj/engineering/.iso-config.yaml`, is not found by the walk for files
 outside `proj/engineering/`, because the walk tries
 `engineering/.iso-config.yaml` only at the git top level. The hooks

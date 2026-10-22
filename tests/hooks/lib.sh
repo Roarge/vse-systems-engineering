@@ -227,6 +227,28 @@ exit "\${SYSML_RC:-0}"
 EOF
 }
 
+# jq 1.5 has no halt_error. The stub refuses any program that calls it,
+# with the compile error and exit status 3 jq 1.5 gives, and passes
+# every other call to the real jq found when the stub is written.
+tc_stub_old_jq() {
+    local real
+    real="$(command -v jq)"
+    tc_stub jq <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+for arg in "\$@"; do
+    case "\$arg" in
+        *halt_error*)
+            echo "jq: error: halt_error/1 is not defined at <top-level>, line 18:" >&2
+            echo "jq: 1 compile error" >&2
+            exit 3
+            ;;
+    esac
+done
+exec "${real}" "\$@"
+EOF
+}
+
 # A stub that records the fact it ran and nothing else. Used to prove a
 # gate did not reach for a validator at all.
 tc_stub_recorder() {

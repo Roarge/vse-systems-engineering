@@ -796,6 +796,21 @@ gate_overrides:
     tc_env
 }
 
+# jq 1.5 reads the payload but cannot compile the post-image program,
+# which calls halt_error. python3 builds the images instead, so the
+# story and configuration gates still decide rather than failing open.
+case_old_jq_python_fallback() {
+    ptu_project light
+    tc_stub_old_jq
+    ptu_run "$(ptu_write_json "${REPO}/${PTU_STORIES}/stories.sysml" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "old jq: python3 builds the image and the story is denied"
+    ptu_assert_reason "US_901_Example.feature" "old jq: the reason is complete"
+    ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "project_profile: light" "project_profile: light
+gate_overrides:
+  pretooluse_test_first: off")"
+    ptu_assert_asked "old jq: a gate change still asks"
+}
+
 case_no_jq_no_python_notice() {
     ptu_project light
     tc_env PATH="$PTU_BIN_NO_JSON"
@@ -874,6 +889,7 @@ case_config_nested_shadow_asks
 case_config_never_code
 case_baselined_path_context
 case_no_jq_python_fallback
+case_old_jq_python_fallback
 case_no_jq_no_python_notice
 case_malformed_payload_fails_open
 case_never_emits_allow

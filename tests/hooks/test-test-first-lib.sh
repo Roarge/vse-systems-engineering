@@ -505,6 +505,36 @@ case_post_image_no_json_tool() {
     tc_env
 }
 
+# jq 1.5 has no halt_error, so it cannot compile the image program
+# (tc_stub_old_jq stands in for it). python3 then does the work, as if
+# jq were absent, so the in-session gates still see the edit instead
+# of failing open.
+case_post_image_old_jq_falls_back() {
+    local dir
+    tc_setup_repo
+    tc_stub_old_jq
+    dir="$(tc_mktemp_d)"
+    printf 'alpha\r\nbeta\r\n' > "${dir}/target"
+    printf 'alpha\ngamma\n' > "${dir}/expected"
+    printf 'alpha\nbeta\n' > "${dir}/expected-disk"
+    printf '%s' "$(tf_payload_edit beta gamma false)" > "${dir}/payload.json"
+    printf '%s' "$(tf_payload_edit delta gamma false)" > "${dir}/missed.json"
+    tc_env
+    run_tf_to "${dir}/image" vse_tf_post_image "${dir}/payload.json" "${dir}/target"
+    tc_assert_rc 0 "old jq: the edit applies through python3"
+    tf_assert_same "${dir}/expected" "${dir}/image" "old jq: python3 gives the post image"
+    tc_assert_not_grep "compile error" "$ERR" "old jq: the compile error is not passed on"
+    run_tf_to "${dir}/image" vse_tf_post_image "${dir}/missed.json" "${dir}/target"
+    tc_assert_rc 4 "old jq: an edit that cannot be reproduced still exits 4"
+    run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/target"
+    tc_assert_rc 0 "old jq: the disk image reads through python3"
+    tf_assert_same "${dir}/expected-disk" "${dir}/image" "old jq: python3 gives the disk image"
+    tc_env PATH="${STUBS}:${TF_BIN_NO_PYTHON}"
+    run_tf vse_tf_post_image "${dir}/payload.json" "${dir}/target"
+    tc_assert_rc 3 "old jq: exit 3 when python3 is missing too"
+    tc_env
+}
+
 # jq reads its input as UTF-8 and turns a byte that is not valid UTF-8
 # into U+FFFD, while python3 keeps it. A pre-image read raw from disk
 # would then differ from a jq post-image in every story holding such a
@@ -1510,6 +1540,7 @@ case_post_image_empty_old_string
 case_post_image_multiedit
 case_post_image_write
 case_post_image_no_json_tool
+case_post_image_old_jq_falls_back
 case_disk_image_symmetric_latin1
 case_disk_image_plain
 case_post_image_crlf

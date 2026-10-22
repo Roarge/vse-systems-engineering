@@ -587,15 +587,36 @@ except (OSError, ValueError, AttributeError, TypeError) as error:
     sys.exit(2)
 '
 
+# An empty MultiEdit, which changes nothing.
+_VSE_TF_NO_EDIT='{"tool_name": "MultiEdit", "tool_input": {"edits": []}}'
+
+# Return 0 when jq is on PATH and runs the image program, tried once on
+# an edit that changes nothing. jq 1.5 has no halt_error, so it cannot
+# compile the program, and python3 must do the work instead. The answer
+# is kept for the rest of the shell.
+_VSE_TF_JQ_IMAGE_OK=""
+_vse_tf_jq_image_ok() {
+    if [ -z "$_VSE_TF_JQ_IMAGE_OK" ]; then
+        _VSE_TF_JQ_IMAGE_OK=no
+        if command -v jq >/dev/null 2>&1 &&
+            jq -j -R -s --slurpfile payload <(printf '%s' "$_VSE_TF_NO_EDIT") \
+                "$_VSE_TF_JQ_IMAGE" < /dev/null > /dev/null 2>&1; then
+            _VSE_TF_JQ_IMAGE_OK=yes
+        fi
+    fi
+    [ "$_VSE_TF_JQ_IMAGE_OK" = yes ]
+}
+
 # Print the content <target-file> would have after the Write, Edit or
 # MultiEdit call in <payload-file> (the PreToolUse JSON). Write gives
 # tool_input.content. Edit replaces old_string with new_string in the
 # file on disk. MultiEdit applies tool_input.edits in order. A missing
 # or unreadable file reads as empty. Uses jq, else python3 in isolated
-# mode. Returns 2 for a malformed payload or another tool, 3 when
-# neither jq nor python3 is present, and 4, with the image printed,
-# when a non-empty old_string occurs nowhere in the text it is applied
-# to, so the edit could not be reproduced.
+# mode, and python3 as well where jq cannot run the program (jq 1.5).
+# Returns 2 for a malformed payload or another tool, 3 when neither a
+# jq that runs the program nor python3 is present, and 4, with the
+# image printed, when a non-empty old_string occurs nowhere in the text
+# it is applied to, so the edit could not be reproduced.
 #
 # The text passes through the engine, which normalises it. CRLF line
 # endings in the file and in each old_string and new_string are read as
@@ -608,7 +629,7 @@ vse_tf_post_image() {
     if [ -f "$target" ] && [ -r "$target" ]; then
         input="$target"
     fi
-    if command -v jq >/dev/null 2>&1; then
+    if _vse_tf_jq_image_ok; then
         jq -j -R -s --slurpfile payload "$payload" "$_VSE_TF_JQ_IMAGE" < "$input" || rc=$?
     elif command -v python3 >/dev/null 2>&1; then
         python3 -I -c "$_VSE_TF_PY_IMAGE" "$payload" "$input" || rc=$?
@@ -621,14 +642,12 @@ vse_tf_post_image() {
     return 2
 }
 
-# An empty MultiEdit, which changes nothing.
-_VSE_TF_NO_EDIT='{"tool_name": "MultiEdit", "tool_input": {"edits": []}}'
-
 # Print the content of <file> before any edit, normalised exactly as
 # vse_tf_post_image normalises a post image (CRLF read as LF): the file
 # goes through the same function and engine with an edit list that
 # changes nothing. A missing or unreadable file reads as empty. Returns
-# 2 when the engine fails and 3 when neither jq nor python3 is present.
+# 2 when the engine fails and 3 when no engine is present, as
+# vse_tf_post_image does.
 vse_tf_disk_image() {
     vse_tf_post_image <(printf '%s' "$_VSE_TF_NO_EDIT") "$1"
 }
