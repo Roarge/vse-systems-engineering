@@ -440,11 +440,17 @@ def _acceptance(shape: StoryShape, statement: Statement) -> None:
         if words[0] == "doc":
             shape.prose.append(inner.line)
         elif (words[0] == "requirement" and len(words) > 1
-              and kinds[1] == "name" and words[1] != "def"):
-            criterion = Criterion(words[1], inner.line)
-            if len(words) > 2 and words[2] == ":":
+              and words[1] != "def"):
+            # The name may follow a short name, as in
+            # `requirement <'AC1'> firstReading { ... }`.
+            name = _declared_name(words, kinds)
+            if name < 0:
+                continue
+            criterion = Criterion(words[name], inner.line)
+            if name + 1 < len(words) and words[name + 1] == ":":
                 criterion.form = "typed"
-                criterion.type_name = words[3] if len(words) > 3 else ""
+                criterion.type_name = (words[name + 2]
+                                       if name + 2 < len(words) else "")
             shape.criteria.append(criterion)
 
 

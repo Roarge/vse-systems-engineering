@@ -155,7 +155,10 @@ _RE_STORY = re.compile(
 _RE_DERIVATION_META = re.compile(
     r"^#derivation\s+connection\s*(?:<[^>]*>\s*)?([A-Za-z_][A-Za-z0-9_]*)?"
 )
-_RE_SUBREQ = re.compile(r"\brequirement\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]*\])?\s*\{")
+_RE_SUBREQ = re.compile(
+    r"\brequirement\s+(?:<[^>]*>\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*"
+    r"(?:\[[^\]]*\])?\s*\{"
+)
 _RE_STORYMETA = re.compile(r"@StoryMeta\s*\{([^}]*)\}")
 _RE_STORYMETA_DOC = re.compile(r"StoryMeta:\s*([^.]*)")
 _RE_CASE = re.compile(

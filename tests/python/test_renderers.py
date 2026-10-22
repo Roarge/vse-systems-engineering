@@ -113,6 +113,28 @@ class SplitTargetTests(unittest.TestCase):
         ])
 
 
+class CriterionTests(unittest.TestCase):
+    def test_criterion_with_a_short_name_is_read(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = write(root, "model/stories/stakeholder/stories.sysml", (
+                "package Stories {\n"
+                "    requirement US_1_X : UserStory {\n"
+                "        requirement :>> acceptance {\n"
+                "            requirement <'AC1'> firstReading {\n"
+                "                doc /* The first reading is shown. */\n"
+                "            }\n"
+                "        }\n"
+                "    }\n"
+                "}\n"))
+            model = sysml_model.Model(project_root=Path(root),
+                                      model_root="model")
+            sysml_model.parse_file(Path(root), path, model)
+        self.assertEqual(
+            [(acceptance.label, acceptance.doc.text)
+             for acceptance in model.stories[0].acceptances],
+            [("firstReading", "The first reading is shown.")])
+
+
 STORY_DIR = "model/core/stories/stakeholder/"
 
 STORY = """\

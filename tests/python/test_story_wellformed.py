@@ -150,6 +150,8 @@ class StorySideTests(unittest.TestCase):
         self.assertEqual(lint("S4"), [(SYSML, 17, "S4")])
 
     def test_S5_tag_without_criterion(self):
+        # The criterion of US_153 carries a short name, <'AC1'>, before
+        # its name, and its tag still finds it.
         self.assertEqual(lint("S5"), [
             (STK + "US_151_ExtraTag.feature", 14, "S5"),
         ])
@@ -165,9 +167,11 @@ class StorySideTests(unittest.TestCase):
         ])
 
     def test_S7_sibling_and_typed_criteria(self):
+        # US_174's typed criterion carries a short name before its name.
         self.assertEqual(lint("S7"), [
             (SYSML, 13, "S7"),
             (SYSML, 28, "S7"),
+            (SYSML, 60, "S7"),
         ])
 
     def test_S8_story_ordering(self):
