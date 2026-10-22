@@ -526,6 +526,42 @@ exec "$real" "$@"
 EOF
 }
 
+# tc_stub_closed_devfd_jq: jq under the stock bash 3.2 of macOS. A
+# process substitution, <(...), reaches a command as a /dev/fd path.
+# When a command that used another process substitution finishes,
+# bash 3.2 closes every such descriptor still open, so a path handed
+# on earlier in the same function names a closed descriptor and jq
+# cannot open it. jq reports "Could not open /dev/fd/N: Bad file
+# descriptor", after --slurpfile or --rawfile behind its "Bad JSON"
+# prefix, and exits 2. The stub refuses every /dev/fd path argument
+# that way, whether or not its descriptor is open, and passes every
+# other call to the real jq.
+tc_stub_closed_devfd_jq() {
+    _tc_stub_wrap jq <<'EOF'
+option=""
+name=""
+for arg in "$@"; do
+    case "$arg" in
+        /dev/fd/*)
+            case "$option" in
+                --slurpfile|--rawfile)
+                    printf 'jq: Bad JSON in %s %s %s: Could not open %s: Bad file descriptor\n' \
+                        "$option" "$name" "$arg" "$arg" >&2
+                    ;;
+                *)
+                    printf 'jq: error: Could not open file %s: Bad file descriptor\n' "$arg" >&2
+                    ;;
+            esac
+            exit 2
+            ;;
+    esac
+    option="$name"
+    name="$arg"
+done
+exec "$real" "$@"
+EOF
+}
+
 tc_pilot_home() {
     printf '%s\n' "${FAKEHOME}/.local/share/sysml-pilot"
 }

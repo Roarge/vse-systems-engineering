@@ -351,6 +351,36 @@ second"
     tc_reset_stubs
 }
 
+# The jq stub refuses every /dev/fd path, open or not, the way jq on
+# macOS refuses one whose descriptor bash 3.2 has already closed. The
+# sh -c and jq programs are expanded by the shell and jq they reach.
+# shellcheck disable=SC2016
+case_closed_devfd_jq_stub() {
+    local file
+    file="$(tc_mktemp_d)/payload.json"
+    printf '{"a": 1}\n' > "$file"
+    tc_stub_closed_devfd_jq
+    tc_env
+    tc_run_in "$REPO" sh -c 'jq -n --slurpfile payload /dev/fd/3 "\$payload[0].a" 3< "$1"' sh "$file"
+    tc_assert_rc 2 "closed /dev/fd jq stub: a /dev/fd path after --slurpfile exits 2"
+    tc_assert_line "jq: Bad JSON in --slurpfile payload /dev/fd/3: Could not open /dev/fd/3: Bad file descriptor" "$ERR" \
+        "closed /dev/fd jq stub: the refusal is the message jq gives for a closed descriptor"
+    tc_assert_empty "$OUT" "closed /dev/fd jq stub: a refused call prints nothing on stdout"
+    tc_run_in "$REPO" sh -c 'jq .a /dev/fd/3 3< "$1"' sh "$file"
+    tc_assert_rc 2 "closed /dev/fd jq stub: a /dev/fd input file exits 2"
+    tc_assert_line "jq: error: Could not open file /dev/fd/3: Bad file descriptor" "$ERR" \
+        "closed /dev/fd jq stub: an input file is refused with jq's message"
+    tc_run_in "$REPO" bash -c 'jq -n --slurpfile payload <(cat "$1") "\$payload[0].a"' bash "$file"  # portability: ok the stub must refuse a process substitution
+    tc_assert_rc 2 "closed /dev/fd jq stub: a process substitution is refused"
+
+    tc_run_in "$REPO" jq -n --slurpfile payload "$file" '$payload[0].a'
+    tc_assert_rc 0 "closed /dev/fd jq stub: a regular file runs the real jq"
+    tc_assert_eq "1" "$OUT" "closed /dev/fd jq stub: the real jq reads the regular file"
+    tc_run_in "$REPO" sh -c 'jq .a < "$1"' sh "$file"
+    tc_assert_eq "1" "$OUT" "closed /dev/fd jq stub: input on stdin runs the real jq"
+    tc_reset_stubs
+}
+
 # ------------------------------------------------------ CRLF fixtures
 
 # tc_crlf ends every line in a carriage return and a line feed (CR LF,
@@ -535,6 +565,7 @@ case_scratch_root_needs_mktemp
 case_bsd_grep_stub
 case_bsd_date_stub
 case_bwk_awk_stub
+case_closed_devfd_jq_stub
 case_crlf_helper
 case_config_two_gates
 case_config_legacy_override
