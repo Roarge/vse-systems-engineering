@@ -455,3 +455,40 @@ jobs:
             echo "::error::tests/hooks/validate-demo.sh found OpenSysML findings in the demo model or the model templates, or OpenSysML is unavailable"
             exit 1
           fi
+
+  # The platform-dependent checks on macOS, in parallel with validate.
+  # A macOS user's hooks run under the stock /bin/bash 3.2 and the BSD
+  # tools, so those are the ones under test here. The job runs the
+  # Makefile target, so the Makefile and this job stay in parity by
+  # construction. The Linux-only steps (apt, shellcheck, the Claude
+  # Code CLI, OpenSysML with its sha256sum check, and the test-first
+  # check) stay in the validate job.
+  portable:
+    name: Portability (macOS, stock bash 3.2 and BSD tools)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Put the stock macOS tools first on PATH
+        run: |
+          # The runner image puts Homebrew first on PATH, which may hold
+          # a bash 5 and GNU tools, so the stock tools come first here.
+          # Each line written to GITHUB_PATH is prepended, so /bin ends up first.
+          echo "/usr/bin" >> "$GITHUB_PATH"
+          echo "/bin" >> "$GITHUB_PATH"
+      - name: Show the tools under test
+        run: |
+          # jq is not installed, because macOS 15 and later ship
+          # /usr/bin/jq, which is the jq the sandboxed hooks see.
+          # python3 is the stock /usr/bin/python3.
+          for tool in bash grep sed awk date env python3 jq git make; do printf '%s: %s\n' "$tool" "$(command -v "$tool" || echo missing)"; done
+          [ "$(bash -c 'echo ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}')" = 3.2 ] || { echo "::error::bash is not the stock /bin/bash 3.2"; exit 1; }
+          grep --version | grep -q BSD || { echo "::error::grep is not BSD grep"; exit 1; }
+          [ -x /usr/bin/jq ] || { echo "::error::/usr/bin/jq is missing from this image"; exit 1; }
+          /usr/bin/python3 --version
+          make --version | head -n 1
+          git --version
+      - name: Run the platform-dependent checks
+        run: make -k test-portable

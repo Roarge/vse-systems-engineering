@@ -4,6 +4,10 @@
 #
 # Kept in parity with .github/workflows/plugin-ci.yml. A check added
 # here must be added there, and the reverse.
+#
+# 'make test-portable' runs the platform-dependent checks. The macOS CI
+# job (portable) runs it under the stock /bin/bash 3.2 and the BSD
+# tools (the grep, sed, awk and date that macOS ships).
 
 # Claude Code CLI version pinned by the CI workflow. Kept here so a
 # contributor can see which CLI the CI result came from.
@@ -12,7 +16,8 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-templates check-routing \
         check-mirrors check-test-first check-toolchain test-python test-bdd \
-        test-hooks check-demo-generated check-demo-lint validate-demo
+        test-hooks check-demo-generated check-demo-lint validate-demo \
+        test-portable test-hooks-each
 
 all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated check-demo-lint validate-demo
 	@echo "All checks passed."
@@ -402,3 +407,24 @@ validate-demo:
 	 else \
 	   bash tests/hooks/validate-demo.sh; \
 	 fi
+
+# The platform-dependent checks, which the portable job of the CI
+# workflow runs on macOS with 'make -k test-portable'. Each check also
+# runs under all (the hook test files through test-hooks), so all is
+# unchanged. The checks that need Linux (apt, shellcheck, the Claude
+# Code CLI, OpenSysML and the test-first range) stay in the validate
+# job. Under make -k (keep going), a failing prerequisite stops the
+# recipe of the target that lists it, although make still builds the
+# other prerequisites. So the hook test files run under a prerequisite
+# of their own, test-hooks-each, listed last, and a failing check
+# cannot stop them from running.
+test-portable: check-refs check-templates check-toolchain test-python test-bdd check-demo-generated check-demo-lint test-hooks-each
+	@echo "The platform-dependent checks passed."
+
+# Every tests/hooks/test-*.sh file runs, and each failing file is named,
+# so one macOS run lists every platform difference. The target fails at
+# the end when any file failed. test-hooks stops at the first failing
+# file instead.
+test-hooks-each:
+	@echo "Testing every hook script file..."
+	@rc=0; for t in tests/hooks/test-*.sh; do bash "$$t" || { echo "FAILED: $$t"; rc=1; }; done; exit $$rc
