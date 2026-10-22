@@ -35,8 +35,8 @@ Rule sets
   for every directory that holds a named file or that a named directory
   search finds. This is the `precommit_gherkin` gate. Section 11.2.1
   pairs stories with feature files in stories directories, so the story
-  findings are reported only in a directory that lies under one named
-  `stories`. A story declared elsewhere is not checked, and a feature
+  findings are reported only for a directory named `stories` or one
+  inside it. A story declared elsewhere is not checked, and a feature
   file beside it draws F10.
 * `--only syntax`: F1, F2, F7, F8 and F9 for the `.feature` files named
   or found, with no story context.
