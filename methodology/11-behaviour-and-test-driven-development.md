@@ -568,9 +568,13 @@ adds its declaration, alters the text of its block, or adds, changes,
 renames or deletes its feature file. The comparison is the one the
 in-session gate makes (§11.9.3), between the last commit and the staged
 set, or between the start and the end of the range (the merge base, for
-a pull request). A story file the change renames is compared with the
+a pull request). A story file the change renames within its stories
+directory, or moves with the whole directory, is compared with the
 story file it was renamed from, so renaming a register or a stories
-directory touches none of its stories. Deleting a story touches
+directory touches none of its stories. A story file moved on its own to
+another directory leaves its feature files behind, so its stories count
+as touched, and so do the stories of a template (a file whose name
+begins with `_`) renamed to a working name. Deleting a story touches
 nothing. Stories in the same stories directories that the change leaves
 alone and that still need migrating (S1, S3 or S9) are named in one
 note and do not block, and `/vse-audit` lists them (§11.3.1). For a tag

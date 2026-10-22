@@ -252,9 +252,15 @@ blocks with the scanner of `lib/test-first.sh`, the one the
 commit time and in session. The comparison runs between `HEAD` and the
 staged set, or between the start and the end of the range, where the
 start of `<base>...<head>` is the merge base. A story file the change
-renames, as git detects renames, is compared with the story file it was
-renamed from, so renaming a register or a stories directory touches
-none of its stories. Deleting a story touches nothing. When the change
+renames, as git detects renames, within its stories directory or with
+the whole directory, is compared with the story file it was renamed
+from, so renaming a register or a stories directory touches none of
+its stories. The old directory counts as moved whole when, after the
+change, it holds no story or feature file other than a template (a
+file whose name begins with `_`). A story file moved on its own to
+another directory leaves its feature files behind, so its stories
+count as touched, and the stories of a template renamed to a working
+name count as new. Deleting a story touches nothing. When the change
 deletes a feature file, the hook passes the story files of that
 directory that declare its story, so that S1 is reported, and an S9
 elsewhere in such a file is reported with it. Stories in the same
