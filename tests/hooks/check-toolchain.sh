@@ -564,6 +564,29 @@ tc_assert_not_grep "engineering/build/x.sysml" "$(cat "$STAGED_ARGS")" \
 tc_env
 tc_reset_stubs
 
+# The validator reads the widened context, but only the diagnostics on
+# the staged files are reported. The staged list is one name per line,
+# and BWK awk (macOS) refuses a newline in an awk -v value, so the list
+# reaches awk through the environment. The case runs with the awk of the
+# machine and again with the BWK awk stub.
+cat > "${TRANSCRIPTS}/osml-two-files.txt" <<'EOF'
+f.sysml:2:5: error: unresolved reference: NoSuchType
+engineering/model/g.sysml:2:5: error: unresolved reference: NoSuchPart
+EOF
+for STAGED_AWK in "machine awk" "BWK awk"; do
+    tc_stub_sysml "sysml v0.6.0"
+    if [ "$STAGED_AWK" = "BWK awk" ]; then
+        tc_stub_bwk_awk
+    fi
+    tc_env "SYSML_TRANSCRIPT=${TRANSCRIPTS}/osml-two-files.txt" SYSML_RC=1
+    tc_run_lib_fn vse_tc_run_staged f.sysml
+    tc_assert_rc 1 "staged filter, ${STAGED_AWK}: a finding on the staged file stops the run"
+    tc_assert_eq "f.sysml:2:5: error: unresolved reference: NoSuchType" "$OUT" \
+        "staged filter, ${STAGED_AWK}: only the staged file's diagnostic is kept"
+    tc_env
+    tc_reset_stubs
+done
+
 # --------------------------------------------------- 12. real tools
 
 # The three sections below run the installed toolchains. Each is

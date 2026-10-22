@@ -501,8 +501,11 @@ _vse_tc_run_impl() {
             vse_tc_validate "$tool" "$@" > "$capture" || rc=$?
             out="$(cat "$capture")"
             if [ "${#staged[@]}" -gt 0 ] && [ "$rc" -eq 1 ]; then
-                out="$(printf '%s\n' "$out" | awk -v keep="${VSE_TC_STAGED_ONLY}" '
-                    BEGIN { n = split(keep, k, "\n"); for (i = 1; i <= n; i++) if (k[i] != "") want[k[i]] = 1 }
+                # The list holds newlines, which BWK awk (macOS) refuses
+                # in an awk -v value, so it reaches awk through the
+                # environment.
+                out="$(printf '%s\n' "$out" | VSE_TC_KEEP="${VSE_TC_STAGED_ONLY}" awk '
+                    BEGIN { n = split(ENVIRON["VSE_TC_KEEP"], k, "\n"); for (i = 1; i <= n; i++) if (k[i] != "") want[k[i]] = 1 }
                     { p = $0; sub(/:[0-9]+:[0-9]+: .*$/, "", p); if (p in want) print }
                 ')"
                 [ -n "$out" ] || rc=0
