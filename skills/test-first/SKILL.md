@@ -78,7 +78,7 @@ Each key is one row of this table, which mirrors `vse_tf_detect` in `hooks/lib/t
 | Key | Evidence | Tooling it suggests |
 |---|---|---|
 | `pytest` | `pytest.ini`, `conftest.py`, a `[tool.pytest` section in `pyproject.toml`, `[tool:pytest]` in `setup.cfg`, `[pytest]` in `tox.ini` | pytest |
-| `npm-test` | A `test` script in `package.json`, other than npm's "no test specified" placeholder | npm test |
+| `npm-test` | A `test` script in `package.json`, other than an empty script or npm's "no test specified" placeholder | npm test |
 | `jest` | `jest.config.*`, or a `jest` key in `package.json` | Jest |
 | `vitest` | `vitest.config.*` | Vitest |
 | `cargo` | `Cargo.toml` | cargo test |
