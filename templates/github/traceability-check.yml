@@ -19,8 +19,10 @@
 #     continue-on-error toggle. The Gherkin and test-first gates block
 #     at every profile until a recorded override lowers one (§11.9).
 #     For a pull request or a push the story gates check the stories
-#     the change touches, and for a tag push they check every story, so
-#     a release tag needs every story migrated (§11.9.2).
+#     the change touches. For a tag push, and for a push whose previous
+#     tip the checkout cannot read (one that creates a branch, for
+#     example), they check every story, so a release tag needs every
+#     story migrated (§11.9.2).
 #   - Model validation and the Contract 3 freshness check block as
 #     written, which is the `full` profile setting. A `light` or
 #     `standard` install makes both advisory by uncommenting the
@@ -202,10 +204,10 @@ jobs:
         # checks Contract 2 per criterion as finding S8), test before
         # code, and traceability integrity. The two story gates check
         # the stories the range touches, and every story with all
-        # (§11.9.2). It skips its SysML lint in
-        # range mode, because the validation step above covers the
-        # model. Every gate reads its disposition from .iso-config.yaml,
-        # so this step has no continue-on-error toggle at any profile.
+        # (§11.9.2). It skips its SysML lint in range mode, because the
+        # validation step above covers the model. Every gate reads its
+        # disposition from .iso-config.yaml, so this step has no
+        # continue-on-error toggle at any profile.
         env:
           CI: true
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
