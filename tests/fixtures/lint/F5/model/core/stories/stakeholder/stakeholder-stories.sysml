@@ -41,4 +41,20 @@ package FixtureF5 {
             }
         }
     }
+
+    requirement US_243_MisplacedTags : UserStory {
+        @StoryMeta { points = 3; priority = Priority::high; status = StoryStatus::backlog; }
+
+        subject :>> system : ExampleSystem;
+        stakeholder :>> role : Operator;
+
+        attribute :>> capability = "see the first reading";
+        attribute :>> benefit    = "the device is known to work";
+
+        requirement :>> acceptance {
+            requirement firstReading {
+                doc /* Given the device is switched on, when it takes a reading, then the reading is shown. */
+            }
+        }
+    }
 }

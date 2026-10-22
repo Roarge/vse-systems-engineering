@@ -529,7 +529,7 @@ disposition, so a broken install cannot pass quietly.
 | F2 | A `# language:` header other than `en` |
 | F3 | The Feature does not carry exactly one tag, or the tag is not a valid story identifier |
 | F4 | The file name differs from the story identifier in the tag |
-| F5 | A scenario's `@AC_` tag is missing, repeated, or not lowerCamelCase |
+| F5 | A scenario's `@AC_` tag is missing, repeated, or not lowerCamelCase, or an `@AC_` tag sits on a Feature, Rule or Examples block, none of which states a criterion of its own |
 | F6 | The narrative lines are missing or out of order |
 | F7 | A Background is repeated, placed after a scenario, or holds a step other than Given |
 | F8 | The steps break the order `Given* When+ Then+` |

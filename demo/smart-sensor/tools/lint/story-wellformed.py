@@ -875,8 +875,12 @@ def _description_lines(entry: FeatureFile) -> List[int]:
     return numbers
 
 
+def _criterion_tags_of(tags: List["gherkin.Tag"]) -> List["gherkin.Tag"]:
+    return [tag for tag in tags if tag.name.startswith("@AC_")]
+
+
 def _criterion_tags(scenario) -> List["gherkin.Tag"]:
-    return [tag for tag in scenario.tags if tag.name.startswith("@AC_")]
+    return _criterion_tags_of(scenario.tags)
 
 
 def _parts(full: Path, project_root: Path) -> Tuple[str, ...]:
@@ -986,9 +990,32 @@ def _check_feature(entry: FeatureFile, project_root: Path) -> List[Finding]:
                     "§11.2.3"))
             else:
                 seen[name] = tag.line
+    findings.extend(_misplaced_criterion_tags(entry))
     if entry.narrative_order is not None:
         findings.append(entry.narrative_order)
     return findings
+
+
+def _misplaced_criterion_tags(entry: FeatureFile) -> List[Finding]:
+    """F5 for an @AC_ tag on the Feature, a Rule or an Examples block,
+    none of which states a criterion of its own (§11.2.4)."""
+    feature = entry.feature
+    scenario_target = "the scenario that states the criterion"
+    places = [(feature.tags, "the Feature", "A Feature", scenario_target)]
+    for rule in feature.rules:
+        places.append((rule.tags, "the Rule '{}'".format(rule.name),
+                       "A Rule", scenario_target))
+    for scenario in feature.all_scenarios():
+        for examples in scenario.examples:
+            places.append((examples.tags,
+                           "an Examples block of '{}'".format(scenario.name),
+                           "An Examples block", "its Scenario Outline"))
+    return [Finding(entry.display, tag.line, "F5",
+                    "{} is on {}. {} states no criterion of its own, so "
+                    "move the tag to {}".format(tag.name, where, kind, target),
+                    "§11.2.3, §11.2.4")
+            for tags, where, kind, target in places
+            for tag in _criterion_tags_of(tags)]
 
 
 def _words(text: str) -> str:

@@ -492,14 +492,36 @@ class FeatureSideTests(unittest.TestCase):
 
     def test_F5_criterion_tags(self):
         # Missing, repeated, not lowerCamelCase, and used twice. A @wip
-        # tag beside a criterion tag is allowed.
+        # tag beside a criterion tag is allowed. US_243 carries a
+        # criterion tag on its Feature (also F3, a second tag), its Rule
+        # and an Examples block, none of which states a criterion.
         feature = STK + "US_241_ScenarioTags.feature"
+        misplaced = STK + "US_243_MisplacedTags.feature"
         self.assertEqual(lint("F5"), [
             (feature, 14, "F5"),
             (feature, 19, "F5"),
             (feature, 25, "F5"),
             (feature, 31, "F5"),
+            (misplaced, 2, "F5"),
+            (misplaced, 3, "F3"),
+            (misplaced, 8, "F5"),
+            (misplaced, 17, "F5"),
         ])
+
+    def test_F5_names_where_the_misplaced_tag_sits(self):
+        findings = story_wellformed.lint_paths(
+            ["model"], "gherkin", Path(FIXTURES) / "F5")
+        messages = [finding.message for finding in findings
+                    if finding.path.endswith("US_243_MisplacedTags.feature")
+                    and finding.code == "F5"]
+        self.assertEqual(len(messages), 3, messages)
+        for message, tag, owner in zip(
+                messages, ("@AC_onFeature", "@AC_onRule", "@AC_onExamples"),
+                ("A Feature", "A Rule", "An Examples block")):
+            with self.subTest(tag=tag):
+                self.assertIn(tag, message)
+                self.assertIn("{} states no criterion of its own".format(
+                    owner), message)
 
     def test_F6_narrative_order(self):
         # No narrative, the lines out of order, and other text first. The
