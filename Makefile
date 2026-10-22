@@ -336,14 +336,15 @@ test-python:
 	@python3 -m unittest discover -s tests/python -t . -v
 
 # The plugin's own Gherkin scenarios under tests/features/, run by the
-# standard-library runner in tests/bdd/. A scenario tagged @wip is
-# skipped. A directory that holds no .feature file passes with a zero
-# summary. The story lint then checks the same files in syntax mode
-# (F1, F2, F7, F8 and F9), because they describe the plugin rather than
-# a story and carry no story tag.
+# standard-library runner in tests/bdd/. A scenario still tagged @wip
+# fails the run (--fail-on-wip), so no work in progress reaches a
+# commit or a release. A directory that holds no .feature file passes
+# with a zero summary. The story lint then checks the same files in
+# syntax mode (F1, F2, F7, F8 and F9), because they describe the plugin
+# rather than a story and carry no story tag.
 test-bdd:
 	@echo "Running the plugin's Gherkin scenarios..."
-	@python3 tests/bdd/run.py tests/features
+	@python3 tests/bdd/run.py --fail-on-wip tests/features
 	@python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
 
 # Every tests/hooks/test-*.sh file runs, found by glob, so a new hook

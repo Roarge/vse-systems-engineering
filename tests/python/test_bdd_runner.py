@@ -170,6 +170,50 @@ class RunnerTests(unittest.TestCase):
         ])
         self.assertEqual(code, 0, out + err)
 
+    def test_wip_fails_the_run_with_fail_on_wip(self):
+        # A release run refuses work in progress. Each @wip scenario,
+        # tagged directly or through its Rule or Feature, fails without
+        # running, named with its file and line. The rest run as usual.
+        wip = feature("wip.feature")
+        wip_feature = feature("wip_feature.feature")
+        code, out, err = self.run_bdd("--fail-on-wip", wip, wip_feature)
+        lines = out.splitlines()
+        reason = "still tagged @wip, which --fail-on-wip refuses"
+        self.assertEqual(lines, [
+            "PASS {}:3 A finished scenario".format(wip),
+            "FAIL {}:9 An unfinished scenario".format(wip),
+            "  {}:9: {}".format(wip, reason),
+            "FAIL {}:17 A scenario inside the unfinished rule".format(wip),
+            "  {}:17: {}".format(wip, reason),
+            "FAIL {}:4 A scenario inside the unfinished feature"
+            .format(wip_feature),
+            "  {}:4: {}".format(wip_feature, reason),
+            summary(1, 3, 0, 0),
+        ])
+        self.assertEqual(self.logged(), ["finished"])
+        self.assertEqual(code, 1, out + err)
+
+    def test_fail_on_wip_passes_a_run_with_no_wip(self):
+        path = feature("passing.feature")
+        code, out, err = self.run_bdd("--fail-on-wip", path)
+        self.assertEqual(out.splitlines(), [
+            "PASS {}:4 Every step passes".format(path),
+            summary(1, 0, 0, 0),
+        ])
+        self.assertEqual(self.logged(), ["passing ran"])
+        self.assertEqual(code, 0, out + err)
+
+    def test_fail_on_wip_with_include_wip_is_a_usage_error(self):
+        # The two flags ask for opposite things, so the run refuses
+        # the pair rather than letting one of them win in silence.
+        code, out, err = self.run_bdd("--fail-on-wip", "--include-wip",
+                                      feature("wip.feature"))
+        self.assertIn("not allowed with argument", err)
+        self.assertIn("--include-wip", err)
+        self.assertEqual(out, "")
+        self.assertEqual(self.logged(), [])
+        self.assertEqual(code, 2, out + err)
+
     def test_outline_runs_each_row(self):
         path = feature("outline.feature")
         code, out, err = self.run_bdd(path)

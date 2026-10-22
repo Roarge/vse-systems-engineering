@@ -370,12 +370,13 @@ jobs:
       - name: Run the plugin's Gherkin scenarios
         run: |
           # The standard-library runner in tests/bdd/. A scenario
-          # tagged @wip is skipped. A directory that holds no .feature
-          # file passes with a zero summary. The story lint then checks
-          # the same files in syntax mode (F1, F2, F7, F8 and F9),
-          # because they describe the plugin rather than a story and
-          # carry no story tag.
-          python3 tests/bdd/run.py tests/features
+          # still tagged @wip fails the run (--fail-on-wip), so no work
+          # in progress reaches a commit or a release. A directory that
+          # holds no .feature file passes with a zero summary. The story
+          # lint then checks the same files in syntax mode (F1, F2, F7,
+          # F8 and F9), because they describe the plugin rather than a
+          # story and carry no story tag.
+          python3 tests/bdd/run.py --fail-on-wip tests/features
           python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
 
       - name: Test the hook scripts

@@ -12,7 +12,8 @@ describes.
 
 Usage:
 
-    python3 tests/bdd/run.py [--steps DIR] [--include-wip] PATH...
+    python3 tests/bdd/run.py [--steps DIR]
+                             [--include-wip | --fail-on-wip] PATH...
 
 Each PATH is a `.feature` file or a directory, which is searched for
 `.feature` files, subdirectories included. The steps directory defaults
@@ -22,9 +23,12 @@ Every scenario runs in a fresh context. A Scenario Outline runs once per
 Examples row, with the row's values filled in. The Feature's Background
 steps run first, then those of the scenario's Rule, then the scenario's
 own. A scenario tagged `@wip` (work in progress), directly or through
-its Rule or Feature, is skipped unless `--include-wip` is given. A
-`@wip` tag on an Examples block is not supported: the runner ignores
-it, so the rows of that block still run.
+its Rule or Feature, is skipped unless `--include-wip` is given. With
+`--fail-on-wip` such a scenario fails without running instead, with a
+detail line naming its file and line, so a run that must carry no work
+in progress refuses it. The two flags exclude each other. A `@wip` tag
+on an Examples block is not supported: the runner ignores it, so the
+rows of that block still run.
 
 A step stops its scenario when it raises an exception or calls
 sys.exit() (failed), when no definition matches it (undefined), or when
@@ -82,6 +86,7 @@ from steps import (  # noqa: E402
 )
 
 WIP_TAG = "@wip"
+WIP_REFUSED = "still tagged @wip, which --fail-on-wip refuses"
 
 
 def feature_files(paths: List[str]) -> List[str]:
@@ -201,8 +206,12 @@ def main(argv: Optional[List[str]] = None) -> int:
                         default=os.path.join(HERE, "steps"),
                         help="directory of step modules (default: "
                              "tests/bdd/steps)")
-    parser.add_argument("--include-wip", action="store_true",
-                        help="also run scenarios tagged @wip")
+    wip_choice = parser.add_mutually_exclusive_group()
+    wip_choice.add_argument("--include-wip", action="store_true",
+                            help="also run scenarios tagged @wip")
+    wip_choice.add_argument("--fail-on-wip", action="store_true",
+                            help="fail each scenario tagged @wip "
+                                 "instead of skipping it")
     parser.add_argument("paths", nargs="+", metavar="PATH",
                         help="a .feature file, or a directory to search")
     args = parser.parse_args(argv)
@@ -237,7 +246,10 @@ def main(argv: Optional[List[str]] = None) -> int:
               "SKIP": 0}  # type: Dict[str, int]
     for path, feature in features:
         for name, line, steps, wip in scenario_runs(feature):
-            if wip and not args.include_wip:
+            if wip and args.fail_on_wip:
+                status, details = "FAIL", ["  {}:{}: {}".format(
+                    path, line, WIP_REFUSED)]
+            elif wip and not args.include_wip:
                 status, details = "SKIP", []
             else:
                 status, details = run_scenario(path, steps)

@@ -22,7 +22,7 @@ make test-bdd
 which runs the same commands as CI:
 
 ```sh
-python3 tests/bdd/run.py tests/features
+python3 tests/bdd/run.py --fail-on-wip tests/features
 python3 templates/tools/lint/story-wellformed.py --only syntax tests/features
 ```
 
@@ -30,9 +30,9 @@ The second command is the story lint in syntax mode. It checks that
 each file parses, uses English, keeps any Background to Given steps
 before the first scenario, orders steps Given, When, Then, and gives
 every Scenario Outline complete Examples (findings F1, F2, F7, F8 and
-F9 of methodology §11.9.1). It runs even on scenarios tagged `@wip`,
-which the runner skips. These files describe the plugin rather than a
-user story, so the story checks do not apply to them.
+F9 of methodology §11.9.1). It runs on scenarios tagged `@wip` as on
+any other. These files describe the plugin rather than a user story, so
+the story checks do not apply to them.
 
 The runner, `tests/bdd/run.py`, needs the Python standard library only.
 It prints one line per scenario, marked `PASS`, `FAIL`, `UNDEFINED` or
@@ -72,19 +72,26 @@ step module and describes the shared context and the cleanup hook.
 ## The `@wip` tag
 
 `@wip` (work in progress) marks a scenario that is written ahead of the
-behaviour it describes. The runner skips a `@wip` scenario and reports it
-as `SKIP`, so the suite stays green while the behaviour is built. The tag
-may sit on a scenario, on a `Rule` or on the `Feature`, and it covers
-everything beneath it. A `@wip` tag on an `Examples` block is not
-supported. The runner ignores it, so the rows of that block still run.
+behaviour it describes. The tag may sit on a scenario, on a `Rule` or on
+the `Feature`, and it covers everything beneath it. A `@wip` tag on an
+`Examples` block is not supported. The runner ignores it, so the rows of
+that block still run.
 
-To see the work in progress fail, run:
+Run without a flag, the runner skips a `@wip` scenario and reports it as
+`SKIP`, which keeps a local run readable while the behaviour is built.
+`make test-bdd` and CI pass `--fail-on-wip`, which fails each `@wip`
+scenario instead, without running it, with a detail line naming its file
+and line. A `@wip` tag therefore never survives into a commit that
+passes `make all`, and never into a release.
+
+To see the work in progress fail on its own steps, run:
 
 ```sh
 python3 tests/bdd/run.py --include-wip tests/features
 ```
 
 A new scenario typically reports `UNDEFINED` at this point, because its
-steps have no definitions yet. The task that implements the behaviour
+steps have no definitions yet. The change that implements the behaviour
 removes the `@wip` tag and adds the step definitions in the same commit
-as the code that makes the scenario pass.
+as the code that makes the scenario pass. `--include-wip` and
+`--fail-on-wip` exclude each other.
