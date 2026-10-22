@@ -36,13 +36,40 @@ never opened, because reading it could block the lint for ever.
 | Option | Effect |
 |---|---|
 | `--only wellformed` | The §1.9 checks, codes W2, W3, W6, W9 and W10, for the stories in the `.sysml` files named or found. The `precommit_story_wellformed` gate runs this. A `.sysml` file that cannot be read is left to `--only gherkin`. |
-| `--only gherkin` | Findings S1 to S9 and F1 to F10 of §11.9.1, for every directory that holds a named file or that a directory search finds. The story findings (the S codes) are reported only for stories in a `stories/` directory. The `precommit_gherkin` gate runs this. |
+| `--only gherkin` | Findings S1 to S9 and F1 to F10 of §11.9.1. Every file of a directory that holds a named file, or that a directory search finds, is read, so each story is paired with its feature file. The story-side findings (S1 to S8) are reported for the stories of those directories. The findings about a file alone (F1 to F10, and S9 for a `.sysml` file) are reported for the files named or found, so naming one file does not report its neighbours. The S codes are reported only in a `stories/` directory. The `precommit_gherkin` gate runs this. |
 | `--only syntax` | F1, F2, F7, F8 and F9 for feature files on their own, with no story context. |
 | no `--only` | Both `wellformed` and `gherkin`. |
 | `--format json` | A JSON array of findings instead of text lines. |
+| `--stories ID,ID` | Reports the story-side findings (S1 to S8, and the W codes) for the named stories alone. It may be given more than once, and an empty list names no story. See "Checking some stories" below. |
 
 Each text line reads `<path>:<line>: <code> <message> (<section>)`. The
 message names the fix. Findings are sorted by path, line and code.
+
+## Checking some stories
+
+The commit gates check the stories a change touches, not every story
+beside them (methodology §11.9). The pre-commit hook works out which
+stories those are and passes them with `--stories`, together with the
+files the change adds or alters:
+
+```sh
+python3 tools/lint/story-wellformed.py --only gherkin \
+    --stories US_001_ReadTemperature \
+    model/core/stories/stakeholder/stakeholder-stories.sysml
+```
+
+- A named story is looked for in every `.sysml` file of the directories
+  read, so naming only its feature file is enough to check it.
+- The lint still reads the whole model root, so a case anywhere in it
+  still reaches a criterion for S8.
+- S2 (two feature files for one story) belongs to the story, so it
+  follows the story.
+- The findings about a file alone are not affected. F1 to F10 apply to
+  the feature files named or found, and S9 to the `.sysml` files named
+  or found, because a declaration the lint cannot read names no story.
+
+Without `--stories`, every story in the directories read is checked, as
+the hook does for a run over every tracked file.
 
 | Exit status | Meaning |
 |---|---|

@@ -13,7 +13,7 @@ Usage, from the engineering root (the directory that holds
 `.iso-config.yaml`):
 
     python3 tools/lint/story-wellformed.py [--only wellformed|gherkin|syntax]
-        [--format text|json] PATH...
+        [--format text|json] [--stories ID,ID] PATH...
 
 Each PATH is a `.sysml` file, a `.feature` file or a directory, which is
 searched with its subdirectories. Files whose names start with `_` are
@@ -31,16 +31,34 @@ Rule sets
   `precommit_story_wellformed` gate. W3 checks that the role is typed,
   without resolving the type to a part definition, because the type may
   come from an imported library.
-* `--only gherkin`: findings S1 to S9 and F1 to F10 of section 11.9.1,
-  for every directory that holds a named file or that a named directory
-  search finds. This is the `precommit_gherkin` gate. Section 11.2.1
-  pairs stories with feature files in stories directories, so the story
-  findings are reported only for a directory named `stories` or one
-  inside it. A story declared elsewhere is not checked, and a feature
-  file beside it draws F10.
+* `--only gherkin`: findings S1 to S9 and F1 to F10 of section 11.9.1.
+  This is the `precommit_gherkin` gate. Every file of a directory that
+  holds a named file, or that a named directory search finds, is read,
+  so that each story is paired with its feature file. The story-side
+  findings (S1 to S8) are reported for the stories of those
+  directories. The findings about a file alone (F1 to F10, and S9 for a
+  `.sysml` file) are reported for the files named or found, so naming
+  one file in a directory does not report its neighbours. Section
+  11.2.1 pairs stories with feature files in stories directories, so
+  the story findings, S9 among them, are reported only for a directory
+  named `stories` or one inside it. A story declared elsewhere is not
+  checked, and a feature file beside it draws F10.
 * `--only syntax`: F1, F2, F7, F8 and F9 for the `.feature` files named
   or found, with no story context.
 * No `--only`: wellformed and gherkin.
+
+`--stories ID,ID` restricts the story-side findings (S1 to S8, and the
+W codes) to the stories it names. It may be given more than once, and
+an empty list names no story. A named story is looked for in every
+`.sysml` file of the directories read, so naming its feature file is
+enough to check it. The lint still reads every path it is given, and
+the model root, so cases elsewhere still reach a criterion for S8. S2
+(two feature files for one story) follows the story. The findings
+about a file alone are not affected: F1 to F10 still apply to the
+feature files named or found, and S9 to the `.sysml` files named or
+found, because a declaration the lint cannot read names no story. The
+pre-commit hook passes the stories a change touches, with the files it
+changes, and names no stories for a run over every tracked file.
 
 A finding carries one disposition. A `.sysml` file that cannot be read,
 or is not UTF-8, is S9 under the gherkin rule set alone, and the
@@ -737,8 +755,10 @@ def read_storymeta(config: Path) -> Dict[str, List[str]]:
 # ---------------------------------------------------------------------------
 
 
-def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
-                      ) -> List[Finding]:
+def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]],
+                      stories: Optional[set] = None) -> List[Finding]:
+    """W2 to W10 for the stories of one file, or for those of them that
+    `stories` names when it is given."""
     findings = []  # type: List[Finding]
     path = entry.display
     required = storymeta.get("required_fields") or ["status"]
@@ -749,6 +769,8 @@ def _check_wellformed(entry: SysmlFile, storymeta: Dict[str, List[str]]
 
     for story in entry.scan.stories:
         sid = story.identifier
+        if stories is not None and sid not in stories:
+            continue
         shape = story.shape
         status = shape.status
 
@@ -1257,7 +1279,14 @@ def _check_story(story: StoryBlock, entry: SysmlFile, directory: str,
 
 
 def _check_directory(workspace: Workspace, full: Path, display: str,
-                     world: World) -> List[Finding]:
+                     world: World, scope: Scope,
+                     stories: Optional[set]) -> List[Finding]:
+    """The gherkin findings of one directory. Every file in it is read,
+    so that each story is paired with its feature file, but the
+    findings about a file alone (F1 to F10, and S9) are reported only
+    for a file in `scope`, one named or found by a directory search. The
+    story-side findings are reported for every story of the directory,
+    or for those that `stories` names when it is given."""
     findings = []  # type: List[Finding]
     sysml_entries = []  # type: List[SysmlFile]
     features = {}  # type: Dict[str, FeatureFile]
@@ -1268,14 +1297,18 @@ def _check_directory(workspace: Workspace, full: Path, display: str,
         else:
             entry = workspace.feature_file(file_full, file_display)
             features[file_full.name] = entry
-            findings.extend(_check_feature(entry, workspace.project_root))
+            if file_full.resolve() in scope.features:
+                findings.extend(_check_feature(entry,
+                                               workspace.project_root))
     # Stories are paired with their feature files in stories directories
     # alone (§11.2.1). A story declared elsewhere is not checked, and a
     # feature file beside it draws F10.
     if "stories" not in _parts(full, workspace.project_root):
         return findings
     for entry in sysml_entries:
-        for line, text in entry.scan.unreadable:
+        unreadable = (entry.scan.unreadable
+                      if entry.full.resolve() in scope.sysml else [])
+        for line, text in unreadable:
             findings.append(Finding(
                 entry.display, line, "S9",
                 "`{}` types or specialises UserStory in a form the story "
@@ -1283,8 +1316,9 @@ def _check_directory(workspace: Workspace, full: Path, display: str,
                 "it as `requirement <ID> : UserStory {{ ... }}`".format(text),
                 "§1.9 rule 1, §11.9.1"))
         for story in entry.scan.stories:
-            findings.extend(
-                _check_story(story, entry, display, features, world))
+            if stories is None or story.identifier in stories:
+                findings.extend(
+                    _check_story(story, entry, display, features, world))
     return findings
 
 
@@ -1311,12 +1345,16 @@ def _sorted_once(findings: List[Finding]) -> List[Finding]:
 
 
 def lint_paths(paths: List[str], only: Optional[str],
-               project_root: Path) -> List[Finding]:
+               project_root: Path,
+               stories: Optional[List[str]] = None) -> List[Finding]:
     """Findings for `paths`, sorted by path, line and code.
 
     Relative paths are taken from `project_root`, which is also where the
-    model root and `.iso-config.yaml` are looked for. Raise LintError for
-    a missing path, an unknown mode, or a missing gherkin.py or
+    model root and `.iso-config.yaml` are looked for. With `stories`
+    given, the story-side findings (S1 to S8, and W2 to W10) are
+    reported for the stories it names alone, an empty list naming none.
+    Raise LintError for a missing path, an unknown mode, a name in
+    `stories` that is not a story identifier, or a missing gherkin.py or
     sysml_model.py.
     """
     if IMPORT_ERROR is not None:
@@ -1324,6 +1362,14 @@ def lint_paths(paths: List[str], only: Optional[str],
     if only is not None and only not in MODES:
         raise LintError("unknown rule set {}, expected one of {}".format(
             only, ", ".join(MODES)))
+    named = None  # type: Optional[set]
+    if stories is not None:
+        for name in stories:
+            if not _RE_IDENTIFIER.fullmatch(name):
+                raise LintError(
+                    "--stories names '{}', which is not a story identifier "
+                    "(^[A-Za-z_][A-Za-z0-9_]*$)".format(name))
+        named = set(stories)
     project_root = Path(project_root)
     scope = _collect(paths, project_root)
     workspace = Workspace(project_root)
@@ -1336,26 +1382,39 @@ def lint_paths(paths: List[str], only: Optional[str],
             findings.extend(workspace.feature_file(full, display).findings)
         return sorted(findings, key=_sort_key)
 
+    # Every story file of the directories in scope, for the stories of a
+    # directory that a named feature file or story file brings in.
+    in_directories = [
+        (file_full, file_display)
+        for full, display in scope.directories.values()
+        for file_full, file_display in _directory_files(full, display)
+        if file_full.name.endswith(".sysml")]
+
     if only in (None, "wellformed"):
         storymeta = read_storymeta(project_root / CONFIG)
-        for full, display in scope.sysml.values():
+        # Without --stories the files named or found are checked. With
+        # it, a named story is looked for in every story file of the
+        # directories in scope, so naming its feature file is enough.
+        checked = (list(scope.sysml.values()) if named is None
+                   else in_directories)
+        for full, display in checked:
             findings.extend(_check_wellformed(
-                workspace.sysml_file(full, display), storymeta))
+                workspace.sysml_file(full, display), storymeta, named))
 
     if only in (None, "gherkin"):
-        in_directories = [
-            workspace.sysml_file(file_full, file_display)
-            for full, display in scope.directories.values()
-            for file_full, file_display in _directory_files(full, display)
-            if file_full.name.endswith(".sysml")]
-        world = _world(workspace, in_directories)
+        entries = [workspace.sysml_file(full, display)
+                   for full, display in in_directories]
+        world = _world(workspace, entries)
         for full, display in scope.directories.values():
-            findings.extend(_check_directory(workspace, full, display, world))
+            findings.extend(_check_directory(workspace, full, display, world,
+                                             scope, named))
         # A model file that cannot be read or decoded is S9, which is the
         # gherkin gate's finding alone, so that no finding carries two
-        # dispositions. The wellformed rule set skips such a file.
-        for entry in in_directories:
-            findings.extend(entry.findings)
+        # dispositions. The wellformed rule set skips such a file. Like
+        # every finding about a file alone, it is reported for a file
+        # named or found.
+        for full, display in scope.sysml.values():
+            findings.extend(workspace.sysml_file(full, display).findings)
     return _sorted_once(findings)
 
 
@@ -1389,13 +1448,22 @@ def main(argv: Optional[List[str]] = None) -> int:
                              "gherkin)")
     parser.add_argument("--format", choices=("text", "json"), default="text",
                         help="output format (default: text)")
+    parser.add_argument("--stories", action="append", metavar="ID,ID",
+                        help="report the story-side findings (S1 to S8, "
+                             "W2 to W10) for these stories alone, given "
+                             "as a comma-separated list, which may be "
+                             "empty, or more than once")
     parser.add_argument("paths", nargs="+", metavar="PATH",
                         help=".sysml file, .feature file or directory")
     args = parser.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="backslashreplace")
+    stories = None  # type: Optional[List[str]]
+    if args.stories is not None:
+        stories = [name.strip() for value in args.stories
+                   for name in value.split(",") if name.strip()]
     try:
-        findings = lint_paths(args.paths, args.only, Path.cwd())
+        findings = lint_paths(args.paths, args.only, Path.cwd(), stories)
     except (LintError, OSError) as error:
         return _environment_error(str(error))
     except Exception as error:  # A defect must not read as findings.

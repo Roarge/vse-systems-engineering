@@ -60,6 +60,13 @@ def lint(fixture, only="gherkin", paths=("model",)):
         list(paths), only, Path(FIXTURES) / fixture))
 
 
+def lint_stories(fixture, stories, only="gherkin", paths=("model",)):
+    """Lint a fixture project in process with the story-side findings
+    restricted to `stories`, as --stories does."""
+    return triples(story_wellformed.lint_paths(
+        list(paths), only, Path(FIXTURES) / fixture, stories=stories))
+
+
 def run_cli(args, cwd, lint=LINT):
     return subprocess.run(
         [sys.executable, lint] + list(args), cwd=cwd,
@@ -447,6 +454,101 @@ class StorySideTests(unittest.TestCase):
                          [12, 16, 20])
 
 
+class StoryScopeTests(unittest.TestCase):
+    """--stories restricts the story-side findings to the stories it
+    names, which is how the commit gate checks only the stories a change
+    touches. File-side findings (F1 to F10, and S9 for a .sysml file)
+    follow the files named or found, with or without the option."""
+
+    def test_story_side_findings_only_for_the_stories_named(self):
+        # Only US_403 of the register has no feature file.
+        self.assertEqual(lint_stories("register", ["US_403_Third"]),
+                         [(SYSML, 36, "S1")])
+        self.assertEqual(lint_stories("register", ["US_401_First"]), [])
+        self.assertEqual(lint_stories("register", []), [])
+
+    def test_S2_follows_the_story(self):
+        # The copy's F4 is a finding about the copy, so it stays. S2 is
+        # about US_121, so it is reported only when US_121 is named.
+        copy = (STK + "US_121_TwoFeaturesCopy.feature", 2, "F4")
+        self.assertEqual(lint_stories("S2", ["US_122_Clean"]), [copy])
+        self.assertEqual(lint_stories("S2", ["US_121_TwoFeatures"]),
+                         [copy, (SYSML, 4, "S2")])
+
+    def test_feature_findings_are_not_restricted(self):
+        # F3 for the three feature files, and no S1 for the two stories
+        # whose feature file carries no usable tag.
+        self.assertEqual(lint_stories("F3", []), [
+            (STK + "US_221_TwoTags.feature", 3, "F3"),
+            (STK + "US_222_NoTag.feature", 2, "F3"),
+            (STK + "US_223_InvalidTag.feature", 2, "F3"),
+        ])
+
+    def test_S8_still_reads_cases_outside_the_paths_named(self):
+        # Only one feature file is named. A case under
+        # verification-validation/ reaches US_183 by name, and no case
+        # reaches the criterion readingUnit of US_182.
+        self.assertEqual(lint_stories(
+            "S8", ["US_182_OneCriterionUncovered", "US_183_CoveredByName"],
+            paths=[STK + "US_183_CoveredByName.feature"]),
+            [(SYSML, 27, "S8")])
+
+    def test_S9_only_for_the_story_files_named_or_found(self):
+        # The story file is found by the directory search, so its
+        # unreadable declarations are reported whatever the stories
+        # named. Naming the feature file alone names no story file.
+        found = [(SYSML, 8, "S9"), (SYSML, 12, "S9"), (SYSML, 16, "S9")]
+        self.assertEqual(lint_stories("S9", []), found)
+        feature = [STK + "US_194_Clean.feature"]
+        self.assertEqual(lint_stories("S9", ["US_194_Clean"], paths=feature),
+                         [])
+        self.assertEqual(lint("S9", paths=feature), [])
+
+    def test_feature_findings_only_for_the_feature_files_named_or_found(self):
+        # A feature file beside the story file, but not named, draws no
+        # finding of its own. The stories of the directory are still
+        # paired with their feature files.
+        with ScratchCopy("register") as root:
+            with open(os.path.join(root, STK, "Orphan.feature"), "w",
+                      encoding="utf-8") as handle:
+                handle.write("Feature: Orphan\n"
+                             "  As an operator\n"
+                             "  I want to see nothing\n"
+                             "  So that nothing happens\n"
+                             "\n"
+                             "  @AC_nothing\n"
+                             "  Scenario: Nothing\n"
+                             "    Given nothing\n"
+                             "    When nothing is done\n"
+                             "    Then nothing happens\n")
+            named = triples(story_wellformed.lint_paths(
+                [SYSML], "gherkin", Path(root)))
+            searched = triples(story_wellformed.lint_paths(
+                [STK], "gherkin", Path(root)))
+        self.assertEqual(named, [(SYSML, 36, "S1")])
+        self.assertEqual(searched, [(STK + "Orphan.feature", 1, "F3"),
+                                    (SYSML, 36, "S1")])
+
+    def test_wellformed_findings_only_for_the_stories_named(self):
+        self.assertEqual(
+            lint_stories("W10", ["US_342_UnknownStatus"], "wellformed"),
+            [(SYSML, 15, "W10")])
+        self.assertEqual(lint_stories("W10", [], "wellformed"), [])
+
+    def test_wellformed_finds_a_named_story_through_its_feature_file(self):
+        # Naming only the story's feature file checks the story, which is
+        # declared in a story file of the same directory.
+        with ScratchCopy("W10") as root:
+            feature = os.path.join(STK, "US_342_UnknownStatus.feature")
+            with open(os.path.join(root, feature), "w",
+                      encoding="utf-8") as handle:
+                handle.write("@US_342_UnknownStatus\nFeature: Reading\n")
+            findings = triples(story_wellformed.lint_paths(
+                [feature], "wellformed", Path(root),
+                stories=["US_342_UnknownStatus"]))
+        self.assertEqual(findings, [(SYSML, 15, "W10")])
+
+
 class FeatureSideTests(unittest.TestCase):
     def test_F1_parse_error(self):
         self.assertEqual(lint("F1"), [
@@ -701,6 +803,29 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(run_cli(["--only", "everything", "model"],
                                  clean).returncode, 2)
         self.assertEqual(run_cli([], clean).returncode, 2)
+
+    def test_stories_option(self):
+        # A comma-separated list, given more than once, or empty, which
+        # names no story.
+        register = os.path.join(FIXTURES, "register")
+        named = run_cli(["--only", "gherkin", "--stories",
+                         "US_401_First,US_402_Second", "--stories",
+                         "US_404_Fourth", "model"], register)
+        self.assertEqual((named.returncode, named.stdout), (0, ""))
+        third = run_cli(["--only", "gherkin", "--stories", "US_403_Third",
+                         "model"], register)
+        self.assertEqual(third.returncode, 1)
+        self.assertIn(" S1 US_403_Third has no feature file", third.stdout)
+        none = run_cli(["--only", "gherkin", "--stories=", "model"],
+                       register)
+        self.assertEqual((none.returncode, none.stdout), (0, ""))
+
+    def test_stories_option_rejects_a_name_that_is_no_identifier(self):
+        result = run_cli(["--stories", "US_401_First,US 402", "model"],
+                         os.path.join(FIXTURES, "register"))
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(len(result.stderr.splitlines()), 1)
+        self.assertIn("US 402", result.stderr)
 
     def test_text_format(self):
         result = run_cli(["model"], os.path.join(FIXTURES, "S4"))
