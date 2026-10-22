@@ -38,7 +38,7 @@ Feature: Story lint
     When the engineer runs the story lint
     Then the lint reports finding S8 for US_901_Example
 
-  Scenario: A verification case written on one line reaches its criterion
+  Scenario: A case written on one line reaches its criterion
     Given a story file US_901_Example in progress with the acceptance criterion firstReading
     And a feature file for US_901_Example with a scenario tagged @AC_firstReading
     And a validation case written on one line that verifies US_901_Example.acceptance.firstReading
