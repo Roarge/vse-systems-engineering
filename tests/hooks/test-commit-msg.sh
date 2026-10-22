@@ -110,7 +110,7 @@ case_cr_reference_in_long_message() {
     tc_env
     tc_run_githook commit-msg "$MSG_FILE"
     tc_assert_rc 0 "long message: the CR reference in the subject is found"
-    tc_assert_not_grep "does not" "$ERR" "long message: no missing-reference finding"
+    tc_assert_not_grep "reference a Change Request" "$ERR" "long message: no missing-reference finding"
 }
 
 MSG_FILE=""
