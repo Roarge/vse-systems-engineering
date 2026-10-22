@@ -30,7 +30,9 @@
 #   2. The recorded tests and scenarios run only where
 #      test_first.applies is true and the command is recorded
 #      (methodology §11.8), from the top level of the repository, and a
-#      failing command fails its step.
+#      failing command fails its step. A record where test first
+#      applies without its test_command fails the read step
+#      (methodology §11.5.2).
 #
 # Run: bash tests/hooks/test-ci-template.sh
 set -euo pipefail
@@ -504,6 +506,23 @@ case_scenarios_only_when_recorded() {
     tc_assert_eq 0 "$SCENARIOS_RAN" "no scenario command: the scenario step is skipped"
 }
 
+# applies: true without test_command is an invalid record (methodology
+# §11.5.2), so the read step fails rather than leave the workflow green
+# with no test run, whether or not scenario_command is recorded.
+case_applies_without_test_command() {
+    local scenario
+    for scenario in - "\"echo 'scenarios ran'\""; do
+        ci_project
+        ci_test_first true - "$scenario"
+        ci_test_steps
+        tc_assert_eq 1 "$READ_RC" "no test command (scenario ${scenario}): the read step fails"
+        tc_assert_grep "::error::test_first.applies is true but test_first.test_command is not recorded (methodology §11.5.2). Record it with /vse-test-first." \
+            "$READ_LOG" "no test command (scenario ${scenario}): the error names §11.5.2 and /vse-test-first"
+        tc_assert_eq 0 "$TESTS_RAN" "no test command (scenario ${scenario}): the test step is skipped"
+        tc_assert_eq 0 "$SCENARIOS_RAN" "no test command (scenario ${scenario}): the scenario step is skipped"
+    done
+}
+
 case_failing_commands_fail() {
     ci_project
     ci_test_first true "\"exit 3\"" "\"false\""
@@ -557,6 +576,7 @@ case_hook_not_installed
 case_tests_where_test_first_applies
 case_tests_not_where_test_first_does_not_apply
 case_scenarios_only_when_recorded
+case_applies_without_test_command
 case_failing_commands_fail
 case_brownfield_record
 case_library_missing

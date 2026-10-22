@@ -26,7 +26,8 @@
 #     `test_first.scenario_command` where test first applies, that is
 #     when `test_first.applies` is true and the project records the
 #     command (methodology §11.8). A failing test fails the workflow at
-#     every profile.
+#     every profile, and so does a record where test first applies
+#     without its test_command (methodology §11.5.2).
 #
 # Translating to GitLab CI, Forgejo Actions, or Gitea Actions: check
 # out the full history, set VSE_PRECOMMIT_RANGE to the change under
@@ -257,7 +258,10 @@ jobs:
         # quoting, comments and the applies value. Scenarios and tests
         # run only where test first applies (methodology §11.8), so
         # unless test_first.applies is true no command is read. A
-        # command that is not read leaves its step below skipped.
+        # command that is not read leaves its step below skipped. Where
+        # test_first.applies is true, test_command is required
+        # (methodology §11.5.2), so a record without it fails this step
+        # rather than leave the workflow green with no test run.
         id: test-first
         run: |
           set -euo pipefail
@@ -285,6 +289,10 @@ jobs:
           SCENARIO_COMMAND="$(iso_section_scalar test_first scenario_command)"
           echo "test_first.test_command: ${TEST_COMMAND:-not recorded}"
           echo "test_first.scenario_command: ${SCENARIO_COMMAND:-not recorded}"
+          if [ -z "$TEST_COMMAND" ]; then
+              echo "::error::test_first.applies is true but test_first.test_command is not recorded (methodology §11.5.2). Record it with /vse-test-first."
+              exit 1
+          fi
           {
               echo "test_command=${TEST_COMMAND}"
               echo "scenario_command=${SCENARIO_COMMAND}"
