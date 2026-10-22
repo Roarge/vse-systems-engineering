@@ -245,20 +245,26 @@ vacuously.
 
 **Touched stories.** Checks 2 and 5 read the stories a change touches
 (methodology §11.9.2). A story is touched when the change adds its
-declaration block or alters the block's text, or adds, changes,
-renames or deletes its `<StoryIdentifier>.feature` file. The hook
-compares the blocks with the scanner of `lib/test-first.sh`, the one
-the `PreToolUse` Gherkin-first gate uses, so "touched" means the same
-at commit time and in session. The comparison runs between `HEAD` and
-the staged set, or between the start and the end of the range, where
-the start of `<base>...<head>` is the merge base. Deleting a story
-touches nothing. Stories in the same stories directories that the
-change leaves alone, and that would draw S1, S3 or S9, are named in one
-note that points at `/vse-audit`, and they never block a staged or
-range commit. With `all` every story is checked, so the run CI makes at
-a release tag needs every story migrated. Without `lib/test-first.sh`
-(a partial install) the hook cannot tell which stories are touched, so
-it checks every story in each stories directory the change touches.
+declaration block or alters the block's text, or adds, changes, renames
+or deletes its `<StoryIdentifier>.feature` file. The hook compares the
+blocks with the scanner of `lib/test-first.sh`, the one the
+`PreToolUse` Gherkin-first gate uses, so "touched" means the same at
+commit time and in session. The comparison runs between `HEAD` and the
+staged set, or between the start and the end of the range, where the
+start of `<base>...<head>` is the merge base. A story file the change
+renames, as git detects renames, is compared with the story file it was
+renamed from, so renaming a register or a stories directory touches
+none of its stories. Deleting a story touches nothing. When the change
+deletes a feature file, the hook passes the story files of that
+directory that declare its story, so that S1 is reported, and an S9
+elsewhere in such a file is reported with it. Stories in the same
+stories directories that the change leaves alone, and that would draw
+S1, S3 or S9, are named in one note that points at `/vse-audit`, and
+they never block a staged or range commit. With `all` every story is
+checked, so the run CI makes at a release tag needs every story
+migrated. Without `lib/test-first.sh` (a partial install) the hook
+cannot tell which stories are touched, so it checks every story in each
+stories directory the change touches.
 
 **Disposition per profile.** "Block" above describes the `full` profile.
 Checks 1, 2, and 4 carry the configuration keys `precommit_lint`,
@@ -290,7 +296,11 @@ if [[ -n "$changed_sysml" ]]; then
     }
 fi
 
-# 2. Story well-formedness
+# 2. Story well-formedness. The shipped hook narrows this check and
+#    check 5 to the stories the change touches, named with --stories,
+#    and passes the changed story and feature files (methodology
+#    §11.9.2, "Touched stories" above). This sketch leaves --stories
+#    out, so it checks every story it reads.
 changed_stories=$(echo "$changed_sysml" | grep -E '/(stories|requirements)/' || true)
 if [[ -n "$changed_stories" ]]; then
     python3 tools/lint/story-wellformed.py --only wellformed $changed_stories || {
@@ -320,7 +330,8 @@ git diff --exit-code --quiet -- docs/generated/ || {
     exit 1
 }
 
-# 5. Gherkin conformance (methodology §11.9)
+# 5. Gherkin conformance (methodology §11.9). The shipped hook narrows
+#    it to the touched stories, as for check 2.
 story_dirs=$(git diff --cached --name-only --diff-filter=ACMRD |
     grep -E '/stories/.*\.(sysml|feature)$' | sed 's|/[^/]*$||' | sort -u || true)
 if [[ -n "$story_dirs" ]]; then

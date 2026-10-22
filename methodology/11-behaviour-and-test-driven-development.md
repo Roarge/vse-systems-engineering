@@ -119,7 +119,7 @@ by that row's value. An Outline states one criterion and carries one
 | `Scenario Outline:` or `Scenario Template:`, with `Examples:` or `Scenarios:` | One acceptance criterion, run once per example row |
 | `Given`, `When`, `Then`, `And`, `But`, `*` | Steps. `And`, `But` and `*` continue the kind of the step before them |
 | Doc strings and data tables | Step arguments. A doc string is a block between `"""` or three backticks, and a data table is a set of rows whose cells sit between vertical bars |
-| Tags and full-line comments | Selection, linkage and notes. A comment line starts with `#` |
+| Tags and full-line comments | Selection, linkage and notes. A comment line starts with `#`. A comment may also end a tag line, from a word that starts with `#` to the end of the line |
 
 Steps follow the order `Given* When+ Then+`. That is, zero or more
 Given steps (the context), then one or more When steps (the action),
@@ -563,16 +563,18 @@ nothing staged cannot pass vacuously. Range mode needs the full git
 history (`fetch-depth: 0` in GitHub Actions).
 
 For `precommit_gherkin` and `precommit_story_wellformed`, the hook
-checks the stories a change touches. A story is touched when the
-change adds its declaration, alters the text of its block, or adds,
-changes, renames or deletes its feature file. The comparison is the
-one the in-session gate makes (§11.9.3), between the last commit and
-the staged set, or between the start and the end of the range (the
-merge base, for a pull request). Deleting a story touches nothing.
-Stories in the same stories directories that the change leaves alone
-and that still need migrating (S1, S3 or S9) are named in one note and
-do not block, and `/vse-audit` lists them (§11.3.1). For a tag push,
-and for a push with no previous commit that CI can read (one that
+checks the stories a change touches. A story is touched when the change
+adds its declaration, alters the text of its block, or adds, changes,
+renames or deletes its feature file. The comparison is the one the
+in-session gate makes (§11.9.3), between the last commit and the staged
+set, or between the start and the end of the range (the merge base, for
+a pull request). A story file the change renames is compared with the
+story file it was renamed from, so renaming a register or a stories
+directory touches none of its stories. Deleting a story touches
+nothing. Stories in the same stories directories that the change leaves
+alone and that still need migrating (S1, S3 or S9) are named in one
+note and do not block, and `/vse-audit` lists them (§11.3.1). For a tag
+push, and for a push with no previous commit that CI can read (one that
 creates a branch, for example), CI runs the hook over every tracked
 file, which checks every story. A release therefore needs every story
 migrated.
