@@ -91,7 +91,7 @@ For every `*.sysml` file under `model/core/stories/` and every component-scope `
 - Rule 9: `StoryMeta` is applied as `@StoryMeta { ... }` with qualified enumeration values. An unqualified literal such as `status = ready` emits WARN, and a `doc /* StoryMeta: ... */` comment is legacy input and emits WARN.
 - Rule 11: the story is not typed by a Use Case, Action, or Case definition.
 
-Each violation emits ERROR keyed to the rule, except the WARN cases named above.
+Each violation emits ERROR keyed to the rule, except the WARN cases named above. A pre-4.0 `requirement def` is also finding S9 of the story lint (check 17). The commit gate reports S9 only for a story file a change alters, so a legacy form in a file no commit touches does not block a commit, but the CI run at a release tag checks every story file and blocks on it. Say that a release needs it migrated (methodology §11.9.2).
 
 ### 6. Base Architecture Forward-Going Rule (§2.6 rule 5)
 
@@ -214,9 +214,11 @@ python3 -B tools/lint/story-wellformed.py --only gherkin --format json model
 
 When the project has no `tools/lint/` (check 15 reports that), run the plugin's copy, `${CLAUDE_PLUGIN_ROOT}/templates/tools/lint/story-wellformed.py`, with the same arguments from the same directory. Exit status 0 is a PASS. Exit status 1 comes with a list of findings, each giving its code, path, line, message and section reference:
 
-- **S3**, acceptance prose placed directly in `requirement :>> acceptance`, the form used before 5.0.0: WARN ("legacy acceptance form, migrate to named criteria when the story next changes"). The migration writes the feature file first and then one named criterion per scenario (§11.3.1).
+- **S3**, acceptance prose placed directly in `requirement :>> acceptance`, the form used before 5.0.0: WARN ("legacy acceptance form, migrate to named criteria when the story next changes, and before the next release"). The migration writes the feature file first and then one named criterion per scenario (§11.3.1).
 - **S9** on a story that check 5 already reports as the pre-4.0 `requirement def` form: that WARN only, not a second finding.
 - Every other code, S1, S2, S4 to S8 and F1 to F10: ERROR, keyed to the code and the section reference the lint gives. S1 is a story without its feature file, and S8 includes a `satisfy` that names a story with no scenarios, that is, design before behaviour.
+
+The commit gate and the pull-request check read only the stories a change touches (methodology §11.9.2), so a story this check reports does not block a commit that leaves it alone, and `pre-commit` names it in one note. This check reads every story, which is where those stories are listed. The CI run at a release tag also reads every story and blocks on S1, S3 and S9 like any other finding, so say that a release needs every reported story migrated.
 
 Exit status 2 means the lint could not run, for example without `python3`. Report the reason as WARN, then check by reading the files: a story without `<ID>.feature` carrying `@<ID>` in its directory is S1 (ERROR), and acceptance prose placed directly in `requirement :>> acceptance` is S3 (WARN). If the Bash tool is unavailable in this forked execution, do the same reading check and say the lint was skipped.
 
