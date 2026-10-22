@@ -107,6 +107,25 @@ case_failing_check() {
         "a failing check: the passing hook test file is not named"
 }
 
+# Every check passes and only a hook test file fails. The target must
+# still fail, and its summary line must not print, or the macOS job
+# would turn green while a hook test fails there.
+case_failing_hook_test() {
+    fresh
+    stand_in_test a 1
+    stand_in_test b 0
+    run_target
+    tc_assert_rc 2 "a failing hook test file: the target fails"
+    tc_assert_line "stand-in test-a ran" "$OUT" \
+        "a failing hook test file: the failing hook test file ran"
+    tc_assert_line "stand-in test-b ran" "$OUT" \
+        "a failing hook test file: the hook test file after it ran"
+    tc_assert_line "FAILED: tests/hooks/test-a.sh" "$OUT" \
+        "a failing hook test file: the failing hook test file is named"
+    tc_assert_not_grep "The platform-dependent checks passed." "$OUT" \
+        "a failing hook test file: the target does not report a pass"
+}
+
 # Every check and every hook test file passes, so the target passes.
 case_all_pass() {
     fresh
@@ -120,6 +139,7 @@ case_all_pass() {
 }
 
 case_failing_check
+case_failing_hook_test
 case_all_pass
 
 if tc_summary "test-test-portable"; then
