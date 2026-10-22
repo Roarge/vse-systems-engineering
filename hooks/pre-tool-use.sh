@@ -173,7 +173,9 @@ _ptu_tool() {
 # normalised alike. An edit the engine cannot apply ends the hook,
 # which then fails open. An old_string that does not occur in the file
 # as the engine reads it leaves the file unchanged in the post image,
-# so the agent is warned that the gates could not check the edit.
+# so the agent is warned that the gates could not check the edit. A
+# file that does not exist draws no warning, because the Edit tool
+# refuses an edit to one anyway.
 _ptu_images() {
     local rc=0
     [ -z "$PTU_PRE" ] || return 0
@@ -187,6 +189,7 @@ _ptu_images() {
     case "$rc" in
         0) : ;;
         4)
+            [ -f "$PTU_TARGET" ] || return 0
             vse_hj_add_context "Warning: the VSE gates could not reproduce this ${PTU_TOOL} call on ${PTU_TARGET}, because an old_string does not occur in the file as the hook reads it, so the Gherkin-first gate and the self-bypass guard saw the file unchanged. The commit gate remains the backstop (methodology §11.9)."
             ;;
         *)

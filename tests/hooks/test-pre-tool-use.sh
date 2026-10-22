@@ -572,6 +572,11 @@ case_edit_not_reproduced_context() {
     ptu_assert_context "commit gate remains the backstop" "not reproduced: the commit gate is named as the backstop"
     ptu_run "$(ptu_edit_json "$file" 'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"')"
     ptu_assert_context_lacks "could not reproduce" "not reproduced: an edit that matches draws no such warning"
+    # The Edit tool refuses an edit to a file that does not exist, so
+    # there is nothing to warn about.
+    ptu_run "$(ptu_edit_json "${REPO}/${PTU_STORIES}/missing.sysml" "text that is not in the file" "requirement US_902_Added : UserStory;")"
+    ptu_assert_proceeds "not reproduced: an edit to a missing file is not denied"
+    ptu_assert_context_lacks "could not reproduce" "not reproduced: an edit to a missing file draws no such warning"
 }
 
 # ------------------------------------------------------------ test first
