@@ -235,6 +235,50 @@ tc_assert_rc 2 "detect syside: expired licence is unavailable"
 tc_assert_grep "syside unavailable (licence expired, exit 2)" "$ERR" \
     "detect syside: expired licence reason"
 
+# The reason comes from the first lines, and the output goes on for
+# more than a pipe buffer holds (64 KiB). The whole output is read, so
+# the reason is found every time, not only when the writer finished
+# before the reader stopped.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "License check failed:"
+echo "  License expired. Please contact the Syside support team."
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }'
+exit 2
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: expired licence with a long report is unavailable"
+tc_assert_grep "syside unavailable (licence expired, exit 2)" "$ERR" \
+    "detect syside: expired licence reason found in a long report"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: No display server detected and 'xvfb-run' is not installed." >&2
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }' >&2
+exit 1
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: a headless launcher with a long report is unavailable"
+tc_assert_grep "syside unavailable (no display server" "$ERR" \
+    "detect syside: headless launcher reason found in a long report"
+
+# Any other failure quotes the first line of the output, however long
+# the output runs.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: the probe model could not be read"
+awk 'BEGIN { for (i = 1; i <= 10000; i++) printf "  detail %05d of a long report\n", i }'
+exit 3
+EOF
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside: another failure with a long report is unavailable"
+tc_assert_grep "syside unavailable (syside exit 3 on the probe model: Error: the probe model could not be read)" "$ERR" \
+    "detect syside: another failure quotes the first line of a long report"
+
+tc_stub_syside
 tc_env SYSIDE_OK=1
 tc_run_lib detect syside
 tc_assert_rc 0 "detect syside: a passing check is available"

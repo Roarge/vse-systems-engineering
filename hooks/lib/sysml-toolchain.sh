@@ -204,7 +204,12 @@ vse_tc_pilot_paths() {
 
 # Classify a syside run. Sets VSE_TC_REASON when the run means
 # "unavailable" rather than "findings". The licence failure is text on
-# stdout with exit 2, so the text is the key, not the code.
+# stdout with exit 2, so the text is the key, not the code. The text is
+# matched with case rather than piped into grep -q. grep -q stops
+# reading at the first match, so a writer with more output than the
+# pipe holds is killed by SIGPIPE (the signal a process gets when it
+# writes to a pipe that nobody reads any more), and under pipefail the
+# pipeline then fails although the text matched.
 _vse_tc_classify_syside() {
     local rc="$1" out="$2"
     VSE_TC_REASON=""
@@ -213,25 +218,28 @@ _vse_tc_classify_syside() {
         124) VSE_TC_REASON="syside timed out" ;;
         127) VSE_TC_REASON="syside not on PATH" ;;
         *)
-            if printf '%s\n' "$out" | grep -q 'License check failed'; then
-                if printf '%s\n' "$out" | grep -qi 'expired'; then
-                    VSE_TC_REASON="licence expired, exit ${rc}"
-                else
-                    VSE_TC_REASON="licence check failed, exit ${rc}"
-                fi
-            elif printf '%s\n' "$out" | grep -q 'No display server detected'; then
-                # The Syside launcher refuses to start without X11,
-                # Wayland or xvfb-run. That is the tool being unavailable
-                # on this machine, not a finding against the model.
-                VSE_TC_REASON="no display server (the syside launcher needs X11, Wayland or xvfb-run), exit ${rc}"
-            fi
+            case "$out" in
+                *'License check failed'*)
+                    case "$out" in
+                        *[Ee][Xx][Pp][Ii][Rr][Ee][Dd]*) VSE_TC_REASON="licence expired, exit ${rc}" ;;
+                        *) VSE_TC_REASON="licence check failed, exit ${rc}" ;;
+                    esac
+                    ;;
+                *'No display server detected'*)
+                    # The Syside launcher refuses to start without X11,
+                    # Wayland or xvfb-run. That is the tool being
+                    # unavailable on this machine, not a finding against
+                    # the model.
+                    VSE_TC_REASON="no display server (the syside launcher needs X11, Wayland or xvfb-run), exit ${rc}"
+                    ;;
+            esac
             ;;
     esac
     return 0
 }
 
 _vse_tc_detect_syside() {
-    local dir out rc=0
+    local dir out first rc=0
     if ! command -v syside >/dev/null 2>&1; then
         VSE_TC_REASON="syside not on PATH"
         return 0
@@ -243,7 +251,8 @@ _vse_tc_detect_syside() {
     rm -rf "$dir"
     _vse_tc_classify_syside "$rc" "$out"
     if [ -z "$VSE_TC_REASON" ] && [ "$rc" -ne 0 ]; then
-        VSE_TC_REASON="syside exit ${rc} on the probe model: $(printf '%s\n' "$out" | head -n 1)"
+        first=${out%%$'\n'*}
+        VSE_TC_REASON="syside exit ${rc} on the probe model: ${first}"
     fi
 }
 
