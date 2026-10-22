@@ -22,7 +22,9 @@ Every scenario runs in a fresh context. A Scenario Outline runs once per
 Examples row, with the row's values filled in. The Feature's Background
 steps run first, then those of the scenario's Rule, then the scenario's
 own. A scenario tagged `@wip` (work in progress), directly or through
-its Rule or Feature, is skipped unless `--include-wip` is given.
+its Rule or Feature, is skipped unless `--include-wip` is given. A
+`@wip` tag on an Examples block is not supported: the runner ignores
+it, so the rows of that block still run.
 
 A step stops its scenario when it raises an exception or calls
 sys.exit() (failed), when no definition matches it (undefined), or when
@@ -43,12 +45,13 @@ because the parser does not record the line of an Examples row.
 
 Exit status: 0 when every scenario passed or was skipped, 1 when one
 failed or was undefined, and 2 when nothing could run, that is, when a
-feature file does not parse (any finding the parser reports), a step
-module fails to import, a path or the steps directory is missing, or
-the command line is otherwise wrong. Every file is parsed and every
-step module imported before any scenario runs, so these errors run
-nothing. A step module that fails to import is named on stderr as
-`<module path>: <error>`.
+feature file cannot be read or is not UTF-8, a feature file does not
+parse (any finding the parser reports), a step module fails to import,
+a path or the steps directory is missing, or the command line is
+otherwise wrong. Every file is parsed and every step module imported
+before any scenario runs, so these errors run nothing. A feature file
+that cannot be read is named on stderr as `<path>: <error>`, and so is
+a step module that fails to import, as `<module path>: <error>`.
 """
 
 import argparse
@@ -210,15 +213,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         parser.error("no such steps directory: {}".format(args.steps))
 
     features = []  # type: List[Tuple[str, gherkin.Feature]]
-    findings = []  # type: List[gherkin.Finding]
+    errors = []  # type: List[str]
     for path in feature_files(args.paths):
-        result = gherkin.parse_file(path)
-        findings.extend(result.findings)
+        try:
+            result = gherkin.parse_file(path)
+        except (OSError, UnicodeDecodeError) as error:
+            errors.append("{}: {}".format(path, error))
+            continue
+        errors.extend(finding.format() for finding in result.findings)
         if result.feature is not None:
             features.append((path, result.feature))
-    if findings:
-        for finding in findings:
-            print(finding.format(), file=sys.stderr)
+    if errors:
+        for error in errors:
+            print(error, file=sys.stderr)
         return 2
 
     try:

@@ -331,6 +331,27 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(self.logged(), [])
         self.assertEqual(code, 2, out + err)
 
+    def test_unreadable_feature_exit_2(self):
+        # A feature that is not UTF-8, or a link to nothing, found by a
+        # directory search, is a broken run, named on one line, and not
+        # a traceback with the exit status of a failed scenario.
+        features = os.path.join(self.scratch, "features")
+        os.makedirs(features)
+        shutil.copy(feature("passing.feature"), features)
+        latin = os.path.join(features, "latin.feature")
+        with open(latin, "wb") as handle:
+            handle.write(b"Feature: Caf\xe9\n")
+        dangling = os.path.join(features, "dangling.feature")
+        os.symlink("no-such-target.feature", dangling)
+        code, out, err = self.run_bdd(features)
+        self.assertIn("{}: ".format(latin), err)
+        self.assertIn("{}: ".format(dangling), err)
+        self.assertNotIn("Traceback", err)
+        # Nothing runs when any file cannot be read.
+        self.assertEqual(out, "")
+        self.assertEqual(self.logged(), [])
+        self.assertEqual(code, 2, out + err)
+
     def test_broken_step_module_exit_2(self):
         # A step module that cannot be imported is a usage error, named
         # on one line, not a traceback with the exit status of a failed

@@ -46,13 +46,15 @@ The exit status is:
 
 - 0 when every scenario passed or was skipped
 - 1 when a scenario failed or was undefined
-- 2 when nothing could run: a feature file does not parse (any finding
-  the parser reports), a step module fails to import, a path or the
-  steps directory is missing, or the command line is otherwise wrong.
+- 2 when nothing could run: a feature file cannot be read or is not
+  UTF-8, a feature file does not parse (any finding the parser
+  reports), a step module fails to import, a path or the steps
+  directory is missing, or the command line is otherwise wrong.
 
 A step that no step definition matches is undefined, and an undefined
-step fails the run. A step module that fails to import is named on
-standard error as `<module path>: <error>`. A directory that holds no
+step fails the run. A feature file that cannot be read is named on
+standard error as `<path>: <error>`, and a step module that fails to
+import as `<module path>: <error>`. A directory that holds no
 `.feature` file passes with a zero summary.
 
 A path may also name a single `.feature` file. `--steps DIR` reads the
@@ -73,7 +75,8 @@ step module and describes the shared context and the cleanup hook.
 behaviour it describes. The runner skips a `@wip` scenario and reports it
 as `SKIP`, so the suite stays green while the behaviour is built. The tag
 may sit on a scenario, on a `Rule` or on the `Feature`, and it covers
-everything beneath it.
+everything beneath it. A `@wip` tag on an `Examples` block is not
+supported. The runner ignores it, so the rows of that block still run.
 
 To see the work in progress fail, run:
 
