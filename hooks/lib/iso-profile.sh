@@ -80,8 +80,8 @@ _iso_locate_config() {
 # leave the rest of the list unread in silence. Blank and comment lines
 # are passed over. It returns 1 to go on reading and 0 at the first
 # other line, which ends the sequence. A YAML document marker ("---" in
-# column one, alone or before a space) ends it too, rather than reading
-# as the item "--". A comma inside a block item is part of it.
+# column one, alone or before a space or tab) ends it too, rather than
+# reading as the item "--". A comma inside a block item is part of it.
 #
 # "\047" is a single quote, which this shell string cannot hold.
 _ISO_AWK_LIB='
