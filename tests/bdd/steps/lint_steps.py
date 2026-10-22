@@ -26,6 +26,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 TOOLS = os.path.join(REPO, "templates", "tools")
 PIECES = os.path.join(REPO, "tests", "fixtures", "lint", "scenarios")
 STORIES = os.path.join("model", "core", "stories", "stakeholder")
+CASES = os.path.join("model", "core", "verification-validation",
+                     "validation-cases", "validation-cases.sysml")
 
 
 def project(ctx):
@@ -80,6 +82,13 @@ def story_with_criterion(ctx, story, criterion):
                "requirement {} {{".format(criterion))
 
 
+@step(r"a story file (\w+) in progress with the acceptance criterion (\w+)")
+def story_in_progress_with_criterion(ctx, story, criterion):
+    story_file(ctx, "story-in-progress.sysml", story,
+               "requirement {} {{".format(criterion),
+               "status = StoryStatus::inProgress;")
+
+
 @step(r"a story file (\w+) with the acceptance criterion (\w+) and no status")
 def story_with_criterion_without_status(ctx, story, criterion):
     copy_piece(ctx, "story-no-status.sysml",
@@ -120,6 +129,25 @@ def feature_without_scenarios(ctx, story):
 def feature_with_scenario(ctx, story, criterion):
     feature_file(ctx, "feature-tagged.feature", story,
                  "@AC_{}\n  Scenario:".format(criterion))
+
+
+def validation_case(ctx, text):
+    """Write `text` as the model's validation cases file."""
+    path = os.path.join(project(ctx), CASES)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(text)
+
+
+@step(r"a validation case written on one line that verifies ([\w.]+)")
+def one_line_case(ctx, target):
+    # The case header, its subject and its objective share one line, as
+    # in the case table of methodology section 4.
+    validation_case(ctx, (
+        "package ExampleCases {{\n"
+        "    verification def VAL_901_Example {{ subject s : ExampleSystem; "
+        "objective {{ verify {}; }} }}\n"
+        "}}\n").format(target))
 
 
 @step(r"the engineer runs the story lint")

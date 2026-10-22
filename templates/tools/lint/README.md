@@ -93,9 +93,12 @@ These behaviours are worth knowing.
   of that table, `inProgress` and `done`, and the S8 finding says why.
   W3 also counts any status other than `backlog` as past backlog, so a
   story is never left unchecked.
-- **Layout does not matter.** The lint reads each story's narrative
-  attributes, role and `@StoryMeta` values from SysML statements, not
-  from lines, so a story written on one line is checked the same way.
+- **Layout does not matter for stories and cases.** The lint reads each
+  story's narrative attributes, role and `@StoryMeta` values from SysML
+  statements, not from lines, so a story written on one line is checked
+  the same way. A verification or validation case written on one line
+  with its objective, or several cases on one line, reach their
+  criteria as they would over several lines.
 - **One disposition per finding.** A `.sysml` file that cannot be read,
   or is not UTF-8, is finding S9 under `--only gherkin` alone, so it is
   reported at the `precommit_gherkin` disposition and nowhere else.

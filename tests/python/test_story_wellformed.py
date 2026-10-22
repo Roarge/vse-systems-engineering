@@ -176,7 +176,9 @@ class StorySideTests(unittest.TestCase):
         # for a story with no scenarios (US_189 has no feature file at
         # all). US_183, US_184 and US_185 are reached by name, by
         # acceptance and by story. US_187 is backlog, US_188 is satisfied
-        # and has a scenario.
+        # and has a scenario. US_190 is reached by a case written on one
+        # line, and each criterion of US_191 by one of two cases that
+        # share a line.
         self.assertEqual(lint("S8"), [
             (SYSML, 4, "S8"),
             (SYSML, 27, "S8"),

@@ -24,4 +24,10 @@ package FixtureS8Cases {
             verify US_185_CoveredByStory;
         }
     }
+
+    // Cases written on one line, as in the case table of methodology
+    // section 4, and two cases on one line.
+    verification def VAL_190_OneLine { subject s : ExampleSystem; objective { verify US_190_CoveredOnOneLine.acceptance.firstReading; } }
+
+    verification def VAL_191_First { objective { verify US_191_TwoCasesOnOneLine.acceptance.firstReading; } } verification def VAL_191_Unit { objective { verify US_191_TwoCasesOnOneLine.acceptance.readingUnit; } }
 }

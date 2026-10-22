@@ -57,7 +57,11 @@ lost. This is a limit of the line-oriented method, not a rule of the
 notation, and it predates the story-usage form. Two layouts that the
 joiner cannot merge are read by the parser instead: `#derivation` on a
 line of its own before `connection <name> {`, and a `@StoryMeta {` block
-whose assignments sit on their own lines.
+whose assignments sit on their own lines. Verification cases are read
+whatever their layout: each `verification def` header on a line opens a
+case of its own, which takes the verify clauses after it up to the next
+header, so a case written on one line with its objective, as in the
+case table of methodology section 4, is read whole.
 
 Feature files
 -------------
@@ -652,6 +656,15 @@ def _attach_doc(line: str, docs: List[str], target) -> bool:
     return True
 
 
+def _add_verifies(text: str, case: Case) -> None:
+    """Add the targets of the verify clauses in `text` to the case,
+    each once, in order."""
+    for raw_target in _RE_VERIFY.findall(text):
+        target, member = _split_target(raw_target)
+        if target and (target, member) not in case.verifies:
+            case.verifies.append((target, member))
+
+
 def parse_file(project_root: Path, path: Path, model: Model) -> None:
     """Read one .sysml file into the model, preserving declaration order."""
     text = path.read_text(encoding="utf-8")
@@ -725,16 +738,28 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
             handled = True
 
         if not handled:
-            match = _RE_CASE.search(line)
-            if match:
-                identifier = match.group(1)
-                case = Case(
-                    identifier=identifier,
-                    source=relative,
-                    kind=_case_kind(relative, identifier),
-                )
-                model.cases.append(case)
-                _attach_doc(line, docs, case)
+            headers = list(_RE_CASE.finditer(line))
+            if headers:
+                # A case may share its line with its objective, and with
+                # other cases. The verify clauses after a header, up to
+                # the next header, are that case's own, and those before
+                # the first header belong to the case already open.
+                open_case = _nearest(stack, "case")
+                if open_case is not None:
+                    _add_verifies(line[:headers[0].start()], open_case)
+                for index, match in enumerate(headers):
+                    end = (headers[index + 1].start()
+                           if index + 1 < len(headers) else len(line))
+                    identifier = match.group(1)
+                    case = Case(
+                        identifier=identifier,
+                        source=relative,
+                        kind=_case_kind(relative, identifier),
+                    )
+                    model.cases.append(case)
+                    _attach_doc(line[match.start() if index else 0:end],
+                                docs, case)
+                    _add_verifies(line[match.end():end], case)
                 if opens:
                     stack.append(_Frame("case", depth + delta, case))
                 handled = True
@@ -828,10 +853,7 @@ def parse_file(project_root: Path, path: Path, model: Model) -> None:
         if not handled:
             case = _nearest(stack, "case")
             if case is not None and _RE_VERIFY.search(line):
-                for raw_target in _RE_VERIFY.findall(line):
-                    target, member = _split_target(raw_target)
-                    if target and (target, member) not in case.verifies:
-                        case.verifies.append((target, member))
+                _add_verifies(line, case)
                 handled = True
 
         if not handled and top is not None and top.kind == "story":
