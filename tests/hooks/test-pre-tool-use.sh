@@ -537,7 +537,7 @@ case_crlf_story_multiline_denied() {
     local file
     ptu_project light
     file="${REPO}/${PTU_STORIES}/stories.sysml"
-    ptu_register US_901_Example | sed 's/$/\r/' | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_register US_901_Example | tc_crlf | tc_write "${PTU_STORIES}/stories.sysml"
     ptu_feature US_901_Example
     ptu_run "$(ptu_edit_json "$file" "$(printf '    }\n\n}')" "$(printf '    }\n\n%s\n\n}' "$(ptu_story US_902_Added)")")"
     ptu_assert_denied "CRLF: a multi-line LF edit adding a story to a CRLF register is denied"
@@ -547,7 +547,8 @@ case_crlf_story_multiline_denied() {
 
 case_crlf_config_multiline_asks() {
     ptu_project light precommit_lint=warn
-    sed -i 's/$/\r/' "${REPO}/.iso-config.yaml"
+    tc_crlf < "${REPO}/.iso-config.yaml" > "${REPO}/.iso-config.yaml.tmp" \
+        && mv "${REPO}/.iso-config.yaml.tmp" "${REPO}/.iso-config.yaml"
     ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "gate_overrides:
   precommit_lint: warn" "gate_overrides:
   precommit_lint: warn

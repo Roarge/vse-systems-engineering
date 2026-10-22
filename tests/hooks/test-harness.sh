@@ -321,6 +321,35 @@ second"
     tc_reset_stubs
 }
 
+# ------------------------------------------------------ CRLF fixtures
+
+# tc_crlf ends every line in a carriage return and a line feed (CR LF,
+# the Windows line ending), a last line without a newline included, and
+# changes nothing else.
+case_crlf_helper() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    printf 'one\ntwo\n' | tc_crlf > "${dir}/got"
+    printf 'one\r\ntwo\r\n' > "${dir}/want"
+    if cmp -s "${dir}/want" "${dir}/got"; then
+        tc_pass "crlf: every line ends in CR LF"
+    else
+        tc_fail "crlf: every line ends in CR LF" "$(od -c "${dir}/got")"
+    fi
+    printf 'one\ntwo' | tc_crlf > "${dir}/got"
+    if cmp -s "${dir}/want" "${dir}/got"; then
+        tc_pass "crlf: a last line without a newline ends in CR LF"
+    else
+        tc_fail "crlf: a last line without a newline ends in CR LF" "$(od -c "${dir}/got")"
+    fi
+    tc_crlf < /dev/null > "${dir}/got"
+    if [ ! -s "${dir}/got" ]; then
+        tc_pass "crlf: empty input gives empty output"
+    else
+        tc_fail "crlf: empty input gives empty output" "$(od -c "${dir}/got")"
+    fi
+}
+
 # -------------------------------------------------- project configuration
 
 case_config_two_gates() {
@@ -475,6 +504,7 @@ case_scratch_root_is_physical
 case_bsd_grep_stub
 case_bsd_date_stub
 case_bwk_awk_stub
+case_crlf_helper
 case_config_two_gates
 case_config_legacy_override
 case_config_no_specs

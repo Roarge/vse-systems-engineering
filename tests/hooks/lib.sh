@@ -564,6 +564,14 @@ tc_write_at() {
     cat > "$path"
 }
 
+# tc_crlf: copy stdin to stdout with every line ending in a carriage
+# return and a line feed (CR LF), for fixtures that imitate a checkout
+# with Windows line endings. awk writes the carriage return the same
+# way everywhere, where BSD sed reads \r in a replacement as a plain r.
+tc_crlf() {
+    awk '{ printf "%s\r\n", $0 }'
+}
+
 tc_stage() {
     git -C "$REPO" add -- "$@"
 }

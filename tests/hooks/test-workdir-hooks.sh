@@ -13,8 +13,8 @@
 # its libraries are missing. Outside a project each hook is silent.
 #
 # Every case asserts exit 0, because the three hooks are advisory. The
-# GitHub command-line tool is a stub that lists one Change Request open
-# for 30 days, so the Notification reminder has something to say and
+# GitHub command-line tool is a stub that lists one Change Request
+# opened in 2020, so the Notification reminder has something to say and
 # no case reaches the network. The PreCompact snapshot is written under
 # a scratch TMPDIR.
 #
@@ -30,7 +30,10 @@ tc_setup_repo
 trap tc_teardown EXIT
 
 SNAP_TMP="$(tc_mktemp_d)"
-STALE_DATE="$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)"
+# The Change Request was opened in 2020, well past the reminder's
+# 14-day threshold. A fixed date needs no date arithmetic, so the test
+# does not call GNU date -d, which BSD date lacks.
+STALE_DATE="2020-01-02T03:04:05Z"
 tc_stub gh <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
