@@ -99,10 +99,10 @@ One finding per line, `<path>:<line>: <code> <message> (<reference>)`, or
 a JSON array of objects with the keys path, line, code, message and ref,
 sorted by path, line and code. Exit status 0 means clean, 1 means
 findings, and 2 means a usage or environment error, such as a missing
-path, a missing `tools/render/` beside `tools/lint/`, a file system
-error, a failure to write the findings (a closed pipe or a full disk),
-or an unexpected error in the lint itself. An error is one line on
-standard error, never a traceback.
+path, a missing `tools/render/` beside `tools/lint/`, a `tools/render/`
+older than `tools/lint/`, a file system error, a failure to write the
+findings (a closed pipe or a full disk), or an unexpected error in the
+lint itself. An error is one line on standard error, never a traceback.
 
 The lint uses the Python standard library only. It reads feature files
 with gherkin.py beside it and the model with ../render/sysml_model.py.
@@ -140,6 +140,15 @@ except ImportError as error:
     IMPORT_ERROR = ("cannot import sysml_model.py from {} ({}). The story "
                     "lint needs tools/render/ installed beside tools/lint/"
                     .format(RENDER, error))
+# A tools/render/ left at an earlier release imports cleanly but lacks
+# Case.resolved, which the lint calls, so it is named as the cause
+# rather than left to fail on an unexplained AttributeError.
+if IMPORT_ERROR is None and not hasattr(getattr(sysml_model, "Case", None),
+                                        "resolved"):
+    IMPORT_ERROR = ("tools/render/sysml_model.py at {} is older than "
+                    "tools/lint/. Refresh tools/render/ from the same plugin "
+                    "version (re-run @attention-regime)".format(
+                        os.path.join(RENDER, "sysml_model.py")))
 
 MODES = ("wellformed", "gherkin", "syntax")
 # The rows of the section 11.4 ordering table. A status that cannot be
@@ -1354,8 +1363,8 @@ def lint_paths(paths: List[str], only: Optional[str],
     given, the story-side findings (S1 to S8, and W2 to W10) are
     reported for the stories it names alone, an empty list naming none.
     Raise LintError for a missing path, an unknown mode, a name in
-    `stories` that is not a story identifier, or a missing gherkin.py or
-    sysml_model.py.
+    `stories` that is not a story identifier, a missing gherkin.py or
+    sysml_model.py, or a sysml_model.py older than the lint.
     """
     if IMPORT_ERROR is not None:
         raise LintError(IMPORT_ERROR)

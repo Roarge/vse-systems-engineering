@@ -877,6 +877,36 @@ class CommandLineTests(unittest.TestCase):
         self.assertIn("render", result.stderr)
         self.assertEqual(result.stdout, "")
 
+    def test_render_module_older_exit_2(self):
+        # A tools/render/ left at an earlier release beside a newer
+        # tools/lint/ imports cleanly but lacks Case.resolved, which the
+        # lint calls. The stub reader is the current one without it. The
+        # lint names the stale reader as the cause instead of failing on
+        # an unexplained AttributeError.
+        with open(os.path.join(REPO, "templates", "tools", "render",
+                               "sysml_model.py"), encoding="utf-8") as handle:
+            stale_reader = handle.read() + "\n\ndel Case.resolved\n"
+        with tempfile.TemporaryDirectory() as scratch:
+            tools = os.path.join(scratch, "tools")
+            shutil.copytree(LINT_DIR, os.path.join(tools, "lint"),
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            os.makedirs(os.path.join(tools, "render"))
+            reader = os.path.join(tools, "render", "sysml_model.py")
+            with open(reader, "w", encoding="utf-8") as handle:
+                handle.write(stale_reader)
+            result = run_cli(
+                ["model"], os.path.join(FIXTURES, "clean"),
+                lint=os.path.join(tools, "lint", "story-wellformed.py"))
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(len(result.stderr.splitlines()), 1, result.stderr)
+        self.assertIn(
+            "tools/render/sysml_model.py at {} is older than tools/lint/. "
+            "Refresh tools/render/ from the same plugin version (re-run "
+            "@attention-regime)".format(os.path.normpath(reader)),
+            result.stderr)
+        self.assertNotIn("AttributeError", result.stderr)
+        self.assertEqual(result.stdout, "")
+
     def test_os_error_exits_2_on_one_line(self):
         # The working directory is removed after the lint starts in it,
         # so the lint cannot resolve its paths. That is an environment

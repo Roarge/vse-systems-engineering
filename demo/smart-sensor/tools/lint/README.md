@@ -75,7 +75,7 @@ the hook does for a run over every tracked file.
 |---|---|
 | 0 | No findings |
 | 1 | Findings |
-| 2 | A usage or environment error, such as a missing path, `tools/render/` missing beside `tools/lint/`, a file system error, a failure to write the findings (a closed pipe or a full disk), or an unexpected error in the lint itself |
+| 2 | A usage or environment error, such as a missing path, `tools/render/` missing beside `tools/lint/`, `tools/render/` older than `tools/lint/` (refresh `tools/render/` from the same plugin version by re-running `@attention-regime`), a file system error, a failure to write the findings (a closed pipe or a full disk), or an unexpected error in the lint itself |
 
 An error is reported on one line of standard error, never as a
 traceback, so a gate can tell a broken run from a run with findings.
