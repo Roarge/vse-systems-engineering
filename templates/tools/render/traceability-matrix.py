@@ -44,12 +44,15 @@ def cell(values):
 
 
 def verification_cases_for(model, story):
-    """Verification cases reaching a stakeholder story, direct or derived.
+    """Verification cases traced to a stakeholder story, direct or derived.
 
     A verification case targets a system-side requirement (methodology
-    section 5.4.6), so it usually reaches a stakeholder story through the
-    system story derived from it. A case naming the stakeholder story
-    directly is recorded as well rather than being discarded.
+    section 5.4.6), so it is usually traced to a stakeholder story through
+    the system story derived from it. A case naming the stakeholder story
+    directly is recorded as well rather than being discarded. The list
+    fills the row's Verification Case cell only. A case on a derived
+    system story reaches none of the stakeholder story's own criteria, so
+    it does not make the row complete (stakeholder_story_is_covered).
     """
     cases = []
     for case in model.cases_verifying(story.identifier, kind="verification"):
@@ -202,7 +205,7 @@ def summary_rows(model):
             f"{len(covered)} of {len(stakeholder)}",
         ),
         (
-            "System stories with a verification case",
+            "System stories with every criterion verified",
             f"{len(verified)} of {len(system)}",
         ),
     ]

@@ -33,4 +33,4 @@ No gaps detected.
 | Validation cases | 4 |
 | Satisfy relations | 4 |
 | Stakeholder stories with acceptance coverage | 4 of 4 |
-| System stories with a verification case | 4 of 4 |
+| System stories with every criterion verified | 4 of 4 |

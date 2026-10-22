@@ -630,8 +630,8 @@ class TraceabilityMatrixTests(unittest.TestCase):
         named = self.gaps_naming(gaps, "SYS_1_Two")
         self.assertEqual(len(named), 1, gaps)
         self.assertIn("`safe`", named[0])
-        self.assertEqual(summary["System stories with a verification case"],
-                         "0 of 1")
+        self.assertEqual(
+            summary["System stories with every criterion verified"], "0 of 1")
 
     def test_verified_derived_system_story_does_not_complete_the_row(self):
         # A system story derived from the stakeholder story, with every
@@ -650,8 +650,8 @@ class TraceabilityMatrixTests(unittest.TestCase):
         self.assertEqual(
             summary["Stakeholder stories with acceptance coverage"],
             "0 of 1")
-        self.assertEqual(summary["System stories with a verification case"],
-                         "1 of 1")
+        self.assertEqual(
+            summary["System stories with every criterion verified"], "1 of 1")
 
     def test_derived_system_story_does_not_fill_a_partial_row(self):
         # One stakeholder criterion reached by its own case, the other
