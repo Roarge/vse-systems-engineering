@@ -1383,12 +1383,15 @@ def lint_paths(paths: List[str], only: Optional[str],
         return sorted(findings, key=_sort_key)
 
     # Every story file of the directories in scope, for the stories of a
-    # directory that a named feature file or story file brings in.
-    in_directories = [
-        (file_full, file_display)
-        for full, display in scope.directories.values()
-        for file_full, file_display in _directory_files(full, display)
-        if file_full.name.endswith(".sysml")]
+    # directory that a named feature file or story file brings in. Only
+    # the gherkin rule set and a run with --stories read it.
+    in_directories = []  # type: List[Tuple[Path, str]]
+    if only in (None, "gherkin") or named is not None:
+        in_directories = [
+            (file_full, file_display)
+            for full, display in scope.directories.values()
+            for file_full, file_display in _directory_files(full, display)
+            if file_full.name.endswith(".sysml")]
 
     if only in (None, "wellformed"):
         storymeta = read_storymeta(project_root / CONFIG)
