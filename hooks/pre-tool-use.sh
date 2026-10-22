@@ -173,7 +173,10 @@ _ptu_tool() {
 # normalised alike. An edit the engine cannot apply ends the hook,
 # which then fails open. An old_string that does not occur in the file
 # as the engine reads it leaves the file unchanged in the post image,
-# so the agent is warned that the gates could not check the edit. A
+# so the agent is warned that the gates could not check the edit. The
+# warning names what is left to check it. For a story file that is the
+# commit gate. For .iso-config.yaml no commit gate checks a gate change,
+# so it is the review by the file's code owners (methodology §11.10). A
 # file that does not exist draws no warning, because the Edit tool
 # refuses an edit to one anyway.
 _ptu_images() {
@@ -190,7 +193,14 @@ _ptu_images() {
         0) : ;;
         4)
             [ -f "$PTU_TARGET" ] || return 0
-            vse_hj_add_context "Warning: the VSE gates could not reproduce this ${PTU_TOOL} call on ${PTU_TARGET}, because an old_string does not occur in the file as the hook reads it, so the Gherkin-first gate and the self-bypass guard saw the file unchanged. The commit gate remains the backstop (methodology §11.9)."
+            case "$PTU_BASE" in
+                .iso-config.yaml)
+                    vse_hj_add_context "Warning: the VSE gates could not reproduce this ${PTU_TOOL} call on ${PTU_TARGET}, because an old_string does not occur in the file as the hook reads it, so the self-bypass guard saw the file unchanged and this change was not checked against methodology §11.10. Review by the owners of .iso-config.yaml (CODEOWNERS) is the remaining check."
+                    ;;
+                *)
+                    vse_hj_add_context "Warning: the VSE gates could not reproduce this ${PTU_TOOL} call on ${PTU_TARGET}, because an old_string does not occur in the file as the hook reads it, so the Gherkin-first gate and the self-bypass guard saw the file unchanged. The commit gate remains the backstop (methodology §11.9)."
+                    ;;
+            esac
             ;;
         *)
             echo "[pre-tool-use] Could not apply the ${PTU_TOOL} call to ${PTU_TARGET}." >&2

@@ -679,6 +679,29 @@ test_first:
     ptu_assert_reason "test_first" "config: the question names test_first"
 }
 
+# No commit gate checks a gate_overrides or test_first change, so when
+# the guard cannot reproduce an edit to the configuration the warning
+# says the change was not checked against §11.10 and names the review
+# by the code owners of .iso-config.yaml as the remaining check. It
+# names neither the commit gate nor the Gherkin-first gate, which never
+# runs on the configuration.
+case_config_not_reproduced_context() {
+    local config
+    ptu_project light precommit_lint=off
+    config="${REPO}/.iso-config.yaml"
+    ptu_run "$(ptu_edit_json "$config" "precommit_lint:  off" "precommit_lint: warn")"
+    ptu_assert_proceeds "config not reproduced: the edit is not asked on a guess"
+    ptu_assert_context "could not reproduce" "config not reproduced: the agent is told the edit could not be reproduced"
+    ptu_assert_context "the self-bypass guard saw the file unchanged" \
+        "config not reproduced: the guard is said to have seen the file unchanged"
+    ptu_assert_context "was not checked against methodology §11.10" \
+        "config not reproduced: the change is said to be unchecked against §11.10"
+    ptu_assert_context "Review by the owners of .iso-config.yaml (CODEOWNERS) is the remaining check" \
+        "config not reproduced: the code owners' review is named as the remaining check"
+    ptu_assert_context_lacks "commit gate" "config not reproduced: the commit gate is not named as a backstop"
+    ptu_assert_context_lacks "Gherkin-first" "config not reproduced: the Gherkin-first gate is not named"
+}
+
 case_config_other_change_allowed() {
     local config
     ptu_project light precommit_lint=warn
@@ -889,6 +912,7 @@ case_test_first_refactor_branch_context
 case_test_first_not_applicable
 case_notebook_path_read
 case_config_gate_change_asks
+case_config_not_reproduced_context
 case_config_other_change_allowed
 case_config_nested_shadow_asks
 case_config_never_code
