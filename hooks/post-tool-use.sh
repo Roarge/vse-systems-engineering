@@ -42,7 +42,7 @@
 set -euo pipefail
 
 POST_EVENT="PostToolUse"
-POST_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+POST_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 POST_WORK=""
 
 # Fail quietly. Any unexpected exit status becomes 0 with one line on

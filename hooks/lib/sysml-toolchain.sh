@@ -49,7 +49,7 @@ VSE_TC_PILOT_LIB=""
 # Reuse the configuration locator from iso-profile.sh when it sits
 # beside this file and has not been sourced already.
 if [ -z "${ISO_CONFIG_FILE+x}" ]; then
-    _vse_tc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _vse_tc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
     if [ -r "${_vse_tc_dir}/iso-profile.sh" ]; then
         # shellcheck source=/dev/null
         . "${_vse_tc_dir}/iso-profile.sh"
@@ -87,12 +87,59 @@ _vse_tc_scalar() {
     printf '%s\n' "$value"
 }
 
-# timeout is coreutils. A platform without it runs the command bare.
+# Run a command under a limit of <secs> seconds. <secs> is a whole
+# number of seconds (VSE_TC_TIMEOUT and VSE_TC_PROBE_TIMEOUT alike).
+# coreutils timeout would also read a fraction or a unit suffix, but
+# perl's alarm counts whole seconds only: it drops a fraction, so a
+# budget under one second sets no alarm at all. A command that runs
+# out of time exits 124, as under coreutils timeout. macOS has no
+# timeout, so gtimeout (Homebrew coreutils) comes next, then perl, and
+# a machine with none of the three runs the command with no limit. The
+# perl fallback starts the command in a process group (the set of
+# processes one signal can reach together) of its own and, when the
+# alarm fires, stops the whole group. A launcher script that waits in a
+# child process would otherwise leave that child holding the output
+# open, and the caller would still hang. A group of its own is out of
+# reach of the terminal, so perl passes on INT (Ctrl-C), TERM, HUP and
+# QUIT to the group, as coreutils timeout does. Each signal it sends is
+# followed by CONT, so a stopped member wakes to receive it. After a
+# passed-on signal perl still waits for the command, under the same
+# alarm, then ends itself with that signal, so the caller sees what it
+# would have seen had the command run in the foreground. Both sides set
+# the group, so a signal that arrives before the command has done so
+# still reaches it. The exec form with the program in braces never
+# hands the command to a shell. A command perl cannot start exits 127,
+# with the reason on stderr in the words coreutils timeout uses.
 _vse_tc_timeout() {
     local secs="$1"
     shift
     if command -v timeout >/dev/null 2>&1; then
         timeout "$secs" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$secs" "$@"
+    elif command -v perl >/dev/null 2>&1; then
+        perl -e '
+            my $secs = shift;
+            my %num = (HUP => 1, INT => 2, QUIT => 3, TERM => 15);
+            my $pid = fork;
+            defined $pid or exit 125;
+            if ($pid == 0) {
+                setpgrp(0, 0);
+                exec { $ARGV[0] } @ARGV;
+                print STDERR "timeout: failed to run command \x27$ARGV[0]\x27: $!\n";
+                exit 127;
+            }
+            setpgrp($pid, $pid);
+            my $got;
+            for my $sig (keys %num) {
+                $SIG{$sig} = sub { $got = $sig; kill $sig, -$pid; kill "CONT", -$pid };
+            }
+            $SIG{ALRM} = sub { kill "TERM", -$pid; kill "CONT", -$pid; exit 124 };
+            alarm $secs;
+            waitpid($pid, 0);
+            if ($got) { $SIG{$got} = "DEFAULT"; kill $got, $$; exit 128 + $num{$got} }
+            exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
+        ' "$secs" "$@"
     else
         "$@"
     fi
@@ -224,8 +271,8 @@ vse_tc_pilot_paths() {
         VSE_TC_REASON="pilot sysml.library not found under ${home}/sysml"
         return 1
     fi
-    VSE_TC_PILOT_JAR="$(cd "$(dirname "$jar")" && pwd)/$(basename "$jar")"
-    VSE_TC_PILOT_LIB="$(cd "${home}/sysml/sysml.library" && pwd)"
+    VSE_TC_PILOT_JAR="$(cd "$(dirname "$jar")" > /dev/null && pwd)/$(basename "$jar")"
+    VSE_TC_PILOT_LIB="$(cd "${home}/sysml/sysml.library" > /dev/null && pwd)"
     return 0
 }
 
@@ -501,8 +548,11 @@ _vse_tc_run_impl() {
             vse_tc_validate "$tool" "$@" > "$capture" || rc=$?
             out="$(cat "$capture")"
             if [ "${#staged[@]}" -gt 0 ] && [ "$rc" -eq 1 ]; then
-                out="$(printf '%s\n' "$out" | awk -v keep="${VSE_TC_STAGED_ONLY}" '
-                    BEGIN { n = split(keep, k, "\n"); for (i = 1; i <= n; i++) if (k[i] != "") want[k[i]] = 1 }
+                # The list holds newlines, which BWK awk (macOS) refuses
+                # in an awk -v value, so it reaches awk through the
+                # environment.
+                out="$(printf '%s\n' "$out" | VSE_TC_KEEP="${VSE_TC_STAGED_ONLY}" awk '
+                    BEGIN { n = split(ENVIRON["VSE_TC_KEEP"], k, "\n"); for (i = 1; i <= n; i++) if (k[i] != "") want[k[i]] = 1 }
                     { p = $0; sub(/:[0-9]+:[0-9]+: .*$/, "", p); if (p in want) print }
                 ')"
                 [ -n "$out" ] || rc=0

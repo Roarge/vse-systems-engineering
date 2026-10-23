@@ -23,7 +23,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 # shellcheck source=/dev/null
 . "${TC_LIB_DIR}/ci-step.sh"
 
@@ -109,7 +109,7 @@ ex_run() {
         RC=99
         return 0
     fi
-    _tc_capture env -C "$REPO" -i \
+    _tc_capture _tc_in_dir "$REPO" env -i \
         PATH="${STUBS}:/usr/bin:/bin" HOME="$FAKEHOME" \
         CI=true GITHUB_ACTIONS=true GITHUB_WORKSPACE="$REPO" \
         GITHUB_EVENT_NAME=release PANDOC_LOG="$PANDOC_LOG" \

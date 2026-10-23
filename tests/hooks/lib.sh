@@ -29,10 +29,13 @@
 # failure through an explicit return, so errexit is not load-bearing
 # inside them.
 #
-# Requires GNU coreutils (env -C) and git.
+# Requires git and a POSIX userland. The helpers run on GNU/Linux and
+# on macOS with its stock bash 3.2 and BSD tools, so they use no GNU-only
+# option (env -C, for one). _tc_in_dir changes directory for the
+# runners instead.
 set -euo pipefail
 
-TC_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TC_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
 TC_PLUGIN_ROOT="$(cd "${TC_LIB_DIR}/../.." && pwd)"
 
 TC_PASS_COUNT=0
@@ -43,8 +46,18 @@ TC_SKIP_COUNT=0
 # a child of it, so a single removal in tc_teardown cannot miss one.
 # The root is created here rather than on first use, because a helper
 # called inside a command substitution runs in a subshell and its
-# assignment would never reach this scope.
+# assignment would never reach this scope. The root is named by its
+# physical path, because on macOS the temporary directory is reached
+# through a symbolic link (/var links to /private/var) and a hook that
+# resolves its directory with pwd -P would otherwise print a path the
+# test never built. The two steps stay two statements. Nested in one,
+# a failed mktemp would leave cd an empty name, which keeps the working
+# directory, so errexit (set -e) would not stop the script and the
+# scratch root would become the working directory. A TMPDIR relative to
+# the working directory gives a relative name, which cd looks up through
+# an exported CDPATH and then prints, so its output is discarded.
 TC_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")"
+TC_ROOT="$(cd -- "$TC_ROOT" > /dev/null && pwd -P)"
 
 # Extra environment for the next runner call, as NAME=VALUE words.
 TC_ENV=()
@@ -261,6 +274,358 @@ exit 0
 EOF
 }
 
+# BSD-behaviour stubs.
+#
+# macOS ships BSD grep, BSD date and the one true awk (BWK awk, after
+# Brian W. Kernighan, who maintains it), and each accepts less than its
+# GNU counterpart.
+# Each stub below refuses what the macOS tool refuses, the way that tool
+# refuses it, and passes every other call to the real tool found when
+# the stub is written. A hook under test meets the stub through the
+# sandboxed PATH, so a hook that relies on a GNU-only form fails on
+# Linux too. The test script itself keeps the real tool.
+
+# _tc_stub_wrap <name>: write the stub <name> into $STUBS from stdin,
+# after a header that names the real <name> found now as $real. The
+# body is read verbatim, so it is written without escapes.
+_tc_stub_wrap() {
+    local name="$1" real
+    real="$(command -v "$name")"
+    {
+        printf '#!/usr/bin/env bash\nset -uo pipefail\nreal=%q\n' "$real"
+        cat
+    } | tc_stub "$name"
+}
+
+# tc_stub_bsd_grep: BSD grep has no -P (Perl regular expressions). It
+# refuses -P with "grep: invalid option -- P" and --perl-regexp with
+# "grep: unrecognized option `--perl-regexp'", then prints its usage
+# text and exits 2. The stub reads the options the way grep's
+# getopt_long does: anywhere before "--", with single letters grouped
+# (so -oP is refused as -P is), and with the argument of -e, -f and the
+# other options that take one never read as an option (so the pattern
+# "-P" after -e is a pattern). POSIX leaves \| in a basic regular
+# expression undefined, so a BSD grep need not read it as alternation.
+# The stub refuses an unescaped \| in a basic regular expression (no
+# -E, no -F) with a message and exit 2, so a use fails loudly here.
+# Inside a bracket expression ([\|]) a backslash and | are two plain
+# members, as POSIX says and BSD grep reads them, so the scan skips
+# bracket expressions. One ends at the first ] that is not its first
+# member (after an optional ^), and a class such as [:space:], an
+# equivalence class [=e=] or a collating symbol [.-.] inside it is
+# skipped whole, so its ] does not end it. The patterns checked are
+# those given with -e or --regexp, or else the first operand. A
+# pattern file named by -f is not read.
+tc_stub_bsd_grep() {
+    _tc_stub_wrap grep <<'EOF'
+usage() {
+    echo 'usage: grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]' >&2
+    printf '\t%s\n' '[-e pattern] [-f file] [--binary-files=value] [--color=when]' \
+        '[--context[=num]] [--directories=action] [--label] [--line-buffered]' \
+        '[--null] [pattern] [file ...]' >&2
+    exit 2
+}
+mode=basic
+patterns=()
+from_option=0
+operand=""
+have_operand=0
+expect=""
+ended=0
+for arg in "$@"; do
+    if [ -n "$expect" ]; then
+        if [ "$expect" = pattern ]; then
+            patterns+=("$arg")
+        fi
+        expect=""
+        continue
+    fi
+    if [ "$ended" -eq 0 ]; then
+        case "$arg" in
+            --)
+                ended=1
+                continue
+                ;;
+            --perl*)
+                printf "grep: unrecognized option \`%s'\n" "$arg" >&2
+                usage
+                ;;
+            --extended-regexp) mode=extended; continue ;;
+            --fixed-strings) mode=fixed; continue ;;
+            --basic-regexp) mode=basic; continue ;;
+            --regexp=*) patterns+=("${arg#--regexp=}"); from_option=1; continue ;;
+            --regexp) expect=pattern; from_option=1; continue ;;
+            --file=*) from_option=1; continue ;;
+            --file) expect=file; from_option=1; continue ;;
+            --after-context|--before-context|--binary-files|--devices|--directories|\
+            --exclude|--exclude-dir|--include|--include-dir|--label|--max-count)
+                expect=argument
+                continue
+                ;;
+            --*) continue ;;
+            -?*)
+                group="${arg#-}"
+                while [ -n "$group" ]; do
+                    letter="${group%"${group#?}"}"
+                    group="${group#?}"
+                    case "$letter" in
+                        P)
+                            echo 'grep: invalid option -- P' >&2
+                            usage
+                            ;;
+                        E) mode=extended ;;
+                        F) mode=fixed ;;
+                        G) mode=basic ;;
+                        e)
+                            from_option=1
+                            if [ -n "$group" ]; then
+                                patterns+=("$group")
+                            else
+                                expect=pattern
+                            fi
+                            group=""
+                            ;;
+                        f|A|B|C|D|d|m)
+                            if [ "$letter" = f ]; then
+                                from_option=1
+                            fi
+                            if [ -z "$group" ]; then
+                                expect=argument
+                            fi
+                            group=""
+                            ;;
+                    esac
+                done
+                continue
+                ;;
+        esac
+    fi
+    if [ "$have_operand" -eq 0 ]; then
+        operand="$arg"
+        have_operand=1
+    fi
+done
+if [ "$from_option" -eq 0 ] && [ "$have_operand" -eq 1 ]; then
+    patterns+=("$operand")
+fi
+if [ "$mode" = basic ]; then
+    for pattern in ${patterns[@]+"${patterns[@]}"}; do
+        n=${#pattern}
+        i=0
+        while [ "$i" -lt "$n" ]; do
+            case "${pattern:$i:1}" in
+                '\')
+                    if [ "${pattern:$((i + 1)):1}" = '|' ]; then
+                        echo 'grep: \| in a basic regular expression is not portable to BSD grep (use -E and |)' >&2
+                        exit 2
+                    fi
+                    i=$((i + 2))
+                    ;;
+                '[')
+                    i=$((i + 1))
+                    if [ "${pattern:$i:1}" = '^' ]; then
+                        i=$((i + 1))
+                    fi
+                    if [ "${pattern:$i:1}" = ']' ]; then
+                        i=$((i + 1))
+                    fi
+                    while [ "$i" -lt "$n" ] && [ "${pattern:$i:1}" != ']' ]; do
+                        case "${pattern:$i:2}" in
+                            '[:'|'[='|'[.')
+                                close="${pattern:$((i + 1)):1}]"
+                                j=$((i + 2))
+                                while [ "$j" -lt "$n" ] && [ "${pattern:$j:2}" != "$close" ]; do
+                                    j=$((j + 1))
+                                done
+                                if [ "$j" -lt "$n" ]; then
+                                    i=$((j + 2))
+                                else
+                                    i=$((i + 1))
+                                fi
+                                ;;
+                            *)
+                                i=$((i + 1))
+                                ;;
+                        esac
+                    done
+                    i=$((i + 1))
+                    ;;
+                *)
+                    i=$((i + 1))
+                    ;;
+            esac
+        done
+    done
+fi
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_bsd_date: BSD date has no -d (GNU's date string) and no long
+# options. It reads its options with getopt and the option string of
+# macOS date (f:I::jnRr:uv:), so it refuses any other letter with
+# "date: illegal option -- <letter>", its usage text and exit 1. That
+# covers -d alone, -d in a group such as -ud, and --date, whose first
+# letter getopt reads as "-". Options end at "--" or at the first
+# operand, as they do for getopt. GNU date reads options after an
+# operand too, so "date +%Y -d x" passes there. BSD date takes the
+# operand after the +format as the time to set, and refuses one that
+# starts with "-" as an illegal time format, so the stub does too.
+tc_stub_bsd_date() {
+    _tc_stub_wrap date <<'EOF'
+usage() {
+    echo 'usage: date [-jnRu] [-I[date|hours|minutes|seconds]] [-f input_fmt]' >&2
+    echo '            [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]' >&2
+    echo '            [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]' >&2
+    exit 1
+}
+check() {
+    local group letter
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --) shift; break ;;
+            -?*) ;;
+            *) break ;;
+        esac
+        group="${1#-}"
+        shift
+        while [ -n "$group" ]; do
+            letter="${group%"${group#?}"}"
+            group="${group#?}"
+            case "$letter" in
+                j|n|R|u) ;;
+                I) group="" ;;
+                f|r|v)
+                    if [ -z "$group" ]; then
+                        if [ "$#" -eq 0 ]; then
+                            echo "date: option requires an argument -- ${letter}" >&2
+                            usage
+                        fi
+                        shift
+                    fi
+                    group=""
+                    ;;
+                *)
+                    echo "date: illegal option -- ${letter}" >&2
+                    usage
+                    ;;
+            esac
+        done
+    done
+    case "${1:-}" in
+        +*) shift ;;
+    esac
+    case "${1:-}" in
+        -*)
+            echo 'date: illegal time format' >&2
+            usage
+            ;;
+    esac
+}
+check "$@"
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_bwk_awk: BWK awk, the awk of macOS, refuses a newline inside
+# a -v value. It reports "newline in string" with the first twenty
+# characters of the value, then skips the program and exits 2, so the
+# program prints nothing. The stub does the same for -v name=value and
+# -vname=value. It reads the options the way BWK awk does: one option
+# per word, -f and -F taking an argument, up to "--" or the first
+# operand (the program). An escaped \n in a value is not a newline, and
+# BWK awk accepts it, so the stub passes it.
+tc_stub_bwk_awk() {
+    _tc_stub_wrap awk <<'EOF'
+newline='
+'
+expect=""
+for arg in "$@"; do
+    assignment=""
+    if [ -n "$expect" ]; then
+        if [ "$expect" = v ]; then
+            assignment="$arg"
+        fi
+        expect=""
+    else
+        case "$arg" in
+            --) break ;;
+            -v) expect=v ;;
+            -f|-F) expect=argument ;;
+            -v*) assignment="${arg#-v}" ;;
+            -?*) ;;
+            *) break ;;
+        esac
+    fi
+    case "$assignment" in
+        *=*"$newline"*)
+            printf 'awk: newline in string %.20s... at source line 1\n' "${assignment#*=}" >&2
+            exit 2
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_closed_devfd_jq: jq under the stock bash 3.2 of macOS. A
+# process substitution, <(...), reaches a command as a /dev/fd path.
+# When any external command finishes, bash 3.2 closes every such
+# descriptor still open, so a path handed to a function names a closed
+# descriptor once the function has run another program, and jq cannot
+# open it. jq reports "Could not open /dev/fd/N: Bad file
+# descriptor", after --slurpfile or --rawfile behind its "Bad JSON"
+# prefix, and exits 2. The stub refuses every /dev/fd path argument
+# that way, whether or not its descriptor is open, and passes every
+# other call to the real jq.
+tc_stub_closed_devfd_jq() {
+    _tc_stub_wrap jq <<'EOF'
+option=""
+name=""
+for arg in "$@"; do
+    case "$arg" in
+        /dev/fd/*)
+            case "$option" in
+                --slurpfile|--rawfile)
+                    printf 'jq: Bad JSON in %s %s %s: Could not open %s: Bad file descriptor\n' \
+                        "$option" "$name" "$arg" "$arg" >&2
+                    ;;
+                *)
+                    printf 'jq: error: Could not open file %s: Bad file descriptor\n' "$arg" >&2
+                    ;;
+            esac
+            exit 2
+            ;;
+    esac
+    option="$name"
+    name="$arg"
+done
+exec "$real" "$@"
+EOF
+}
+
+# tc_stub_closed_devfd_python3: python3 under the stock bash 3.2 of
+# macOS, as tc_stub_closed_devfd_jq is jq. The image program of
+# hooks/lib/test-first.sh opens the paths it is given, and a /dev/fd
+# path whose descriptor bash 3.2 has closed fails there with the
+# OSError line the program prints, "[Errno 9] Bad file descriptor:
+# '/dev/fd/N'", and exit 2. The stub refuses every /dev/fd path
+# argument that way, whether or not its descriptor is open, and passes
+# every other call to the real python3.
+tc_stub_closed_devfd_python3() {
+    _tc_stub_wrap python3 <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        /dev/fd/*)
+            printf "[Errno 9] Bad file descriptor: '%s'\n" "$arg" >&2
+            exit 2
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
 tc_pilot_home() {
     printf '%s\n' "${FAKEHOME}/.local/share/sysml-pilot"
 }
@@ -303,6 +668,14 @@ tc_write_at() {
     cat > "$path"
 }
 
+# tc_crlf: copy stdin to stdout with every line ending in a carriage
+# return and a line feed (CR LF), for fixtures that imitate a checkout
+# with Windows line endings. awk writes the carriage return the same
+# way everywhere, where BSD sed reads \r in a replacement as a plain r.
+tc_crlf() {
+    awk '{ printf "%s\r\n", $0 }'
+}
+
 tc_stage() {
     git -C "$REPO" add -- "$@"
 }
@@ -334,6 +707,19 @@ tc_env() {
     TC_ENV=("$@")
 }
 
+# _tc_in_dir <dir> <command> [arg ...]: run the command in <dir>. The
+# body is a subshell, so the caller's directory is left alone, and the
+# command replaces it. It stands in for GNU env -C, which macOS env
+# lacks. Exit 125 means the directory could not be entered, the status
+# env -C gives for the same failure. cd prints a directory it found
+# through an exported CDPATH, which would join the command's output, so
+# its output is discarded.
+_tc_in_dir() (
+    cd -- "$1" > /dev/null || exit 125
+    shift
+    exec "$@"
+)
+
 # Stdin is the file named by TC_STDIN, or empty when it is unset, so
 # code under test never reads the terminal of whoever runs the tests.
 _tc_capture() {
@@ -341,8 +727,9 @@ _tc_capture() {
     outf="$(mktemp "${TC_ROOT}/out.XXXXXX")"
     errf="$(mktemp "${TC_ROOT}/err.XXXXXX")"
     RC=0
-    # env is an external process, so the errexit context of this caller
-    # cannot leak into the code under test.
+    # The command the runners pass is env, or _tc_in_dir, which replaces
+    # itself with env. Either way the code under test is an external
+    # process, so the errexit context of this caller cannot leak into it.
     "$@" > "$outf" 2> "$errf" < "${TC_STDIN:-/dev/null}" || RC=$?
     # shellcheck disable=SC2034
     OUT="$(cat "$outf")"
@@ -358,7 +745,7 @@ _tc_capture() {
 # (GITHUB_HEAD_REF), so a case that pins one sets it deliberately
 # through tc_env.
 _tc_sandboxed() {
-    _tc_capture env -C "$REPO" \
+    _tc_capture _tc_in_dir "$REPO" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
         -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
@@ -432,7 +819,7 @@ tc_run_lib_fn() {
 # GITHUB_HEAD_REF are dropped here too, so an outer value cannot steer
 # a real-tool case.
 tc_run_real() {
-    _tc_capture env -C "$REPO" \
+    _tc_capture _tc_in_dir "$REPO" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${TC_REAL_PATH}" \
         ${TC_ENV[@]+"${TC_ENV[@]}"} \
@@ -494,7 +881,7 @@ tc_bin_without() {
 tc_run_in() {
     local dir="$1"
     shift
-    _tc_capture env -C "$dir" \
+    _tc_capture _tc_in_dir "$dir" env \
         -u CLAUDE_PLUGIN_ROOT -u VSE_SYSML_TOOLCHAIN -u VSE_JAVA -u JAVA_HOME \
         -u VSE_TC_PROBE_TIMEOUT -u VSE_ISO_CONFIG -u GITHUB_HEAD_REF \
         PATH="${STUBS}:/usr/bin:/bin" \
@@ -506,14 +893,21 @@ tc_run_in() {
 
 # ----------------------------------------------------------- assertion
 
+# TC_LABEL_SUFFIX names the pass a case runs in, such as "BSD grep" for
+# a case run once with the tool of the machine and once with a
+# BSD-behaviour stub. tc_pass, tc_fail and tc_skip add it to every
+# assertion name in parentheses, so each pass reports its assertions
+# and skips under names of their own. Empty, it adds nothing.
+TC_LABEL_SUFFIX=""
+
 tc_pass() {
     TC_PASS_COUNT=$((TC_PASS_COUNT + 1))
-    printf 'PASS: %s\n' "$1"
+    printf 'PASS: %s\n' "$1${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
 }
 
 tc_fail() {
     TC_FAIL_COUNT=$((TC_FAIL_COUNT + 1))
-    printf 'FAIL: %s\n' "$1"
+    printf 'FAIL: %s\n' "$1${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
     if [ "$#" -gt 1 ]; then
         printf '%s\n' "$2" | sed 's/^/      /'
     fi
@@ -521,7 +915,7 @@ tc_fail() {
 
 tc_skip() {
     TC_SKIP_COUNT=$((TC_SKIP_COUNT + 1))
-    printf 'SKIPPED: %s not installed\n' "$1"
+    printf 'SKIPPED: %s not installed%s\n' "$1" "${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
     if [ "$#" -gt 1 ] && [ -n "$2" ]; then
         printf '  reason: %s\n' "$2"
     fi

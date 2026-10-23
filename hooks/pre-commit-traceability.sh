@@ -80,18 +80,6 @@ if ! CHANGED="$(file_set ACM)"; then
     exit 1
 fi
 
-# Drop every path with a library/ directory segment, the shipped
-# model/library/vse-library.sysml above all. The library carries the
-# methodology's own definitions (UserStory, Feature, Epic), which are
-# definitions the project's stories are typed by, not requirements the
-# project has to verify. Leaving them in would report the library as a
-# wall of gaps on the first commit that stages it.
-SYSML_FILES=$(printf '%s\n' "$CHANGED" | grep '\.sysml$' | grep -v '\(^\|/\)library/' || true)
-
-if [ -z "$SYSML_FILES" ]; then
-    exit 0
-fi
-
 # Detect the VSE engineering root: prefer engineering/ if present
 # (brownfield layout, where work products live under engineering/ to
 # keep an existing host project's root clean), else . (greenfield). The
@@ -101,6 +89,56 @@ if [ -d "engineering/model" ] || [ -d "engineering/models" ] || [ -f "engineerin
     ENG_ROOT="engineering"
 else
     ENG_ROOT="."
+fi
+
+# tool_failure <tool> <status> <what>: report that <tool> failed with
+# exit status <status> while the gate read <what> (a model file, or the
+# list of changed files), at the gate's disposition, and end the gate.
+# A failed read must not pass for "no names touched", which would let
+# an unverified requirement through.
+tool_failure() {
+    local what="$1 exited with status $2 while reading $3, so the touched requirements could not be read"
+    case "$DISPOSITION" in
+        info)
+            echo "pre-commit-traceability: ${what}. Run /vse-trace for the full-repo report."
+            exit 0
+            ;;
+        block)
+            echo "pre-commit-traceability: ${what} (engineering root: ${ENG_ROOT})."
+            if [ -z "$RANGE" ]; then
+                echo "  To proceed anyway, record a one-line rationale per methodology §0.10.6."
+            fi
+            exit 1
+            ;;
+        *)
+            echo "pre-commit-traceability: warning: ${what} (engineering root: ${ENG_ROOT})."
+            exit 0
+            ;;
+    esac
+}
+
+# Keep the .sysml paths, then drop every path with a library/ directory
+# segment, the shipped model/library/vse-library.sysml above all. The
+# library carries the methodology's own definitions (UserStory,
+# Feature, Epic), which are definitions the project's stories are typed
+# by, not requirements the project has to verify. Leaving them in would
+# report the library as a wall of gaps on the first commit that stages
+# it. Each filter is its own read, so the status checked is that grep's
+# own (pipefail reports the last command that failed, which is grep):
+# 1 means no path is left to check, and 2 or more ends the gate through
+# tool_failure, because a list that could not be read is not an empty
+# one.
+rc=0
+SYSML_FILES=$(printf '%s\n' "$CHANGED" | LC_ALL=C grep '\.sysml$') || rc=$?
+if [ "$rc" -eq 0 ]; then
+    SYSML_FILES=$(printf '%s\n' "$SYSML_FILES" | LC_ALL=C grep -Ev '(^|/)library/') || rc=$?
+fi
+if [ "$rc" -ge 2 ]; then
+    tool_failure grep "$rc" "the list of changed files"
+fi
+
+if [ -z "$SYSML_FILES" ]; then
+    exit 0
 fi
 
 # added_model_text <whole>: read one file's diff on stdin and print the
@@ -278,45 +316,114 @@ WHOLE_FILE=1000000
 # lists paths relative to the working directory, so the index path is
 # ":./<file>", which git reads from there too, and the gate works from
 # a subdirectory.
+#
+# Returns 0 when git and awk both succeed. Otherwise it returns 1 and
+# names the one that failed in READ_TOOL, with its exit status in
+# READ_STATUS. When both failed, awk is named, because an awk that stops
+# before it has read everything makes git fail too, with the status of
+# a write to a closed pipe (SIGPIPE, 141). The statuses are read from
+# PIPESTATUS on the right of ||, which runs only when the pipeline
+# failed (pipefail is on) and still sees that pipeline's statuses.
+READ_TOOL=""
+READ_STATUS=0
 added_text() {
-    local file="$1"
+    local file="$1" status="0 0" git_rc awk_rc
     if [ -z "$RANGE" ]; then
         git diff --cached --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" -- "$file" \
-            | added_model_text 0
+            | added_model_text 0 || status="${PIPESTATUS[0]} ${PIPESTATUS[1]}"
     elif [ "$RANGE" = "all" ]; then
-        git show ":./$file" | added_model_text 1
+        git show ":./$file" | added_model_text 1 || status="${PIPESTATUS[0]} ${PIPESTATUS[1]}"
     else
         git diff --no-color --no-ext-diff --no-textconv --unified="$WHOLE_FILE" "$RANGE" -- "$file" \
-            | added_model_text 0
+            | added_model_text 0 || status="${PIPESTATUS[0]} ${PIPESTATUS[1]}"
     fi
+    git_rc="${status% *}"
+    awk_rc="${status#* }"
+    if [ "$awk_rc" -ne 0 ]; then
+        READ_TOOL="awk"
+        READ_STATUS="$awk_rc"
+        return 1
+    fi
+    if [ "$git_rc" -ne 0 ]; then
+        READ_TOOL="git"
+        READ_STATUS="$git_rc"
+        return 1
+    fi
+    return 0
 }
 
 # Names this change touches, as tab-separated "<file>\t<name>" records.
 # For a modified file only the names on added lines count, which is
 # what keeps the gate off pre-existing content. For a newly added file
 # every line is added, so every name in it counts.
+#
+# Usage: collect_touched <pattern> <extract>, which sets COLLECTED to
+# the records. The model text of each file goes to a temporary file
+# first, so the status of the read (git and awk, through added_text) is
+# checked on its own, and the file is removed before the gate goes on
+# or ends. grep -oE prints each declaration in the text that matches
+# the extended regular expression <pattern>, and the sed -E
+# substitution <extract> cuts the name out of it. Both are POSIX forms,
+# so BSD grep and sed (macOS) read them as GNU does. Both run in the C
+# locale, as the awk above does, so every tool reads one byte as one
+# character: a byte outside ASCII is never part of a name, and no tool
+# refuses a line that is not valid text in the engineer's locale (BSD
+# sed refuses one in a UTF-8 locale). grep exits 1 when nothing
+# matches, which means no names. Any other failure (of mktemp, git or
+# awk, grep status 2 or more, or any failure of sed, which has no
+# status for "no match") ends the gate through tool_failure.
 collect_touched() {
-    local pattern="$1" file names name
+    local pattern="$1" extract="$2" file text found names name rc
+    COLLECTED=""
     while IFS= read -r file; do
         [ -n "$file" ] || continue
-        names=$(added_text "$file" | grep -oP "$pattern" || true)
+        text="$(mktemp "${TMPDIR:-/tmp}/vse-trace.XXXXXX")" || tool_failure mktemp "$?" "$file"
+        # A redirection bash cannot open fails before git or awk runs.
+        READ_TOOL="bash"
+        READ_STATUS=1
+        if ! added_text "$file" > "$text"; then
+            rm -f "$text"
+            tool_failure "$READ_TOOL" "$READ_STATUS" "$file"
+        fi
+        rc=0
+        found=$(LC_ALL=C grep -oE "$pattern" "$text") || rc=$?
+        rm -f "$text"
+        if [ "$rc" -eq 1 ]; then
+            continue
+        elif [ "$rc" -ne 0 ]; then
+            tool_failure grep "$rc" "$file"
+        fi
+        names=$(printf '%s\n' "$found" | LC_ALL=C sed -E "$extract") || tool_failure sed "$?" "$file"
         for name in $names; do
-            printf '%s\t%s\n' "$file" "$name"
+            COLLECTED="${COLLECTED}${file}"$'\t'"${name}"$'\n'
         done
     done <<< "$SYSML_FILES"
 }
 
-TOUCHED_REQS=$(collect_touched 'requirement\s+(?:def\s+)?(?:<[^>]*>\s*)?\K[A-Za-z_]\w*(?=\s*:>?\s*[A-Za-z_])' | sort -u)
-TOUCHED_VERS=$(collect_touched 'verification\s+def\s+\K\w+' | sort -u)
+# A requirement declaration is "requirement", an optional "def", an
+# optional short name in angle brackets, then the name, followed by ":"
+# or ":>" and a type. The match runs on to the first letter of the
+# type, so the substitution keeps only the name.
+collect_touched \
+    'requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?[A-Za-z_][A-Za-z0-9_]*[[:space:]]*:>?[[:space:]]*[A-Za-z_]' \
+    's/^requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?([A-Za-z_][A-Za-z0-9_]*).*$/\3/'
+TOUCHED_REQS=$(printf '%s' "$COLLECTED" | sort -u)
+collect_touched \
+    'verification[[:space:]]+def[[:space:]]+[A-Za-z0-9_]+' \
+    's/^verification[[:space:]]+def[[:space:]]+//'
+TOUCHED_VERS=$(printf '%s' "$COLLECTED" | sort -u)
 
 # Does any .sysml file in the repository carry a verify link to $1?
 # The target may follow any chain of "::" and "." segments, such as a
 # package and the requirement groups the story sits in, and may run on
-# past it, as in verify <story>.acceptance.<name>.
+# past it, as in verify <story>.acceptance.<name>. The name must end
+# there, at a character that cannot continue a name or at the end of
+# the line, so verify US_9_XY is not a link to US_9_X. grep reads the
+# file in the C locale, as collect_touched does.
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qP "verify\s+(?:requirement\s+)?(?:[A-Za-z_]\w*(?:::|\.))*${req}\b" "$sysml" 2>/dev/null; then
+        if LC_ALL=C grep -qE "verify[[:space:]]+(requirement[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*(::|[.]))*${req}([^A-Za-z0-9_]|\$)" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
@@ -339,7 +446,9 @@ done <<< "$TOUCHED_REQS"
 while IFS=$'\t' read -r file ver; do
     [ -z "${ver:-}" ] && continue
     CHECKED=$((CHECKED + 1))
-    if ! grep -qP 'verify\s+(?:requirement\s+)?[A-Za-z_]' "$file" 2>/dev/null; then
+    # "verify requirement X" starts with a letter after "verify" too, so
+    # this one pattern covers both forms of the clause.
+    if ! LC_ALL=C grep -qE 'verify[[:space:]]+[A-Za-z_]' "$file" 2>/dev/null; then
         FINDINGS="${FINDINGS}  ${file}: verification case '${ver}' has no verify link"$'\n'
         GAPS=$((GAPS + 1))
     fi

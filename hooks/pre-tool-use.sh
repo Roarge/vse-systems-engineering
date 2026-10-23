@@ -73,7 +73,7 @@
 set -euo pipefail
 
 PTU_EVENT="PreToolUse"
-PTU_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+PTU_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 PTU_WORK=""
 
 # At most this many story identifiers are listed in one finding, the

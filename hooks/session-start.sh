@@ -121,10 +121,24 @@ if is_contributor_repo; then
         LAST_LOG_LINE=$(grep -oE '^## \[[0-9]{4}-[0-9]{2}-[0-9]{2}\]' "wiki/LOG.md" | tail -1 || true)
         if [ -n "$LAST_LOG_LINE" ]; then
             LAST_LOG_DATE=$(echo "$LAST_LOG_LINE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
-            LAST_EPOCH=$(date -d "$LAST_LOG_DATE" +%s 2>/dev/null || echo "")
-            NOW_EPOCH=$(date +%s)
-            if [ -n "$LAST_EPOCH" ]; then
-                DAYS_SINCE=$(( (NOW_EPOCH - LAST_EPOCH) / 86400 ))
+            # Both ends are counted in whole UTC days since 1970. date
+            # reads a given date with options that differ between GNU
+            # and BSD (macOS), so the entry's day number comes from its
+            # year, month and day in POSIX awk instead. The count starts
+            # the year in March, so that a leap day falls at its end:
+            # January and February belong to the year before.
+            LAST_DAY=$(printf '%s\n' "$LAST_LOG_DATE" | awk -F- '{
+                y = $1 + 0
+                m = $2 + 0
+                d = $3 + 0
+                if (m <= 2)
+                    y--
+                mp = (m + 9) % 12
+                print 365 * y + int(y / 4) - int(y / 100) + int(y / 400) + int((153 * mp + 2) / 5) + d - 1 - 719468
+            }' 2>/dev/null || echo "")
+            NOW_EPOCH=$(date -u +%s 2>/dev/null || echo "")
+            if [ -n "$LAST_DAY" ] && [ -n "$NOW_EPOCH" ]; then
+                DAYS_SINCE=$(( NOW_EPOCH / 86400 - LAST_DAY ))
                 echo "  Last LOG.md entry: ${LAST_LOG_DATE} (${DAYS_SINCE} days ago)."
             else
                 echo "  Last LOG.md entry: ${LAST_LOG_DATE}."
@@ -253,7 +267,7 @@ echo "VSE project (story-driven AMBSE, ISO/IEC 29110)."
 if [ -d "${ENG_ROOT}/methodology" ]; then
     echo "Methodology: ${METHODOLOGY} (project-local, authoritative)"
 else
-    echo "Methodology: $(cd "$(dirname "$0")/.." && pwd -P)/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
+    echo "Methodology: $(cd "$(dirname "$0")/.." > /dev/null && pwd -P)/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
 fi
 echo "Profile:     ${PROFILE} (per methodology section 0.10)"
 

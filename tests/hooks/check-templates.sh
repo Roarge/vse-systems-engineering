@@ -24,7 +24,7 @@
 # Run: bash tests/hooks/check-templates.sh
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." > /dev/null && pwd)"
 # shellcheck source=/dev/null
 . "${ROOT}/tests/hooks/fill-placeholders.sh"
 MODELS="${ROOT}/templates/common/models"

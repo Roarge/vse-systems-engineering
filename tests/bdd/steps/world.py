@@ -12,15 +12,17 @@ attention-regime skill does, with core.hooksPath pointing at them. The
 configuration is rewritten from the scenario's state whenever a Given
 step changes it.
 
-Two gates are off in every scenario here, because no scenario
-describes them: the SysML lint, which would need a SysML toolchain on
-the machine, and the traceability gate, which reports every story that
-has no verification case yet. Each scenario therefore observes only
-the gates it names.
+Two gates are off unless a scenario turns one on: the SysML lint,
+which would need a SysML toolchain on the machine, and the traceability
+gate, which reports every story that has no verification case yet. Each
+scenario therefore observes only the gates it names, and
+traceability-gate.feature names the traceability gate.
 
 Git runs with a scratch HOME and without the system configuration, so
 no setting on the machine (a signing requirement, a global hooks
-directory) changes what a scenario sees. Variables an outer run might
+directory) changes what a scenario sees. A scenario that sets
+ctx.stub_dir puts that directory first on PATH for git and the hooks,
+so a stub there stands in for a tool. Variables an outer run might
 carry, such as VSE_ISO_CONFIG, the GITHUB_HEAD_REF of a CI job, or a
 GIT_INDEX_FILE set by a git hook that runs the suite, are removed.
 """
@@ -46,7 +48,8 @@ INSTALL = (
     (".githooks/lib/test-first.sh", "lib/test-first.sh"),
 )
 
-# The gates no scenario here describes, off so that they stay quiet.
+# The gates most scenarios here do not describe, off so that they stay
+# quiet. A scenario that describes one overrides it.
 QUIET_GATES = (("precommit_lint", "off"), ("precommit_traceability", "off"))
 
 # What the first commit holds: the installed hooks, the tools and the
@@ -68,6 +71,9 @@ def environment(ctx):
            if not name.startswith("GIT_") and name not in DROPPED}
     env["HOME"] = ctx.home
     env["GIT_CONFIG_NOSYSTEM"] = "1"
+    stubs = getattr(ctx, "stub_dir", None)
+    if stubs is not None:
+        env["PATH"] = stubs + os.pathsep + env.get("PATH", "")
     return env
 
 

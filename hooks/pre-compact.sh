@@ -15,7 +15,7 @@
 # Exit 0 always.
 set -euo pipefail
 
-PC_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+PC_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 PC_CWD="$(pwd -P)"
 PC_ENG=""
 if [ -r "${PC_LIB}/iso-profile.sh" ] && [ -r "${PC_LIB}/test-first.sh" ]; then

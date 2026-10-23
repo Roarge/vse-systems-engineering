@@ -21,7 +21,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 trap tc_teardown EXIT
 
@@ -285,11 +285,24 @@ EOF
     tc_stage model/core/verification-validation/verification-cases/v.sysml
 }
 
+# Every traceability case runs twice, once with the grep of the machine
+# (TRACE_GREP=machine) and once with the BSD grep stub (TRACE_GREP=BSD),
+# which refuses what the grep of macOS refuses. trace_grep installs the
+# stub for the second pass. A case that configures the project without
+# trace_config calls it directly. Each pass names itself after every
+# assertion (TC_LABEL_SUFFIX), so a failure says which grep it met.
+trace_grep() {
+    if [ "${TRACE_GREP:-machine}" = "BSD" ]; then
+        tc_stub_bsd_grep
+    fi
+}
+
 # The traceability cases stage a story with no feature file and no
 # @StoryMeta, so the two story gates are off and the traceability gate
 # is the one the case observes.
 trace_config() {
     tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off
+    trace_grep
 }
 
 case_trace_covered() {
@@ -358,6 +371,7 @@ EOF
 case_trace_comment_only() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/core/domain/d.sysml <<'EOF'
 package L {
@@ -388,9 +402,14 @@ EOF
 # the project's stories are typed by. Nothing in a project verifies
 # them, and project-setup stages the library on the first commit, so a
 # gate that read them would stop that commit at the full profile.
+#
+# Only a directory named library is skipped, at the top of the
+# repository or below it. A directory whose name merely ends in
+# "library", such as mylibrary, holds project content and is read.
 case_trace_library_skipped() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/library/vse-library.sysml \
         < "${TC_PLUGIN_ROOT}/templates/common/library/vse-library.sysml"
@@ -403,6 +422,134 @@ case_trace_library_skipped() {
         "shipped library: no library definition is reported as a gap"
     tc_assert_not_grep "pre-commit-traceability:" "$OUT" \
         "shipped library: 0 touched elements, so the gate says nothing"
+
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write library/top.sysml <<'EOF'
+package T {
+    requirement US_9_T : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_write model/mylibrary/m.sysml <<'EOF'
+package M {
+    requirement US_9_M : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_stage library/top.sysml
+    tc_stage model/mylibrary/m.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "library prefix: the story under mylibrary/ stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "library prefix: exactly one gap is counted"
+    tc_assert_grep "model/mylibrary/m.sysml: requirement 'US_9_M' has no verification case" "$OUT" \
+        "library prefix: a directory named mylibrary is read"
+    tc_assert_not_grep "US_9_T" "$OUT" \
+        "library prefix: a library/ directory at the top of the repository is skipped"
+}
+
+# A verify clause counts for a requirement only when the name it reaches
+# ends there. verify US_9_XY names US_9_XY, not US_9_X, so US_9_X is a
+# gap. The name may end the line, and "verify requirement" is the same
+# clause as "verify".
+case_trace_word_boundary() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/stories/stakeholder/s.sysml <<'EOF'
+package S {
+    requirement US_9_X : UserStory {
+        subject :>> system : Sys;
+    }
+    requirement US_9_XY : UserStory {
+        subject :>> system : Sys;
+    }
+}
+EOF
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_9_XY {
+        subject sys : Sys;
+        objective {
+            verify US_9_XY;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "word boundary: the story whose name is only a prefix stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "word boundary: exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "word boundary: verify US_9_XY does not count for US_9_X"
+    tc_assert_not_grep "requirement 'US_9_XY'" "$OUT" \
+        "word boundary: verify US_9_XY counts for US_9_XY"
+
+    tc_write model/core/verification-validation/verification-cases/w.sysml <<'EOF'
+package W {
+    verification def VC_9_X {
+        subject sys : Sys;
+        objective {
+            verify requirement US_9_X
+            ;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/w.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "word boundary: a name that ends the line counts"
+    tc_assert_grep "4 touched element(s) checked, no trace gaps" "$OUT" \
+        "word boundary: both stories and both cases are checked and clean"
+}
+
+# The gate reads a requirement definition (requirement def) and a
+# declaration with a short name (<R1>) by the name that follows them.
+# The definition specialises another (:>), and the usage is typed (:).
+case_trace_declaration_forms() {
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    tc_write model/core/requirements/r.sysml <<'EOF'
+package R {
+    requirement def <RD1> RangeRequirement :> RequirementCheck {
+        doc /* A reading stays within the range. */
+    }
+    requirement <R1> rangeLimit : RangeRequirement;
+}
+EOF
+    tc_stage model/core/requirements/r.sysml
+    tc_write model/core/verification-validation/verification-cases/v.sysml <<'EOF'
+package V {
+    verification def VC_R1 {
+        subject sys : Sys;
+        objective {
+            verify R::rangeLimit;
+        }
+    }
+}
+EOF
+    tc_stage model/core/verification-validation/verification-cases/v.sysml
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "declaration forms: the unverified definition stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "declaration forms: exactly one gap is counted"
+    tc_assert_grep "requirement 'RangeRequirement' has no verification case" "$OUT" \
+        "declaration forms: the definition is read by its name, after def and the short name"
+    tc_assert_not_grep "requirement 'rangeLimit'" "$OUT" \
+        "declaration forms: the usage is read by its name, after the short name, and is verified"
+    tc_assert_not_grep "requirement 'def'" "$OUT" \
+        "declaration forms: the keyword def is not read as a name"
 }
 
 # A KerML note (//* ... */) may span lines, and a story inside it is
@@ -411,6 +558,7 @@ case_trace_library_skipped() {
 case_trace_note_and_string() {
     tc_setup_repo
     config_for block opensysml
+    trace_grep
     tc_stub_sysml "sysml v0.6.0"
     tc_write model/core/domain/d.sysml <<'EOF'
 package L {
@@ -795,6 +943,280 @@ EOF
     tc_assert_rc 1 "trace spaces: the story in a directory with a space is checked"
     tc_assert_grep "model/core/stories/field team/s.sysml: requirement 'US_9_X' has no verification case" "$OUT" \
         "trace spaces: the path is named whole"
+}
+
+# utf8_locale: print a UTF-8 locale this machine has, or nothing. awk
+# reads the whole list and prints the first match. Stopping at it would
+# close the pipe while locale -a still writes (macOS lists hundreds of
+# locales), and with pipefail the broken pipe (SIGPIPE, 141) would end
+# the test script.
+utf8_locale() {
+    locale -a 2>/dev/null | awk '!found && tolower($0) ~ /utf-?8$/ { print; found = 1 }'
+}
+
+# The gate reads the model byte by byte (the C locale), as its awk
+# does, whatever locale the engineer works in. In a UTF-8 locale GNU
+# grep matches no character to a byte that is not valid UTF-8, here a
+# Latin-1 e-acute in a short name, and BSD sed refuses such a line, so
+# the story after it would be missed and the commit let through. A
+# letter outside ASCII is never part of a name, so a name it follows is
+# not cut short to the ASCII part. The case needs a UTF-8 locale.
+case_trace_non_ascii_bytes() {
+    local utf8
+    utf8="$(utf8_locale)"
+    if [ -z "$utf8" ]; then
+        tc_skip "UTF-8 locale" "locale -a lists no UTF-8 locale, so the non-ASCII bytes case cannot run"
+        return 0
+    fi
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    printf 'package S {\n    requirement <\047R\351f\047> US_9_N : UserStory {\n        subject :>> system : Sys;\n    }\n    requirement US_9_M\303\251 : UserStory {\n        subject :>> system : Sys;\n    }\n}\n' \
+        | tc_write model/core/stories/stakeholder/s.sysml
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_env "LC_ALL=${utf8}"
+    tc_run_hook
+    tc_assert_rc 1 "non-ASCII bytes: the story whose short name holds a Latin-1 byte stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "non-ASCII bytes: exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_N' has no verification case" "$OUT" \
+        "non-ASCII bytes: the name after a short name holding a Latin-1 byte is read"
+    tc_assert_not_grep "requirement 'US_9_M'" "$OUT" \
+        "non-ASCII bytes: a name followed by a letter outside ASCII is not cut short"
+}
+
+# stub_failing_grep: a grep that fails with status 2, as on a read
+# error, when it is asked for the matches alone (-oE), which is how the
+# gate reads the names a change touches. Every other call reaches the
+# real grep.
+stub_failing_grep() {
+    _tc_stub_wrap grep <<'EOF'
+for arg in "$@"; do
+    if [ "$arg" = "-oE" ]; then
+        echo "grep: (standard input): Input/output error" >&2
+        exit 2
+    fi
+done
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_sed: a sed that fails with status 1, as BSD sed does on
+# an illegal byte sequence, when it is asked to cut a requirement name.
+# sed has no status that means "no match", so any failure is an error.
+stub_failing_sed() {
+    _tc_stub_wrap sed <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        's/^requirement'*)
+            echo "sed: RE error: illegal byte sequence" >&2
+            exit 1
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
+# A grep that fails (status 2 or more) or a sed that fails while the
+# gate reads the touched names is a gate failure at the gate's
+# disposition, and the report names the tool and its status. Read as
+# "no names touched", it would let an unverified story through, which
+# is how the grep -P defect stayed hidden on macOS. grep status 1 (no
+# match) still means no names, which the comment-only case pins.
+case_trace_tool_error() {
+    local disp
+    for disp in block warn info; do
+        tc_setup_repo
+        tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off \
+            "precommit_traceability=${disp}"
+        tc_stub_sysml "sysml v0.6.0"
+        stub_failing_grep
+        write_story
+        tc_env
+        tc_run_hook
+        tc_assert_grep "grep exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+            "grep error (${disp}): the report names the tool, its status and the file"
+        case "$disp" in
+            block)
+                tc_assert_rc 1 "grep error (block): the commit is stopped"
+                tc_assert_not_grep "All checks passed" "$OUT" \
+                    "grep error (block): the summary does not say every check passed"
+                ;;
+            warn)
+                tc_assert_rc 0 "grep error (warn): the commit proceeds"
+                tc_assert_line "[pre-commit] Checks complete with 1 warning(s)." "$OUT" \
+                    "grep error (warn): the warning is counted"
+                ;;
+            info)
+                # At info a finding is one summary line and is not
+                # raised to a warning (methodology section 0.10.4).
+                tc_assert_rc 0 "grep error (info): the commit proceeds"
+                tc_assert_line_count 1 "$(printf '%s\n' "$OUT" | grep -F 'pre-commit-traceability:' || true)" \
+                    "grep error (info): the gate prints one line"
+                ;;
+        esac
+    done
+
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_sed
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "sed error (block): the commit is stopped"
+    tc_assert_grep "sed exited with status 1 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "sed error (block): the report names the tool, its status and the file"
+    tc_reset_stubs
+}
+
+# stub_failing_path_grep: a grep that fails with status 2 when it is
+# asked to pick the .sysml paths out of a list on stdin with the lone
+# pattern '\.sysml$', which is how the gate finds the model files among
+# the changed files. The SysML lint picks them with -E as well, so it
+# reaches the real grep.
+stub_failing_path_grep() {
+    _tc_stub_wrap grep <<'EOF'
+if [ "$#" -eq 1 ] && [ "$1" = '\.sysml$' ]; then
+    echo "grep: (standard input): Input/output error" >&2
+    exit 2
+fi
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_git_read: a git that fails with status 128, as on an
+# object it cannot read, when it is asked for the content of a model
+# file: git show of an index path (":./<file>", how the gate reads a
+# file in "all" mode) or a diff with --unified (the whole file as
+# context, how it reads a staged or ranged change). Every other call
+# reaches the real git.
+stub_failing_git_read() {
+    _tc_stub_wrap git <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        :./*|--unified=*)
+            echo "fatal: unable to read 0123456789abcdef0123456789abcdef01234567" >&2
+            exit 128
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_trace_awk: an awk that fails with status 2 when it runs
+# the program that reads a change as model text, the only one whose
+# function feed takes one argument. Every other call reaches the real
+# awk.
+stub_failing_trace_awk() {
+    _tc_stub_wrap awk <<'EOF'
+case "$*" in
+    *"function feed(tok)"*)
+        echo "awk: read error (Input/output error)" >&2
+        exit 2
+        ;;
+esac
+exec "$real" "$@"
+EOF
+}
+
+# The reads behind the name read fail closed too. A grep that fails
+# while the gate picks the model files out of the changed files would
+# otherwise leave no file to check, and a git or awk that fails while
+# the gate reads a file's change would leave no text to read names
+# from. Each is a gate failure at the gate's disposition that names the
+# tool and its status. grep status 1 there (no model file changed)
+# still means nothing to check, which the README-only cases pin. The
+# gate keeps the text it reads in a temporary file under TMPDIR, which
+# is gone when it returns, whether the read failed or not.
+case_trace_read_error() {
+    local tmp
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_path_grep
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "file list error (block): the commit is stopped"
+    tc_assert_grep "grep exited with status 2 while reading the list of changed files" "$OUT" \
+        "file list error (block): the report names the tool, its status and the list"
+    tc_assert_not_grep "All checks passed" "$OUT" \
+        "file list error (block): the summary does not say every check passed"
+    tc_reset_stubs
+
+    tc_setup_repo
+    tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off \
+        precommit_traceability=warn
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_path_grep
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "file list error (warn): the commit proceeds"
+    tc_assert_grep "warning: grep exited with status 2 while reading the list of changed files" "$OUT" \
+        "file list error (warn): the report is a warning"
+    tc_assert_line "[pre-commit] Checks complete with 1 warning(s)." "$OUT" \
+        "file list error (warn): the warning is counted"
+    tc_reset_stubs
+
+    tc_setup_repo
+    trace_config
+    write_story
+    tc_commit "add the story"
+    stub_failing_git_read
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "git show error (all): the check stops"
+    tc_assert_grep "git exited with status 128 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "git show error (all): the report names the tool, its status and the file"
+    tc_assert_not_grep "To proceed anyway" "$OUT" \
+        "git show error (all): a check in CI gives no rationale advice"
+    tc_reset_stubs
+
+    tc_setup_repo
+    trace_config
+    write_story
+    stub_failing_git_read
+    tmp="$(tc_mktemp_d)"
+    tc_env "TMPDIR=${tmp}"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "git diff error (staged): the commit is stopped"
+    tc_assert_grep "git exited with status 128 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "git diff error (staged): the report names the tool, its status and the file"
+    tc_assert_empty "$(ls -A "$tmp")" "git diff error (staged): no temporary file is left in TMPDIR"
+    tc_reset_stubs
+
+    stub_failing_trace_awk
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "awk error (staged): the commit is stopped"
+    tc_assert_grep "awk exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "awk error (staged): the report names the tool, its status and the file"
+    tc_assert_empty "$(ls -A "$tmp")" "awk error (staged): no temporary file is left in TMPDIR"
+
+    # A change larger than a pipe buffer (64 KiB) keeps git writing
+    # after the awk stub has stopped reading, so git fails as well, with
+    # the status of a write to a closed pipe (SIGPIPE, 141). The report
+    # still names awk, whose failure is the cause.
+    {
+        printf 'package S {\n    requirement US_9_X : UserStory;\n}\n'
+        awk 'BEGIN { for (i = 0; i < 3000; i++) printf "// padding line %d, to fill the pipe buffer\n", i }'
+    } | tc_write model/core/stories/stakeholder/s.sysml
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_grep "awk exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "awk error, large change: the report names awk"
+    tc_assert_not_grep "git exited" "$OUT" "awk error, large change: git's broken pipe is not reported"
+    tc_reset_stubs
+
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "temporary file: the gap is still found"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "temporary file: the finding names the story"
+    tc_assert_empty "$(ls -A "$tmp")" "temporary file: none is left in TMPDIR after a clean read"
+    tc_env
 }
 
 # ------------------------------------- 10. the story gates (concern 2)
@@ -2374,22 +2796,35 @@ for disposition in block warn; do
     case_partial_install "$disposition"
 done
 case_context_filtering
-case_trace_covered
-case_trace_gap
-case_trace_long_warning_counted
-case_trace_comment_only
-case_trace_library_skipped
-case_trace_note_and_string
-case_trace_deep_verify_counts
-case_trace_nested_criterion_not_a_requirement
-case_trace_range_mode
-case_trace_filenames_with_spaces
-case_trace_cannot_list_staged
-case_trace_textconv_ignored
-case_trace_all_reads_the_index
-case_trace_all_from_subdirectory
-case_trace_untyped_acceptance
-case_trace_acceptance_opener_removed
+# shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
+for TRACE_GREP in machine BSD; do
+    printf '\n# The traceability gate with %s grep\n' "$TRACE_GREP"
+    TC_LABEL_SUFFIX="${TRACE_GREP} grep"
+    case_trace_covered
+    case_trace_gap
+    case_trace_long_warning_counted
+    case_trace_comment_only
+    case_trace_library_skipped
+    case_trace_word_boundary
+    case_trace_declaration_forms
+    case_trace_note_and_string
+    case_trace_deep_verify_counts
+    case_trace_nested_criterion_not_a_requirement
+    case_trace_range_mode
+    case_trace_filenames_with_spaces
+    case_trace_cannot_list_staged
+    case_trace_textconv_ignored
+    case_trace_all_reads_the_index
+    case_trace_all_from_subdirectory
+    case_trace_untyped_acceptance
+    case_trace_acceptance_opener_removed
+    case_trace_non_ascii_bytes
+done
+TRACE_GREP=machine
+# shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
+TC_LABEL_SUFFIX=""
+case_trace_tool_error
+case_trace_read_error
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full

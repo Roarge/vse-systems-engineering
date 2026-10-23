@@ -66,7 +66,10 @@
 # so [ \t\r\n] stands in for the POSIX character classes). Glob lists
 # from the configuration are walked with while-read loops under set -f,
 # never with an unquoted for, so no pattern is expanded against the
-# file system.
+# file system. No process substitution, <(...), is passed as an
+# argument, because bash 3.2 can close the descriptor behind its
+# /dev/fd path before the command opens it. Reading a loop from one
+# (done < <(...)) is safe, because bash opens it itself.
 #
 # Install as <project>/.githooks/lib/test-first.sh beside
 # iso-profile.sh. The lifecycle hooks source the plugin's own copy.
@@ -457,14 +460,23 @@ vse_tf_story_blocks() {
 # whose block differs from <pre>. A story deleted by the edit is not
 # listed. A missing file reads as empty, so with no <pre> every story is
 # new.
+#
+# Both scans reach awk on one stream, the pre-image first. Every line
+# the scanner prints holds a tab, so the empty line between the two
+# cannot come from either scan and marks where the post-image begins.
 vse_tf_touched_stories() {
     local pre="$1" post="$2"
     [ -f "$pre" ] || pre=/dev/null
     [ -f "$post" ] || post=/dev/null
-    LC_ALL=C awk -F '\t' '
-        FILENAME == ARGV[1] { seen[$0] = 1; next }
+    {
+        vse_tf_story_blocks < "$pre"
+        echo
+        vse_tf_story_blocks < "$post"
+    } | LC_ALL=C awk -F '\t' '
+        !post && $0 == "" { post = 1; next }
+        !post { seen[$0] = 1; next }
         !($0 in seen) && !($1 in listed) { listed[$1] = 1; print $1 }
-    ' <(vse_tf_story_blocks < "$pre") <(vse_tf_story_blocks < "$post")
+    '
 }
 
 # Return 0 when <feature-file> has a tag line (a line that starts with
@@ -593,13 +605,14 @@ _VSE_TF_NO_EDIT='{"tool_name": "MultiEdit", "tool_input": {"edits": []}}'
 # Return 0 when jq is on PATH and runs the image program, tried once on
 # an edit that changes nothing. jq 1.5 has no halt_error, so it cannot
 # compile the program, and python3 must do the work instead. The answer
-# is kept for the rest of the shell.
+# is kept for the rest of the shell. The payload is given inline, as
+# the one-element array --slurpfile would have read from a file.
 _VSE_TF_JQ_IMAGE_OK=""
 _vse_tf_jq_image_ok() {
     if [ -z "$_VSE_TF_JQ_IMAGE_OK" ]; then
         _VSE_TF_JQ_IMAGE_OK=no
         if command -v jq >/dev/null 2>&1 &&
-            jq -j -R -s --slurpfile payload <(printf '%s' "$_VSE_TF_NO_EDIT") \
+            jq -j -R -s --argjson payload "[${_VSE_TF_NO_EDIT}]" \
                 "$_VSE_TF_JQ_IMAGE" < /dev/null > /dev/null 2>&1; then
             _VSE_TF_JQ_IMAGE_OK=yes
         fi
@@ -647,9 +660,24 @@ vse_tf_post_image() {
 # goes through the same function and engine with an edit list that
 # changes nothing. A missing or unreadable file reads as empty. Returns
 # 2 when the engine fails and 3 when no engine is present, as
-# vse_tf_post_image does.
+# vse_tf_post_image does, and 2 when the payload file cannot be
+# written.
+#
+# The payload goes in a temporary file, removed before the function
+# returns. A process substitution would reach the engine as a /dev/fd
+# path, and the stock bash 3.2 of macOS closes that descriptor as soon
+# as any external command finishes in the meantime, as the jq probe in
+# _vse_tf_jq_image_ok does before the engine runs.
 vse_tf_disk_image() {
-    vse_tf_post_image <(printf '%s' "$_VSE_TF_NO_EDIT") "$1"
+    local payload rc=0
+    payload="$(mktemp "${TMPDIR:-/tmp}/vse-tf-payload.XXXXXX")" || return 2
+    if printf '%s' "$_VSE_TF_NO_EDIT" > "$payload"; then
+        vse_tf_post_image "$payload" "$1" || rc=$?
+    else
+        rc=2
+    fi
+    rm -f "$payload"
+    return "$rc"
 }
 
 # ----------------------------------------------------- classification

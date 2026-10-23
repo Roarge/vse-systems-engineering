@@ -11,7 +11,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 # The trap goes in first, because the scratch root exists from the
 # moment lib.sh is sourced and a failure inside tc_setup_repo would
@@ -328,6 +328,240 @@ tc_run_lib detect syside
 tc_assert_rc 2 "detect syside: absent binary is unavailable"
 tc_assert_grep "syside not on PATH" "$ERR" "detect syside: absent binary reason"
 
+# A hung probe on a machine without coreutils timeout, which is what
+# macOS gives. The library tries timeout, then gtimeout (the name
+# Homebrew coreutils installs it under), then perl, and only then runs
+# the probe with no limit. Each case takes timeout and gtimeout out of
+# PATH, keeps the stub directory in front, and sets the probe budget to
+# one second. The syside stub is a launcher script that waits in a
+# child process, so a limit that stops the script alone leaves the
+# child holding the output open, and the probe still hangs.
+TC_BIN_NO_TIMEOUT="$(tc_bin_without timeout gtimeout)"
+TC_BIN_NO_TIMEOUT_PERL="$(tc_bin_without timeout gtimeout perl)"
+TC_GTIMEOUT_RECORD="${FAKEHOME}/gtimeout-runs"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+exit 0
+EOF
+tc_stub gtimeout <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s\n' "${1:-}" >> "${TC_GTIMEOUT_RECORD:-/dev/null}"
+shift
+exec "$@"
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1 \
+    "TC_GTIMEOUT_RECORD=${TC_GTIMEOUT_RECORD}"
+tc_run_lib detect syside
+tc_assert_rc 0 "detect syside, no timeout: the probe runs under gtimeout"
+tc_assert_eq 1 "$(head -n 1 "$TC_GTIMEOUT_RECORD" 2>/dev/null || true)" \
+    "detect syside, no timeout: gtimeout is handed the probe budget"
+rm -f "${STUBS}/gtimeout"
+
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+sleep 5
+exit 0
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1
+TC_START=$SECONDS
+tc_run_lib detect syside
+TC_ELAPSED=$((SECONDS - TC_START))
+tc_assert_rc 2 "detect syside, no timeout or gtimeout: a hung probe is unavailable"
+tc_assert_grep "syside unavailable (syside timed out)" "$ERR" \
+    "detect syside, no timeout or gtimeout: the reason is a timeout"
+if [ "$TC_ELAPSED" -le 3 ]; then
+    tc_pass "detect syside, no timeout or gtimeout: perl gives up within 3 seconds"
+else
+    tc_fail "detect syside, no timeout or gtimeout: perl gives up within 3 seconds" \
+        "took ${TC_ELAPSED} seconds"
+fi
+
+# A probe that fails at once under the perl fallback keeps its own exit
+# status, so detection quotes the tool's reason and does not read the
+# failure as a timeout.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: the probe model could not be read"
+exit 3
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside, perl fallback: a probe that fails at once is unavailable"
+tc_assert_grep "syside unavailable (syside exit 3 on the probe model: Error: the probe model could not be read)" "$ERR" \
+    "detect syside, perl fallback: the reason is the probe's own exit status and first line"
+tc_assert_not_grep "timed out" "$ERR" \
+    "detect syside, perl fallback: a probe that fails at once is not read as a timeout"
+
+# A command the perl fallback cannot start exits 127, and the reason is
+# printed on stderr, as coreutils timeout prints it.
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}"
+tc_run_lib_fn _vse_tc_timeout 5 no-such-validator
+tc_assert_rc 127 "perl fallback, no such command: exit 127"
+tc_assert_line "timeout: failed to run command 'no-such-validator': No such file or directory" "$ERR" \
+    "perl fallback, no such command: the reason is printed on stderr"
+
+# A signal that reaches the perl fallback (INT from Ctrl-C, TERM or
+# HUP) is passed on to the command's process group, as coreutils
+# timeout passes it on. Without that, Ctrl-C during a hung licence
+# check stops perl and its alarm but not the command, which runs on in
+# a group the terminal no longer reaches. The launcher stub records its
+# process group (its own process ID, as it leads the group) and the
+# wrapper's process ID (its parent), then waits in a child. Each case
+# signals the wrapper, then checks that the wrapper ended with that
+# signal and that no member of the group is left. A zombie (a process
+# that has ended and waits only to be collected by its parent) does not
+# count. The budget is 20 seconds and a case waits at most 5, so a pass
+# never comes from the alarm. A command at a terminal has INT at its
+# default, but bash 3.2 starts a background job with INT ignored, so
+# the case resets INT before it starts the driver.
+TC_GROUP_RECORD="${FAKEHOME}/group-record"
+TC_WRAPPER_RC="${FAKEHOME}/wrapper-rc"
+TC_WRAPPER_OUT="${FAKEHOME}/wrapper-out"
+tc_stub hung-launcher <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+printf '%s %s\n' "$$" "$PPID" > "$TC_GROUP_RECORD"
+if [ "${TC_LAUNCHER_STOP:-0}" = 1 ]; then
+    kill -s STOP "$$"
+fi
+sleep 60
+exit 0
+EOF
+
+# Print the members of process group $1 that are still running.
+tc_group_members() {
+    ps -A -o pgid= -o stat= -o pid= -o args= | awk -v g="$1" '$1 == g && $2 !~ /^Z/'
+}
+
+# The caller case runs this driver instead of the library's, so that
+# whether the caller goes on after the wrapper shows on stdout.
+# shellcheck disable=SC2016
+TC_CALLER_DRIVER='
+. ./.githooks/lib/sysml-toolchain.sh
+set +e
+_vse_tc_timeout 20 hung-launcher
+echo "the caller went on after exit $?"
+'
+
+# tc_signal_case <signal> <rc> <mode> <case>: run the wrapper on the
+# launcher in the background, signal it, and expect exit <rc> with no
+# member of the group left. The mode is one of:
+#   wrapper  the signal goes to the wrapper alone.
+#   stopped  the launcher stops itself first, and the signal waits
+#            until it has.
+#   caller   the signal goes to the caller and the wrapper together, as
+#            Ctrl-C reaches every process in the foreground, and the
+#            caller must stop rather than go on.
+tc_signal_case() {
+    local sig="$1" want="$2" mode="$3" name="$4" bg grp="" wrapper="" i left
+    local stop=0 driver="$TC_DRIVER" targets
+    [ "$mode" = stopped ] && stop=1
+    [ "$mode" = caller ] && driver="$TC_CALLER_DRIVER"
+    rm -f "$TC_GROUP_RECORD" "$TC_WRAPPER_RC" "$TC_WRAPPER_OUT"
+    tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" "TC_GROUP_RECORD=${TC_GROUP_RECORD}" \
+        "TC_LAUNCHER_STOP=${stop}"
+    # The perl program is perl's, not this shell's, to expand.
+    # shellcheck disable=SC2016
+    ( _tc_sandboxed perl -e '$SIG{INT} = "DEFAULT"; exec { $ARGV[0] } @ARGV' \
+        bash -c "$driver" tc-driver _vse_tc_timeout 20 hung-launcher
+      printf '%s\n' "$OUT" > "$TC_WRAPPER_OUT"
+      printf '%s\n' "$RC" > "$TC_WRAPPER_RC" ) &
+    bg=$!
+    i=0
+    while [ ! -s "$TC_GROUP_RECORD" ] && [ "$i" -lt 50 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+    if [ -s "$TC_GROUP_RECORD" ]; then
+        read -r grp wrapper < "$TC_GROUP_RECORD" || true
+    fi
+    if [ -z "$grp" ] || [ -z "$wrapper" ]; then
+        tc_fail "${name}: the launcher starts" "no group record after 5 seconds"
+        wait "$bg" || true
+        return 0
+    fi
+    i=0
+    while [ "$stop" = 1 ] && [ "$i" -lt 50 ]; do
+        case "$(ps -o stat= -p "$grp" || true)" in
+            *T*) break ;;
+        esac
+        sleep 0.1
+        i=$((i + 1))
+    done
+    targets="$wrapper"
+    if [ "$mode" = caller ]; then
+        targets="$(ps -o ppid= -p "$wrapper" | tr -d ' ') ${wrapper}"
+    fi
+    # shellcheck disable=SC2086
+    kill -s "$sig" $targets 2>/dev/null || true
+    i=0
+    while [ ! -s "$TC_WRAPPER_RC" ] && [ "$i" -lt 50 ]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+    if [ -s "$TC_WRAPPER_RC" ]; then
+        tc_assert_eq "$want" "$(cat "$TC_WRAPPER_RC")" "${name}: the wrapper ends with the signal"
+    else
+        tc_fail "${name}: the wrapper ends with the signal" \
+            "still running 5 seconds after ${sig}"
+        kill -s KILL "$wrapper" 2>/dev/null || true
+    fi
+    if [ "$mode" = caller ]; then
+        if grep -qF "the caller went on" "$TC_WRAPPER_OUT" 2>/dev/null; then
+            tc_fail "${name}: the caller stops as well" "$(cat "$TC_WRAPPER_OUT")"
+        else
+            tc_pass "${name}: the caller stops as well"
+        fi
+    fi
+    i=0
+    left="$(tc_group_members "$grp")"
+    while [ -n "$left" ] && [ "$i" -lt 30 ]; do
+        sleep 0.1
+        i=$((i + 1))
+        left="$(tc_group_members "$grp")"
+    done
+    if [ -z "$left" ]; then
+        tc_pass "${name}: no member of the command's group is left"
+    else
+        tc_fail "${name}: no member of the command's group is left" "$left"
+    fi
+    kill -s KILL -- "-${grp}" 2>/dev/null || true
+    wait "$bg" || true
+}
+
+tc_signal_case INT 130 wrapper "perl fallback, INT"
+tc_signal_case TERM 143 wrapper "perl fallback, TERM"
+tc_signal_case HUP 129 wrapper "perl fallback, HUP"
+# CONT follows the passed-on signal, so a stopped member wakes to
+# receive it rather than holding the wrapper until the alarm.
+tc_signal_case TERM 143 stopped "perl fallback, TERM to a stopped command"
+# Perl ends itself with the signal it passed on. A shell that took
+# Ctrl-C while it waited stops only when its command died of INT, and
+# goes on when the command exited normally, even with status 130.
+tc_signal_case INT 130 caller "perl fallback, Ctrl-C"
+rm -f "${STUBS}/hung-launcher"
+tc_env
+
+# With no perl either, the probe runs with no limit, so a slow probe
+# that passes is still read as available.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+sleep 2
+exit 0
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT_PERL}" VSE_TC_PROBE_TIMEOUT=1
+tc_run_lib detect syside
+tc_assert_rc 0 "detect syside, no timeout, gtimeout or perl: the probe runs with no limit"
+
+tc_env
+rm -f "${STUBS}/syside"
+
 # ---------------------------------------------- 6. detect opensysml
 
 tc_stub_sysml "sysml v0.6.0"
@@ -563,6 +797,29 @@ tc_assert_not_grep "engineering/build/x.sysml" "$(cat "$STAGED_ARGS")" \
 
 tc_env
 tc_reset_stubs
+
+# The validator reads the widened context, but only the diagnostics on
+# the staged files are reported. The staged list is one name per line,
+# and BWK awk (macOS) refuses a newline in an awk -v value, so the list
+# reaches awk through the environment. The case runs with the awk of the
+# machine and again with the BWK awk stub.
+cat > "${TRANSCRIPTS}/osml-two-files.txt" <<'EOF'
+f.sysml:2:5: error: unresolved reference: NoSuchType
+engineering/model/g.sysml:2:5: error: unresolved reference: NoSuchPart
+EOF
+for STAGED_AWK in "machine awk" "BWK awk"; do
+    tc_stub_sysml "sysml v0.6.0"
+    if [ "$STAGED_AWK" = "BWK awk" ]; then
+        tc_stub_bwk_awk
+    fi
+    tc_env "SYSML_TRANSCRIPT=${TRANSCRIPTS}/osml-two-files.txt" SYSML_RC=1
+    tc_run_lib_fn vse_tc_run_staged f.sysml
+    tc_assert_rc 1 "staged filter, ${STAGED_AWK}: a finding on the staged file stops the run"
+    tc_assert_eq "f.sysml:2:5: error: unresolved reference: NoSuchType" "$OUT" \
+        "staged filter, ${STAGED_AWK}: only the staged file's diagnostic is kept"
+    tc_env
+    tc_reset_stubs
+done
 
 # --------------------------------------------------- 12. real tools
 

@@ -4,6 +4,10 @@
 #
 # Kept in parity with .github/workflows/plugin-ci.yml. A check added
 # here must be added there, and the reverse.
+#
+# 'make test-portable' runs the platform-dependent checks. The macOS CI
+# job (portable) runs it under the stock /bin/bash 3.2 and the BSD
+# tools (the grep, sed, awk and date that macOS ships).
 
 # Claude Code CLI version pinned by the CI workflow. Kept here so a
 # contributor can see which CLI the CI result came from.
@@ -12,7 +16,8 @@ CLAUDE_CODE_VERSION ?= 2.1.224
 .PHONY: all validate lint check-versions check-validate check-hooks \
         check-refs check-skills check-config check-templates check-routing \
         check-mirrors check-test-first check-toolchain test-python test-bdd \
-        test-hooks check-demo-generated check-demo-lint validate-demo
+        test-hooks check-demo-generated check-demo-lint validate-demo \
+        test-portable test-hooks-each
 
 all: validate check-versions check-validate lint check-hooks check-skills check-refs check-routing check-config check-templates check-mirrors check-test-first check-toolchain test-python test-bdd test-hooks check-demo-generated check-demo-lint validate-demo
 	@echo "All checks passed."
@@ -106,14 +111,20 @@ check-skills:
 # file path is an error when it does not resolve. A reference written
 # as a directory path (trailing slash) stays at warning level, which
 # preserves the tolerance the previous templates/ check provided for
-# conditional directory copies.
+# conditional directory copies. The references are read with an
+# extended regular expression (ERE) whose bracket expressions match the
+# literal $, { and } on GNU and BSD grep alike, because macOS grep has
+# no -P and \{ is not portable in an ERE. The shipped components name
+# many plugin-root paths between them, so a count of zero means the
+# scan read nothing, and the check fails rather than passing in
+# silence.
 check-refs:
 	@echo "Checking cross-references..."
 	@EXIT_CODE=0; \
 	 CHECKED=0; \
 	 for src_file in skills/*/SKILL.md commands/*.md agents/*.md hooks.json; do \
 	   [ -f "$$src_file" ] || continue; \
-	   for ref_path in $$(grep -oP '\$$\{CLAUDE_PLUGIN_ROOT\}/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
+	   for ref_path in $$(grep -oE '[$$][{]CLAUDE_PLUGIN_ROOT[}]/[a-zA-Z0-9_./-]+' "$$src_file" 2>/dev/null | sort -u || true); do \
 	     rel_path=$$(echo "$$ref_path" | sed 's|\$${CLAUDE_PLUGIN_ROOT}/||'); \
 	     CHECKED=$$((CHECKED + 1)); \
 	     [ -e "$$rel_path" ] && continue; \
@@ -124,6 +135,10 @@ check-refs:
 	   done; \
 	 done; \
 	 echo "  Checked $$CHECKED plugin-root references."; \
+	 if [ "$$CHECKED" -eq 0 ]; then \
+	   echo "ERROR: found no plugin-root reference to check, so the check proved nothing"; \
+	   EXIT_CODE=1; \
+	 fi; \
 	 exit $$EXIT_CODE
 
 # Runtime knowledge reaches a skill through a generated wiki-routing
@@ -402,3 +417,24 @@ validate-demo:
 	 else \
 	   bash tests/hooks/validate-demo.sh; \
 	 fi
+
+# The platform-dependent checks, which the portable job of the CI
+# workflow runs on macOS with 'make -k test-portable'. Each check also
+# runs under all (the hook test files through test-hooks), so all is
+# unchanged. The checks that need Linux (apt, shellcheck, the Claude
+# Code CLI, OpenSysML and the test-first range) stay in the validate
+# job. Under make -k (keep going), a failing prerequisite stops the
+# recipe of the target that lists it, although make still builds the
+# other prerequisites. So the hook test files run under a prerequisite
+# of their own, test-hooks-each, listed last, and a failing check
+# cannot stop them from running.
+test-portable: check-refs check-templates check-toolchain test-python test-bdd check-demo-generated check-demo-lint test-hooks-each
+	@echo "The platform-dependent checks passed."
+
+# Every tests/hooks/test-*.sh file runs, and each failing file is named,
+# so one macOS run lists every platform difference. The target fails at
+# the end when any file failed. test-hooks stops at the first failing
+# file instead.
+test-hooks-each:
+	@echo "Testing every hook script file..."
+	@rc=0; for t in tests/hooks/test-*.sh; do bash "$$t" || { echo "FAILED: $$t"; rc=1; }; done; exit $$rc

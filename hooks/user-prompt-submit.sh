@@ -28,7 +28,7 @@
 # Exit 0 always.
 set -euo pipefail
 
-UPS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+UPS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 UPS_PAYLOAD="$(mktemp "${TMPDIR:-/tmp}/vse-user-prompt-submit.XXXXXX")" || exit 0
 trap 'rm -f "$UPS_PAYLOAD"' EXIT
 cat > "$UPS_PAYLOAD" || exit 0

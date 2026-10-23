@@ -32,7 +32,7 @@
 # Run: bash tests/hooks/validate-demo.sh
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." > /dev/null && pwd)"
 TOOLCHAIN="${ROOT}/hooks/lib/sysml-toolchain.sh"
 # shellcheck source=/dev/null
 . "${ROOT}/tests/hooks/fill-placeholders.sh"

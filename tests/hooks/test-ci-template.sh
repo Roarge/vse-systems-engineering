@@ -38,7 +38,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 # shellcheck source=/dev/null
 . "${TC_LIB_DIR}/ci-step.sh"
 
@@ -198,7 +198,7 @@ ci_run() {
     : > "${work}/output"
     : > "${work}/env"
     CI_RAN=1
-    _tc_capture env -C "$REPO" -i \
+    _tc_capture _tc_in_dir "$REPO" env -i \
         PATH="${STUBS}:/usr/bin:/bin" HOME="$FAKEHOME" GIT_CONFIG_NOSYSTEM=1 \
         CI=true GITHUB_ACTIONS=true GITHUB_WORKSPACE="$REPO" \
         GITHUB_EVENT_NAME="$CI_EVENT" GITHUB_REF="$CI_REF" \

@@ -113,6 +113,12 @@ For example, a denied edit:
 
 1. Write the script here in `hooks/`.
 2. Give it `set -euo pipefail` and a `#!/usr/bin/env bash` shebang.
+   If it finds its own directory, discard the output of `cd`, as in
+   `"$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)"`.
+   Under an exported `CDPATH` (the search path `cd` reads), `cd` prints
+   the directory it found for a relative name, and that line would
+   join the path. The portability scan in
+   `tests/hooks/test-portability.sh` reports the form without it.
 3. Make it executable: `chmod +x hooks/your-hook.sh`.
 4. Register it in `../hooks.json` under the correct lifecycle event.
 5. Follow the output contract above. At a JSON event, print through

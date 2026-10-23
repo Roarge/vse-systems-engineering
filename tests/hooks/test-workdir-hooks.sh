@@ -13,8 +13,8 @@
 # its libraries are missing. Outside a project each hook is silent.
 #
 # Every case asserts exit 0, because the three hooks are advisory. The
-# GitHub command-line tool is a stub that lists one Change Request open
-# for 30 days, so the Notification reminder has something to say and
+# GitHub command-line tool is a stub that lists one Change Request
+# opened in 2020, so the Notification reminder has something to say and
 # no case reaches the network. The PreCompact snapshot is written under
 # a scratch TMPDIR.
 #
@@ -22,7 +22,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 # The scratch repository is not used here, but its fake HOME and stub
 # directory keep the machine's own tools out of reach.
@@ -30,7 +30,10 @@ tc_setup_repo
 trap tc_teardown EXIT
 
 SNAP_TMP="$(tc_mktemp_d)"
-STALE_DATE="$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)"
+# The Change Request was opened in 2020, well past the reminder's
+# 14-day threshold. A fixed date needs no date arithmetic, so the test
+# does not call GNU date -d, which BSD date lacks.
+STALE_DATE="2020-01-02T03:04:05Z"
 tc_stub gh <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
@@ -106,6 +109,31 @@ case_config_only() {
     run_workdir pre-compact "$dir"
     tc_assert_eq "Engineering root: ." "$(snapshot_line "Engineering root:")" \
         "pre-compact, config only: the snapshot names the working directory"
+}
+
+# Each hook finds its own directory with cd and pwd -P. Under an
+# exported CDPATH, cd prints the directory it found for a relative name,
+# and that line would join the path the hook builds, so the hook would
+# miss its libraries and, in a project that holds only its
+# configuration, say nothing. Here each hook is started by a path
+# relative to the working directory (plugin/hooks/<hook>.sh, through a
+# link to the plugin) with CDPATH=. exported, as someone might run a
+# hook by hand.
+case_relative_start_under_cdpath() {
+    local dir hook TC_STDIN
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    ln -s "$TC_PLUGIN_ROOT" "${dir}/plugin"
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$PROMPT_JSON" > "$TC_STDIN"
+    tc_env "TMPDIR=${SNAP_TMP}" "CDPATH=."
+    for hook in $HOOKS; do
+        tc_run_in "$dir" CLAUDE_PLUGIN_ROOT=plugin bash "plugin/hooks/${hook}.sh"
+        tc_assert_rc 0 "${hook}, relative start under CDPATH: exit 0"
+        tc_assert_grep "$(fires_text "$hook")" "$OUT" "${hook}, relative start under CDPATH: the hook acts"
+    done
+    tc_env
+    rm -f "$TC_STDIN"
 }
 
 # A session started below the project directory finds the project by
@@ -291,7 +319,82 @@ case_many_tags() {
         "pre-compact, many tags: the latest release is named"
 }
 
+# ------------------------------------------------------- BSD date
+
+# The reminder's threshold is computed without GNU date -d, which BSD
+# date (macOS) lacks. With the BSD date stub on PATH the Change Request
+# opened in 2020 is still reported, in a project found by its
+# configuration and in one found by its methodology/ folder. A Change
+# Request opened today is not stale, so beside it only the 2020 one is
+# counted.
+case_notification_bsd_date() {
+    local config green today
+    config="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${config}/.iso-config.yaml"
+    green="$(tc_mktemp_d)"
+    mkdir -p "${green}/methodology"
+    tc_stub_bsd_date
+    assert_fires notification "$config" "BSD date, config only"
+    assert_fires notification "$green" "BSD date, methodology fallback"
+
+    today="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    mv "${STUBS}/gh" "${STUBS}/gh.saved"
+    tc_stub gh <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+printf '[{"number":7,"createdAt":"%s"},{"number":8,"createdAt":"%s"}]\n' "${STALE_DATE}" "${today}"
+EOF
+    run_workdir notification "$config"
+    tc_assert_rc 0 "notification, BSD date, one stale and one new: exit 0"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, BSD date, one stale and one new: only the stale Change Request is counted"
+    mv "${STUBS}/gh.saved" "${STUBS}/gh"
+    rm -f "${STUBS}/date"
+}
+
+# ----------------------------------------- createdAt values jq cannot read
+
+# gh_lists <createdAt>...: a gh stub that lists one open Change Request
+# per value, numbered from 1.
+gh_lists() {
+    local value list="" n=0
+    for value in "$@"; do
+        n=$((n + 1))
+        list="${list:+${list},}{\"number\":${n},\"createdAt\":\"${value}\"}"
+    done
+    tc_stub gh <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' '[${list}]'
+EOF
+}
+
+# fromdateiso8601 reads only whole seconds in UTC (a trailing Z). A
+# value with fractional seconds is read once the fraction is dropped. A
+# value it still cannot read, such as one with an offset, is skipped,
+# so it does not hide the stale Change Requests beside it.
+case_notification_unreadable_dates() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    mv "${STUBS}/gh" "${STUBS}/gh.saved"
+
+    gh_lists "2020-01-02T03:04:05+02:00" "$STALE_DATE"
+    run_workdir notification "$dir"
+    tc_assert_rc 0 "notification, an offset and a stale value: exit 0"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, an offset and a stale value: the stale one is still counted"
+
+    gh_lists "2020-01-02T03:04:05.123Z"
+    run_workdir notification "$dir"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, fractional seconds: the stale value is counted"
+
+    mv "${STUBS}/gh.saved" "${STUBS}/gh"
+}
+
 case_config_only
+case_relative_start_under_cdpath
 case_from_subdirectory
 case_nested_brownfield
 case_contributor_mode
@@ -301,6 +404,8 @@ case_library_missing
 case_long_prompt
 case_prompt_without_jq
 case_many_tags
+case_notification_bsd_date
+case_notification_unreadable_dates
 
 if tc_summary "test-workdir-hooks"; then
     exit 0
