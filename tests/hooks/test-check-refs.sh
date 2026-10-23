@@ -115,8 +115,9 @@ EOF
 
 # ------------------------------------------- no reference at all fails
 
-# Every shipped skill names at least one plugin-root path, so a scan
-# that finds none has read nothing, and passing it would hide that.
+# The shipped components name many plugin-root paths between them, so
+# a count of zero means the scan read nothing, and passing it would
+# hide that.
 case_no_reference() {
     local grep_kind="$1" label="no reference at all (${1} grep)"
     fresh <<'EOF'

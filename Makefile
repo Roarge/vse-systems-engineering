@@ -114,9 +114,10 @@ check-skills:
 # conditional directory copies. The references are read with an
 # extended regular expression (ERE) whose bracket expressions match the
 # literal $, { and } on GNU and BSD grep alike, because macOS grep has
-# no -P and \{ is not portable in an ERE. Every shipped skill names at
-# least one plugin-root path, so a scan that counts none has read
-# nothing and fails rather than passing in silence.
+# no -P and \{ is not portable in an ERE. The shipped components name
+# many plugin-root paths between them, so a count of zero means the
+# scan read nothing, and the check fails rather than passing in
+# silence.
 check-refs:
 	@echo "Checking cross-references..."
 	@EXIT_CODE=0; \
