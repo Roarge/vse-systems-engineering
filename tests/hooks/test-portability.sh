@@ -125,7 +125,7 @@ function cd_found(line,    rest, seg) {
         rest = seg
         if (match(seg, /&&|[|][|]|;/))
             seg = substr(seg, 1, RSTART - 1)
-        if (seg !~ /[^0-9]1?>[ \t]*[/]dev[/]null/)
+        if (seg !~ /[^0-9]1?>[ \t]*\/dev\/null/)
             return 1
     }
     return 0
