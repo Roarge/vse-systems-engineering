@@ -949,9 +949,10 @@ EOF
 # reads the whole list and prints the first match. Stopping at it would
 # close the pipe while locale -a still writes (macOS lists hundreds of
 # locales), and with pipefail the broken pipe (SIGPIPE, 141) would end
-# the test script.
+# the test script. A machine without a locale command lists nothing,
+# rather than ending the script with status 127.
 utf8_locale() {
-    locale -a 2>/dev/null | awk '!found && tolower($0) ~ /utf-?8$/ { print; found = 1 }'
+    { locale -a 2>/dev/null || true; } | awk '!found && tolower($0) ~ /utf-?8$/ { print; found = 1 }'
 }
 
 # The gate reads the model byte by byte (the C locale), as its awk
@@ -983,6 +984,28 @@ case_trace_non_ascii_bytes() {
         "non-ASCII bytes: the name after a short name holding a Latin-1 byte is read"
     tc_assert_not_grep "requirement 'US_9_M'" "$OUT" \
         "non-ASCII bytes: a name followed by a letter outside ASCII is not cut short"
+}
+
+# A machine without a locale command still skips the case. locale -a
+# then exits 127, and with errexit and pipefail that status would end
+# the whole test script at the assignment rather than skip the one case
+# that needs a UTF-8 locale. Here locale is out of reach, and the case
+# runs in a subshell with errexit on, as the script runs it.
+case_trace_non_ascii_without_locale() {
+    local bin log rc
+    bin="$(tc_bin_without locale)"
+    log="$(tc_mktemp_d)/case.log"
+    set +e
+    (
+        set -e
+        PATH="$bin"
+        case_trace_non_ascii_bytes
+    ) > "$log" 2>&1
+    rc=$?
+    set -e
+    tc_assert_eq 0 "$rc" "no locale command: the case returns rather than ending the script"
+    tc_assert_grep "SKIPPED: UTF-8 locale not installed" "$(cat "$log")" \
+        "no locale command: the case is skipped"
 }
 
 # stub_failing_grep: a grep that fails with status 2, as on a read
@@ -2823,6 +2846,7 @@ done
 TRACE_GREP=machine
 # shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
 TC_LABEL_SUFFIX=""
+case_trace_non_ascii_without_locale
 case_trace_tool_error
 case_trace_read_error
 case_gherkin_block_light
