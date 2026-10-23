@@ -36,6 +36,15 @@
 #   ${x,,}, ${x^^}         bash 4 features (the single , and ^ forms too)
 #   awk match with three arguments
 #                          match( with two commas before any parenthesis
+#   <(...) as an argument  a process substitution handed to a command
+#                          or a function as a file name. After any
+#                          external command finishes, bash 3.2 closes
+#                          the descriptor behind every such /dev/fd
+#                          path still pending, so the receiver may find
+#                          it closed. Every "<" followed by blanks and
+#                          "<(" is taken out first, because input
+#                          redirected from one (done < <(...), also
+#                          3< <(...)) is opened by bash itself and safe.
 #
 # A finding is printed as <file>:<line>: <form>.
 #
@@ -91,6 +100,10 @@ BEGIN {
             printf "%s:%d: %s\n", FILENAME, FNR, form[i]
     if (line ~ bre && line !~ ere)
         printf "%s:%d: %s\n", FILENAME, FNR, "\\| in a basic regex"
+    arg = line
+    gsub(/<[ \t]*<[(]/, "", arg)
+    if (arg ~ /<[(]/)
+        printf "%s:%d: %s\n", FILENAME, FNR, "<(...) as an argument"
 }
 '
 
@@ -159,6 +172,12 @@ case_form 'declare -A' 'declare -A seen'
 case_form '${x,,}' 'lower="${name,,}"'
 case_form '${x^^}' 'upper="${name^^}"'
 case_form 'awk match with three arguments' 'awk "{ if (match(\$0, /[0-9]+/, m)) print m[0] }" "$f"'
+case_form '<(...) as an argument' 'jq --slurpfile payload <(printf "%s" "$p") "$prog"'
+case_form '<(...) as an argument' 'vse_tf_post_image <(printf "%s" "$p") "$1"'
+case_form '<(...) as an argument' 'diff <(sort "$a") <(sort "$b")'
+case_form '<(...) as an argument' 'awk -f "$prog" <(scan < "$pre")'
+case_form '<(...) as an argument' "    ' <(vse_tf_story_blocks < \"\$pre\") <(vse_tf_story_blocks < \"\$post\")"
+case_form '<(...) as an argument' 'paste < <(cut -f 1 "$f") <(cut -f 2 "$f")'
 
 # --------------------------------------- what the scan leaves alone
 
@@ -185,6 +204,17 @@ scan_fixture \
     'git diff --stat "$f"' \
     'echo "${name}" "${#list[@]}" "${x:-default}"'
 tc_assert_empty "$OUT" "portable forms draw no finding"
+
+# bash opens a process substitution it redirects input from, so that
+# form is safe under bash 3.2, with or without blanks or a descriptor
+# number before it.
+scan_fixture \
+    'done < <(git diff --cached --name-only --diff-filter=ACM)' \
+    'done 2> /dev/null < <(find . -name "*.sysml" -print0)' \
+    'exec 3< <(sort "$f")' \
+    'body="$(< "$f")"' \
+    'cat <<EOF > "$f"'
+tc_assert_empty "$OUT" "input redirected from a process substitution draws no finding"
 
 # ------------------------------------------------------ the real tree
 
