@@ -447,6 +447,32 @@ case_closed_devfd_jq_stub() {
     tc_reset_stubs
 }
 
+# The python3 stub refuses every /dev/fd path argument the way the
+# image program fails on one whose descriptor bash 3.2 has closed, and
+# lets a regular file through to the real python3. The programs are
+# expanded by the shell and python3 they reach.
+# shellcheck disable=SC2016
+case_closed_devfd_python3_stub() {
+    local file read
+    file="$(tc_mktemp_d)/payload.json"
+    printf '{"a": 1}\n' > "$file"
+    read='import sys; sys.stdout.write(open(sys.argv[1]).read())'
+    tc_stub_closed_devfd_python3
+    tc_env
+    tc_run_in "$REPO" sh -c 'python3 -I -c "$1" /dev/fd/3 3< "$2"' sh "$read" "$file"
+    tc_assert_rc 2 "closed /dev/fd python3 stub: a /dev/fd path exits 2"
+    tc_assert_line "[Errno 9] Bad file descriptor: '/dev/fd/3'" "$ERR" \
+        "closed /dev/fd python3 stub: the refusal is the line the image program prints"
+    tc_assert_empty "$OUT" "closed /dev/fd python3 stub: a refused call prints nothing on stdout"
+    tc_run_in "$REPO" bash -c 'python3 -I -c "$1" <(cat "$2")' bash "$read" "$file"  # portability: ok the stub must refuse a process substitution
+    tc_assert_rc 2 "closed /dev/fd python3 stub: a process substitution is refused"
+
+    tc_run_in "$REPO" python3 -I -c "$read" "$file"
+    tc_assert_rc 0 "closed /dev/fd python3 stub: a regular file runs the real python3"
+    tc_assert_eq '{"a": 1}' "$OUT" "closed /dev/fd python3 stub: the real python3 reads the regular file"
+    tc_reset_stubs
+}
+
 # ------------------------------------------------------ CRLF fixtures
 
 # tc_crlf ends every line in a carriage return and a line feed (CR LF,
@@ -650,6 +676,7 @@ case_bsd_grep_stub
 case_bsd_date_stub
 case_bwk_awk_stub
 case_closed_devfd_jq_stub
+case_closed_devfd_python3_stub
 case_crlf_helper
 case_config_two_gates
 case_config_legacy_override

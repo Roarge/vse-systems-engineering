@@ -303,27 +303,41 @@ case_touched_only_changed_block() {
 
 # ---------------------------------------------------- post-edit image
 
-# tf_engine <jq|python3|jq-no-devfd>: the PATH for the next runner
-# call, with the other JSON tool taken away so the named one must do
-# the work. jq-no-devfd is jq behind tc_stub_closed_devfd_jq, which
-# cannot open a /dev/fd path, as jq cannot under the stock bash 3.2 of
-# macOS once that shell has closed the descriptor behind it.
+# tf_engine <jq|python3|jq-no-devfd|python3-no-devfd>: the PATH for
+# the next runner call, with the other JSON tool taken away so the
+# named one must do the work. jq-no-devfd is jq behind
+# tc_stub_closed_devfd_jq, which cannot open a /dev/fd path, as jq
+# cannot under the stock bash 3.2 of macOS once that shell has closed
+# the descriptor behind it. python3-no-devfd is python3 behind
+# tc_stub_closed_devfd_python3, beside a jq 1.5 (tc_stub_old_jq) whose
+# probe fails, so python3 does the work after an external command has
+# run, which is when bash 3.2 closes the descriptor. The two stub
+# engines start from an empty stub directory, so neither sees the
+# other's stubs.
 tf_engine() {
     case "$1" in
         jq) tc_env PATH="$TF_BIN_NO_PYTHON" ;;
         python3) tc_env PATH="$TF_BIN_NO_JQ" ;;
         jq-no-devfd)
+            tc_reset_stubs
             tc_stub_closed_devfd_jq
             tc_env PATH="${STUBS}:${TF_BIN_NO_PYTHON}"
+            ;;
+        python3-no-devfd)
+            tc_reset_stubs
+            tc_stub_old_jq
+            tc_stub_closed_devfd_python3
+            tc_env PATH="${STUBS}:/usr/bin:/bin"
             ;;
     esac
 }
 
 TF_ENGINES="jq python3"
 
-# The disk image builds a payload of its own, which must reach jq as a
-# path jq can still open, so its cases also run with jq-no-devfd.
-TF_DISK_ENGINES="${TF_ENGINES} jq-no-devfd"
+# The disk image builds a payload of its own, which must reach jq or
+# python3 as a path each can still open, so its cases also run with
+# jq-no-devfd and python3-no-devfd.
+TF_DISK_ENGINES="${TF_ENGINES} jq-no-devfd python3-no-devfd"
 
 # tf_payload_edit <old> <new> <replace_all>: an Edit payload on stdout.
 tf_payload_edit() {
@@ -593,6 +607,35 @@ case_disk_image_plain() {
         tf_assert_same "${dir}/empty" "${dir}/image" "disk image (${engine}): a missing file reads as empty"
     done
     tc_reset_stubs
+    tc_env
+}
+
+# The disk image hands its no-edit payload to the engine in a temporary
+# file under TMPDIR, which is gone when the function returns. Here
+# TMPDIR is an empty scratch directory, and it is empty again after the
+# image is read. A TMPDIR that does not exist makes mktemp fail, and
+# the function then returns 2 with nothing on stdout, which the hooks
+# read as an engine failure rather than as an empty file.
+case_disk_image_payload_file() {
+    local engine dir tmp
+    tc_setup_repo
+    dir="$(tc_mktemp_d)"
+    printf 'alpha\r\nbeta\n' > "${dir}/target"
+    printf 'alpha\nbeta\n' > "${dir}/expected"
+    for engine in $TF_DISK_ENGINES; do
+        tmp="$(tc_mktemp_d)"
+        tf_engine "$engine"
+        TC_ENV+=("TMPDIR=${tmp}")
+        run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/target"
+        tc_assert_rc 0 "disk image (${engine}): the file is read with TMPDIR set"
+        tf_assert_same "${dir}/expected" "${dir}/image" "disk image (${engine}): the image is the file, CRLF read as LF"
+        tc_assert_empty "$(ls -A "$tmp")" "disk image (${engine}): the payload file is removed from TMPDIR"
+    done
+    tc_reset_stubs
+    tc_env "TMPDIR=${dir}/no-such-dir"
+    run_tf vse_tf_disk_image "${dir}/target"
+    tc_assert_rc 2 "disk image: exit 2 when mktemp cannot make the payload file"
+    tc_assert_empty "$OUT" "disk image: nothing on stdout when mktemp cannot make the payload file"
     tc_env
 }
 
@@ -1556,6 +1599,7 @@ case_post_image_no_json_tool
 case_post_image_old_jq_falls_back
 case_disk_image_symmetric_latin1
 case_disk_image_plain
+case_disk_image_payload_file
 case_post_image_crlf
 case_post_image_no_match
 case_post_image_unsupported_tool

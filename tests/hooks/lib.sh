@@ -604,6 +604,28 @@ exec "$real" "$@"
 EOF
 }
 
+# tc_stub_closed_devfd_python3: python3 under the stock bash 3.2 of
+# macOS, as tc_stub_closed_devfd_jq is jq. The image program of
+# hooks/lib/test-first.sh opens the paths it is given, and a /dev/fd
+# path whose descriptor bash 3.2 has closed fails there with the
+# OSError line the program prints, "[Errno 9] Bad file descriptor:
+# '/dev/fd/N'", and exit 2. The stub refuses every /dev/fd path
+# argument that way, whether or not its descriptor is open, and passes
+# every other call to the real python3.
+tc_stub_closed_devfd_python3() {
+    _tc_stub_wrap python3 <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        /dev/fd/*)
+            printf "[Errno 9] Bad file descriptor: '%s'\n" "$arg" >&2
+            exit 2
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
 tc_pilot_home() {
     printf '%s\n' "${FAKEHOME}/.local/share/sysml-pilot"
 }
