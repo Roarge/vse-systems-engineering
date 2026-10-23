@@ -95,6 +95,17 @@ def change_request_open(ctx, days):
          "createdAt": opened.strftime("%Y-%m-%dT%H:%M:%SZ")})
 
 
+@step(r"a Change Request whose opening date cannot be read")
+def change_request_unreadable_date(ctx):
+    # A UTC offset in place of the Z is a form jq's fromdateiso8601
+    # cannot read. The date is old, so a hook that could read it would
+    # count it as stale too.
+    _scratch(ctx)
+    ctx.open_change_requests.append(
+        {"number": len(ctx.open_change_requests) + 1,
+         "createdAt": "2020-01-02T03:04:05+02:00"})
+
+
 # ------------------------------------------------------------------ When
 
 

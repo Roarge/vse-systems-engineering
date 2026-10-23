@@ -1067,6 +1067,154 @@ case_trace_tool_error() {
     tc_reset_stubs
 }
 
+# stub_failing_path_grep: a grep that fails with status 2 when it is
+# asked to pick the .sysml paths out of a list on stdin with the lone
+# pattern '\.sysml$', which is how the gate finds the model files among
+# the changed files. The SysML lint picks them with -E as well, so it
+# reaches the real grep.
+stub_failing_path_grep() {
+    _tc_stub_wrap grep <<'EOF'
+if [ "$#" -eq 1 ] && [ "$1" = '\.sysml$' ]; then
+    echo "grep: (standard input): Input/output error" >&2
+    exit 2
+fi
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_git_read: a git that fails with status 128, as on an
+# object it cannot read, when it is asked for the content of a model
+# file: git show of an index path (":./<file>", how the gate reads a
+# file in "all" mode) or a diff with --unified (the whole file as
+# context, how it reads a staged or ranged change). Every other call
+# reaches the real git.
+stub_failing_git_read() {
+    _tc_stub_wrap git <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        :./*|--unified=*)
+            echo "fatal: unable to read 0123456789abcdef0123456789abcdef01234567" >&2
+            exit 128
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_trace_awk: an awk that fails with status 2 when it runs
+# the program that reads a change as model text, the only one whose
+# function feed takes one argument. Every other call reaches the real
+# awk.
+stub_failing_trace_awk() {
+    _tc_stub_wrap awk <<'EOF'
+case "$*" in
+    *"function feed(tok)"*)
+        echo "awk: read error (Input/output error)" >&2
+        exit 2
+        ;;
+esac
+exec "$real" "$@"
+EOF
+}
+
+# The reads behind the name read fail closed too. A grep that fails
+# while the gate picks the model files out of the changed files would
+# otherwise leave no file to check, and a git or awk that fails while
+# the gate reads a file's change would leave no text to read names
+# from. Each is a gate failure at the gate's disposition that names the
+# tool and its status. grep status 1 there (no model file changed)
+# still means nothing to check, which the README-only cases pin. The
+# gate keeps the text it reads in a temporary file under TMPDIR, which
+# is gone when it returns, whether the read failed or not.
+case_trace_read_error() {
+    local tmp
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_path_grep
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "file list error (block): the commit is stopped"
+    tc_assert_grep "grep exited with status 2 while reading the list of changed files" "$OUT" \
+        "file list error (block): the report names the tool, its status and the list"
+    tc_assert_not_grep "All checks passed" "$OUT" \
+        "file list error (block): the summary does not say every check passed"
+    tc_reset_stubs
+
+    tc_setup_repo
+    tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off \
+        precommit_traceability=warn
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_path_grep
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 0 "file list error (warn): the commit proceeds"
+    tc_assert_grep "warning: grep exited with status 2 while reading the list of changed files" "$OUT" \
+        "file list error (warn): the report is a warning"
+    tc_assert_line "[pre-commit] Checks complete with 1 warning(s)." "$OUT" \
+        "file list error (warn): the warning is counted"
+    tc_reset_stubs
+
+    tc_setup_repo
+    trace_config
+    write_story
+    tc_commit "add the story"
+    stub_failing_git_read
+    tc_env "VSE_PRECOMMIT_RANGE=all"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "git show error (all): the check stops"
+    tc_assert_grep "git exited with status 128 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "git show error (all): the report names the tool, its status and the file"
+    tc_assert_not_grep "To proceed anyway" "$OUT" \
+        "git show error (all): a check in CI gives no rationale advice"
+    tc_reset_stubs
+
+    tc_setup_repo
+    trace_config
+    write_story
+    stub_failing_git_read
+    tmp="$(tc_mktemp_d)"
+    tc_env "TMPDIR=${tmp}"
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "git diff error (staged): the commit is stopped"
+    tc_assert_grep "git exited with status 128 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "git diff error (staged): the report names the tool, its status and the file"
+    tc_assert_empty "$(ls -A "$tmp")" "git diff error (staged): no temporary file is left in TMPDIR"
+    tc_reset_stubs
+
+    stub_failing_trace_awk
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "awk error (staged): the commit is stopped"
+    tc_assert_grep "awk exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "awk error (staged): the report names the tool, its status and the file"
+    tc_assert_empty "$(ls -A "$tmp")" "awk error (staged): no temporary file is left in TMPDIR"
+
+    # A change larger than a pipe buffer (64 KiB) keeps git writing
+    # after the awk stub has stopped reading, so git fails as well, with
+    # the status of a write to a closed pipe (SIGPIPE, 141). The report
+    # still names awk, whose failure is the cause.
+    {
+        printf 'package S {\n    requirement US_9_X : UserStory;\n}\n'
+        awk 'BEGIN { for (i = 0; i < 3000; i++) printf "// padding line %d, to fill the pipe buffer\n", i }'
+    } | tc_write model/core/stories/stakeholder/s.sysml
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_grep "awk exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "awk error, large change: the report names awk"
+    tc_assert_not_grep "git exited" "$OUT" "awk error, large change: git's broken pipe is not reported"
+    tc_reset_stubs
+
+    tc_run_githook pre-commit-traceability.sh
+    tc_assert_rc 1 "temporary file: the gap is still found"
+    tc_assert_grep "requirement 'US_9_X' has no verification case" "$OUT" \
+        "temporary file: the finding names the story"
+    tc_assert_empty "$(ls -A "$tmp")" "temporary file: none is left in TMPDIR after a clean read"
+    tc_env
+}
+
 # ------------------------------------- 10. the story gates (concern 2)
 
 SCENARIOS="${TC_PLUGIN_ROOT}/tests/fixtures/lint/scenarios"
@@ -2672,6 +2820,7 @@ TRACE_GREP=machine
 # shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
 TC_LABEL_SUFFIX=""
 case_trace_tool_error
+case_trace_read_error
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full

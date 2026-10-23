@@ -20,7 +20,9 @@ traceability-gate.feature names the traceability gate.
 
 Git runs with a scratch HOME and without the system configuration, so
 no setting on the machine (a signing requirement, a global hooks
-directory) changes what a scenario sees. Variables an outer run might
+directory) changes what a scenario sees. A scenario that sets
+ctx.stub_dir puts that directory first on PATH for git and the hooks,
+so a stub there stands in for a tool. Variables an outer run might
 carry, such as VSE_ISO_CONFIG, the GITHUB_HEAD_REF of a CI job, or a
 GIT_INDEX_FILE set by a git hook that runs the suite, are removed.
 """
@@ -69,6 +71,9 @@ def environment(ctx):
            if not name.startswith("GIT_") and name not in DROPPED}
     env["HOME"] = ctx.home
     env["GIT_CONFIG_NOSYSTEM"] = "1"
+    stubs = getattr(ctx, "stub_dir", None)
+    if stubs is not None:
+        env["PATH"] = stubs + os.pathsep + env.get("PATH", "")
     return env
 
 

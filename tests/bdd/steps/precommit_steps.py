@@ -15,6 +15,10 @@ directory, so the story those steps write is the story committed here.
 
 import os
 import re
+import shlex
+import shutil
+import stat
+import tempfile
 
 import world
 from lint_steps import (STORIES, copy_piece, feature_file, project,
@@ -205,6 +209,51 @@ def tagged_commit(ctx, tag, path):
     world.git(ctx, "tag", tag)
 
 
+# The reads of the traceability gate a scenario can make fail. Each
+# names the tool that makes the read and a shell test that holds for
+# the gate's call alone. The name read is the only grep -oE. The gate
+# picks the model files with a lone '\.sysml$' (the SysML lint's call
+# adds -E). The awk that reads the staged diff runs the only program
+# whose function feed takes one argument. The diff itself comes from
+# git, which no stub can stand in for here, because git puts its own
+# directory of programs, which holds a git, first on the PATH of the
+# hooks it runs.
+FAILING_READS = {
+    "reads the requirement names":
+        ("grep", "case \" $* \" in *\" -oE \"*) true ;; *) false ;; esac"),
+    "picks the model files out of the changed files":
+        ("grep", "[ \"$#\" -eq 1 ] && [ \"$1\" = '\\.sysml$' ]"),
+    "reads the staged change":
+        ("awk", "case \"$*\" in *\"function feed(tok)\"*) true ;; *) false ;; esac"),
+}
+
+
+@step(r"(grep|awk) fails with status (\d+) when the gate ({})".format(
+    "|".join(re.escape(read) for read in FAILING_READS)))
+def tool_fails(ctx, tool, status, read):
+    expected, test = FAILING_READS[read]
+    if tool != expected:
+        raise AssertionError("the gate {} with {}, not {}".format(
+            read, expected, tool))
+    real = shutil.which(tool)
+    if real is None:
+        raise AssertionError("{} is not on PATH".format(tool))
+    if getattr(ctx, "stub_dir", None) is None:
+        ctx.stub_dir = tempfile.mkdtemp(prefix="vse-world-stubs-")
+        ctx.cleanup(lambda: shutil.rmtree(ctx.stub_dir, ignore_errors=True))
+    path = os.path.join(ctx.stub_dir, tool)
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("#!/bin/sh\n"
+                     "if {}; then\n"
+                     "    echo '{}: the read failed (a scenario stub)' >&2\n"
+                     "    exit {}\n"
+                     "fi\n"
+                     "exec {} \"$@\"\n".format(test, tool, int(status),
+                                               shlex.quote(real)))
+    os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP
+             | stat.S_IXOTH)
+
+
 # ------------------------------------------------------------------ When
 
 
@@ -360,6 +409,18 @@ def told_no_verification_case(ctx, name):
             not in ctx.output:
         raise AssertionError("{} is not named as unverified, {}".format(
             name, _context(ctx)))
+
+
+@step(r"the engineer is told that (\w+) exited with status (\d+) while "
+      r"reading (the story file|the list of changed files)")
+def told_tool_failed(ctx, tool, status, what):
+    if what == "the story file":
+        what = REGISTER
+    expected = "{} exited with status {} while reading {}".format(
+        tool, status, what)
+    if expected not in ctx.output:
+        raise AssertionError("no line says that {}, {}".format(
+            expected, _context(ctx)))
 
 
 @step(r"the check fails with finding (\w+)")
