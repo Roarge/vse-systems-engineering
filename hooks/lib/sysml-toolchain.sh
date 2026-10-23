@@ -87,7 +87,11 @@ _vse_tc_scalar() {
     printf '%s\n' "$value"
 }
 
-# Run a command under a limit of <secs> seconds. A command that runs
+# Run a command under a limit of <secs> seconds. <secs> is a whole
+# number of seconds (VSE_TC_TIMEOUT and VSE_TC_PROBE_TIMEOUT alike).
+# coreutils timeout would also read a fraction or a unit suffix, but
+# perl's alarm counts whole seconds only: it drops a fraction, so a
+# budget under one second sets no alarm at all. A command that runs
 # out of time exits 124, as under coreutils timeout. macOS has no
 # timeout, so gtimeout (Homebrew coreutils) comes next, then perl, and
 # a machine with none of the three runs the command with no limit. The
@@ -104,7 +108,8 @@ _vse_tc_scalar() {
 # would have seen had the command run in the foreground. Both sides set
 # the group, so a signal that arrives before the command has done so
 # still reaches it. The exec form with the program in braces never
-# hands the command to a shell.
+# hands the command to a shell. A command perl cannot start exits 127,
+# with the reason on stderr in the words coreutils timeout uses.
 _vse_tc_timeout() {
     local secs="$1"
     shift
@@ -118,7 +123,12 @@ _vse_tc_timeout() {
             my %num = (HUP => 1, INT => 2, QUIT => 3, TERM => 15);
             my $pid = fork;
             defined $pid or exit 125;
-            if ($pid == 0) { setpgrp(0, 0); exec { $ARGV[0] } @ARGV or exit 127 }
+            if ($pid == 0) {
+                setpgrp(0, 0);
+                exec { $ARGV[0] } @ARGV;
+                print STDERR "timeout: failed to run command \x27$ARGV[0]\x27: $!\n";
+                exit 127;
+            }
             setpgrp($pid, $pid);
             my $got;
             for my $sig (keys %num) {

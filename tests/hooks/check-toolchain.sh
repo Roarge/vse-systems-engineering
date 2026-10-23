@@ -380,6 +380,31 @@ else
         "took ${TC_ELAPSED} seconds"
 fi
 
+# A probe that fails at once under the perl fallback keeps its own exit
+# status, so detection quotes the tool's reason and does not read the
+# failure as a timeout.
+tc_stub syside <<'EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+echo "Error: the probe model could not be read"
+exit 3
+EOF
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}" VSE_TC_PROBE_TIMEOUT=1
+tc_run_lib detect syside
+tc_assert_rc 2 "detect syside, perl fallback: a probe that fails at once is unavailable"
+tc_assert_grep "syside unavailable (syside exit 3 on the probe model: Error: the probe model could not be read)" "$ERR" \
+    "detect syside, perl fallback: the reason is the probe's own exit status and first line"
+tc_assert_not_grep "timed out" "$ERR" \
+    "detect syside, perl fallback: a probe that fails at once is not read as a timeout"
+
+# A command the perl fallback cannot start exits 127, and the reason is
+# printed on stderr, as coreutils timeout prints it.
+tc_env "PATH=${STUBS}:${TC_BIN_NO_TIMEOUT}"
+tc_run_lib_fn _vse_tc_timeout 5 no-such-validator
+tc_assert_rc 127 "perl fallback, no such command: exit 127"
+tc_assert_line "timeout: failed to run command 'no-such-validator': No such file or directory" "$ERR" \
+    "perl fallback, no such command: the reason is printed on stderr"
+
 # A signal that reaches the perl fallback (INT from Ctrl-C, TERM or
 # HUP) is passed on to the command's process group, as coreutils
 # timeout passes it on. Without that, Ctrl-C during a hung licence
