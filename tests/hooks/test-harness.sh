@@ -116,33 +116,37 @@ case_runners_drop_outer_github_head_ref() {
 # BSD's message, usage text and exit 1, and passes every other call to
 # the real env found when the wrapper is written. Placed first on the
 # PATH of a test script, it stands in for macOS env, so a runner that
-# still changes directory with env -C fails on Linux too.
+# still changes directory with env -C fails on Linux too. The path of
+# the real env is written quoted for the shell (printf %q), and the body
+# comes from a quoted heredoc, so no character in that path is expanded
+# when the wrapper runs.
 bsd_env_dir() {
     local dir real
     dir="$(tc_mktemp_d)"
     real="$(command -v env)"
-    cat > "${dir}/env" <<EOF
-#!/usr/bin/env bash
-set -uo pipefail
+    {
+        printf '#!/usr/bin/env bash\nset -uo pipefail\nreal=%q\n' "$real"
+        cat <<'EOF'
 usage() {
     echo 'usage: env [-0iv] [-P utilpath] [-S string] [-u name]' >&2
     echo '           [name=value ...] [utility [argument ...]]' >&2
     exit 1
 }
 while getopts ':0iP:S:u:v' opt; do
-    case "\$opt" in
+    case "$opt" in
         '?')
-            echo "env: illegal option -- \${OPTARG}" >&2
+            echo "env: illegal option -- ${OPTARG}" >&2
             usage
             ;;
         ':')
-            echo "env: option requires an argument -- \${OPTARG}" >&2
+            echo "env: option requires an argument -- ${OPTARG}" >&2
             usage
             ;;
     esac
 done
-exec "${real}" "\$@"
+exec "$real" "$@"
 EOF
+    } > "${dir}/env"
     chmod +x "${dir}/env"
     printf '%s\n' "$dir"
 }
@@ -193,6 +197,58 @@ report tc_run_real
     tc_assert_line "tc_run_in: ok" "$OUT" "without env -C: tc_run_in runs in the directory it names"  # portability: ok a case name, not a call
     tc_assert_line "tc_run_hook: ok" "$OUT" "without env -C: the sandboxed runner runs in the scratch repository"  # portability: ok a case name, not a call
     tc_assert_line "tc_run_real: ok" "$OUT" "without env -C: tc_run_real runs in the scratch repository"  # portability: ok a case name, not a call
+}
+
+# The wrapper names the real env quoted for the shell, so a path that
+# holds a blank, a double quote or a dollar sign still reaches the env
+# it was written for, with every argument.
+case_bsd_env_wrapper_quotes_real_env() {
+    local odd wrap
+    odd="$(tc_mktemp_d)/odd dir \$HOME \"q\""
+    mkdir -p "$odd"
+    cat > "${odd}/env" <<'EOF'
+#!/bin/sh
+printf 'odd env:'
+printf ' %s' "$@"
+printf '\n'
+EOF
+    chmod +x "${odd}/env"
+    wrap="$(PATH="${odd}:${PATH}" bsd_env_dir)"
+    tc_env
+    _tc_capture "${wrap}/env" -u TC_UNSET TC_SET=1 true
+    tc_assert_rc 0 "BSD env wrapper, odd path: the real env runs"
+    tc_assert_eq "odd env: -u TC_UNSET TC_SET=1 true" "$OUT" \
+        "BSD env wrapper, odd path: the env it was written for gets every argument"
+}
+
+# An exported CDPATH makes cd print the directory it found, so a cd in a
+# helper whose output is captured would add that line to the output.
+# _tc_in_dir and the scratch root read a name relative to the working
+# directory through CDPATH, and neither prints it. A TMPDIR relative to
+# the working directory makes the scratch root such a name.
+case_cd_ignores_cdpath() {
+    local base work physical
+    base="$(tc_mktemp_d)"
+    mkdir "${base}/cdpath-target"
+    physical="$(cd "${base}/cdpath-target" && pwd -P)"
+    tc_env
+    # shellcheck disable=SC2016  # expanded by the nested shell
+    _tc_capture env CDPATH="$base" bash -c '. "$1"; _tc_in_dir cdpath-target pwd -P' \
+        nested "${TC_LIB_DIR}/lib.sh"
+    tc_assert_eq "$physical" "$OUT" "CDPATH: _tc_in_dir prints only what the command prints"
+
+    work="$(tc_mktemp_d)"
+    mkdir "${work}/tmp"
+    physical="$(cd "${work}/tmp" && pwd -P)"
+    # shellcheck disable=SC2016  # expanded by the nested shell
+    _tc_capture _tc_in_dir "$work" env CDPATH=. TMPDIR=tmp bash -c '
+. "$1"
+trap tc_teardown EXIT
+printf "root=%s\n" "$TC_ROOT"
+' nested "${TC_LIB_DIR}/lib.sh"
+    tc_assert_line_count 1 "$OUT" "CDPATH: the scratch root is one line"
+    tc_assert_match "^root=${physical}/vse-hooktest[.]" "$OUT" \
+        "CDPATH: the scratch root is made in TMPDIR, named by its physical path"
 }
 
 # On macOS the temporary directory is reached through a symbolic link
@@ -295,6 +351,16 @@ case_bsd_grep_stub() {
     tc_assert_rc 0 "BSD grep stub: \\| with -F is a fixed string"  # portability: ok a case name, not a call
     tc_run_in "$REPO" grep 'a\\|b' "$file"  # portability: ok an escaped backslash, which the stub must pass
     tc_assert_rc 0 "BSD grep stub: an escaped backslash before | is not \\|"
+    printf '%s\n' 'a|b' > "$file"
+    tc_run_in "$REPO" grep 'a[\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
+    tc_assert_rc 0 "BSD grep stub: a backslash and | in a bracket expression are plain members"
+    tc_assert_eq "a|b" "$OUT" "BSD grep stub: the bracket expression reaches the real grep"
+    tc_run_in "$REPO" grep 'a[]\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
+    tc_assert_rc 0 "BSD grep stub: a ] first in a bracket expression does not close it"
+    tc_run_in "$REPO" grep 'a[[:space:]\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
+    tc_assert_rc 0 "BSD grep stub: the ] of a character class does not close the bracket expression"
+    tc_run_in "$REPO" grep '[a]\|b' "$file"  # portability: ok the BSD grep stub must refuse it
+    tc_assert_rc 2 "BSD grep stub: \\| after a bracket expression is still refused"  # portability: ok a case name, not a call
     tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -e -P'  # portability: ok -P is the pattern here
     tc_assert_eq "-P" "$OUT" "BSD grep stub: -P after -e is a pattern"
     tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -- -P'  # portability: ok -P is the pattern here
@@ -519,6 +585,22 @@ last" "exact line")"
     tc_assert_grep "FAIL: embedded line" "$result" "assert_line: text inside a line does not pass"
 }
 
+# TC_LABEL_SUFFIX names the pass a case runs in. tc_pass and tc_fail
+# add it to every assertion name in parentheses, so a case run once with
+# the tool of the machine and once with a BSD-behaviour stub reports
+# each assertion under a name of its own. Empty, it adds nothing.
+# shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
+case_label_suffix() {
+    local result
+    result="$(TC_LABEL_SUFFIX="BSD grep"; tc_pass "a name")"
+    tc_assert_eq "PASS: a name (BSD grep)" "$result" "label suffix: a pass names the pass it ran in"
+    result="$(TC_LABEL_SUFFIX="BSD grep"; tc_fail "a name" "the detail")"
+    tc_assert_eq "FAIL: a name (BSD grep)
+      the detail" "$result" "label suffix: a failure names the pass it ran in"
+    result="$(TC_LABEL_SUFFIX=""; tc_pass "a name")"
+    tc_assert_eq "PASS: a name" "$result" "label suffix: an empty suffix adds nothing"
+}
+
 case_assert_json_silent() {
     local result
     result="$(probe '' tc_assert_json_silent "empty")"
@@ -560,6 +642,8 @@ case_other_runners_read_empty_stdin
 case_runners_drop_outer_vse_iso_config
 case_runners_drop_outer_github_head_ref
 case_runners_without_env_dash_c
+case_bsd_env_wrapper_quotes_real_env
+case_cd_ignores_cdpath
 case_scratch_root_is_physical
 case_scratch_root_needs_mktemp
 case_bsd_grep_stub
@@ -578,6 +662,7 @@ case_assert_json_rejects_false_filter
 case_assert_json_shows_jq_error
 case_assert_json_reports_missing_jq
 case_assert_line_exact
+case_label_suffix
 case_assert_json_silent
 case_bin_without_named_tools
 

@@ -668,18 +668,27 @@ write_log() {
 
 # The contributor report says how many whole days ago the last wiki LOG
 # entry was written. The count needs no GNU date -d, which BSD date
-# (macOS) lacks, so it is given with the BSD date stub on PATH too.
+# (macOS) lacks, so it is given with the BSD date stub on PATH too. The
+# test reads the date before the hook runs and again after it. When UTC
+# midnight passes in between, the hook may count from either day, so
+# then 0 and 1 days are both accepted.
 case_contributor_log_age() {
-    local label="$1" dir today
+    local label="$1" dir today after
     dir="$(tc_mktemp_d)"
     tc_mark_plugin_repo "$dir"
     today="$(date -u +%Y-%m-%d)"
     write_log "$dir" "$today"
     tc_env
     run_hook_in "$dir"
+    after="$(date -u +%Y-%m-%d)"
     tc_assert_rc 0 "log age, ${label}: exit 0"
-    tc_assert_line "  Last LOG.md entry: ${today} (0 days ago)." "$OUT" \
-        "log age, ${label}: an entry dated today is 0 days old"
+    if [ "$after" = "$today" ]; then
+        tc_assert_line "  Last LOG.md entry: ${today} (0 days ago)." "$OUT" \
+            "log age, ${label}: an entry dated today is 0 days old"
+    else
+        tc_assert_match "^  Last LOG\.md entry: ${today} \((0|1) days ago\)\.\$" "$OUT" \
+            "log age, ${label}: an entry dated today is 0 days old"
+    fi
     write_log "$dir" 2020-01-01
     run_hook_in "$dir"
     tc_assert_match '^  Last LOG\.md entry: 2020-01-01 \([0-9]+ days ago\)\.$' "$OUT" \
@@ -763,7 +772,7 @@ case_mode2_many_tags
 case_mode1_pointer
 case_mode1_library_missing
 
-case_contributor_log_age "GNU date"
+case_contributor_log_age "machine date"
 tc_stub_bsd_date
 case_contributor_log_age "BSD date"
 rm -f "${STUBS}/date"

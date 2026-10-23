@@ -53,9 +53,11 @@ TC_SKIP_COUNT=0
 # test never built. The two steps stay two statements. Nested in one,
 # a failed mktemp would leave cd an empty name, which keeps the working
 # directory, so errexit (set -e) would not stop the script and the
-# scratch root would become the working directory.
+# scratch root would become the working directory. A TMPDIR relative to
+# the working directory gives a relative name, which cd looks up through
+# an exported CDPATH and then prints, so its output is discarded.
 TC_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/vse-hooktest.XXXXXX")"
-TC_ROOT="$(cd -- "$TC_ROOT" && pwd -P)"
+TC_ROOT="$(cd -- "$TC_ROOT" > /dev/null && pwd -P)"
 
 # Extra environment for the next runner call, as NAME=VALUE words.
 TC_ENV=()
@@ -305,9 +307,15 @@ _tc_stub_wrap() {
 # "-P" after -e is a pattern). POSIX leaves \| in a basic regular
 # expression undefined, so a BSD grep need not read it as alternation.
 # The stub refuses an unescaped \| in a basic regular expression (no
-# -E, no -F) with a message and exit 2, so a use fails loudly here. The
-# patterns checked are those given with -e or --regexp, or else the
-# first operand. A pattern file named by -f is not read.
+# -E, no -F) with a message and exit 2, so a use fails loudly here.
+# Inside a bracket expression ([\|]) a backslash and | are two plain
+# members, as POSIX says and BSD grep reads them, so the scan skips
+# bracket expressions. One ends at the first ] that is not its first
+# member (after an optional ^), and a class such as [:space:], an
+# equivalence class [=e=] or a collating symbol [.-.] inside it is
+# skipped whole, so its ] does not end it. The patterns checked are
+# those given with -e or --regexp, or else the first operand. A
+# pattern file named by -f is not read.
 tc_stub_bsd_grep() {
     _tc_stub_wrap grep <<'EOF'
 usage() {
@@ -402,16 +410,50 @@ if [ "$from_option" -eq 0 ] && [ "$have_operand" -eq 1 ]; then
 fi
 if [ "$mode" = basic ]; then
     for pattern in ${patterns[@]+"${patterns[@]}"}; do
+        n=${#pattern}
         i=0
-        while [ "$i" -lt "${#pattern}" ]; do
-            if [ "${pattern:$i:1}" = '\' ]; then
-                if [ "${pattern:$((i + 1)):1}" = '|' ]; then
-                    echo 'grep: \| in a basic regular expression is not portable to BSD grep (use -E and |)' >&2
-                    exit 2
-                fi
-                i=$((i + 1))
-            fi
-            i=$((i + 1))
+        while [ "$i" -lt "$n" ]; do
+            case "${pattern:$i:1}" in
+                '\')
+                    if [ "${pattern:$((i + 1)):1}" = '|' ]; then
+                        echo 'grep: \| in a basic regular expression is not portable to BSD grep (use -E and |)' >&2
+                        exit 2
+                    fi
+                    i=$((i + 2))
+                    ;;
+                '[')
+                    i=$((i + 1))
+                    if [ "${pattern:$i:1}" = '^' ]; then
+                        i=$((i + 1))
+                    fi
+                    if [ "${pattern:$i:1}" = ']' ]; then
+                        i=$((i + 1))
+                    fi
+                    while [ "$i" -lt "$n" ] && [ "${pattern:$i:1}" != ']' ]; do
+                        case "${pattern:$i:2}" in
+                            '[:'|'[='|'[.')
+                                close="${pattern:$((i + 1)):1}]"
+                                j=$((i + 2))
+                                while [ "$j" -lt "$n" ] && [ "${pattern:$j:2}" != "$close" ]; do
+                                    j=$((j + 1))
+                                done
+                                if [ "$j" -lt "$n" ]; then
+                                    i=$((j + 2))
+                                else
+                                    i=$((i + 1))
+                                fi
+                                ;;
+                            *)
+                                i=$((i + 1))
+                                ;;
+                        esac
+                    done
+                    i=$((i + 1))
+                    ;;
+                *)
+                    i=$((i + 1))
+                    ;;
+            esac
         done
     done
 fi
@@ -647,9 +689,11 @@ tc_env() {
 # body is a subshell, so the caller's directory is left alone, and the
 # command replaces it. It stands in for GNU env -C, which macOS env
 # lacks. Exit 125 means the directory could not be entered, the status
-# env -C gives for the same failure.
+# env -C gives for the same failure. cd prints a directory it found
+# through an exported CDPATH, which would join the command's output, so
+# its output is discarded.
 _tc_in_dir() (
-    cd -- "$1" || exit 125
+    cd -- "$1" > /dev/null || exit 125
     shift
     exec "$@"
 )
@@ -827,14 +871,21 @@ tc_run_in() {
 
 # ----------------------------------------------------------- assertion
 
+# TC_LABEL_SUFFIX names the pass a case runs in, such as "BSD grep" for
+# a case run once with the tool of the machine and once with a
+# BSD-behaviour stub. tc_pass and tc_fail add it to every assertion name
+# in parentheses, so each pass reports its assertions under names of
+# their own. Empty, it adds nothing.
+TC_LABEL_SUFFIX=""
+
 tc_pass() {
     TC_PASS_COUNT=$((TC_PASS_COUNT + 1))
-    printf 'PASS: %s\n' "$1"
+    printf 'PASS: %s\n' "$1${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
 }
 
 tc_fail() {
     TC_FAIL_COUNT=$((TC_FAIL_COUNT + 1))
-    printf 'FAIL: %s\n' "$1"
+    printf 'FAIL: %s\n' "$1${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
     if [ "$#" -gt 1 ]; then
         printf '%s\n' "$2" | sed 's/^/      /'
     fi

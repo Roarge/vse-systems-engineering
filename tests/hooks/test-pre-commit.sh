@@ -286,12 +286,13 @@ EOF
 }
 
 # Every traceability case runs twice, once with the grep of the machine
-# (TRACE_GREP=gnu) and once with the BSD grep stub (TRACE_GREP=bsd),
+# (TRACE_GREP=machine) and once with the BSD grep stub (TRACE_GREP=BSD),
 # which refuses what the grep of macOS refuses. trace_grep installs the
 # stub for the second pass. A case that configures the project without
-# trace_config calls it directly.
+# trace_config calls it directly. Each pass names itself after every
+# assertion (TC_LABEL_SUFFIX), so a failure says which grep it met.
 trace_grep() {
-    if [ "${TRACE_GREP:-gnu}" = "bsd" ]; then
+    if [ "${TRACE_GREP:-machine}" = "BSD" ]; then
         tc_stub_bsd_grep
     fi
 }
@@ -2643,8 +2644,10 @@ for disposition in block warn; do
     case_partial_install "$disposition"
 done
 case_context_filtering
-for TRACE_GREP in gnu bsd; do
+# shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
+for TRACE_GREP in machine BSD; do
     printf '\n# The traceability gate with %s grep\n' "$TRACE_GREP"
+    TC_LABEL_SUFFIX="${TRACE_GREP} grep"
     case_trace_covered
     case_trace_gap
     case_trace_long_warning_counted
@@ -2665,7 +2668,9 @@ for TRACE_GREP in gnu bsd; do
     case_trace_acceptance_opener_removed
     case_trace_non_ascii_bytes
 done
-TRACE_GREP=gnu
+TRACE_GREP=machine
+# shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
+TC_LABEL_SUFFIX=""
 case_trace_tool_error
 case_gherkin_block_light
 case_gherkin_block_standard
