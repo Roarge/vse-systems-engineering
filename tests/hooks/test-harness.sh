@@ -201,7 +201,10 @@ report tc_run_real
 
 # The wrapper names the real env quoted for the shell, so a path that
 # holds a blank, a double quote or a dollar sign still reaches the env
-# it was written for, with every argument.
+# it was written for, with every argument. PATH is assigned on its own
+# inside the command substitution, not as a prefix of the call, because
+# bash 3.2 keeps the env it has already hashed for a function called
+# with a prefix assignment, and the wrapper would name /usr/bin/env.
 case_bsd_env_wrapper_quotes_real_env() {
     local odd wrap
     odd="$(tc_mktemp_d)/odd dir \$HOME \"q\""
@@ -213,7 +216,7 @@ printf ' %s' "$@"
 printf '\n'
 EOF
     chmod +x "${odd}/env"
-    wrap="$(PATH="${odd}:${PATH}" bsd_env_dir)"
+    wrap="$(PATH="${odd}:${PATH}"; bsd_env_dir)"
     tc_env
     _tc_capture "${wrap}/env" -u TC_UNSET TC_SET=1 true
     tc_assert_rc 0 "BSD env wrapper, odd path: the real env runs"
@@ -225,17 +228,21 @@ EOF
 # helper whose output is captured would add that line to the output.
 # _tc_in_dir and the scratch root read a name relative to the working
 # directory through CDPATH, and neither prints it. A TMPDIR relative to
-# the working directory makes the scratch root such a name.
+# the working directory makes the scratch root such a name. Each nested
+# shell makes its scratch root in a TMPDIR of this run, never in the
+# TMPDIR of whoever runs the tests, and removes it, so nothing is left.
 case_cd_ignores_cdpath() {
-    local base work physical
+    local base work physical tmp
     base="$(tc_mktemp_d)"
     mkdir "${base}/cdpath-target"
     physical="$(cd "${base}/cdpath-target" && pwd -P)"
+    tmp="$(tc_mktemp_d)"
     tc_env
     # shellcheck disable=SC2016  # expanded by the nested shell
-    _tc_capture env CDPATH="$base" bash -c '. "$1"; _tc_in_dir cdpath-target pwd -P' \
+    _tc_capture env CDPATH="$base" TMPDIR="$tmp" bash -c '. "$1"; trap tc_teardown EXIT; _tc_in_dir cdpath-target pwd -P' \
         nested "${TC_LIB_DIR}/lib.sh"
     tc_assert_eq "$physical" "$OUT" "CDPATH: _tc_in_dir prints only what the command prints"
+    tc_assert_empty "$(ls -A "$tmp")" "CDPATH: the nested shell leaves no scratch root behind"
 
     work="$(tc_mktemp_d)"
     mkdir "${work}/tmp"
@@ -249,6 +256,7 @@ printf "root=%s\n" "$TC_ROOT"
     tc_assert_line_count 1 "$OUT" "CDPATH: the scratch root is one line"
     tc_assert_match "^root=${physical}/vse-hooktest[.]" "$OUT" \
         "CDPATH: the scratch root is made in TMPDIR, named by its physical path"
+    tc_assert_empty "$(ls -A "${work}/tmp")" "CDPATH: the relative scratch root is removed"
 }
 
 # On macOS the temporary directory is reached through a symbolic link
@@ -359,6 +367,12 @@ case_bsd_grep_stub() {
     tc_assert_rc 0 "BSD grep stub: a ] first in a bracket expression does not close it"
     tc_run_in "$REPO" grep 'a[[:space:]\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
     tc_assert_rc 0 "BSD grep stub: the ] of a character class does not close the bracket expression"
+    tc_run_in "$REPO" grep 'a[[=a=]\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
+    tc_assert_rc 0 "BSD grep stub: the ] of an equivalence class does not close the bracket expression"
+    printf '%s\n' 'axb' > "$file"
+    tc_run_in "$REPO" grep 'a[^]\|]b' "$file"  # portability: ok in a bracket expression \| is two plain members
+    tc_assert_rc 0 "BSD grep stub: a ] first in a negated bracket expression does not close it"
+    tc_assert_eq "axb" "$OUT" "BSD grep stub: the negated bracket expression reaches the real grep"
     tc_run_in "$REPO" grep '[a]\|b' "$file"  # portability: ok the BSD grep stub must refuse it
     tc_assert_rc 2 "BSD grep stub: \\| after a bracket expression is still refused"  # portability: ok a case name, not a call
     tc_run_in "$REPO" sh -c 'printf "%s\n" -P | grep -e -P'  # portability: ok -P is the pattern here
@@ -611,10 +625,11 @@ last" "exact line")"
     tc_assert_grep "FAIL: embedded line" "$result" "assert_line: text inside a line does not pass"
 }
 
-# TC_LABEL_SUFFIX names the pass a case runs in. tc_pass and tc_fail
-# add it to every assertion name in parentheses, so a case run once with
-# the tool of the machine and once with a BSD-behaviour stub reports
-# each assertion under a name of its own. Empty, it adds nothing.
+# TC_LABEL_SUFFIX names the pass a case runs in. tc_pass, tc_fail and
+# tc_skip add it to every assertion name in parentheses, so a case run
+# once with the tool of the machine and once with a BSD-behaviour stub
+# reports each assertion under a name of its own. Empty, it adds
+# nothing.
 # shellcheck disable=SC2034  # read by tc_pass and tc_fail in lib.sh
 case_label_suffix() {
     local result
@@ -625,6 +640,11 @@ case_label_suffix() {
       the detail" "$result" "label suffix: a failure names the pass it ran in"
     result="$(TC_LABEL_SUFFIX=""; tc_pass "a name")"
     tc_assert_eq "PASS: a name" "$result" "label suffix: an empty suffix adds nothing"
+    result="$(TC_LABEL_SUFFIX="BSD grep"; tc_skip "a tool" "the reason")"
+    tc_assert_eq "SKIPPED: a tool not installed (BSD grep)
+  reason: the reason" "$result" "label suffix: a skip names the pass it ran in"
+    result="$(TC_LABEL_SUFFIX=""; tc_skip "a tool")"
+    tc_assert_eq "SKIPPED: a tool not installed" "$result" "label suffix: an empty suffix adds nothing to a skip"
 }
 
 case_assert_json_silent() {

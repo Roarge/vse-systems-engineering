@@ -945,9 +945,13 @@ EOF
         "trace spaces: the path is named whole"
 }
 
-# utf8_locale: print a UTF-8 locale this machine has, or nothing.
+# utf8_locale: print a UTF-8 locale this machine has, or nothing. awk
+# reads the whole list and prints the first match. Stopping at it would
+# close the pipe while locale -a still writes (macOS lists hundreds of
+# locales), and with pipefail the broken pipe (SIGPIPE, 141) would end
+# the test script.
 utf8_locale() {
-    locale -a 2>/dev/null | awk 'tolower($0) ~ /utf-?8$/ { print; exit }'
+    locale -a 2>/dev/null | awk '!found && tolower($0) ~ /utf-?8$/ { print; found = 1 }'
 }
 
 # The gate reads the model byte by byte (the C locale), as its awk
@@ -961,7 +965,7 @@ case_trace_non_ascii_bytes() {
     local utf8
     utf8="$(utf8_locale)"
     if [ -z "$utf8" ]; then
-        tc_skip "a UTF-8 locale" "locale -a lists none, so the non-ASCII bytes case cannot run"
+        tc_skip "UTF-8 locale" "locale -a lists no UTF-8 locale, so the non-ASCII bytes case cannot run"
         return 0
     fi
     tc_setup_repo

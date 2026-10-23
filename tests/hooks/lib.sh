@@ -895,9 +895,9 @@ tc_run_in() {
 
 # TC_LABEL_SUFFIX names the pass a case runs in, such as "BSD grep" for
 # a case run once with the tool of the machine and once with a
-# BSD-behaviour stub. tc_pass and tc_fail add it to every assertion name
-# in parentheses, so each pass reports its assertions under names of
-# their own. Empty, it adds nothing.
+# BSD-behaviour stub. tc_pass, tc_fail and tc_skip add it to every
+# assertion name in parentheses, so each pass reports its assertions
+# and skips under names of their own. Empty, it adds nothing.
 TC_LABEL_SUFFIX=""
 
 tc_pass() {
@@ -915,7 +915,7 @@ tc_fail() {
 
 tc_skip() {
     TC_SKIP_COUNT=$((TC_SKIP_COUNT + 1))
-    printf 'SKIPPED: %s not installed\n' "$1"
+    printf 'SKIPPED: %s not installed%s\n' "$1" "${TC_LABEL_SUFFIX:+ (${TC_LABEL_SUFFIX})}"
     if [ "$#" -gt 1 ] && [ -n "$2" ]; then
         printf '  reason: %s\n' "$2"
     fi
