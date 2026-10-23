@@ -53,10 +53,16 @@
 #                          "<(" is taken out first, because input
 #                          redirected from one (done < <(...), also
 #                          3< <(...)) is opened by bash itself and safe.
-#                          A process substitution starts a word, so
-#                          only a "<(" after a blank counts, and a
+#                          bash expands a process substitution in the
+#                          middle of a word too (--input=<(...) and
+#                          name=<(...) each give a /dev/fd path), so a
+#                          "<(" after a blank or after "=" counts. A
 #                          comparison such as i<(n-1) in embedded awk or
-#                          in shell arithmetic does not
+#                          in shell arithmetic does not, because its "<"
+#                          follows an operand, and neither does i<=(n-1),
+#                          where the "=" comes before the "(". A "<("
+#                          joined to any other character (a<(...)) is
+#                          not caught, which keeps the comparisons out
 #   cd "$(dirname ...)" without > /dev/null
 #                          a cd into a directory named by dirname whose
 #                          standard output is kept, up to the next &&,
@@ -74,8 +80,9 @@
 #                          ">(" is taken out first, because output
 #                          redirected into one (exec > >(...), also
 #                          2> >(...) and >> >(...)) is opened by bash
-#                          itself and safe. Only a ">(" after a blank
-#                          counts
+#                          itself and safe. A ">(" after a blank or
+#                          after "=" (--output=>(...)) counts, as for
+#                          the input form
 #
 # A finding is printed as <file>:<line>: <form>.
 #
@@ -175,11 +182,11 @@ BEGIN {
         printf "%s:%d: %s\n", FILENAME, FNR, "cd \"$(dirname ...)\" without > /dev/null"
     arg = line
     gsub(/<[ \t]*<[(]/, "", arg)
-    if (arg ~ /[ \t]<[(]/)
+    if (arg ~ /[ \t=]<[(]/)
         printf "%s:%d: %s\n", FILENAME, FNR, "<(...) as an argument"
     arg = line
     gsub(/>[ \t]*>[(]/, "", arg)
-    if (arg ~ /[ \t]>[(]/)
+    if (arg ~ /[ \t=]>[(]/)
         printf "%s:%d: %s\n", FILENAME, FNR, ">(...) as an argument"
 }
 '
@@ -265,9 +272,12 @@ case_form '<(...) as an argument' 'diff <(sort "$a") <(sort "$b")'
 case_form '<(...) as an argument' 'awk -f "$prog" <(scan < "$pre")'
 case_form '<(...) as an argument' "    ' <(vse_tf_story_blocks < \"\$pre\") <(vse_tf_story_blocks < \"\$post\")"
 case_form '<(...) as an argument' 'paste < <(cut -f 1 "$f") <(cut -f 2 "$f")'
+case_form '<(...) as an argument' 'python3 "$prog" --input=<(printf "%s" "$p")'
+case_form '<(...) as an argument' 'payload=<(printf "%s" "$p")'
 case_form '>(...) as an argument' 'tee >(sha256sum > "$f.sum") < "$f" > /dev/null'
 case_form '>(...) as an argument' 'vse_write_image >(cat > "$out") "$1"'
 case_form '>(...) as an argument' 'diff "$a" "$b" 2> >(grep -v x >&2) >(cat > "$out")'
+case_form '>(...) as an argument' 'sort --output=>(cat > "$out") "$f"'
 case_form 'cd "$(dirname ...)" without > /dev/null' '. "$(cd "$(dirname "$0")" && pwd)/lib.sh"'
 case_form 'cd "$(dirname ...)" without > /dev/null' 'LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"'
 case_form 'cd "$(dirname ...)" without > /dev/null' 'echo "$(cd "$(dirname "$0")/.." && pwd -P)/methodology/"'
@@ -332,11 +342,14 @@ scan_fixture \
 tc_assert_empty "$OUT" "a cd that prints nothing under CDPATH draws no finding"
 
 # A comparison with a parenthesised operand, in embedded awk or in shell
-# arithmetic, is not a process substitution, which starts a word.
+# arithmetic, is not a process substitution. Its "<" or ">" follows an
+# operand, or the "=" of "<=" and ">=" comes between it and the "(".
 scan_fixture \
     'awk "{ for (i = 1; i<(n-1); i++) print i }" "$f"' \
     'last=$((i<(n-1) ? i : n - 1))' \
-    'big=$((a>(b-1)))'
+    'big=$((a>(b-1)))' \
+    'awk "{ if (i<=(n-1)) print i }" "$f"' \
+    'ok=$((a>=(b-1)))'
 tc_assert_empty "$OUT" "a comparison with a parenthesised operand draws no finding"
 
 # ------------------------------------------------------ the real tree
