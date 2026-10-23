@@ -16,18 +16,24 @@
 # The patterns are deliberately simple. A command is a word not joined
 # to a letter, digit, "_", "." or "-" on its left. Its options are the
 # words that start with "-" right after it, and a form matches when one
-# of those words carries the banned letter, alone or in a group (-oP).
+# of those words carries the banned letter, alone or in a group of
+# letters and digits (-oP, -0r).
 # The forms and what each one looks for:
 #   grep -P                a -P option of grep (Perl regular expressions)
 #   grep --perl-regexp     the long form of the same
-#   \| in a basic regex    \| after grep or sed, when that grep or sed
-#                          carries no -E or -F on the line (in an
-#                          extended regular expression \| is a plain |)
+#   \| in a basic regex    \| after grep or sed in the same pipeline
+#                          segment (no | between them), when the last
+#                          grep or sed before the \| carries no -E or
+#                          -F (in an extended regular expression \| is
+#                          a plain |)
 #   env -C                 a -C option of env (run in a directory)
 #   date -d, date --date   GNU date's date string
 #   sed -i without a backup suffix
-#                          a -i option of sed followed by a blank, where
-#                          -i.bak is the portable form
+#                          a -i option of sed with no suffix attached,
+#                          that is followed by a blank or by an empty
+#                          quoted suffix (-i'' or -i""), and the long
+#                          option --in-place in any form, which BSD sed
+#                          lacks. -i.bak is the portable form
 #   \r in a sed call       \r anywhere in a sed call before the next |
 #   readlink -f, stat -c, xargs -r, sort -V
 #   head -n -N             a negative line count
@@ -64,32 +70,53 @@ trap tc_teardown EXIT
 # command at the start of a line and an option at its end need no
 # anchor inside a group, which not every awk reads the same way.
 PORTABILITY_AWK='
+# bre_found <line>: 1 when a grep or sed call on the line carries \| in
+# a basic regular expression. A candidate runs from a grep or sed to
+# the next \| with no | between them, so it stays within one pipeline
+# segment. It is cut back to the last grep or sed inside it, which is
+# the command the \| belongs to, and it is an extended or fixed-string
+# pattern only when that command carries -E or -F.
+function bre_found(line,    rest, seg) {
+    rest = line
+    while (match(rest, bre)) {
+        seg = substr(rest, RSTART, RLENGTH)
+        rest = substr(rest, RSTART + RLENGTH)
+        while (match(substr(seg, 2), cmd))
+            seg = substr(seg, RSTART + 1)
+        if (seg !~ ere)
+            return 1
+    }
+    return 0
+}
 BEGIN {
     b = "[^A-Za-z0-9_.-]"
     o = "[ \t]+(-[^ \t]*[ \t]+)*"
+    g = "-[A-Za-z0-9]*"
     n = 0
-    n++; form[n] = "grep -P"; re[n] = b "grep" o "-[A-Za-z]*P"
+    n++; form[n] = "grep -P"; re[n] = b "grep" o g "P"
     n++; form[n] = "grep --perl-regexp"; re[n] = b "grep" o "--perl-regexp"
-    n++; form[n] = "env -C"; re[n] = b "env" o "-[A-Za-z]*C"
-    n++; form[n] = "date -d"; re[n] = b "date" o "-[A-Za-z]*d"
+    n++; form[n] = "env -C"; re[n] = b "env" o g "C"
+    n++; form[n] = "date -d"; re[n] = b "date" o g "d"
     n++; form[n] = "date --date"; re[n] = b "date" o "--date"
-    n++; form[n] = "sed -i without a backup suffix"; re[n] = b "sed" o "-[A-Za-z]*i[ \t]"
+    n++; form[n] = "sed -i without a backup suffix"
+    re[n] = b "sed" o "(" g "i([\"\047][\"\047])?[ \t]|--in-place)"
     n++; form[n] = "\\r in a sed call"; re[n] = b "sed[ \t][^|]*\\\\r"
-    n++; form[n] = "readlink -f"; re[n] = b "readlink" o "-[A-Za-z]*f"
-    n++; form[n] = "stat -c"; re[n] = b "stat" o "-[A-Za-z]*c"
-    n++; form[n] = "xargs -r"; re[n] = b "xargs" o "-[A-Za-z]*r"
-    n++; form[n] = "sort -V"; re[n] = b "sort" o "-[A-Za-z]*V"
+    n++; form[n] = "readlink -f"; re[n] = b "readlink" o g "f"
+    n++; form[n] = "stat -c"; re[n] = b "stat" o g "c"
+    n++; form[n] = "xargs -r"; re[n] = b "xargs" o g "r"
+    n++; form[n] = "sort -V"; re[n] = b "sort" o g "V"
     n++; form[n] = "head -n -N"; re[n] = b "head" o "-n[ \t]*-[0-9]"
-    n++; form[n] = "ln -t"; re[n] = b "ln" o "-[A-Za-z]*t"
-    n++; form[n] = "cp -t"; re[n] = b "cp" o "-[A-Za-z]*t"
+    n++; form[n] = "ln -t"; re[n] = b "ln" o g "t"
+    n++; form[n] = "cp -t"; re[n] = b "cp" o g "t"
     n++; form[n] = "mapfile"; re[n] = b "mapfile[ \t]"
     n++; form[n] = "readarray"; re[n] = b "readarray[ \t]"
-    n++; form[n] = "declare -A"; re[n] = b "(declare|typeset|local)" o "-[A-Za-z]*A"
+    n++; form[n] = "declare -A"; re[n] = b "(declare|typeset|local)" o g "A"
     n++; form[n] = "${x,,}"; re[n] = "[$][{][A-Za-z_][A-Za-z0-9_]*,"
     n++; form[n] = "${x^^}"; re[n] = "[$][{][A-Za-z_][A-Za-z0-9_]*\\^"
     n++; form[n] = "awk match with three arguments"; re[n] = b "match[ \t]*[(][^()]*,[^()]*,"
-    bre = b "(grep|sed)[ \t][^|]*\\\\[|]"
-    ere = b "(grep|sed)" o "-[A-Za-z]*[EF]"
+    cmd = b "(grep|sed)[ \t]"
+    bre = cmd "[^|]*\\\\[|]"
+    ere = "^" b "(grep|sed)" o g "[EF]"
 }
 /^[ \t]*#/ { next }
 /#[ \t]*portability: ok[ \t]+[^ \t]/ { next }
@@ -98,7 +125,7 @@ BEGIN {
     for (i = 1; i <= n; i++)
         if (line ~ re[i])
             printf "%s:%d: %s\n", FILENAME, FNR, form[i]
-    if (line ~ bre && line !~ ere)
+    if (bre_found(line))
         printf "%s:%d: %s\n", FILENAME, FNR, "\\| in a basic regex"
     arg = line
     gsub(/<[ \t]*<[(]/, "", arg)
@@ -154,14 +181,23 @@ case_form 'grep -P' 'names=$(grep -oP "\w+" "$f")'
 case_form 'grep --perl-regexp' 'grep --perl-regexp "\d" "$f"'
 case_form '\| in a basic regex' 'grep -v "\(^\|/\)library/" "$f"'
 case_form '\| in a basic regex' 'sed "s/a\|b/c/" "$f"'
+case_form '\| in a basic regex' 'grep -E "x" "$f" | grep "a\|b"'
+case_form '\| in a basic regex' 'grep -E "a\|b" "$f" | grep "c\|d"'
+case_form '\| in a basic regex' 'grep -E "x" "$f" && sed "s/a\|b/c/" "$g"'
 case_form 'env -C' 'env -C "$dir" make'
 case_form 'date -d' 'date -u -d "14 days ago" +%s'
 case_form 'date --date' 'date --date="14 days ago" +%s'
 case_form 'sed -i without a backup suffix' 'sed -i "s/x/y/" "$f"'
+case_form 'sed -i without a backup suffix' "sed -i'' \"s/x/y/\" \"\$f\""
+case_form 'sed -i without a backup suffix' 'sed -i"" "s/x/y/" "$f"'
+case_form 'sed -i without a backup suffix' 'sed -i "" "s/x/y/" "$f"'
+case_form 'sed -i without a backup suffix' 'sed --in-place "s/x/y/" "$f"'
+case_form 'sed -i without a backup suffix' 'sed --in-place=.bak "s/x/y/" "$f"'
 case_form '\r in a sed call' 'printf "a\n" | sed "s/$/\r/" > "$f"'
 case_form 'readlink -f' 'dir=$(readlink -f "$0")'
 case_form 'stat -c' 'size=$(stat -c %s "$f")'
 case_form 'xargs -r' 'find . -name "*.tmp" | xargs -r rm'
+case_form 'xargs -r' 'find . -name "*.tmp" -print0 | xargs -0r rm'
 case_form 'sort -V' 'sort -V versions.txt'
 case_form 'head -n -N' 'head -n -1 "$f"'
 case_form 'ln -t' 'ln -s -t "$dir" "$src"'
@@ -194,6 +230,8 @@ scan_fixture \
     'names=$(grep -oE "[A-Za-z_]+" "$f")' \
     'grep -cE "^## \[[0-9-]+\] ingest \|" "$f"' \
     'grep -F "a\|b" "$f"' \
+    'printf "%s\n" "$x" | grep -E "a\|b"' \
+    'sed -E "s/a\|b//" "$f" | grep -c x' \
     'sed -i.bak "s/x/y/" "$f" && rm -f "$f.bak"' \
     'sed -n "s/^x: //p" "$f"' \
     'date -u +%Y-%m-%dT%H:%M:%SZ' \
