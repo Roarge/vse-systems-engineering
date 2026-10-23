@@ -327,6 +327,47 @@ EOF
     rm -f "${STUBS}/date"
 }
 
+# ----------------------------------------- createdAt values jq cannot read
+
+# gh_lists <createdAt>...: a gh stub that lists one open Change Request
+# per value, numbered from 1.
+gh_lists() {
+    local value list="" n=0
+    for value in "$@"; do
+        n=$((n + 1))
+        list="${list:+${list},}{\"number\":${n},\"createdAt\":\"${value}\"}"
+    done
+    tc_stub gh <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' '[${list}]'
+EOF
+}
+
+# fromdateiso8601 reads only whole seconds in UTC (a trailing Z). A
+# value with fractional seconds is read once the fraction is dropped. A
+# value it still cannot read, such as one with an offset, is skipped,
+# so it does not hide the stale Change Requests beside it.
+case_notification_unreadable_dates() {
+    local dir
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    mv "${STUBS}/gh" "${STUBS}/gh.saved"
+
+    gh_lists "2020-01-02T03:04:05+02:00" "$STALE_DATE"
+    run_workdir notification "$dir"
+    tc_assert_rc 0 "notification, an offset and a stale value: exit 0"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, an offset and a stale value: the stale one is still counted"
+
+    gh_lists "2020-01-02T03:04:05.123Z"
+    run_workdir notification "$dir"
+    tc_assert_line "$FIRES_notification Run /vse-cr to review." "$OUT" \
+        "notification, fractional seconds: the stale value is counted"
+
+    mv "${STUBS}/gh.saved" "${STUBS}/gh"
+}
+
 case_config_only
 case_from_subdirectory
 case_nested_brownfield
@@ -338,6 +379,7 @@ case_long_prompt
 case_prompt_without_jq
 case_many_tags
 case_notification_bsd_date
+case_notification_unreadable_dates
 
 if tc_summary "test-workdir-hooks"; then
     exit 0

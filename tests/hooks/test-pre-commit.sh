@@ -944,6 +944,128 @@ EOF
         "trace spaces: the path is named whole"
 }
 
+# utf8_locale: print a UTF-8 locale this machine has, or nothing.
+utf8_locale() {
+    locale -a 2>/dev/null | awk 'tolower($0) ~ /utf-?8$/ { print; exit }'
+}
+
+# The gate reads the model byte by byte (the C locale), as its awk
+# does, whatever locale the engineer works in. In a UTF-8 locale GNU
+# grep matches no character to a byte that is not valid UTF-8, here a
+# Latin-1 e-acute in a short name, and BSD sed refuses such a line, so
+# the story after it would be missed and the commit let through. A
+# letter outside ASCII is never part of a name, so a name it follows is
+# not cut short to the ASCII part. The case needs a UTF-8 locale.
+case_trace_non_ascii_bytes() {
+    local utf8
+    utf8="$(utf8_locale)"
+    if [ -z "$utf8" ]; then
+        tc_skip "a UTF-8 locale" "locale -a lists none, so the non-ASCII bytes case cannot run"
+        return 0
+    fi
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    printf 'package S {\n    requirement <\047R\351f\047> US_9_N : UserStory {\n        subject :>> system : Sys;\n    }\n    requirement US_9_M\303\251 : UserStory {\n        subject :>> system : Sys;\n    }\n}\n' \
+        | tc_write model/core/stories/stakeholder/s.sysml
+    tc_stage model/core/stories/stakeholder/s.sysml
+    tc_env "LC_ALL=${utf8}"
+    tc_run_hook
+    tc_assert_rc 1 "non-ASCII bytes: the story whose short name holds a Latin-1 byte stops the commit"
+    tc_assert_grep "1 trace gap(s) on touched requirements" "$OUT" \
+        "non-ASCII bytes: exactly one gap is counted"
+    tc_assert_grep "requirement 'US_9_N' has no verification case" "$OUT" \
+        "non-ASCII bytes: the name after a short name holding a Latin-1 byte is read"
+    tc_assert_not_grep "requirement 'US_9_M'" "$OUT" \
+        "non-ASCII bytes: a name followed by a letter outside ASCII is not cut short"
+}
+
+# stub_failing_grep: a grep that fails with status 2, as on a read
+# error, when it is asked for the matches alone (-oE), which is how the
+# gate reads the names a change touches. Every other call reaches the
+# real grep.
+stub_failing_grep() {
+    _tc_stub_wrap grep <<'EOF'
+for arg in "$@"; do
+    if [ "$arg" = "-oE" ]; then
+        echo "grep: (standard input): Input/output error" >&2
+        exit 2
+    fi
+done
+exec "$real" "$@"
+EOF
+}
+
+# stub_failing_sed: a sed that fails with status 1, as BSD sed does on
+# an illegal byte sequence, when it is asked to cut a requirement name.
+# sed has no status that means "no match", so any failure is an error.
+stub_failing_sed() {
+    _tc_stub_wrap sed <<'EOF'
+for arg in "$@"; do
+    case "$arg" in
+        's/^requirement'*)
+            echo "sed: RE error: illegal byte sequence" >&2
+            exit 1
+            ;;
+    esac
+done
+exec "$real" "$@"
+EOF
+}
+
+# A grep that fails (status 2 or more) or a sed that fails while the
+# gate reads the touched names is a gate failure at the gate's
+# disposition, and the report names the tool and its status. Read as
+# "no names touched", it would let an unverified story through, which
+# is how the grep -P defect stayed hidden on macOS. grep status 1 (no
+# match) still means no names, which the comment-only case pins.
+case_trace_tool_error() {
+    local disp
+    for disp in block warn info; do
+        tc_setup_repo
+        tc_config full opensysml precommit_gherkin=off precommit_story_wellformed=off \
+            "precommit_traceability=${disp}"
+        tc_stub_sysml "sysml v0.6.0"
+        stub_failing_grep
+        write_story
+        tc_env
+        tc_run_hook
+        tc_assert_grep "grep exited with status 2 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+            "grep error (${disp}): the report names the tool, its status and the file"
+        case "$disp" in
+            block)
+                tc_assert_rc 1 "grep error (block): the commit is stopped"
+                tc_assert_not_grep "All checks passed" "$OUT" \
+                    "grep error (block): the summary does not say every check passed"
+                ;;
+            warn)
+                tc_assert_rc 0 "grep error (warn): the commit proceeds"
+                tc_assert_line "[pre-commit] Checks complete with 1 warning(s)." "$OUT" \
+                    "grep error (warn): the warning is counted"
+                ;;
+            info)
+                # At info a finding is one summary line and is not
+                # raised to a warning (methodology section 0.10.4).
+                tc_assert_rc 0 "grep error (info): the commit proceeds"
+                tc_assert_line_count 1 "$(printf '%s\n' "$OUT" | grep -F 'pre-commit-traceability:' || true)" \
+                    "grep error (info): the gate prints one line"
+                ;;
+        esac
+    done
+
+    tc_setup_repo
+    trace_config
+    tc_stub_sysml "sysml v0.6.0"
+    stub_failing_sed
+    write_story
+    tc_env
+    tc_run_hook
+    tc_assert_rc 1 "sed error (block): the commit is stopped"
+    tc_assert_grep "sed exited with status 1 while reading model/core/stories/stakeholder/s.sysml" "$OUT" \
+        "sed error (block): the report names the tool, its status and the file"
+    tc_reset_stubs
+}
+
 # ------------------------------------- 10. the story gates (concern 2)
 
 SCENARIOS="${TC_PLUGIN_ROOT}/tests/fixtures/lint/scenarios"
@@ -2541,8 +2663,10 @@ for TRACE_GREP in gnu bsd; do
     case_trace_all_from_subdirectory
     case_trace_untyped_acceptance
     case_trace_acceptance_opener_removed
+    case_trace_non_ascii_bytes
 done
 TRACE_GREP=gnu
+case_trace_tool_error
 case_gherkin_block_light
 case_gherkin_block_standard
 case_gherkin_block_full

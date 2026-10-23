@@ -86,7 +86,7 @@ fi
 # definitions the project's stories are typed by, not requirements the
 # project has to verify. Leaving them in would report the library as a
 # wall of gaps on the first commit that stages it.
-SYSML_FILES=$(printf '%s\n' "$CHANGED" | grep '\.sysml$' | grep -Ev '(^|/)library/' || true)
+SYSML_FILES=$(printf '%s\n' "$CHANGED" | LC_ALL=C grep '\.sysml$' | LC_ALL=C grep -Ev '(^|/)library/' || true)
 
 if [ -z "$SYSML_FILES" ]; then
     exit 0
@@ -291,22 +291,64 @@ added_text() {
     fi
 }
 
+# tool_failure <tool> <status> <file>: report that <tool> failed with
+# exit status <status> while the gate read <file>, at the gate's
+# disposition, and end the gate. A failed read must not pass for "no
+# names touched", which would let an unverified requirement through.
+tool_failure() {
+    local what="$1 exited with status $2 while reading $3, so the touched requirements could not be read"
+    case "$DISPOSITION" in
+        info)
+            echo "pre-commit-traceability: ${what}. Run /vse-trace for the full-repo report."
+            exit 0
+            ;;
+        block)
+            echo "pre-commit-traceability: ${what} (engineering root: ${ENG_ROOT})."
+            if [ -z "$RANGE" ]; then
+                echo "  To proceed anyway, record a one-line rationale per methodology §0.10.6."
+            fi
+            exit 1
+            ;;
+        *)
+            echo "pre-commit-traceability: warning: ${what} (engineering root: ${ENG_ROOT})."
+            exit 0
+            ;;
+    esac
+}
+
 # Names this change touches, as tab-separated "<file>\t<name>" records.
 # For a modified file only the names on added lines count, which is
 # what keeps the gate off pre-existing content. For a newly added file
 # every line is added, so every name in it counts.
 #
-# Usage: collect_touched <pattern> <extract>. grep -oE prints each
-# declaration that matches the extended regular expression <pattern>,
-# and the sed -E substitution <extract> cuts the name out of it. Both
-# are POSIX forms, so BSD grep and sed (macOS) read them as GNU does.
+# Usage: collect_touched <pattern> <extract>, which sets COLLECTED to
+# the records. grep -oE prints each declaration that matches the
+# extended regular expression <pattern>, and the sed -E substitution
+# <extract> cuts the name out of it. Both are POSIX forms, so BSD grep
+# and sed (macOS) read them as GNU does. Both run in the C locale, as
+# the awk above does, so every tool reads one byte as one character: a
+# byte outside ASCII is never part of a name, and no tool refuses a
+# line that is not valid text in the engineer's locale (BSD sed refuses
+# one in a UTF-8 locale). grep exits 1 when nothing matches, which
+# means no names. Any other failure (grep status 2 or more, or any
+# failure of sed, which has no status for "no match") ends the gate
+# through tool_failure. pipefail is off for the read itself, so the
+# status checked is grep's own.
 collect_touched() {
-    local pattern="$1" extract="$2" file names name
+    local pattern="$1" extract="$2" file found names name rc
+    COLLECTED=""
     while IFS= read -r file; do
         [ -n "$file" ] || continue
-        names=$(added_text "$file" | grep -oE "$pattern" | sed -E "$extract" || true)
+        rc=0
+        found=$(set +o pipefail; added_text "$file" | LC_ALL=C grep -oE "$pattern") || rc=$?
+        if [ "$rc" -eq 1 ]; then
+            continue
+        elif [ "$rc" -ne 0 ]; then
+            tool_failure grep "$rc" "$file"
+        fi
+        names=$(printf '%s\n' "$found" | LC_ALL=C sed -E "$extract") || tool_failure sed "$?" "$file"
         for name in $names; do
-            printf '%s\t%s\n' "$file" "$name"
+            COLLECTED="${COLLECTED}${file}"$'\t'"${name}"$'\n'
         done
     done <<< "$SYSML_FILES"
 }
@@ -315,25 +357,26 @@ collect_touched() {
 # optional short name in angle brackets, then the name, followed by ":"
 # or ":>" and a type. The match runs on to the first letter of the
 # type, so the substitution keeps only the name.
-TOUCHED_REQS=$(collect_touched \
+collect_touched \
     'requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?[A-Za-z_][A-Za-z0-9_]*[[:space:]]*:>?[[:space:]]*[A-Za-z_]' \
-    's/^requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?([A-Za-z_][A-Za-z0-9_]*).*$/\3/' \
-    | sort -u)
-TOUCHED_VERS=$(collect_touched \
+    's/^requirement[[:space:]]+(def[[:space:]]+)?(<[^>]*>[[:space:]]*)?([A-Za-z_][A-Za-z0-9_]*).*$/\3/'
+TOUCHED_REQS=$(printf '%s' "$COLLECTED" | sort -u)
+collect_touched \
     'verification[[:space:]]+def[[:space:]]+[A-Za-z0-9_]+' \
-    's/^verification[[:space:]]+def[[:space:]]+//' \
-    | sort -u)
+    's/^verification[[:space:]]+def[[:space:]]+//'
+TOUCHED_VERS=$(printf '%s' "$COLLECTED" | sort -u)
 
 # Does any .sysml file in the repository carry a verify link to $1?
 # The target may follow any chain of "::" and "." segments, such as a
 # package and the requirement groups the story sits in, and may run on
 # past it, as in verify <story>.acceptance.<name>. The name must end
 # there, at a character that cannot continue a name or at the end of
-# the line, so verify US_9_XY is not a link to US_9_X.
+# the line, so verify US_9_XY is not a link to US_9_X. grep reads the
+# file in the C locale, as collect_touched does.
 has_verify_link() {
     local req="$1" sysml
     while IFS= read -r -d '' sysml; do
-        if grep -qE "verify[[:space:]]+(requirement[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*(::|[.]))*${req}([^A-Za-z0-9_]|\$)" "$sysml" 2>/dev/null; then
+        if LC_ALL=C grep -qE "verify[[:space:]]+(requirement[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*(::|[.]))*${req}([^A-Za-z0-9_]|\$)" "$sysml" 2>/dev/null; then
             return 0
         fi
     done < <(find . -name '*.sysml' -not -path './.git/*' -print0 2>/dev/null)
@@ -358,7 +401,7 @@ while IFS=$'\t' read -r file ver; do
     CHECKED=$((CHECKED + 1))
     # "verify requirement X" starts with a letter after "verify" too, so
     # this one pattern covers both forms of the clause.
-    if ! grep -qE 'verify[[:space:]]+[A-Za-z_]' "$file" 2>/dev/null; then
+    if ! LC_ALL=C grep -qE 'verify[[:space:]]+[A-Za-z_]' "$file" 2>/dev/null; then
         FINDINGS="${FINDINGS}  ${file}: verification case '${ver}' has no verify link"$'\n'
         GAPS=$((GAPS + 1))
     fi
