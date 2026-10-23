@@ -25,7 +25,7 @@
 # stdout: one JSON object, or nothing.
 set -euo pipefail
 
-SAR_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+SAR_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 SAR_WORK=""
 
 # Fail quietly. The function is reached through the trap.

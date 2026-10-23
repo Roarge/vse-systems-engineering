@@ -57,6 +57,18 @@
 #                          only a "<(" after a blank counts, and a
 #                          comparison such as i<(n-1) in embedded awk or
 #                          in shell arithmetic does not
+#   cd "$(dirname ...)" without > /dev/null
+#                          a cd into a directory named by dirname whose
+#                          standard output is kept, up to the next &&,
+#                          || or ;. Under an exported CDPATH, cd prints
+#                          the directory it found for a relative name,
+#                          and a script that finds its own directory
+#                          that way would capture the extra line. A cd
+#                          after a CDPATH assignment (CDPATH='' cd) is
+#                          left alone, and so is a cd into a name that
+#                          dirname does not give, because the scan
+#                          cannot tell a relative name from an absolute
+#                          one
 #   >(...) as an argument  the output form of the same, with the same
 #                          hazard. Every ">" followed by blanks and
 #                          ">(" is taken out first, because output
@@ -74,7 +86,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 trap tc_teardown EXIT
 
@@ -97,6 +109,23 @@ function bre_found(line,    rest, seg) {
         while (match(substr(seg, 2), cmd))
             seg = substr(seg, RSTART + 1)
         if (seg !~ ere)
+            return 1
+    }
+    return 0
+}
+# cd_found <line>: 1 when a cd into a directory named by dirname keeps
+# its standard output. A cd after a CDPATH assignment (CDPATH= cd ...)
+# is taken out first. For each cd left, the text up to the next &&, ||
+# or ; must send its standard output to /dev/null (> or 1>, and &>).
+function cd_found(line,    rest, seg) {
+    rest = line
+    gsub(/CDPATH=[^ \t]*[ \t]+cd[ \t]/, " ", rest)
+    while (match(rest, cdd)) {
+        seg = substr(rest, RSTART + RLENGTH)
+        rest = seg
+        if (match(seg, /&&|[|][|]|;/))
+            seg = substr(seg, 1, RSTART - 1)
+        if (seg !~ /[^0-9]1?>[ \t]*[/]dev[/]null/)
             return 1
     }
     return 0
@@ -131,6 +160,7 @@ BEGIN {
     cmd = b "(grep|sed)[ \t]"
     bre = cmd "[^|]*\\\\[|]"
     ere = "^" b "(grep|sed)" o g "[EF]"
+    cdd = b "cd[ \t]+(--[ \t]+)?\"?[$][(]dirname[ \t]"
 }
 /^[ \t]*#/ { next }
 /#[ \t]*portability: ok[ \t]+[^ \t]/ { next }
@@ -141,6 +171,8 @@ BEGIN {
             printf "%s:%d: %s\n", FILENAME, FNR, form[i]
     if (bre_found(line))
         printf "%s:%d: %s\n", FILENAME, FNR, "\\| in a basic regex"
+    if (cd_found(line))
+        printf "%s:%d: %s\n", FILENAME, FNR, "cd \"$(dirname ...)\" without > /dev/null"
     arg = line
     gsub(/<[ \t]*<[(]/, "", arg)
     if (arg ~ /[ \t]<[(]/)
@@ -236,6 +268,10 @@ case_form '<(...) as an argument' 'paste < <(cut -f 1 "$f") <(cut -f 2 "$f")'
 case_form '>(...) as an argument' 'tee >(sha256sum > "$f.sum") < "$f" > /dev/null'
 case_form '>(...) as an argument' 'vse_write_image >(cat > "$out") "$1"'
 case_form '>(...) as an argument' 'diff "$a" "$b" 2> >(grep -v x >&2) >(cat > "$out")'
+case_form 'cd "$(dirname ...)" without > /dev/null' '. "$(cd "$(dirname "$0")" && pwd)/lib.sh"'
+case_form 'cd "$(dirname ...)" without > /dev/null' 'LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"'
+case_form 'cd "$(dirname ...)" without > /dev/null' 'echo "$(cd "$(dirname "$0")/.." && pwd -P)/methodology/"'
+case_form 'cd "$(dirname ...)" without > /dev/null' 'dir="$(cd -- "$(dirname "$f")" 2> /dev/null && pwd)"'
 
 # --------------------------------------- what the scan leaves alone
 
@@ -282,6 +318,18 @@ scan_fixture \
     'make all 2> >(grep -v warning >&2)' \
     'printf "%s\n" "$x" >> >(cat >> "$log")'
 tc_assert_empty "$OUT" "output redirected into a process substitution draws no finding"
+
+# A cd whose output is discarded prints nothing under CDPATH, and with
+# CDPATH empty for the call it looks nothing up. A cd into a directory
+# not named by dirname is left alone: the scan cannot tell a relative
+# name from an absolute one, and the tests change into absolute
+# scratch paths.
+scan_fixture \
+    'HERE="$(cd "$(dirname "$0")" > /dev/null && pwd -P)"' \
+    'HERE="$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)"' \
+    'ENG="$(CDPATH='"''"' cd -- "$(dirname -- "$cfg")" && pwd -P)"' \
+    'top="$(cd "$REPO" && pwd -P)"'
+tc_assert_empty "$OUT" "a cd that prints nothing under CDPATH draws no finding"
 
 # A comparison with a parenthesised operand, in embedded awk or in shell
 # arithmetic, is not a process substitution, which starts a word.

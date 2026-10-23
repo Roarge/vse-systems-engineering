@@ -17,4 +17,4 @@
 # stdout: one JSON object, or nothing.
 set -euo pipefail
 
-exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/stop.sh" SubagentStop
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/stop.sh" SubagentStop

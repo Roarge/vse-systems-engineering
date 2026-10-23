@@ -34,7 +34,7 @@
 # code_paths, or git cannot read the range.
 set -euo pipefail
 
-LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../hooks/lib" && pwd)"
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../hooks/lib" > /dev/null && pwd)"
 RANGE="${1:-${VSE_PRECOMMIT_RANGE:-origin/main...HEAD}}"
 CONFIG=tests/test-first.yaml
 

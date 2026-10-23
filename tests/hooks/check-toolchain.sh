@@ -11,7 +11,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 # The trap goes in first, because the scratch root exists from the
 # moment lib.sh is sourced and a failure inside tc_setup_repo would

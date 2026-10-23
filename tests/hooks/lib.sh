@@ -35,7 +35,7 @@
 # runners instead.
 set -euo pipefail
 
-TC_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TC_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
 TC_PLUGIN_ROOT="$(cd "${TC_LIB_DIR}/../.." && pwd)"
 
 TC_PASS_COUNT=0

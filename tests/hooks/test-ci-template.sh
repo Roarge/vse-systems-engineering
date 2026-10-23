@@ -38,7 +38,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 # shellcheck source=/dev/null
 . "${TC_LIB_DIR}/ci-step.sh"
 

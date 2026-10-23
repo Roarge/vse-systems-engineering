@@ -22,7 +22,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 # The scratch repository is not used here, but its fake HOME and stub
 # directory keep the machine's own tools out of reach.
@@ -109,6 +109,31 @@ case_config_only() {
     run_workdir pre-compact "$dir"
     tc_assert_eq "Engineering root: ." "$(snapshot_line "Engineering root:")" \
         "pre-compact, config only: the snapshot names the working directory"
+}
+
+# Each hook finds its own directory with cd and pwd -P. Under an
+# exported CDPATH, cd prints the directory it found for a relative name,
+# and that line would join the path the hook builds, so the hook would
+# miss its libraries and, in a project that holds only its
+# configuration, say nothing. Here each hook is started by a path
+# relative to the working directory (plugin/hooks/<hook>.sh, through a
+# link to the plugin) with CDPATH=. exported, as someone might run a
+# hook by hand.
+case_relative_start_under_cdpath() {
+    local dir hook TC_STDIN
+    dir="$(tc_mktemp_d)"
+    printf 'project_profile: light\n' > "${dir}/.iso-config.yaml"
+    ln -s "$TC_PLUGIN_ROOT" "${dir}/plugin"
+    TC_STDIN="$(mktemp "${TC_ROOT}/stdin.XXXXXX")"
+    printf '%s' "$PROMPT_JSON" > "$TC_STDIN"
+    tc_env "TMPDIR=${SNAP_TMP}" "CDPATH=."
+    for hook in $HOOKS; do
+        tc_run_in "$dir" CLAUDE_PLUGIN_ROOT=plugin bash "plugin/hooks/${hook}.sh"
+        tc_assert_rc 0 "${hook}, relative start under CDPATH: exit 0"
+        tc_assert_grep "$(fires_text "$hook")" "$OUT" "${hook}, relative start under CDPATH: the hook acts"
+    done
+    tc_env
+    rm -f "$TC_STDIN"
 }
 
 # A session started below the project directory finds the project by
@@ -369,6 +394,7 @@ case_notification_unreadable_dates() {
 }
 
 case_config_only
+case_relative_start_under_cdpath
 case_from_subdirectory
 case_nested_brownfield
 case_contributor_mode

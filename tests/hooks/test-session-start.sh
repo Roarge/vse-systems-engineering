@@ -39,7 +39,7 @@
 set -euo pipefail
 
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "$0")" && pwd)/lib.sh"
+. "$(cd "$(dirname "$0")" > /dev/null && pwd)/lib.sh"
 
 # The scratch repository is not used here, but its fake HOME and stub
 # directory are what keep the machine's own toolchains out of reach.

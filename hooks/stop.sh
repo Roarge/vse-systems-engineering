@@ -71,7 +71,7 @@
 set -euo pipefail
 
 STOP_EVENT="${1:-Stop}"
-STOP_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+STOP_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 STOP_TMPDIR="${TMPDIR:-/tmp}"
 STOP_TMPDIR="${STOP_TMPDIR%/}"
 STOP_WORK=""

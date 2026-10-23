@@ -267,7 +267,7 @@ echo "VSE project (story-driven AMBSE, ISO/IEC 29110)."
 if [ -d "${ENG_ROOT}/methodology" ]; then
     echo "Methodology: ${METHODOLOGY} (project-local, authoritative)"
 else
-    echo "Methodology: $(cd "$(dirname "$0")/.." && pwd -P)/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
+    echo "Methodology: $(cd "$(dirname "$0")/.." > /dev/null && pwd -P)/methodology/ (the plugin's copy, the project holds no methodology/ folder)"
 fi
 echo "Profile:     ${PROFILE} (per methodology section 0.10)"
 

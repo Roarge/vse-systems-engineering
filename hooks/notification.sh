@@ -15,7 +15,7 @@
 # Exit 0 always.
 set -euo pipefail
 
-NOTE_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"
+NOTE_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)/lib"
 NOTE_PROJECT=""
 if [ -r "${NOTE_LIB}/iso-profile.sh" ] && [ -r "${NOTE_LIB}/test-first.sh" ]; then
     # shellcheck source=/dev/null

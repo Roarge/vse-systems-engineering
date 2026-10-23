@@ -49,7 +49,7 @@ VSE_TC_PILOT_LIB=""
 # Reuse the configuration locator from iso-profile.sh when it sits
 # beside this file and has not been sourced already.
 if [ -z "${ISO_CONFIG_FILE+x}" ]; then
-    _vse_tc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _vse_tc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
     if [ -r "${_vse_tc_dir}/iso-profile.sh" ]; then
         # shellcheck source=/dev/null
         . "${_vse_tc_dir}/iso-profile.sh"
@@ -271,8 +271,8 @@ vse_tc_pilot_paths() {
         VSE_TC_REASON="pilot sysml.library not found under ${home}/sysml"
         return 1
     fi
-    VSE_TC_PILOT_JAR="$(cd "$(dirname "$jar")" && pwd)/$(basename "$jar")"
-    VSE_TC_PILOT_LIB="$(cd "${home}/sysml/sysml.library" && pwd)"
+    VSE_TC_PILOT_JAR="$(cd "$(dirname "$jar")" > /dev/null && pwd)/$(basename "$jar")"
+    VSE_TC_PILOT_LIB="$(cd "${home}/sysml/sysml.library" > /dev/null && pwd)"
     return 0
 }
 
