@@ -935,10 +935,16 @@ $(_tc_context)"
     fi
 }
 
+# The text reaches grep through a here-string, which bash writes whole
+# before grep starts. grep -q stops reading at the first match, so a
+# text fed through a pipe could leave the writer cut off with a broken
+# pipe (SIGPIPE, 141) once it is longer than a pipe buffer (64 KiB), and
+# under pipefail that status would read as no match.
+
 # tc_assert_grep <fixed-string> <text> <case>
 tc_assert_grep() {
     local pattern="$1" text="$2" name="$3"
-    if printf '%s\n' "$text" | grep -qF -- "$pattern"; then
+    if grep -qF -- "$pattern" <<< "$text"; then
         tc_pass "$name"
     else
         tc_fail "$name" "expected to find: ${pattern}
@@ -950,7 +956,7 @@ $(_tc_context)"
 # exactly the expected line, not merely a line that contains it.
 tc_assert_line() {
     local line="$1" text="$2" name="$3"
-    if printf '%s\n' "$text" | grep -qxF -- "$line"; then
+    if grep -qxF -- "$line" <<< "$text"; then
         tc_pass "$name"
     else
         tc_fail "$name" "expected a line equal to: ${line}
@@ -960,7 +966,7 @@ $(_tc_context)"
 
 tc_assert_not_grep() {
     local pattern="$1" text="$2" name="$3"
-    if printf '%s\n' "$text" | grep -qF -- "$pattern"; then
+    if grep -qF -- "$pattern" <<< "$text"; then
         tc_fail "$name" "expected not to find: ${pattern}
 $(_tc_context)"
     else
@@ -971,7 +977,7 @@ $(_tc_context)"
 # tc_assert_match <extended-regex> <text> <case>
 tc_assert_match() {
     local pattern="$1" text="$2" name="$3"
-    if printf '%s\n' "$text" | grep -qE -- "$pattern"; then
+    if grep -qE -- "$pattern" <<< "$text"; then
         tc_pass "$name"
     else
         tc_fail "$name" "expected to match: ${pattern}
@@ -981,7 +987,7 @@ $(_tc_context)"
 
 tc_assert_not_match() {
     local pattern="$1" text="$2" name="$3"
-    if printf '%s\n' "$text" | grep -qE -- "$pattern"; then
+    if grep -qE -- "$pattern" <<< "$text"; then
         tc_fail "$name" "expected not to match: ${pattern}
 $(_tc_context)"
     else

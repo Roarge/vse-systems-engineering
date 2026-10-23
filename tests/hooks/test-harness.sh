@@ -625,6 +625,29 @@ last" "exact line")"
     tc_assert_grep "FAIL: embedded line" "$result" "assert_line: text inside a line does not pass"
 }
 
+# The assertion helpers hand the text to grep, which stops reading at
+# the first match. Fed through a pipe, a text longer than a pipe buffer
+# (64 KiB) would leave printf writing to a closed pipe, and with
+# pipefail the broken pipe (SIGPIPE, 141) would read as no match: a
+# line that is there would fail tc_assert_grep, and tc_assert_not_grep
+# would pass a text that holds the very line it forbids. Each helper
+# gets a long text whose first line is the one it looks for.
+case_assert_reads_long_text() {
+    local long result
+    long="$(printf 'cwd=/a\n'
+        awk 'BEGIN { for (i = 0; i < 20000; i++) printf "padding line %d, to fill the pipe buffer\n", i }')"
+    result="$(tc_assert_grep "cwd=/a" "$long" "long grep")"
+    tc_assert_eq "PASS: long grep" "${result%%$'\n'*}" "long text: assert_grep finds the first line"
+    result="$(tc_assert_line "cwd=/a" "$long" "long line")"
+    tc_assert_eq "PASS: long line" "${result%%$'\n'*}" "long text: assert_line finds the first line"
+    result="$(tc_assert_match "^cwd=/a$" "$long" "long match")"
+    tc_assert_eq "PASS: long match" "${result%%$'\n'*}" "long text: assert_match finds the first line"
+    result="$(tc_assert_not_grep "cwd=/a" "$long" "long not grep")"
+    tc_assert_eq "FAIL: long not grep" "${result%%$'\n'*}" "long text: assert_not_grep fails on the first line"
+    result="$(tc_assert_not_match "^cwd=/a$" "$long" "long not match")"
+    tc_assert_eq "FAIL: long not match" "${result%%$'\n'*}" "long text: assert_not_match fails on the first line"
+}
+
 # TC_LABEL_SUFFIX names the pass a case runs in. tc_pass, tc_fail and
 # tc_skip add it to every assertion name in parentheses, so a case run
 # once with the tool of the machine and once with a BSD-behaviour stub
@@ -709,6 +732,7 @@ case_assert_json_rejects_false_filter
 case_assert_json_shows_jq_error
 case_assert_json_reports_missing_jq
 case_assert_line_exact
+case_assert_reads_long_text
 case_label_suffix
 case_assert_json_silent
 case_bin_without_named_tools
