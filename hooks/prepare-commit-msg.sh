@@ -19,7 +19,7 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 # story/US_042_AckFromDashboard -> US_042
 if [[ "$BRANCH" =~ ^story/([A-Z]+_[0-9]+) ]]; then
     STORY_ID=${BASH_REMATCH[1]}
-    if head -n1 "$MSG_FILE" | grep -qE '^[[:space:]]*(#|$)'; then
+    if head -n1 "$MSG_FILE" | grep -qE '^[[:space:]]*(#|$)'; then  # portability: ok head prints one line, which grep reads whole
         # Inject as the first line if message is empty or starts with comment.
         TMP=$(mktemp)
         printf 'feat(%s): \n\n' "$STORY_ID" > "$TMP"

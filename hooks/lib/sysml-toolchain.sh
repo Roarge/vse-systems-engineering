@@ -341,7 +341,7 @@ _vse_tc_detect_opensysml() {
         VSE_TC_REASON="sysml (OpenSysML) not on PATH"
         return 0
     fi
-    ver="$(_vse_tc_timeout "$VSE_TC_PROBE_TIMEOUT" sysml -version 2>&1 | head -n 1 || true)"
+    ver="$(_vse_tc_timeout "$VSE_TC_PROBE_TIMEOUT" sysml -version 2>&1 | head -n 1 || true)"  # portability: ok head prints the first line before it stops, and || true takes the broken pipe
     case "$ver" in
         sysml\ *) : ;;   # "sysml v0.6.0" or "sysml dev"
         *) VSE_TC_REASON="sysml on PATH is not OpenSysML (-version printed '${ver}')" ;;

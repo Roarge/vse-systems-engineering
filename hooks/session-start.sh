@@ -161,9 +161,9 @@ if is_contributor_repo; then
         # written as "- ERROR: <n>" / "- WARN: <n>" by /vse-wiki-lint.
         # Counting matching lines instead would count the summary lines
         # themselves and announce findings on a clean report.
-        ERRORS=$(sed -n 's/^- ERROR: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)
-        WARNS=$(sed -n 's/^- WARN: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)
-        LINT_GENERATED=$(sed -n 's/^Generated: \(.*\)$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)
+        ERRORS=$(sed -n 's/^- ERROR: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)  # portability: ok head prints the first line before it stops, and || true takes the broken pipe
+        WARNS=$(sed -n 's/^- WARN: \([0-9][0-9]*\)[[:space:]]*$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)  # portability: ok head prints the first line before it stops, and || true takes the broken pipe
+        LINT_GENERATED=$(sed -n 's/^Generated: \(.*\)$/\1/p' "wiki/LINT_REPORT.md" 2>/dev/null | head -n 1 || true)  # portability: ok head prints the first line before it stops, and || true takes the broken pipe
         if [ -n "$ERRORS" ] && [ -n "$WARNS" ]; then
             echo "  Last /vse-wiki-lint report: ${ERRORS} ERROR, ${WARNS} WARN findings."
         else

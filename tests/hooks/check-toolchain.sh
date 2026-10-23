@@ -877,7 +877,7 @@ run_real_section() {
     local tool="$1" stray
 
     if ! tc_real_available "$tool"; then
-        tc_skip "$tool" "$(printf '%s\n' "$ERR" | head -n 1)"
+        tc_skip "$tool" "$(printf '%s\n' "$ERR" | head -n 1)"  # portability: ok head prints the first line, and the status of an argument is not read
         return 0
     fi
 

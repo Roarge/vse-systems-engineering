@@ -362,7 +362,7 @@ tf_assert_same() {
     if cmp -s "$1" "$2"; then
         tc_pass "$3"
     else
-        tc_fail "$3" "$(diff "$1" "$2" | head -20)
+        tc_fail "$3" "$(diff "$1" "$2" | sed -n '1,20p')
 $(_tc_context)"
     fi
 }

@@ -83,6 +83,29 @@
 #                          itself and safe. A ">(" after a blank or
 #                          after "=" (--output=>(...)) counts, as for
 #                          the input form
+#   early-exit reader after |
+#                          a command right after a single | that can
+#                          stop reading before the command before it
+#                          has finished writing: head, grep with -q or
+#                          -m (or --quiet, --silent, --max-count), or
+#                          awk whose program calls exit before any END.
+#                          The writer is then killed by a broken pipe
+#                          (SIGPIPE, 141) once its output is longer
+#                          than a pipe buffer (64 KiB), and pipefail
+#                          reports that status for the whole pipeline.
+#                          Variable assignments before the command
+#                          (LC_ALL=C grep) are skipped. The awk program
+#                          is read only when it is in single quotes and
+#                          begins on the line, so a program that starts
+#                          on a later line, or a pipe at the end of a
+#                          line, is not caught. The form applies to the
+#                          .sh files alone, because the Makefile's
+#                          recipes run under sh without pipefail. A
+#                          reviewed use where the cut-off writer cannot
+#                          change the result (one line of input, a
+#                          status that || true takes, or an argument
+#                          whose status is not read) carries the
+#                          allow-list marker with that reason
 #
 # A finding is printed as <file>:<line>: <form>.
 #
@@ -137,6 +160,44 @@ function cd_found(line,    rest, seg) {
     }
     return 0
 }
+# early_found <line>: 1 when a command right after a single | can stop
+# reading before the command before it has finished writing: head, grep
+# with -q or -m (or --quiet, --silent, --max-count), or awk whose
+# program, in single quotes and begun on the line, calls exit before
+# any END. Variable assignments before the command (LC_ALL=C grep) are
+# skipped. A | next to another | is part of ||, never a pipe.
+function early_found(line,    rest, seg) {
+    rest = line
+    while (match(rest, /[^|][|][^|]/)) {
+        seg = substr(rest, RSTART + 2)
+        rest = seg
+        sub(/^[ \t]+/, "", seg)
+        while (match(seg, /^[A-Za-z_][A-Za-z0-9_]*=[^ \t]*[ \t]+/))
+            seg = substr(seg, RLENGTH + 1)
+        seg = " " seg
+        if (seg ~ early_head || seg ~ early_grep || seg ~ early_long)
+            return 1
+        if (seg ~ early_awk && awk_exits(seg))
+            return 1
+    }
+    return 0
+}
+# awk_exits <text>: 1 when the first single-quoted program in <text>
+# (up to its closing quote, or to the end of the line when it goes on)
+# calls exit before any END.
+function awk_exits(text,    i) {
+    i = index(text, "\047")
+    if (i == 0)
+        return 0
+    text = substr(text, i + 1)
+    i = index(text, "\047")
+    if (i > 0)
+        text = substr(text, 1, i - 1)
+    i = index(text, "END")
+    if (i > 0)
+        text = substr(text, 1, i - 1)
+    return (" " text " ") ~ /[^A-Za-z0-9_]exit[^A-Za-z0-9_]/
+}
 BEGIN {
     b = "[^A-Za-z0-9_.-]"
     o = "[ \t]+(-[^ \t]*[ \t]+)*"
@@ -168,6 +229,10 @@ BEGIN {
     bre = cmd "[^|]*\\\\[|]"
     ere = "^" b "(grep|sed)" o g "[EF]"
     cdd = b "cd[ \t]+(--[ \t]+)?\"?[$][(]dirname[ \t]"
+    early_head = "^ head[ \t]"
+    early_grep = "^ grep" o g "[qm]"
+    early_long = "^ grep" o "--(quiet|silent|max-count)"
+    early_awk = "^ awk[ \t]"
 }
 /^[ \t]*#/ { next }
 /#[ \t]*portability: ok[ \t]+[^ \t]/ { next }
@@ -180,6 +245,8 @@ BEGIN {
         printf "%s:%d: %s\n", FILENAME, FNR, "\\| in a basic regex"
     if (cd_found(line))
         printf "%s:%d: %s\n", FILENAME, FNR, "cd \"$(dirname ...)\" without > /dev/null"
+    if (FILENAME ~ /[.]sh$/ && early_found(line))
+        printf "%s:%d: %s\n", FILENAME, FNR, "early-exit reader after |"
     arg = line
     gsub(/<[ \t]*<[(]/, "", arg)
     if (arg ~ /[ \t=]<[(]/)
@@ -282,6 +349,15 @@ case_form 'cd "$(dirname ...)" without > /dev/null' '. "$(cd "$(dirname "$0")" &
 case_form 'cd "$(dirname ...)" without > /dev/null' 'LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/lib"'
 case_form 'cd "$(dirname ...)" without > /dev/null' 'echo "$(cd "$(dirname "$0")/.." && pwd -P)/methodology/"'
 case_form 'cd "$(dirname ...)" without > /dev/null' 'dir="$(cd -- "$(dirname "$f")" 2> /dev/null && pwd)"'
+case_form 'early-exit reader after |' 'ver="$(sysml -version 2>&1 | head -n 1)"'
+case_form 'early-exit reader after |' '    | head -n 1'
+case_form 'early-exit reader after |' 'if printf "%s\n" "$text" | grep -qF -- "$p"; then'
+case_form 'early-exit reader after |' 'if printf "%s\n" "$text" | LC_ALL=C grep -Eq "x"; then'
+case_form 'early-exit reader after |' 'git tag | grep -E -m1 release'
+case_form 'early-exit reader after |' 'git tag | grep --quiet release'
+case_form 'early-exit reader after |' 'git tag | grep --max-count=1 release'
+case_form 'early-exit reader after |' "git tag | awk 'NR == 1 { print; exit }'"
+case_form 'early-exit reader after |' "locale -a | awk '/utf-?8\$/ { print; exit }' || true"
 
 # --------------------------------------- what the scan leaves alone
 
@@ -351,6 +427,37 @@ scan_fixture \
     'awk "{ if (i<=(n-1)) print i }" "$f"' \
     'ok=$((a>=(b-1)))'
 tc_assert_empty "$OUT" "a comparison with a parenthesised operand draws no finding"
+
+# A reader that reads to the end, a grep -q that reads a file or a
+# here-string rather than a pipe, an awk that calls exit only in END
+# (after it has read everything), || and a | inside a case pattern are
+# not early-exit readers after a pipe.
+scan_fixture \
+    'grep -q x "$f"' \
+    'if grep -qF -- "$p" <<< "$text"; then' \
+    'printf "%s\n" "$x" | grep -c x' \
+    'printf "%s\n" "$x" | grep -F x > "$out"' \
+    "git tag | awk 'NR == 1'" \
+    "printf '%s\n' \"\$x\" | awk '/x/ { f = 1 } END { exit !f }'" \
+    'git tag | sort | tail -n 1' \
+    'false || head -n 1 "$f"' \
+    'case "$1" in head|tail) : ;; esac' \
+    'head -n 1 "$f" > "$out"'
+tc_assert_empty "$OUT" "a reader that reads to the end draws no finding"
+
+# The Makefile's recipes run under sh without pipefail, so there the
+# status of a pipeline is its last command's, and a writer cut off by
+# the early exit cannot change it.
+case_makefile_no_pipefail() {
+    local makefile
+    makefile="$(tc_mktemp_d)/Makefile"
+    printf 'check:\n\t@if ! head -20 "$$f" | grep -q "^name:"; then exit 1; fi\n' > "$makefile"
+    RC=0
+    OUT="$(portability_scan "$makefile")" || RC=$?
+    tc_assert_empty "$OUT" "a Makefile recipe draws no early-exit finding"
+}
+
+case_makefile_no_pipefail
 
 # ------------------------------------------------------ the real tree
 

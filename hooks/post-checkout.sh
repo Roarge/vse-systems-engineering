@@ -57,7 +57,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)
 if [[ "$CURRENT_BRANCH" =~ ^story/ ]]; then
     echo "[post-checkout] Now on ${CURRENT_BRANCH}. Story branch."
     if command -v gh >/dev/null 2>&1; then
-        if gh pr list --head "$CURRENT_BRANCH" --json number --jq '.[0].number' 2>/dev/null | grep -qE '^[0-9]+$'; then
+        if gh pr list --head "$CURRENT_BRANCH" --json number --jq '.[0].number' 2>/dev/null | grep -qE '^[0-9]+$'; then  # portability: ok jq prints one line, which grep reads whole
             echo "  Draft PR open."
         else
             echo "  No draft PR found. Open one before advancing per §8.5.1."

@@ -551,9 +551,9 @@ hj_assert_read() {
         tc_pass "$name"
     else
         tc_fail "$name" "expected bytes:
-$(od -c "$expected" | head -n 8)
+$(od -c "$expected" | sed -n '1,8p')
 actual bytes:
-$(od -c "$HJ_READ" | head -n 8)
+$(od -c "$HJ_READ" | sed -n '1,8p')
 $(_tc_context)"
     fi
 }

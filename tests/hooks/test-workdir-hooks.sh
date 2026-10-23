@@ -90,7 +90,7 @@ snapshot_line() {
     local path
     path="$(printf '%s\n' "$OUT" | sed -n 's/^\[VSE state snapshot saved to \(.*\)\]$/\1/p')"
     if [ -n "$path" ] && [ -r "$path" ]; then
-        grep -F -- "$1" "$path" | head -n 1
+        grep -F -- "$1" "$path" | head -n 1  # portability: ok head prints the first line, and the callers read the line, not the status
     fi
 }
 

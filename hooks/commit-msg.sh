@@ -21,7 +21,7 @@ MSG=$(head -n 1 "$MSG_FILE")
 FULL_MSG=$(cat "$MSG_FILE")
 
 # Skip merge commits.
-if echo "$MSG" | grep -qE '^Merge '; then
+if echo "$MSG" | grep -qE '^Merge '; then  # portability: ok one line, which grep reads whole before it can match
     exit 0
 fi
 
