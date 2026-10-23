@@ -528,10 +528,10 @@ EOF
 
 # tc_stub_closed_devfd_jq: jq under the stock bash 3.2 of macOS. A
 # process substitution, <(...), reaches a command as a /dev/fd path.
-# When a command that used another process substitution finishes,
-# bash 3.2 closes every such descriptor still open, so a path handed
-# on earlier in the same function names a closed descriptor and jq
-# cannot open it. jq reports "Could not open /dev/fd/N: Bad file
+# When any external command finishes, bash 3.2 closes every such
+# descriptor still open, so a path handed to a function names a closed
+# descriptor once the function has run another program, and jq cannot
+# open it. jq reports "Could not open /dev/fd/N: Bad file
 # descriptor", after --slurpfile or --rawfile behind its "Bad JSON"
 # prefix, and exits 2. The stub refuses every /dev/fd path argument
 # that way, whether or not its descriptor is open, and passes every

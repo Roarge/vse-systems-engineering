@@ -303,16 +303,27 @@ case_touched_only_changed_block() {
 
 # ---------------------------------------------------- post-edit image
 
-# tf_engine <jq|python3>: the PATH for the next runner call, with the
-# other JSON tool taken away so the named one must do the work.
+# tf_engine <jq|python3|jq-no-devfd>: the PATH for the next runner
+# call, with the other JSON tool taken away so the named one must do
+# the work. jq-no-devfd is jq behind tc_stub_closed_devfd_jq, which
+# cannot open a /dev/fd path, as jq cannot under the stock bash 3.2 of
+# macOS once that shell has closed the descriptor behind it.
 tf_engine() {
     case "$1" in
         jq) tc_env PATH="$TF_BIN_NO_PYTHON" ;;
         python3) tc_env PATH="$TF_BIN_NO_JQ" ;;
+        jq-no-devfd)
+            tc_stub_closed_devfd_jq
+            tc_env PATH="${STUBS}:${TF_BIN_NO_PYTHON}"
+            ;;
     esac
 }
 
 TF_ENGINES="jq python3"
+
+# The disk image builds a payload of its own, which must reach jq as a
+# path jq can still open, so its cases also run with jq-no-devfd.
+TF_DISK_ENGINES="${TF_ENGINES} jq-no-devfd"
 
 # tf_payload_edit <old> <new> <replace_all>: an Edit payload on stdout.
 tf_payload_edit() {
@@ -550,7 +561,7 @@ case_disk_image_symmetric_latin1() {
     # \351 is e-acute in Latin-1, a lone byte that is not valid UTF-8.
     printf 'package P {\n    requirement US_1 : UserStory {\n        doc /* caf\351 */\n    }\n    requirement US_2 : UserStory {\n        doc /* old text */\n    }\n}\n' \
         > "$target"
-    for engine in $TF_ENGINES; do
+    for engine in $TF_DISK_ENGINES; do
         tf_engine "$engine"
         run_tf_to "$pre" vse_tf_disk_image "$target"
         tc_assert_rc 0 "disk image (${engine}): the register is read"
@@ -561,6 +572,7 @@ case_disk_image_symmetric_latin1() {
         tc_assert_eq "US_2" "$OUT" \
             "disk image (${engine}): a Latin-1 byte in US_1 does not touch US_1"
     done
+    tc_reset_stubs
 }
 
 case_disk_image_plain() {
@@ -570,7 +582,7 @@ case_disk_image_plain() {
     printf 'caf\303\251 "quoted" \\ back\r\n\nlast line, no newline\r' > "${dir}/utf8"
     printf 'caf\303\251 "quoted" \\ back\n\nlast line, no newline\r' > "${dir}/lf"
     : > "${dir}/empty"
-    for engine in $TF_ENGINES; do
+    for engine in $TF_DISK_ENGINES; do
         tf_engine "$engine"
         run_tf_to "${dir}/image" vse_tf_disk_image "${dir}/utf8"
         tc_assert_rc 0 "disk image (${engine}): a UTF-8 file is read"
@@ -580,6 +592,7 @@ case_disk_image_plain() {
         tc_assert_rc 0 "disk image (${engine}): a missing file is not an error"
         tf_assert_same "${dir}/empty" "${dir}/image" "disk image (${engine}): a missing file reads as empty"
     done
+    tc_reset_stubs
     tc_env
 }
 

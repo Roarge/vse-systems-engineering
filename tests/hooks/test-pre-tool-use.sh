@@ -43,6 +43,7 @@ PTU_REAL=""
 
 # PATH values that take jq, python3 or both out of reach.
 PTU_BIN_NO_JQ="$(tc_bin_without jq)"
+PTU_BIN_NO_PYTHON="$(tc_bin_without python3)"
 PTU_BIN_NO_JSON="$(tc_bin_without jq python3)"
 
 # ------------------------------------------------------------- fixtures
@@ -840,6 +841,35 @@ gate_overrides:
     ptu_assert_asked "old jq: a gate change still asks"
 }
 
+# Under the stock bash 3.2 of macOS a /dev/fd path from a process
+# substitution can name a descriptor the shell has already closed, so
+# jq cannot open it (tc_stub_closed_devfd_jq stands in for that jq).
+# python3 is taken away, so jq must build the images. The story and
+# configuration gates still decide rather than failing open.
+case_closed_devfd_jq_gates_decide() {
+    local file
+    ptu_project light
+    file="${REPO}/${PTU_STORIES}/stories.sysml"
+    tc_stub_closed_devfd_jq
+    tc_env PATH="${STUBS}:${PTU_BIN_NO_PYTHON}"
+    ptu_run "$(ptu_write_json "$file" "$(ptu_register US_901_Example)")"
+    ptu_assert_denied "closed /dev/fd: a new story without a feature file is denied"
+    ptu_assert_reason "US_901_Example.feature" "closed /dev/fd: the reason is complete"
+    tc_assert_not_grep "Internal error" "$ERR" "closed /dev/fd: the hook does not fail open"
+
+    ptu_register US_901_Example US_902_Sibling | tc_write "${PTU_STORIES}/stories.sysml"
+    ptu_feature US_901_Example
+    ptu_run "$(ptu_edit_json "$file" 'capability = "use US_901_Example"' 'capability = "use US_901_Example daily"')"
+    ptu_assert_proceeds "closed /dev/fd: an edit to a story with a feature file goes ahead"
+    ptu_assert_context "US_902_Sibling" "closed /dev/fd: the untouched sibling without a feature file draws a warning"
+
+    ptu_run "$(ptu_edit_json "${REPO}/.iso-config.yaml" "project_profile: light" "project_profile: light
+gate_overrides:
+  pretooluse_test_first: off")"
+    ptu_assert_asked "closed /dev/fd: a gate change still asks"
+    tc_env
+}
+
 case_no_jq_no_python_notice() {
     ptu_project light
     tc_env PATH="$PTU_BIN_NO_JSON"
@@ -920,6 +950,7 @@ case_config_never_code
 case_baselined_path_context
 case_no_jq_python_fallback
 case_old_jq_python_fallback
+case_closed_devfd_jq_gates_decide
 case_no_jq_no_python_notice
 case_malformed_payload_fails_open
 case_never_emits_allow
