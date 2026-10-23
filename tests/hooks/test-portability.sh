@@ -31,9 +31,11 @@
 #   sed -i without a backup suffix
 #                          a -i option of sed with no suffix attached,
 #                          that is followed by a blank or by an empty
-#                          quoted suffix (-i'' or -i""), and the long
-#                          option --in-place in any form, which BSD sed
-#                          lacks. -i.bak is the portable form
+#                          quoted suffix (-i'' or -i""). -i.bak is the
+#                          portable form
+#   sed --in-place         the long option in any form, a suffix
+#                          (--in-place=.bak) included, because BSD sed
+#                          has no long options
 #   \r in a sed call       \r anywhere in a sed call before the next |
 #   readlink -f, stat -c, xargs -r, sort -V
 #   head -n -N             a negative line count
@@ -51,6 +53,17 @@
 #                          "<(" is taken out first, because input
 #                          redirected from one (done < <(...), also
 #                          3< <(...)) is opened by bash itself and safe.
+#                          A process substitution starts a word, so
+#                          only a "<(" after a blank counts, and a
+#                          comparison such as i<(n-1) in embedded awk or
+#                          in shell arithmetic does not
+#   >(...) as an argument  the output form of the same, with the same
+#                          hazard. Every ">" followed by blanks and
+#                          ">(" is taken out first, because output
+#                          redirected into one (exec > >(...), also
+#                          2> >(...) and >> >(...)) is opened by bash
+#                          itself and safe. Only a ">(" after a blank
+#                          counts
 #
 # A finding is printed as <file>:<line>: <form>.
 #
@@ -99,7 +112,8 @@ BEGIN {
     n++; form[n] = "date -d"; re[n] = b "date" o g "d"
     n++; form[n] = "date --date"; re[n] = b "date" o "--date"
     n++; form[n] = "sed -i without a backup suffix"
-    re[n] = b "sed" o "(" g "i([\"\047][\"\047])?[ \t]|--in-place)"
+    re[n] = b "sed" o g "i([\"\047][\"\047])?[ \t]"
+    n++; form[n] = "sed --in-place"; re[n] = b "sed" o "--in-place"
     n++; form[n] = "\\r in a sed call"; re[n] = b "sed[ \t][^|]*\\\\r"
     n++; form[n] = "readlink -f"; re[n] = b "readlink" o g "f"
     n++; form[n] = "stat -c"; re[n] = b "stat" o g "c"
@@ -129,8 +143,12 @@ BEGIN {
         printf "%s:%d: %s\n", FILENAME, FNR, "\\| in a basic regex"
     arg = line
     gsub(/<[ \t]*<[(]/, "", arg)
-    if (arg ~ /<[(]/)
+    if (arg ~ /[ \t]<[(]/)
         printf "%s:%d: %s\n", FILENAME, FNR, "<(...) as an argument"
+    arg = line
+    gsub(/>[ \t]*>[(]/, "", arg)
+    if (arg ~ /[ \t]>[(]/)
+        printf "%s:%d: %s\n", FILENAME, FNR, ">(...) as an argument"
 }
 '
 
@@ -191,8 +209,9 @@ case_form 'sed -i without a backup suffix' 'sed -i "s/x/y/" "$f"'
 case_form 'sed -i without a backup suffix' "sed -i'' \"s/x/y/\" \"\$f\""
 case_form 'sed -i without a backup suffix' 'sed -i"" "s/x/y/" "$f"'
 case_form 'sed -i without a backup suffix' 'sed -i "" "s/x/y/" "$f"'
-case_form 'sed -i without a backup suffix' 'sed --in-place "s/x/y/" "$f"'
-case_form 'sed -i without a backup suffix' 'sed --in-place=.bak "s/x/y/" "$f"'
+case_form 'sed --in-place' 'sed --in-place "s/x/y/" "$f"'
+case_form 'sed --in-place' 'sed --in-place=.bak "s/x/y/" "$f"'
+case_form 'sed --in-place' 'sed -E --in-place "s/x/y/" "$f"'
 case_form '\r in a sed call' 'printf "a\n" | sed "s/$/\r/" > "$f"'
 case_form 'readlink -f' 'dir=$(readlink -f "$0")'
 case_form 'stat -c' 'size=$(stat -c %s "$f")'
@@ -214,6 +233,9 @@ case_form '<(...) as an argument' 'diff <(sort "$a") <(sort "$b")'
 case_form '<(...) as an argument' 'awk -f "$prog" <(scan < "$pre")'
 case_form '<(...) as an argument' "    ' <(vse_tf_story_blocks < \"\$pre\") <(vse_tf_story_blocks < \"\$post\")"
 case_form '<(...) as an argument' 'paste < <(cut -f 1 "$f") <(cut -f 2 "$f")'
+case_form '>(...) as an argument' 'tee >(sha256sum > "$f.sum") < "$f" > /dev/null'
+case_form '>(...) as an argument' 'vse_write_image >(cat > "$out") "$1"'
+case_form '>(...) as an argument' 'diff "$a" "$b" 2> >(grep -v x >&2) >(cat > "$out")'
 
 # --------------------------------------- what the scan leaves alone
 
@@ -253,6 +275,21 @@ scan_fixture \
     'body="$(< "$f")"' \
     'cat <<EOF > "$f"'
 tc_assert_empty "$OUT" "input redirected from a process substitution draws no finding"
+
+# Output redirected into a process substitution is opened by bash too.
+scan_fixture \
+    'exec > >(tee "$log")' \
+    'make all 2> >(grep -v warning >&2)' \
+    'printf "%s\n" "$x" >> >(cat >> "$log")'
+tc_assert_empty "$OUT" "output redirected into a process substitution draws no finding"
+
+# A comparison with a parenthesised operand, in embedded awk or in shell
+# arithmetic, is not a process substitution, which starts a word.
+scan_fixture \
+    'awk "{ for (i = 1; i<(n-1); i++) print i }" "$f"' \
+    'last=$((i<(n-1) ? i : n - 1))' \
+    'big=$((a>(b-1)))'
+tc_assert_empty "$OUT" "a comparison with a parenthesised operand draws no finding"
 
 # ------------------------------------------------------ the real tree
 
